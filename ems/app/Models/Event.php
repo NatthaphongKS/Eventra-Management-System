@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Event extends Model
+{
+    protected $table = 'ems_event';
+
+    public $timestamps = false;
+
+    protected $fillable = [
+        'evn_title',
+        'event_category_id',
+        'evn_date',
+        'evn_timestart',
+        'evn_timeend',
+        'evn_duration',
+        'evn_location',
+        'evn_file',
+        'evn_create_by',
+        'evn_created_at',
+        'evn_deleted_at',
+        'evn_deleted_by',
+        'evn_status',
+    ];
+
+    protected $casts = [
+        'evn_date' => 'date',
+        'evn_timestart' => 'datetime:H:i:s',
+        'evn_timeend' => 'datetime:H:i:s',
+        'evn_created_at' => 'datetime',
+        'evn_deleted_at' => 'datetime',
+    ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'event_category_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'evn_create_by');
+    }
+
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'evn_deleted_by');
+    }
+
+    public function connects(): HasMany
+    {
+        return $this->hasMany(Connect::class, 'ecn_event_id');
+    }
+}
