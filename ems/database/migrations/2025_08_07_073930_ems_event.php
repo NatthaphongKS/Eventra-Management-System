@@ -21,7 +21,7 @@ return new class extends Migration
             $table->id();
             $table->string('evn_title');
             $table->foreignId('evn_category_id')->constrained('ems_categories')->onDelete('cascade');
-            // $table->text('evn_description')->nullable();
+            $table->text('evn_description')->nullable();
             $table->date('evn_date');
             $table->time('evn_timestart');
             $table->time('evn_timeend');

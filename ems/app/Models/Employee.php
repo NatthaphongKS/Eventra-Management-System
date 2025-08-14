@@ -20,6 +20,7 @@ class Employee extends Authenticatable
         'emp_prefix',
         'emp_firstname',
         'emp_lastname',
+        'emp_nickname',
         'emp_email',
         'email_verified_at',
         'emp_phone',

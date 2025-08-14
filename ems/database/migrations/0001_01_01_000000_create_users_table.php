@@ -32,6 +32,7 @@ return new class extends Migration
             $table->enum('emp_prefix',['นาย', 'นาง', 'นางสาว'])->default('นาย');
             $table->string('emp_firstname');
             $table->string('emp_lastname');
+            $table->string('emp_nickname')->nullable();
             $table->string('emp_email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('emp_phone')->unique();
