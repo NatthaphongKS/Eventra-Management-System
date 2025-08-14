@@ -2,24 +2,25 @@
     <div>
       <h1>สร้างกิจกรรม</h1>
 
-      <h2>Event Title</h2>
-      <input v-model.trim="form.event_title" type="text" required />
 
-      <h2>Event Details</h2>
-      <textarea v-model.trim="form.event_description" required></textarea>
+      <label>Event Title</label>
+      <input v-model.trim="form.event_title" type="text" required /><br>
 
-      <h2>Category</h2>
+      <label>Event Details</label>
+      <textarea v-model.trim="form.event_description" required></textarea><br>
+
+      <label>Category</label>
       <select v-model="form.event_category" required>
         <option disabled value="">-- Select Category --</option>
         <option v-for="category in categories" :key="category" :value="category">
           {{ category }}
         </option>
-      </select>
+      </select><br>
 
-      <h2>Date</h2>
+      <label>Date</label>
       <input v-model="form.event_date" type="date" required />
 
-      <h2>Time</h2>
+      <label>Time</label>
       <div style="display:flex; gap:12px; align-items:center;">
         <input v-model="form.event_timestart" type="time" required />
         <span>:</span>
@@ -27,7 +28,7 @@
         <span style="opacity:.7;">→ {{ durationLabel }}</span>
       </div>
 
-      <h2>Duration (minutes)</h2>
+      <label>Duration (minutes)</label>
       <input
         :value="form.event_duration"
         type="number"
@@ -37,9 +38,9 @@
         title="คำนวณอัตโนมัติจากเวลาเริ่ม-สิ้นสุด"
       />
 
-      <h2>Location</h2>
+      <label>Location</label>
       <input v-model.trim="form.event_location" type="text" required />
-      <h2>Upload attachments</h2>
+      <label>Upload attachments</label>
   <div
     class="dropzone"
     @dragover.prevent="dragging = true"
@@ -105,13 +106,22 @@ export default {
         event_duration: 0,
         event_location: '',
       },
-      categories: ['Meeting', 'Training', 'Conference', 'Workshop'],
+      categories: [],
       files: [],
       dragging: false,
       loading: false,
       message: '',
     }
   },
+  async created() {
+        try {
+            const res = await axios.get("/event-info");
+            this.categories = res.data.categories || [];
+        } catch (err) {
+            this.message =
+                err.response?.data?.message || "โหลดข้อมูลอ้างอิงไม่สำเร็จ";
+        }
+    },
 
   watch: {
     'form.event_timestart': 'updateDuration',

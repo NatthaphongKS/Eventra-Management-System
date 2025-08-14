@@ -18,7 +18,6 @@
                     </option>
                 </select>
             </div>
-
             <div>
                 <label>ชื่อ</label>
                 <input v-model.trim="form.emp_firstname" required />
