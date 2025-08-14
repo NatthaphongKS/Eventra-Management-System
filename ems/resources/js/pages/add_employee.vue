@@ -1,31 +1,7 @@
 <template>
     <div>
         <button @click="$router.back()" class="btn-back">← กลับ</button>
-        <h2>เพิ่มตำแหน่ง</h2>
-        <form @submit.prevent="submitPosition">
-            <div>
-                <label>ชื่อ:</label>
-                <input v-model.trim="form.ept_name" required />
-            </div>
-            <button type="submit">บันทึก</button>
-        </form>
 
-        <h2>เพิ่มแผนก</h2>
-        <form @submit.prevent="submitDepartment">
-            <div>
-                <label>ชื่อ:</label>
-                <input v-model.trim="form.edm_name" required />
-            </div>
-            <button type="submit">บันทึก</button>
-        </form>
-        <h2>เพิ่มทีม</h2>
-        <form @submit.prevent="submitTeam">
-            <div>
-                <label>ชื่อ:</label>
-                <input v-model.trim="form.etm_name" required />
-            </div>
-            <button type="submit">บันทึก</button>
-        </form>
         <h2>เพิ่มพนักงานใหม่</h2>
 
         <form @submit.prevent="submitEmployee">
@@ -57,7 +33,7 @@
                 <label>Email</label>
                 <input
                     type="email"
-                    v-model.trim="form.email"
+                    v-model.trim="form.emp_email"
                     required
                     autocomplete="email"
                 />
@@ -65,7 +41,14 @@
 
             <div>
                 <label>Phone</label>
-                <input v-model.trim="form.phone" />
+                <input
+                    v-model="form.emp_phone"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    @input="
+                        form.emp_phone = form.emp_phone.replace(/[^0-9]/g, '')
+                    "
+                />
             </div>
 
             <div>
@@ -77,7 +60,7 @@
                         :value="p.id"
                         :key="'p-' + p.id"
                     >
-                        {{ p.ept_name }}
+                        {{ p.pst_name }}
                     </option>
                 </select>
             </div>
@@ -91,7 +74,7 @@
                         :value="d.id"
                         :key="'d-' + d.id"
                     >
-                        {{ d.edm_name }}
+                        {{ d.dpm_name }}
                     </option>
                 </select>
             </div>
@@ -101,7 +84,7 @@
                 <select v-model.number="form.emp_team_id">
                     <option disabled value="">-- เลือกทีม --</option>
                     <option v-for="t in teams" :value="t.id" :key="'t-' + t.id">
-                        {{ t.etm_name }}
+                        {{ t.tm_name }}
                     </option>
                 </select>
             </div>
@@ -151,8 +134,8 @@ export default {
                 emp_prefix: "นาย",
                 emp_firstname: "",
                 emp_lastname: "",
-                email: "",
-                phone: "",
+                emp_email: "",
+                emp_phone: "",
                 emp_position_id: "",
                 emp_department_id: "",
                 emp_team_id: "",
@@ -178,63 +161,6 @@ export default {
         }
     },
     methods: {
-        async submitTeam() {
-            this.loading = true;
-            this.message = "";
-            try {
-                const res = await axios.post("/save-team", {
-                    etm_name: this.form.etm_name,
-                });
-                window.location.reload();
-                this.message = res.data.message || "บันทึกสำเร็จ";
-
-                // เคลียร์ฟอร์ม
-                this.form.ept_name = "";
-            } catch (err) {
-                const data = err.response?.data;
-                this.message = data?.message || "เกิดข้อผิดพลาด";
-            } finally {
-                this.loading = false;
-            }
-        },
-        async submitPosition() {
-            this.loading = true;
-            this.message = "";
-            try {
-                const res = await axios.post("/save-position", {
-                    ept_name: this.form.ept_name,
-                });
-                window.location.reload();
-                this.message = res.data.message || "บันทึกสำเร็จ";
-
-                // เคลียร์ฟอร์ม
-                this.form.ept_name = "";
-            } catch (err) {
-                const data = err.response?.data;
-                this.message = data?.message || "เกิดข้อผิดพลาด";
-            } finally {
-                this.loading = false;
-            }
-        },
-        async submitDepartment() {
-            this.loading = true;
-            this.message = "";
-            try {
-                const res = await axios.post("/save-department", {
-                    edm_name: this.form.edm_name,
-                });
-                window.location.reload();
-                this.message = res.data.message || "บันทึกสำเร็จ";
-
-                // เคลียร์ฟอร์ม
-                this.form.ept_name = "";
-            } catch (err) {
-                const data = err.response?.data;
-                this.message = data?.message || "เกิดข้อผิดพลาด";
-            } finally {
-                this.loading = false;
-            }
-        },
         async submitEmployee() {
             this.loading = true;
             this.message = "";
@@ -257,8 +183,8 @@ export default {
                     emp_prefix: "",
                     emp_firstname: "",
                     emp_lastname: "",
-                    email: "",
-                    phone: "",
+                    emp_email: "",
+                    emp_phone: "",
                     emp_position_id: "",
                     emp_department_id: "",
                     emp_team_id: "",

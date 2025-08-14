@@ -14,7 +14,7 @@ class Team extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['etm_name', 'etm_delete_status'];
+    protected $fillable = ['tm_name', 'tm_delete_status'];
 
     public function employees(): HasMany
     {

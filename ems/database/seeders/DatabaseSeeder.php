@@ -14,18 +14,18 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Team::create([
-            'etm_name' => 'Team1',
+            'tm_name' => 'Team1',
         ]);
 
         Department::create([
-            'edm_name' => 'Department1',
+            'dpm_name' => 'Department1',
         ]);
 
         Position::create([
 
-            'ept_name' => 'Administrator',
-            'ept_name' => 'Human Resources',
-            'ept_name' => 'Position1',
+            'pst_name' => 'Administrator',
+            'pst_name' => 'Human Resources',
+            'pst_name' => 'Position1',
         ]);
 
         // ปรับชื่อคอลัมน์ให้ตรงกับตารางของคุณ (email/phone หรือ emp_email/emp_phone)
@@ -34,13 +34,13 @@ class DatabaseSeeder extends Seeder
             'emp_prefix'        => 'นาย',
             'emp_firstname'     => 'แอดมิน',
             'emp_lastname'      => 'แอดมิน',
-            'email'             => 'admin@admin.com', // ถ้าตารางใช้ emp_email ให้เปลี่ยนเป็น 'emp_email'
-            'phone'             => '1234567890',      // ถ้าใช้ emp_phone ให้เปลี่ยนเป็น 'emp_phone'
+            'emp_email'             => 'admin@admin.com', // ถ้าตารางใช้ emp_email ให้เปลี่ยนเป็น 'emp_email'
+            'emp_phone'             => '1234567890',      // ถ้าใช้ emp_phone ให้เปลี่ยนเป็น 'emp_phone'
             'emp_position_id'   => '1',
             'emp_department_id' => '1',
             'emp_team_id'       => '1',
             'emp_password'      => Hash::make('Pass1234'),
-            'emp_status'        => 'enabled',
+            'emp_permission'        => 'enabled',
             'emp_delete_status' => 'active',
         ]);
     }

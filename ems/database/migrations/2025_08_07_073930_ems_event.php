@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('ems_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('emc_name')->unique();
-            $table->enum('ems_delete_status', ['active', 'inactive'])->default('active');
+            $table->string('cat_name')->unique();
+            $table->enum('cat_delete_status', ['active', 'inactive'])->default('active');
         });
 
         Schema::create('ems_event', function (Blueprint $table) {
             $table->id();
             $table->string('evn_title');
-            $table->foreignId('event_category_id')->constrained('ems_categories')->onDelete('cascade');
+            $table->foreignId('evn_category_id')->constrained('ems_categories')->onDelete('cascade');
             // $table->text('evn_description')->nullable();
             $table->date('evn_date');
             $table->time('evn_timestart');
@@ -37,11 +37,11 @@ return new class extends Migration
 
         Schema::create('ems_connect', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ecn_event_id')->constrained('ems_event')->onDelete('cascade');
-            $table->foreignId('ecn_employee_id')->constrained('ems_employees')->onDelete('cascade');
-            $table->enum('ecn_answer', ['accept', 'denied', 'invalid'])->default('invalid');
-            $table->text('ecn_note')->nullable();
-            $table->enum('ecn_delete_status', ['active', 'inactive'])->default('active');
+            $table->foreignId('con_event_id')->constrained('ems_event')->onDelete('cascade');
+            $table->foreignId('con_employee_id')->constrained('ems_employees')->onDelete('cascade');
+            $table->enum('con_answer', ['accept', 'denied', 'invalid'])->default('invalid');
+            $table->text('con_reason')->nullable();
+            $table->enum('con_delete_status', ['active', 'inactive'])->default('active');
         });
     }
 
