@@ -13,18 +13,18 @@ return new class extends Migration
     {
         Schema::create('ems_position', function (Blueprint $table) {
             $table->id();
-            $table->string('ept_name')->unique();
-            $table->enum('ept_delete_status', ['active', 'inactive'])->default('active');
+            $table->string('pst_name')->unique();
+            $table->enum('pst_delete_status', ['active', 'inactive'])->default('active');
         });
         Schema::create('ems_department', function (Blueprint $table) {
             $table->id();
-            $table->string('edm_name')->unique();
-            $table->enum('edm_delete_status', ['active', 'inactive'])->default('active');
+            $table->string('dpm_name')->unique();
+            $table->enum('dpm_delete_status', ['active', 'inactive'])->default('active');
         });
         Schema::create('ems_team', function (Blueprint $table) {
             $table->id();
-            $table->string('etm_name')->unique();
-            $table->enum('etm_delete_status', ['active', 'inactive'])->default('active');
+            $table->string('tm_name')->unique();
+            $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
         });
         Schema::create('ems_employees', function (Blueprint $table) {
             $table->id();
@@ -32,14 +32,14 @@ return new class extends Migration
             $table->enum('emp_prefix',['นาย', 'นาง', 'นางสาว'])->default('นาย');
             $table->string('emp_firstname');
             $table->string('emp_lastname');
-            $table->string('email')->unique();
+            $table->string('emp_email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('phone')->unique();
+            $table->string('emp_phone')->unique();
             $table->foreignId('emp_position_id')->constrained('ems_position')->onDelete('cascade');
             $table->foreignId('emp_department_id')->constrained('ems_department')->onDelete('cascade');
             $table->foreignId('emp_team_id')->constrained('ems_team')->onDelete('cascade');
             $table->string('emp_password');
-            $table->enum('emp_status', ['enabled', 'disabled'])->default('disabled');
+            $table->enum('emp_permission', ['enabled', 'disabled'])->default('disabled');
             $table->enum('emp_delete_status', ['active', 'inactive'])->default('active');
             $table->string('emp_delete_by')->nullable();
             $table->rememberToken()->nullable();

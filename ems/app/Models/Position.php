@@ -14,7 +14,7 @@ class Position extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['ept_name', 'ept_delete_status'];
+    protected $fillable = ['pst_name', 'pst_delete_status'];
 
     public function employees(): HasMany
     {
