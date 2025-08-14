@@ -1,64 +1,49 @@
 <template>
-    <div>
-      <h1>สร้างกิจกรรม</h1>
+  <div>
+    <h1>สร้างกิจกรรม</h1>
+    <div></div>
+    <label>Event Title</label>
+    <input v-model.trim="form.event_title" type="text" placeholder="ชื่อกิจกรรม" required />
+  </div>
 
+  <div>
+    <label>Event Details</label>
+    <textarea v-model.trim="form.event_description" required></textarea>
+  </div>
 
-      <label>Event Title</label>
-      <input v-model.trim="form.event_title" type="text" required /><br>
+  <label>Category</label>
+  <select v-model="form.event_category" required>
+    <option disabled value="">-- Select Category --</option>
+    <option v-for="category in categories" :key="category" :value="category">
+      {{ category.cat_name }}
+    </option>
+  </select><br>
 
-      <label>Event Details</label>
-      <textarea v-model.trim="form.event_description" required></textarea><br>
+  <label>Date</label>
+  <input v-model="form.event_date" type="date" required /> <br></br>
 
-      <label>Category</label>
-      <select v-model="form.event_category" required>
-        <option disabled value="">-- Select Category --</option>
-        <option v-for="category in categories" :key="category" :value="category">
-          {{ category }}
-        </option>
-      </select><br>
+  <label>Time</label>
+  <div style="display:flex; gap:12px; align-items:center;">
+    <input v-model="form.event_timestart" type="time" required />
+    <span>:</span>
+    <input v-model="form.event_timeend" type="time" required />
+    <span style="opacity:.7;">→ {{ durationLabel }}</span>
+  </div>
 
-      <label>Date</label>
-      <input v-model="form.event_date" type="date" required />
+  <label>Duration (minutes)</label>
+  <input :value="form.event_duration" type="number" min="0" readonly placeholder="Auto fill (minutes)"
+    title="คำนวณอัตโนมัติจากเวลาเริ่ม-สิ้นสุด" />
 
-      <label>Time</label>
-      <div style="display:flex; gap:12px; align-items:center;">
-        <input v-model="form.event_timestart" type="time" required />
-        <span>:</span>
-        <input v-model="form.event_timeend" type="time" required />
-        <span style="opacity:.7;">→ {{ durationLabel }}</span>
-      </div>
-
-      <label>Duration (minutes)</label>
-      <input
-        :value="form.event_duration"
-        type="number"
-        min="0"
-        readonly
-        placeholder="Auto fill (minutes)"
-        title="คำนวณอัตโนมัติจากเวลาเริ่ม-สิ้นสุด"
-      />
-
-      <label>Location</label>
-      <input v-model.trim="form.event_location" type="text" required />
-      <label>Upload attachments</label>
-  <div
-    class="dropzone"
-    @dragover.prevent="dragging = true"
-    @dragleave.prevent="dragging = false"
-    @drop.prevent="onDrop"
-    :class="{ dragging }"
-  >
+  <label>Location</label>
+  <input v-model.trim="form.event_location" type="text" required />
+  <label>Upload attachments</label>
+  <div class="dropzone" @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false" @drop.prevent="onDrop"
+    :class="{ dragging }">
     <p>Choose a file or drag & drop it here</p>
     <p class="muted">pdf, txt, docx, jpeg, xlsx – Up to 50MB</p>
     <button type="button" @click="pickFiles">Browse files</button>
-    <input
-      ref="fileInput"
-      type="file"
-      multiple
-      class="hidden-file"
-      accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls"
-      @change="onPick"
-    />
+    <input ref="fileInput" type="file" multiple class="hidden-file"
+      accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
   </div>
 
   <!-- รายการไฟล์ที่เลือก -->
@@ -73,8 +58,8 @@
     {{ loading ? 'กำลังบันทึก...' : 'บันทึก Event' }}
   </button>
   <p v-if="message">{{ message }}</p>
-    </div>
-  </template>
+
+</template>
 
 <script>
 import axios from 'axios'
@@ -99,7 +84,7 @@ export default {
       form: {
         event_title: '',
         event_description: '',
-        event_category: '',
+        event_category_id: '',
         event_date: '',
         event_timestart: '',
         event_timeend: '',
@@ -114,14 +99,14 @@ export default {
     }
   },
   async created() {
-        try {
-            const res = await axios.get("/event-info");
-            this.categories = res.data.categories || [];
-        } catch (err) {
-            this.message =
-                err.response?.data?.message || "โหลดข้อมูลอ้างอิงไม่สำเร็จ";
-        }
-    },
+    try {
+      const res = await axios.get("/event-info");
+      this.categories = res.data.categories || [];
+    } catch (err) {
+      this.message =
+        err.response?.data?.message || "โหลดข้อมูลอ้างอิงไม่สำเร็จ";
+    }
+  },
 
   watch: {
     'form.event_timestart': 'updateDuration',
@@ -170,7 +155,7 @@ export default {
     },
     prettySize(bytes) {
       const mb = bytes / (1024 * 1024)
-      return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(bytes/1024).toFixed(0)} KB`
+      return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(bytes / 1024).toFixed(0)} KB`
     },
 
     // ===== Submit =====
@@ -210,10 +195,38 @@ export default {
   text-align: center;
   background: #fff6f6;
 }
-.dropzone.dragging { background: #ffeeee; }
-.hidden-file { display: none; }
-.file-list { margin: 10px 0 20px; padding: 0; list-style: none; }
-.file-list li { display:flex; gap:8px; align-items:center; padding:6px 0; }
-.file-list li button { border:0; background:#eee; border-radius:6px; padding:4px 8px; cursor:pointer; }
-.muted { color:#888; font-size: 12px; }
+
+.dropzone.dragging {
+  background: #ffeeee;
+}
+
+.hidden-file {
+  display: none;
+}
+
+.file-list {
+  margin: 10px 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.file-list li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.file-list li button {
+  border: 0;
+  background: #eee;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.muted {
+  color: #888;
+  font-size: 12px;
+}
 </style>
