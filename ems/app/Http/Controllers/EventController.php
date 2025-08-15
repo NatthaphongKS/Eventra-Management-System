@@ -13,6 +13,7 @@ use App\Models\Department;
 use App\Models\Team;
 use App\Models\Category;
 use App\Mail\EventInvitationMail;
+use App\Mail\EventInvitation;
 
 class EventController extends Controller
 {
@@ -39,7 +40,7 @@ class EventController extends Controller
         return response()->json(compact('categories','employees','positions','departments','teams'));
     }
 
-    // สร้างกิจกรรม + อัปโหลดไฟล์ + แนบพนักงาน + ส่งอีเมล
+    // สร้างกิจกรรม + อัปโหลดไฟล์ + แนบพนักงาน + ส่งอีเมล (แนบไฟล์)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -59,10 +60,11 @@ class EventController extends Controller
             'employee_ids.*'     => 'integer|exists:ems_employees,id',
         ]);
 
-        // DB ของคุณระบุ evn_duration เป็น "ชั่วโมง"
+        // DB คุณเก็บ evn_duration เป็น "ชั่วโมง"
         $hours = (int) ceil(($data['event_duration'] ?? 0) / 60);
 
         return DB::transaction(function () use ($request, $data, $hours) {
+
             // 1) สร้างกิจกรรม
             $event = Event::create([
                 'evn_title'        => $data['event_title'],
@@ -78,7 +80,8 @@ class EventController extends Controller
                 'evn_status'       => 'scheduled',
             ]);
 
-            // 2) เก็บไฟล์แนบ (ถ้ามี) ลง ems_event_files
+            // 2) อัปโหลดไฟล์ + บันทึก ems_event_files + เก็บรายการไว้สำหรับแนบในอีเมล
+            $savedFiles = [];
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
                     $path = $file->store("events/{$event->id}", 'public');
@@ -91,6 +94,14 @@ class EventController extends Controller
                         'file_size'     => $file->getSize(),
                         'uploaded_at'   => now(),
                     ]);
+
+                    // เก็บข้อมูลไฟล์ไว้ใช้แนบใน Mailable
+                    $savedFiles[] = [
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                    ];
                 }
             }
 
@@ -105,14 +116,14 @@ class EventController extends Controller
 
             DB::table('ems_connect')->insert($rows);
 
-            // 4) ส่งอีเมลเชิญ
+            // 4) ส่งอีเมลเชิญ (แนบไฟล์)
             $employees = Employee::whereIn('id', $data['employee_ids'])
-                ->get(['emp_email','emp_firstname','emp_lastname']);
+                ->get(['id','emp_email','emp_firstname','emp_lastname']);
 
             foreach ($employees as $emp) {
-                if (!$emp->emp_email) continue;
-                // แนะนำใช้คิวในโปรดักชัน: ->queue(new ...)
-                Mail::to($emp->emp_email)->send(new EventInvitationMail($event, $emp));
+                if (!$emp->emp_email) { continue; }
+                // ถ้าใช้คิว: ->queue(new EventInvitation($emp, $event, $savedFiles));
+                Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles));
             }
 
             return response()->json([

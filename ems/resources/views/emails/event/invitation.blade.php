@@ -5,7 +5,7 @@
 
 **รายละเอียด**
 - วันที่: {{ \Carbon\Carbon::parse($event->evn_date)->format('d/m/Y') }}
-- เวลา: {{ $event->evn_timestart }} - {{ $event->evn_timeend }} (ประมาณ {{ $event->evn_duration }} ชม.)
+- เวลา: {{ \Carbon\Carbon::parse($event->evn_timestart)->format('H:i') }} - {{ \Carbon\Carbon::parse($event->evn_timeend)->format('H:i') }} (ประมาณ {{ $event->evn_duration }} ชม.)
 - สถานที่: {{ $event->evn_location }}
 
 @component('mail::button', ['url' => url('/event/'.$event->id)])
@@ -13,5 +13,5 @@
 @endcomponent
 
 ขอบคุณ,<br>
-{{ config('app.name') }}
+Eventra
 @endcomponent

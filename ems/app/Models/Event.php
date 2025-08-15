@@ -14,7 +14,7 @@ class Event extends Model
 
     protected $fillable = [
         'evn_title',
-        'event_category_id',
+        'evn_category_id',
         'evn_date',
         'evn_timestart',
         'evn_timeend',

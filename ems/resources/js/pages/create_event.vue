@@ -442,7 +442,7 @@ export default {
                     fd.append("employee_ids[]", id)
                 );
 
-                const res = await axios.post("/events", fd, {
+                const res = await axios.post("/event-save", fd, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
 
@@ -469,22 +469,6 @@ export default {
                 else this.selectedIds.delete(e.id);
             });
             this.selectedIds = new Set(this.selectedIds);
-        },
-
-        async submitGuests() {
-            try {
-                this.submittingGuests = true;
-                const payload = {
-                    event_id: this.eventId, // <-- ใส่ค่าให้ถูกที่คุณมี
-                    employee_ids: Array.from(this.selectedIds),
-                };
-                const res = await axios.post("/events/assign-guests", payload);
-                alert(res.data.message || "เพิ่มพนักงานเข้ากิจกรรมแล้ว");
-            } catch (err) {
-                alert(err.response?.data?.message || "เพิ่มพนักงานไม่สำเร็จ");
-            } finally {
-                this.submittingGuests = false;
-            }
         },
     },
 };
