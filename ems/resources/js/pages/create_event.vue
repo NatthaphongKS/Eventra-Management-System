@@ -4,12 +4,7 @@
     <!-- Title -->
     <div style="margin: 20px">
         <label>Event Title</label><br />
-        <input
-            v-model.trim="form.event_title"
-            type="text"
-            placeholder="ชื่อกิจกรรม"
-            required
-        />
+        <input v-model.trim="form.event_title" type="text" placeholder="ชื่อกิจกรรม" required />
     </div>
 
     <!-- Details -->
@@ -47,12 +42,7 @@
 
     <div style="margin: 20px">
         <label>Duration</label><br />
-        <input
-            :value="durationLabel"
-            type="text"
-            readonly
-            placeholder="Auto fill (minutes)"
-        />
+        <input :value="durationLabel" type="text" readonly placeholder="Auto fill (minutes)" />
     </div>
 
     <!-- Location -->
@@ -64,24 +54,13 @@
     <!-- Upload -->
     <div style="margin: 20px">
         <label>Upload attachments</label>
-        <div
-            class="dropzone"
-            @dragover.prevent="dragging = true"
-            @dragleave.prevent="dragging = false"
-            @drop.prevent="onDrop"
-            :class="{ dragging }"
-        >
+        <div class="dropzone" @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false"
+            @drop.prevent="onDrop" :class="{ dragging }">
             <p>Choose a file or drag & drop it here</p>
             <p class="muted">pdf, txt, docx, jpeg, xlsx – Up to 50MB</p>
             <button type="button" @click="pickFiles">Browse files</button>
-            <input
-                ref="fileInput"
-                type="file"
-                multiple
-                class="hidden-file"
-                accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls"
-                @change="onPick"
-            />
+            <input ref="fileInput" type="file" multiple class="hidden-file"
+                accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
         </div>
     </div>
 
@@ -96,11 +75,7 @@
     <h2 style="margin-top: 28px">Add Guest</h2>
 
     <div class="guest-toolbar">
-        <input
-            v-model.trim="searchDraft"
-            class="search"
-            placeholder="Search..."
-        />
+        <input v-model.trim="searchDraft" class="search" placeholder="Search..." />
         <div class="filters">
             <select v-model="filtersDraft.department">
                 <option value="">Department</option>
@@ -134,11 +109,7 @@
             <thead>
                 <tr>
                     <th style="width: 40px">
-                        <input
-                            type="checkbox"
-                            :checked="allCheckedOnPage"
-                            @change="toggleAllOnPage($event)"
-                        />
+                        <input type="checkbox" :checked="allCheckedOnPage" @change="toggleAllOnPage($event)" />
                     </th>
                     <th style="width: 60px">#</th>
                     <th style="width: 120px">ID</th>
@@ -152,12 +123,8 @@
             <tbody>
                 <tr v-for="(e, i) in pagedEmployees" :key="e.id">
                     <td>
-                        <input
-                            type="checkbox"
-                            :value="e.id"
-                            :checked="selectedIds.has(e.id)"
-                            @change="toggleOne(e.id, $event)"
-                        />
+                        <input type="checkbox" :value="e.id" :checked="selectedIds.has(e.id)"
+                            @change="toggleOne(e.id, $event)" />
                     </td>
                     <td>{{ (page - 1) * perPage + i + 1 }}</td>
                     <td>{{ e.emp_id }}</td>
@@ -190,10 +157,7 @@
         <div class="pager">
             <button :disabled="page === 1" @click="page--">‹</button>
             <span>{{ page }} / {{ totalPages || 1 }}</span>
-            <button
-                :disabled="page === totalPages || totalPages === 0"
-                @click="page++"
-            >
+            <button :disabled="page === totalPages || totalPages === 0" @click="page++">
                 ›
             </button>
         </div>
@@ -308,9 +272,8 @@ export default {
             return this.employees.filter((e) => {
                 const matchText =
                     !q ||
-                    `${e.emp_id} ${e.emp_firstname} ${e.emp_lastname} ${
-                        e.emp_nickname || ""
-                    }`
+                    `${e.emp_id} ${e.emp_firstname} ${e.emp_lastname} ${e.emp_nickname || ""
+                        }`
                         .toLowerCase()
                         .includes(q);
                 const matchDept =
@@ -448,8 +411,13 @@ export default {
 
                 this.message = res.data.message || "บันทึกสำเร็จ";
                 this.files = [];
+                if (res.data.redirect) {
+                    this.$router.push(res.data.redirect);
+                }
                 // ล้างตัวเลือก ถ้าต้องการ
                 // this.selectedIds = new Set();
+
+
             } catch (err) {
                 this.message = err.response?.data?.message || "เกิดข้อผิดพลาด";
             } finally {
@@ -516,45 +484,53 @@ export default {
     color: #888;
     font-size: 12px;
 }
+
 .table-wrap {
     border: 1px solid #eee;
     border-radius: 12px;
     overflow: hidden;
     background: #fff;
 }
+
 .guest-table {
     width: 100%;
     border-collapse: collapse;
 }
+
 .guest-table th,
 .guest-table td {
     padding: 12px 14px;
     border-bottom: 1px solid #f1f1f1;
     text-align: left;
 }
+
 .guest-table thead th {
     background: #fafafa;
     font-weight: 600;
     color: #333;
 }
+
 .guest-toolbar {
     display: flex;
     gap: 10px;
     align-items: center;
     margin: 14px 0;
 }
+
 .search {
     flex: 1;
     padding: 10px 12px;
     border: 1px solid #eee;
     border-radius: 999px;
 }
+
 .filters select {
     padding: 10px 12px;
     border: 1px solid #eee;
     border-radius: 12px;
     background: #fff;
 }
+
 .table-footer {
     display: flex;
     gap: 12px;
@@ -562,6 +538,7 @@ export default {
     justify-content: space-between;
     padding: 12px 0;
 }
+
 .pager button {
     padding: 6px 10px;
     border: 1px solid #ddd;
@@ -569,6 +546,7 @@ export default {
     background: #fff;
     cursor: pointer;
 }
+
 .actions button {
     padding: 10px 14px;
     border: 0;
@@ -577,6 +555,7 @@ export default {
     border-radius: 12px;
     cursor: pointer;
 }
+
 .empty {
     text-align: center;
     color: #777;

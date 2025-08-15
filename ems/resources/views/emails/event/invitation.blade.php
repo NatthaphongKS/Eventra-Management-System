@@ -13,5 +13,5 @@
 @endcomponent
 
 ขอบคุณ,<br>
-Eventra
+ByteForge Team
 @endcomponent

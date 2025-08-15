@@ -129,6 +129,7 @@ class EventController extends Controller
             return response()->json([
                 'message' => 'สร้างกิจกรรมและส่งอีเมลเชิญแล้ว',
                 'event'   => $event,
+                'redirect' => '/event', // path ใน Vue
             ], 201);
         });
     }
