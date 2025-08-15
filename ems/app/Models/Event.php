@@ -35,6 +35,12 @@ class Event extends Model
         'evn_created_at' => 'datetime',
         'evn_deleted_at' => 'datetime',
     ];
+    public function employees()
+    {
+        // pivot: ems_connect (con_event_id, con_employee_id)
+        return $this->belongsToMany(Employee::class, 'ems_connect', 'con_event_id', 'con_employee_id')
+                    ->withPivot(['con_answer','con_reason','con_delete_status']);
+    }
 
     public function category(): BelongsTo
     {

@@ -17,15 +17,30 @@ class DatabaseSeeder extends Seeder
         Team::create([
             'tm_name' => 'Team1',
         ]);
+        Team::create([
+            'tm_name' => 'Team2',
+        ]);
+        Team::create([
+            'tm_name' => 'Team3',
+        ]);
 
         Department::create([
             'dpm_name' => 'Department1',
         ]);
+        Department::create([
+            'dpm_name' => 'Department2',
+        ]);
+        Department::create([
+            'dpm_name' => 'Department3',
+        ]);
 
         Position::create([
-
             'pst_name' => 'Administrator',
+        ]);
+        Position::create([
             'pst_name' => 'Human Resources',
+        ]);
+        Position::create([
             'pst_name' => 'Position1',
         ]);
 
@@ -43,6 +58,36 @@ class DatabaseSeeder extends Seeder
             'emp_team_id'       => '1',
             'emp_password'      => Hash::make('Pass1234'),
             'emp_permission'        => 'enabled',
+            'emp_delete_status' => 'active',
+        ]);
+        Employee::create([
+            'emp_id'            => 'CN0001',
+            'emp_prefix'        => 'นาย',
+            'emp_firstname'     => 'ชิตดนัย',
+            'emp_lastname'      => 'หล่อสุด',
+            'emp_nickname'      => 'ปอนด์',
+            'emp_email'             => '66160083@go.buu.ac.th',
+            'emp_phone'             => '1234567809',
+            'emp_position_id'   => '2',
+            'emp_department_id' => '2',
+            'emp_team_id'       => '2',
+            'emp_password'      => Hash::make('Pass1234'),
+            'emp_permission'        => 'disabled',
+            'emp_delete_status' => 'active',
+        ]);
+        Employee::create([
+            'emp_id'            => 'CN0002',
+            'emp_prefix'        => 'นาย',
+            'emp_firstname'     => 'ณัฐพงศ์',
+            'emp_lastname'      => 'คงคำมา',
+            'emp_nickname'      => 'โอมซ์',
+            'emp_email'             => '66160100@go.buu.ac.th',
+            'emp_phone'             => '1234567098',
+            'emp_position_id'   => '3',
+            'emp_department_id' => '2',
+            'emp_team_id'       => '3',
+            'emp_password'      => Hash::make('Pass1234'),
+            'emp_permission'        => 'disabled',
             'emp_delete_status' => 'active',
         ]);
         Category::create([
