@@ -560,4 +560,20 @@ export default {
     text-align: center;
     color: #777;
 }
+input{
+    width: 50%;
+    padding: 10px;
+    border: 1px solid #ff5a5a;
+    border-radius: 8px;
+    box-sizing: border-box;
+    stroke: #BA0C16;
+}
+textarea {
+    width: 50%;
+    padding: 10px;
+    border: 1px solid #ff6e6e;
+    border-radius: 8px;
+    box-sizing: border-box;
+    stroke: #BA0C16;
+}
 </style>
