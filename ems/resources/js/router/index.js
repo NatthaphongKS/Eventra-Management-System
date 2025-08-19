@@ -6,6 +6,7 @@ import AddEmployee from '../pages/add_employee.vue'
 import Event from '../pages/event_page.vue'
 import Employees from '../pages/employees_page.vue'
 import Deleted from '../pages/delete_page.vue'
+import create_event from '../pages/create_event.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
@@ -15,6 +16,7 @@ const routes = [
 
   // เพิ่มตามเมนูในภาพ (ตัวอย่าง)
   { path: '/event', component: Event, meta: { title: 'Event' } },
+  { path: '/create-event', component: create_event, meta: { title: 'Create Event' } },
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/deleted', component: Deleted, meta: { title: 'Deleted' } },
 ]

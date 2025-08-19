@@ -20,14 +20,15 @@ class Employee extends Authenticatable
         'emp_prefix',
         'emp_firstname',
         'emp_lastname',
-        'email',
+        'emp_nickname',
+        'emp_email',
         'email_verified_at',
-        'phone',
+        'emp_phone',
         'emp_password',
         'emp_position_id',
         'emp_department_id',
         'emp_team_id',
-        'emp_status',
+        'emp_permission',
         'ems_delete_status',
         'emp_delete_by',
     ];
@@ -40,6 +41,11 @@ class Employee extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'ems_connect', 'con_employee_id', 'con_event_id')
+                    ->withPivot(['con_answer','con_reason','con_delete_status']);
+    }
 
     public function position(): BelongsTo
     {

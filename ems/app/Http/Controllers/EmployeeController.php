@@ -11,7 +11,8 @@ use App\Models\Team;
 use App\Models\Employee; // Assuming you have an Employee model
 class EmployeeController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         // $position = Position::where('ept_delete_status', 'active')->get();
         // $department = Department::where('edm_delete_status', 'active')->get();
         // $team = Team::where('etm_delete_status', 'active')->get();
@@ -29,15 +30,16 @@ class EmployeeController extends Controller
             ->join('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
             ->select(
                 'ems_employees.*',
-                'ems_position.ept_name as position_name',
-                'ems_department.edm_name as department_name',
-                'ems_team.etm_name as team_name'
+                'ems_position.pst_name as position_name',
+                'ems_department.dpm_name as department_name',
+                'ems_team.tm_name as team_name'
             )
             ->where('ems_employees.emp_delete_status', 'active')
             ->get();
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $emp = Employee::findOrFail($id);
         $emp->emp_delete_status = 'inactive'; // Set the delete status to inactive
         $emp->save();
@@ -47,19 +49,19 @@ class EmployeeController extends Controller
     public function meta()
     {
         $positions = DB::table('ems_position')
-            ->select('id', 'ept_name')
-            ->where('ept_delete_status', 'active')
-            ->orderBy('ept_name')
+            ->select('id', 'pst_name')
+            ->where('pst_delete_status', 'active')
+            ->orderBy('pst_name')
             ->get();
         $departments = DB::table('ems_department')
-            ->select('id', 'edm_name')
-            ->where('edm_delete_status', 'active')
-            ->orderBy('edm_name')
+            ->select('id', 'dpm_name')
+            ->where('dpm_delete_status', 'active')
+            ->orderBy('dpm_name')
             ->get();
         $teams = DB::table('ems_team')
-            ->select('id', 'etm_name')
-            ->where('etm_delete_status', 'active')
-            ->orderBy('etm_name')
+            ->select('id', 'tm_name')
+            ->where('tm_delete_status', 'active')
+            ->orderBy('tm_name')
             ->get();
         return response()->json([
             'positions' => $positions,
@@ -74,12 +76,18 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'emp_id' =>'required',
+            'emp_id' => 'required',
             'emp_prefix' => 'required',
             'emp_firstname' => 'required',
             'emp_lastname' => 'required',
-            'email' => 'required|email|unique:ems_employees,email',
-            'phone' => 'required|unique:ems_employees,phone',
+            'emp_email' => 'required|email|unique:ems_employees,emp_email',
+            'emp_phone' => [
+                'required',
+                'unique:ems_employees,emp_phone',
+                'regex:/^[0-9]+$/', // รับเฉพาะตัวเลข
+                'min:10',
+                'max:10'
+            ],
             'emp_position_id' => 'required|exists:ems_position,id',
             'emp_department_id' => 'required|exists:ems_department,id',
             'emp_team_id' => 'required|exists:ems_team,id',
@@ -88,58 +96,19 @@ class EmployeeController extends Controller
         ]);
 
         $employee = Employee::create([
-            'emp_id'=>$request->emp_id,
+            'emp_id' => $request->emp_id,
             'emp_prefix' => $request->emp_prefix,
             'emp_firstname' => $request->emp_firstname,
             'emp_lastname' => $request->emp_lastname,
-            'email' => $request->email,
-            'phone' => $request->phone,
+            'emp_email' => $request->emp_email,
+            'emp_phone' => $request->emp_phone,
             'emp_position_id' => $request->emp_position_id,
             'emp_department_id' => $request->emp_department_id,
             'emp_team_id' => $request->emp_team_id,
             'emp_password' => Hash::make($request->emp_password),
-            'emp_status' => $request->emp_status,
+            'emp_permission' => $request->emp_status,
         ]);
 
         return response()->json(['message' => 'Employee created', 'data' => $employee]);
-    }
-    public function saveDepartment(Request $request)
-    {
-        $request->validate([
-            'edm_name' => 'required|unique:ems_department,edm_name',
-        ]);
-
-        $department = Department::create([
-            'edm_name' => $request->edm_name,
-            'edm_delete_status' => 'active',
-        ]);
-
-        return response()->json(['message' => 'Department created', 'data' => $department]);
-    }
-    public function savePosition(Request $request)
-    {
-        $request->validate([
-            'ept_name' => 'required|unique:ems_position,ept_name',
-        ]);
-
-        $position = Position::create([
-            'ept_name' => $request->ept_name,
-            'ept_delete_status' => 'active',
-        ]);
-
-        return response()->json(['message' => 'Position created', 'data' => $position]);
-    }
-    public function saveTeam(Request $request)
-    {
-        $request->validate([
-            'etm_name' => 'required|unique:ems_team,etm_name',
-        ]);
-
-        $team = Team::create([
-            'etm_name' => $request->etm_name,
-            'etm_delete_status' => 'active',
-        ]);
-
-        return response()->json(['message' => 'Team created', 'data' => $team]);
     }
 }
