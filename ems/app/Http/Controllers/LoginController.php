@@ -22,7 +22,7 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
-        $employee = Employee::where('email', $request->email)->first();
+        $employee = Employee::where('emp_email', $request->email)->first();
 
         if (!$employee) {
             return response()->json(['message' => 'Email not found'], 404);

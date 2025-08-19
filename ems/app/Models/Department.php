@@ -14,7 +14,7 @@ class Department extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['edm_name', 'edm_delete_status'];
+    protected $fillable = ['dpm_name', 'dpm_delete_status'];
 
     public function employees(): HasMany
     {

@@ -1,271 +1,126 @@
 <template>
-    <div class="app">
-        <!-- Sidebar -->
-        <aside :class="['sidebar', { open: sidebarOpen }]">
-            <div class="brand">
-                <div class="logo">e</div>
-                <div class="title">ventra</div>
-                <button
-                    class="toggle"
-                    @click="sidebarOpen = !sidebarOpen"
-                    aria-label="Toggle sidebar"
-                >
-                    ☰
-                </button>
-            </div>
+  <div class="min-h-screen bg-white">
+    <div class="grid min-h-screen grid-cols-[220px,1fr]">
+      <!-- Sidebar -->
+      <aside class="sticky top-0 z-30 flex h-[100dvh] flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5">
+        <!-- Brand -->
+        <div class="mb-6 flex items-center gap-3 px-1">
+          <div class="grid h-9 w-9 place-items-center rounded-2xl bg-rose-100 text-rose-600">
+            <!-- วางไอคอน/ตัวอักษรตามภาพ -->
+            <span class="text-lg font-extrabold">c</span>
+          </div>
+          <span class="text-[22px] font-semibold tracking-wide text-rose-600">Eventra</span>
+        </div>
 
-            <nav class="nav">
-                <RouterLink
-                    v-for="item in items"
-                    :key="item.to"
-                    :to="item.to"
-                    class="nav-item"
-                    :class="{ active: $route.path.startsWith(item.to) }"
-                >
-                    <span class="icon" v-html="item.icon"></span>
-                    <span class="label">{{ item.label }}</span>
-                </RouterLink>
-            </nav>
+        <!-- Nav -->
+        <nav class="flex flex-1 flex-col gap-2">
+          <RouterLink
+            v-for="item in items"
+            :key="item.to"
+            :to="item.to"
+            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium transition"
+            :class="isActive(item.to)
+              ? 'bg-rose-100 text-rose-600'
+              : 'text-slate-700 hover:bg-slate-50'"
+          >
+            <!-- icon -->
+            <span
+              class="grid h-[30px] w-[30px] place-items-center rounded-lg"
+              :class="isActive(item.to) ? 'text-rose-600' : 'text-slate-700'"
+              v-html="item.icon"
+            />
+            <span class="leading-none">{{ item.label }}</span>
+          </RouterLink>
+        </nav>
 
-            <div class="spacer"></div>
+        <!-- Logout -->
+        <div class="mt-6 pb-5">
+          <button
+            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-rose-800"
+            @click="logout"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H6A2.25 2.25 0 0 0 3.75 5.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6"/>
+            </svg>
+            <span>Log out</span>
+          </button>
+        </div>
+      </aside>
 
-            <button class="logout" @click="logout">⤴ Log out</button>
-        </aside>
-
-        <!-- Main -->
-        <main class="main">
-            <header class="page-head">
-                <h1 class="page-title">{{ pageTitle }}</h1>
-            </header>
-
-            <section class="page-body">
-                <!-- เนื้อหาของแต่ละหน้า -->
-                <slot />
-            </section>
-        </main>
+      <!-- Main -->
+      <main class="p-6">
+        <header class="mb-4">
+          <h1 class="text-xl font-semibold text-slate-800">{{ pageTitle }}</h1>
+        </header>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <slot />
+        </section>
+      </main>
     </div>
+  </div>
 </template>
 
-<script>
-import axios from "axios";
+<script setup>
+import { ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
-// ตั้งค่าพื้นฐานให้ axios (ถ้าโปรเจ็กต์อยู่ root ของโดเมน ใช้แบบนี้โอเค)
+defineProps({ pageTitle: { type: String, default: '' } })
 
-export default {
-    name: "Layout",
-    props: {
-        pageTitle: { type: String, default: "" },
-    },
-    data() {
-        return {
-            sidebarOpen: true,
-            items: [
-                {
-                    label: "Dashboard",
-                    to: "/",
-                    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z" stroke="currentColor" stroke-width="1.6"/>
-            </svg>`,
-                },
-                {
-                    label: "Event",
-                    to: "/event",
-                    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M7 3v4M17 3v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>`,
-                },
-                {
-                    label: "Employee",
-                    to: "/employee",
-                    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M16 14a4 4 0 1 1-8 0" stroke="currentColor" stroke-width="1.6" />
-              <circle cx="12" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.6" />
-            </svg>`,
-                },
-                {
-                    label: "Deleted",
-                    to: "/deleted",
-                    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>`,
-                },
-            ],
-        };
-    },
-    created() {
-        // ให้ส่งคุกกี้ session และแนบ CSRF
-        axios.defaults.withCredentials = true;
-        const token = document.querySelector(
-            'meta[name="csrf-token"]'
-        )?.content;
-        if (token) axios.defaults.headers.common["X-CSRF-TOKEN"] = token;
-    },
-    methods: {
-        async logout() {
-            try {
-                // โพสต์ไป /logout ฝั่ง web โดย “ไม่” ให้ baseURL ชี้ไป /api
-                await axios.post("/logout");
-                this.$router.push("/login");
-            } catch (e) {
-                console.error("Logout failed", e);
-                // this.$router.push("/login");
-            }
-        },
-    },
-};
+const route = useRoute()
+const router = useRouter()
+
+const items = ref([
+  {
+    label: 'Dashboard',
+    to: '/',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10ZM13 3v6h8V3h-8Z"/>
+    </svg>`
+  },
+  {
+    label: 'Event',
+    to: '/event',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M7 3v4M17 3v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>
+    </svg>`
+  },
+  {
+    label: 'Employee',
+    to: '/employee',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M16 14a4 4 0 1 1-8 0"/><circle cx="12" cy="7" r="3"/><path d="M4 21a8 8 0 0 1 16 0"/>
+    </svg>`
+  },
+  {
+    label: 'Category',
+    to: '/category',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="7.5" r="2.5"/><path d="M5 15h6v4H5zM13 15h6v4h-6z"/>
+    </svg>`
+  },
+  {
+    label: 'History',
+    to: '/history',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 8v5l3 2M12 3a9 9 0 1 1-9 9H1l3.5-3.5L8 12H6a6 6 0 1 0 6-6Z"/>
+    </svg>`
+  }
+])
+
+const isActive = (to) => route.path.startsWith(to)
+
+axios.defaults.withCredentials = true
+const token = document.querySelector('meta[name="csrf-token"]')?.content
+if (token) axios.defaults.headers.common['X-CSRF-TOKEN'] = token
+
+const logout = async () => {
+  try {
+    await axios.post('/logout')
+    router.push('/login')
+  } catch (e) {
+    console.error('Logout failed', e)
+  }
+}
 </script>
-
-<style scoped>
-:root {
-    --sidebar-bg: #fff5f5;
-    --sidebar-border: #f1d0d0;
-    --sidebar-active: #e53e3e;
-    --sidebar-hover: #ffe2e2;
-    --text: #2a2a2a;
-    --muted: #7a7a7a;
-    --card: #ffffff;
-    --main-bg: #fffafa;
-}
-
-.app {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    min-height: 100vh;
-    background: var(--main-bg);
-}
-
-/* Sidebar */
-.sidebar {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--sidebar-border);
-    display: flex;
-    flex-direction: column;
-    padding: 16px 12px;
-    gap: 12px;
-}
-
-.brand {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 6px 16px;
-}
-
-.logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    background: #e53e3e;
-    color: white;
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-    font-size: 18px;
-}
-.title {
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.5px;
-}
-.toggle {
-    border: 0;
-    background: transparent;
-    font-size: 18px;
-    cursor: pointer;
-    color: var(--muted);
-}
-
-.nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.nav-item {
-    display: grid;
-    grid-template-columns: 22px 1fr;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    color: var(--text);
-    border-radius: 10px;
-    text-decoration: none;
-}
-.nav-item:hover {
-    background: var(--sidebar-hover);
-}
-.nav-item.active {
-    background: #fff;
-    border: 1px solid var(--sidebar-border);
-    color: var(--sidebar-active);
-    font-weight: 600;
-}
-
-.icon {
-    display: grid;
-    place-items: center;
-    color: currentColor;
-}
-.label {
-    line-height: 1;
-}
-
-.spacer {
-    flex: 1;
-}
-.logout {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #e53e3e;
-    color: white;
-    border: 0;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-/* Main */
-.main {
-    padding: 24px;
-}
-.page-head {
-    background: linear-gradient(
-        180deg,
-        #ffe9e9 0%,
-        rgba(255, 233, 233, 0) 100%
-    );
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
-}
-.page-title {
-    margin: 0;
-    font-size: 28px;
-    color: var(--text);
-}
-
-.page-body {
-    background: var(--card);
-    border: 1px solid var(--sidebar-border);
-    border-radius: 16px;
-    padding: 16px;
-}
-
-/* Responsive (ซ่อน/โชว์ sidebar) */
-@media (max-width: 980px) {
-    .app {
-        grid-template-columns: 72px 1fr;
-    }
-    .title,
-    .label {
-        display: none;
-    }
-    .sidebar {
-        padding: 12px 8px;
-    }
-}
-</style>

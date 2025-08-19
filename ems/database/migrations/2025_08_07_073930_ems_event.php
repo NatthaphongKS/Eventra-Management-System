@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('ems_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('emc_name')->unique();
-            $table->enum('ems_delete_status', ['active', 'inactive'])->default('active');
+            $table->string('cat_name')->unique();
+            $table->enum('cat_delete_status', ['active', 'inactive'])->default('active');
         });
 
         Schema::create('ems_event', function (Blueprint $table) {
             $table->id();
             $table->string('evn_title');
-            $table->foreignId('event_category_id')->constrained('ems_categories')->onDelete('cascade');
-            // $table->text('evn_description')->nullable();
+            $table->foreignId('evn_category_id')->constrained('ems_categories')->onDelete('cascade');
+            $table->text('evn_description')->nullable();
             $table->date('evn_date');
             $table->time('evn_timestart');
             $table->time('evn_timeend');
@@ -37,11 +37,22 @@ return new class extends Migration
 
         Schema::create('ems_connect', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ecn_event_id')->constrained('ems_event')->onDelete('cascade');
-            $table->foreignId('ecn_employee_id')->constrained('ems_employees')->onDelete('cascade');
-            $table->enum('ecn_answer', ['accept', 'denied', 'invalid'])->default('invalid');
-            $table->text('ecn_note')->nullable();
-            $table->enum('ecn_delete_status', ['active', 'inactive'])->default('active');
+            $table->foreignId('con_event_id')->constrained('ems_event')->onDelete('cascade');
+            $table->foreignId('con_employee_id')->constrained('ems_employees')->onDelete('cascade');
+            $table->enum('con_answer', ['accept', 'denied', 'invalid'])->default('invalid');
+            $table->text('con_reason')->nullable();
+            $table->enum('con_delete_status', ['active', 'inactive'])->default('active');
+        });
+        Schema::create('ems_event_files', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('file_event_id')
+                  ->constrained('ems_event')
+                  ->onDelete('cascade'); // ลบ event แล้วไฟล์หาย
+            $table->string('file_name');          // ชื่อไฟล์จริงที่ผู้ใช้อัปโหลด
+            $table->string('file_path');          // path ใน storage/public
+            $table->string('file_type')->nullable(); // MIME type เช่น application/pdf
+            $table->unsignedBigInteger('file_size'); // ขนาดไฟล์ (byte)
+            $table->timestamp('uploaded_at')->useCurrent();
         });
     }
 

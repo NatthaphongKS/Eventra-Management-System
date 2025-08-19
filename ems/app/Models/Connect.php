@@ -14,7 +14,7 @@ class Connect extends Model
         'ecn_event_id',
         'ecn_employee_id',
         'ecn_answer',
-        'ecn_note',
+        'ecn_reason',
         'ecn_delete_status',
     ];
 

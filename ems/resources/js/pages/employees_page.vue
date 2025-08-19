@@ -117,8 +117,8 @@
           emp_firstname: e.emp_firstname ?? "",
           emp_lastname: e.emp_lastname ?? "",
           position_name: e.position_name ?? "",
-          email: e.email ?? "",
-          phone: e.phone ?? "",
+          email: e.emp_email ?? "",
+          phone: e.emp_phone ?? "",
           department_name: e.department_name ?? "",
           team_name: e.team_name ?? "",
         }));
@@ -127,7 +127,7 @@
         if (!this.search) return this.normalized;
         const q = this.search.toLowerCase();
         return this.normalized.filter(e =>
-          `${e.emp_id} ${e.emp_prefix} ${e.emp_firstname} ${e.emp_lastname} ${e.position_name} ${e.email} ${e.phone} ${e.department_name} ${e.team_name}`
+          `${e.emp_id} ${e.emp_prefix} ${e.emp_firstname} ${e.emp_lastname} ${e.position_name} ${e.emp_email} ${e.emp_phone} ${e.department_name} ${e.team_name}`
             .toLowerCase()
             .includes(q)
         );
