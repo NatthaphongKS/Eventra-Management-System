@@ -43,6 +43,17 @@ return new class extends Migration
             $table->text('con_reason')->nullable();
             $table->enum('con_delete_status', ['active', 'inactive'])->default('active');
         });
+        Schema::create('ems_event_files', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('file_event_id')
+                  ->constrained('ems_event')
+                  ->onDelete('cascade'); // ลบ event แล้วไฟล์หาย
+            $table->string('file_name');          // ชื่อไฟล์จริงที่ผู้ใช้อัปโหลด
+            $table->string('file_path');          // path ใน storage/public
+            $table->string('file_type')->nullable(); // MIME type เช่น application/pdf
+            $table->unsignedBigInteger('file_size'); // ขนาดไฟล์ (byte)
+            $table->timestamp('uploaded_at')->useCurrent();
+        });
     }
 
     /**
