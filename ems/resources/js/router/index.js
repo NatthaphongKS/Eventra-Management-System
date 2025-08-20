@@ -7,6 +7,7 @@ import Event from '../pages/event_page.vue'
 import Employees from '../pages/employees_page.vue'
 import Deleted from '../pages/delete_page.vue'
 import create_event from '../pages/create_event.vue'
+import category from '../pages/category_page.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
@@ -19,6 +20,7 @@ const routes = [
   { path: '/create-event', component: create_event, meta: { title: 'Create Event' } },
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/deleted', component: Deleted, meta: { title: 'Deleted' } },
+   { path: '/categories', component: category, meta: { title: 'Categories' } },
 ]
 
 export default createRouter({
