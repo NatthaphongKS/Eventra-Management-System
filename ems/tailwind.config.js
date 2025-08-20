@@ -1,9 +1,6 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js (ESM)
 export default {
-  content: [
-    './resources/views/**/*.blade.php',
-    './resources/js/**/*.{vue,js,ts,jsx,tsx}',
-  ],
+  content: ["./resources/**/*.blade.php", "./resources/**/*.{js,ts,vue}"],
   theme: { extend: {} },
   plugins: [],
-}
+};
