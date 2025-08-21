@@ -102,7 +102,7 @@ const items = ref([
   },
   {
     label: 'History',
-    to: '/deleted',
+    to: '/history',
     icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 8v5l3 2M12 3a9 9 0 1 1-9 9H1l3.5-3.5L8 12H6a6 6 0 1 0 6-6Z"/>
     </svg>`
