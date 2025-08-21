@@ -17,6 +17,7 @@ class ReplyController extends Controller
             'reason'   => 'nullable|string|max:500',
         ]);
 
+        
         // TODO: บันทึกลง DB หรือส่งอีเมลแจ้งเตือน
         return response()->json(['ok' => true]);
     }
