@@ -9,18 +9,23 @@ import Deleted from '../pages/delete_page.vue'
 import create_event from '../pages/create_event.vue'
 import Category from '../pages/category_table.vue'
 
+//my
+import reply_form from '../pages/Reply_form.vue'
+
 const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
   { path: '/about', component: About, meta: { title: 'About' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
-
+  
   // เพิ่มตามเมนูในภาพ (ตัวอย่าง)
   { path: '/event', component: Event, meta: { title: 'Event' } },
   { path: '/create-event', component: create_event, meta: { title: 'Create Event' } },
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/deleted', component: Deleted, meta: { title: 'Deleted' } },
 { path: '/category', component: Category, meta: { title: 'Category' } },
+  { path: '/reply-form', component: reply_form, meta: { title: 'Reply Form'}},
+
 ]
 
 export default createRouter({
