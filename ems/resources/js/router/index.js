@@ -23,7 +23,7 @@ const routes = [
   { path: '/create-event', component: create_event, meta: { title: 'Create Event' } },
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/deleted', component: Deleted, meta: { title: 'Deleted' } },
-{ path: '/category', component: Category, meta: { title: 'Category' } },
+  { path: '/category', component: Category, meta: { title: 'Category' } },
   { path: '/reply-form', component: reply_form, meta: { title: 'Reply Form'}},
 
 ]
