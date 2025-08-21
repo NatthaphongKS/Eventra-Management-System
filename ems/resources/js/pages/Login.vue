@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex items-center justify-end pr-[8vw] md:pr-[12vw] px-6 bg-red-700">
-    <div class="rounded-[28px] bg-white/95 shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
+    <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
       <div class="text-center text-3xl font-semibold mb-6 text-red-700">Eventra</div>
 
 
