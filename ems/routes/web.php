@@ -45,3 +45,8 @@ END:VCALENDAR";
 Route::middleware('auth')->group(function () {
     Route::get('/{any}', fn() => view('spa'))->where('any', '.*');
 });
+
+//my
+use App\Http\Controllers\ReplyController;
+
+Route::post('/replies', [ReplyController::class, 'store']);

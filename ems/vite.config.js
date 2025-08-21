@@ -9,12 +9,9 @@ export default defineConfig({
   plugins: [
     vue(),
     laravel({
-
       input: ['resources/js/app.js'],   // ถ้ามี css แยกก็ใส่เพิ่ม
-
       refresh: true,
     }),
   ],
-
 })
 
