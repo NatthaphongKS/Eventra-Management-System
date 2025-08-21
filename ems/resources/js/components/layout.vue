@@ -96,7 +96,7 @@ const items = ref([
   {
     label: 'Category',
     to: '/category',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor ">
       <circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="7.5" r="2.5"/><path d="M5 15h6v4H5zM13 15h6v4h-6z"/>
     </svg>`
   },
