@@ -96,13 +96,13 @@ const items = ref([
   {
     label: 'Category',
     to: '/category',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor ">
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="7.5" r="2.5"/><path d="M5 15h6v4H5zM13 15h6v4h-6z"/>
     </svg>`
   },
   {
     label: 'History',
-    to: '/history',
+    to: '/deleted',
     icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 8v5l3 2M12 3a9 9 0 1 1-9 9H1l3.5-3.5L8 12H6a6 6 0 1 0 6-6Z"/>
     </svg>`
