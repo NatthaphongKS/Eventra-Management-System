@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="min-h-screen bg-rose-50">
     <div class="grid min-h-screen grid-cols-[220px,1fr]">
       <!-- Sidebar -->
       <aside class="sticky top-0 z-30 flex h-[100dvh] flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5">
@@ -51,9 +51,9 @@
       <!-- Main -->
       <main class="p-6">
         <header class="mb-4">
-          <h1 class="text-xl font-semibold text-slate-800">{{ pageTitle }}</h1>
+          <h1 class="text-4xl text-red-700 font-semibold">{{ pageTitle }}</h1>
         </header>
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section class="rounded-2xl bg-white p-5 shadow-lg">
           <slot />
         </section>
       </main>
