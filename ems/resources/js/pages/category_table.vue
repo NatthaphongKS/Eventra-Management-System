@@ -69,6 +69,15 @@
   <!-- Table -->
   <div class="mt-4 overflow-hidden rounded-2xl ring-1 ring-gray-100">
     <table class="min-w-full divide-y divide-gray-100">
+
+         <colgroup>
+      <col class="w-14" />       <!-- # -->
+      <col class="w-[48%]" />    <!-- Category (กว้างสุด) -->
+      <col class="w-[22%]" />    <!-- Created by -->
+      <col class="w-[22%]" />    <!-- Created date -->
+      <col class="w-16" />       <!-- action (ถังขยะ) -->
+          </colgroup>
+
       <thead class="bg-gray-50 text-gray-600">
         <tr class="text-left text-sm">
           <th class="w-14 px-6 py-3 font-semibold">#</th>
@@ -86,7 +95,11 @@
           class="text-sm text-gray-700 hover:bg-gray-50"
         >
           <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
-          <td class="px-6 py-3">{{ row.name }}</td>
+          <td class="px-6 py-3 max-w-xs relative">
+            <div class="truncate-text" :title="row.name">
+                {{ row.name }}
+            </div>
+            </td>
           <td class="px-6 py-3">{{ row.createdBy }}</td>
           <td class="px-6 py-3">{{ formatDate(row.createdAt) }}</td>
           <td class="px-6 py-3">
@@ -167,7 +180,7 @@
       <div class="mt-6 flex justify-between">
         <button
           @click="closeAdd"
-          class="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-5 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+            class="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700"
         >
           ✕ Cancel
         </button>
@@ -187,112 +200,156 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 type Row = {
   id: number;
   name: string;
   createdBy: string;
-  createdAt: string; // ISO string
+  createdAt: string | null; // อาจไม่มีจาก backend
 };
 
-/* ข้อมูลเริ่มต้นว่าง (ต้องเพิ่มเอง) */
-const rows = ref<Row[]>([]);
-
-/* ผู้ใช้ปัจจุบัน (ดึงจากระบบจริงได้) */
-const userName = ref("สมใจ");
+/* --- config --- */
+const API = axios.create({
+  baseURL: "http://127.0.0.1:8000/api", // ปรับให้ตรงโปรเจกต์คุณ
+  headers: { "Content-Type": "application/json" },
+});
 
 /* state */
+const rows = ref<Row[]>([]);
+const loading = ref(false);
+const userName = ref("สมใจ");
 const query = ref("");
 const page = ref(1);
 const pageSize = ref(10);
-
-/* sort: 'desc' = วันที่ล่าสุด, 'asc' = วันที่เก่าสุด */
 const sortOpen = ref(false);
-const sortDir = ref<'asc'|'desc'>('desc');
-
-/* modal */
+const sortDir = ref<"asc" | "desc">("desc");
 const addOpen = ref(false);
 const newName = ref("");
 
 function openAdd() { newName.value = ""; addOpen.value = true; }
 function closeAdd() { addOpen.value = false; }
-
 function onSearch() { page.value = 1; }
-function applySort(dir: 'asc'|'desc') { sortDir.value = dir; sortOpen.value = false; page.value = 1; }
+function applySort(dir: "asc" | "desc") { sortDir.value = dir; sortOpen.value = false; page.value = 1; }
 
-/* filter */
+/* -------- API -------- */
+async function fetchCategories() {
+  loading.value = true;
+  try {
+    const { data } = await API.get("/categories");
+    rows.value = (data as any[]).map((it) => ({
+      id: Number(it.id),
+      name: String(it.cat_name ?? ""),
+      createdBy: it.created_by ?? "-",
+      createdAt: it.created_at ?? null,
+    }));
+  } catch (e) {
+    console.error(e);
+    Swal.fire("Error", "โหลดรายการไม่สำเร็จ", "error");
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function createCategory() {
+  const name = newName.value.trim();
+  if (!name) return;
+
+  try {
+    const { data } = await API.post("/categories", { cat_name: name });
+    rows.value.unshift({
+      id: Number(data.id),
+      name: String(data.cat_name ?? name),
+      createdBy: userName.value,
+      createdAt: data.created_at ?? new Date().toISOString(),
+    });
+    closeAdd();
+    Swal.fire({
+      title: "CREATE SUCCESS!",
+      html: `We have created a <strong>"${name}"</strong>.`,
+      icon: "success",
+      draggable: true,
+    });
+  } catch (e: any) {
+    console.error(e);
+    Swal.fire("Error", e?.response?.data?.message ?? "สร้างไม่สำเร็จ", "error");
+  }
+}
+
+async function remove(id: number) {
+  const row = rows.value.find((r) => r.id === id);
+  if (!row) return;
+
+  const confirm = await Swal.fire({
+    title: "ARE YOU SURE TO DELETE?",
+    html: `This will be deleted permanently.<br>Are you sure?<br><strong>"${row.name}"</strong>`,
+    icon: "question",
+    showCancelButton: true,
+    cancelButtonColor: "#d33",
+    confirmButtonColor: "#28a745",
+    cancelButtonText: "Cancel",
+    confirmButtonText: "OK",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    reverseButtons: true,
+  });
+
+  if (!confirm.isConfirmed) {
+    await Swal.fire({
+      title: "Cancelled",
+      html: `<strong>"${row.name}"</strong> is safe :)`,
+      icon: "error",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#28a745",
+    });
+    return;
+  }
+
+  try {
+    await API.delete(`/categories/${id}`);
+    rows.value = rows.value.filter((r) => r.id !== id);
+    Swal.fire({
+      title: "DELETE SUCCESS!",
+      html: `We have deleted a <strong>"${row.name}"</strong>.`,
+      icon: "success",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#28a745",
+    });
+  } catch (e: any) {
+    console.error(e);
+    Swal.fire("Error", e?.response?.data?.message ?? "ลบไม่สำเร็จ", "error");
+  }
+}
+
+/* -------- filters / sort / paginate -------- */
 const filtered = computed(() => {
   const q = query.value.trim().toLowerCase();
   if (!q) return rows.value.slice();
-  return rows.value.filter(r =>
-    r.name.toLowerCase().includes(q) || r.createdBy.toLowerCase().includes(q)
+  return rows.value.filter(
+    (r) => r.name.toLowerCase().includes(q) || r.createdBy.toLowerCase().includes(q)
   );
 });
 
-/* sort by createdAt (จริง/ISO) */
 const sorted = computed(() => {
   const copy = filtered.value.slice();
-  const dir = sortDir.value === 'asc' ? 1 : -1;
-  copy.sort((a, b) => {
-    const ta = new Date(a.createdAt).getTime();
-    const tb = new Date(b.createdAt).getTime();
-    return (ta - tb) * dir;
-  });
+  const dir = sortDir.value === "asc" ? 1 : -1;
+  const norm = (v: string | null, id: number) => (v ? new Date(v).getTime() : id);
+  copy.sort((a, b) => (norm(a.createdAt, a.id) - norm(b.createdAt, b.id)) * dir);
   return copy;
 });
 
-/* pagination */
 const total = computed(() => sorted.value.length);
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
 const startIndex = computed(() => (page.value - 1) * pageSize.value);
 const endIndex = computed(() => Math.min(startIndex.value + pageSize.value, total.value));
 const pagedRows = computed(() => sorted.value.slice(startIndex.value, endIndex.value));
-const visibleCountText = computed(() => total.value === 0 ? "0 จาก 0 รายการ" : `${endIndex.value} จาก ${total.value} รายการ`);
+const visibleCountText = computed(() =>
+  total.value === 0 ? "0 จาก 0 รายการ" : `${endIndex.value} จาก ${total.value} รายการ`
+);
 
-/* actions */
-function createCategory() {
-  const name = newName.value.trim();
-  if (!name) return;
-  const nextId = Math.max(0, ...rows.value.map(r => r.id)) + 1;
-  rows.value.push({
-    id: nextId,
-    name,
-    createdBy: userName.value,
-    createdAt: new Date().toISOString(), // วัน-เวลาแบบเรียลไทม์
-  });
-  closeAdd();
-
-   // แจ้งเตือนหลังเพิ่มสำเร็จ
-  Swal.fire({
-    title: "เพิ่มหมวดหมู่สำเร็จ!",
-    text: `คุณได้เพิ่ม "${name}" แล้ว`,
-    icon: "success",
-    draggable: true
-  });
-
-}
-function remove(id: number) { rows.value = rows.value.filter(r => r.id !== id);
-Swal.fire({
-  title: "Are you sure?",
-  text: "You won't be able to revert this!",
-  icon: "warning",
-  showCancelButton: true,
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Yes, delete it!"
-}).then((result) => {
-  if (result.isConfirmed) {
-    Swal.fire({
-      title: "Deleted!",
-      text: "Your file has been deleted.",
-      icon: "success"
-    });
-  }
-});
-}
-
-/* display date D/M/Y */
-function formatDate(iso: string) {
+/* utils */
+function formatDate(iso: string | null) {
+  if (!iso) return "-";
   const d = new Date(iso);
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -300,11 +357,41 @@ function formatDate(iso: string) {
   return `${dd}/${mm}/${yyyy}`;
 }
 
-/* ปิด dropdown เมื่อคลิกนอก */
+/* init */
 onMounted(() => {
   document.addEventListener("click", (e) => {
     const el = e.target as HTMLElement;
     if (!el.closest(".relative")) sortOpen.value = false;
   });
+  fetchCategories();
 });
 </script>
+
+<style scoped>
+.truncate-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 600px;
+  cursor: pointer;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: normal;
+  z-index: 20;
+  min-width: 200px;
+  max-width: 400px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.group:hover .tooltip {
+  display: block;
+}
+</style>
