@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 
-
 // หน้า login ของ Vue (ไม่ครอบ auth)
 Route::get('/login', fn() => view('spa'))->name('login');
 
