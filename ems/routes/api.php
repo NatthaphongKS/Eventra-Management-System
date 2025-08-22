@@ -20,9 +20,8 @@ Route::middleware(['web','auth'])->group(function () {
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
     Route::post('/event-save', [EventController::class, 'store']);
-    
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::post('/categories', [CategoryController::class, 'store']);
-    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
-    
+
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::post('categories', [CategoryController::class, 'store']);
+    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
 });
