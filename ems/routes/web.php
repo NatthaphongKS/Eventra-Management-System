@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 
-
 // หน้า login ของ Vue (ไม่ครอบ auth)
 Route::get('/login', fn() => view('spa'))->name('login');
 
@@ -45,3 +44,8 @@ END:VCALENDAR";
 Route::middleware('auth')->group(function () {
     Route::get('/{any}', fn() => view('spa'))->where('any', '.*');
 });
+
+//my
+use App\Http\Controllers\ReplyController;
+
+Route::post('/replies', [ReplyController::class, 'store']);
