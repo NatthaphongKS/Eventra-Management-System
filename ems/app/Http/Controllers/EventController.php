@@ -18,6 +18,28 @@ use App\Mail\EventInvitation;
 class EventController extends Controller
 {
     // ดึงข้อมูลทั้งหมดสำหรับแบบฟอร์มเดียว
+    public function edit($id) // GET /api/edit_event/{id}
+    {
+        $event = Event::findOrFail($id);
+        return response()->json(['event' => $event]);
+    }
+
+    public function Edit_event(Request $request) // POST /api/edit-event
+    {
+        $data = $request->validate([
+            'id' => 'required|integer|exists:ems_event,id', // ปรับชื่อโต๊ะ/PK ให้ตรงจริง
+            'evn_title' => 'required|string|max:255',
+        ]);
+
+        $event = Event::findOrFail($data['id']);
+        $event->evn_title = $data['evn_title'];
+        $event->save();
+
+        return response()->json([
+            'message' => 'อัปเดตชื่ออีเวนต์สำเร็จ',
+            'event' => $event
+        ]);
+    }
     public function eventInfo()
     {
         $employees = Employee::join('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
@@ -32,32 +54,32 @@ class EventController extends Controller
             ->where('ems_employees.emp_delete_status', 'active')
             ->get();
 
-        $categories  = Category::select('id','cat_name')->where('cat_delete_status','active')->orderBy('cat_name')->get();
-        $positions   = Position::select('id','pst_name')->where('pst_delete_status','active')->orderBy('pst_name')->get();
-        $departments = Department::select('id','dpm_name')->where('dpm_delete_status','active')->orderBy('dpm_name')->get();
-        $teams       = Team::select('id','tm_name')->where('tm_delete_status','active')->orderBy('tm_name')->get();
+        $categories = Category::select('id', 'cat_name')->where('cat_delete_status', 'active')->orderBy('cat_name')->get();
+        $positions = Position::select('id', 'pst_name')->where('pst_delete_status', 'active')->orderBy('pst_name')->get();
+        $departments = Department::select('id', 'dpm_name')->where('dpm_delete_status', 'active')->orderBy('dpm_name')->get();
+        $teams = Team::select('id', 'tm_name')->where('tm_delete_status', 'active')->orderBy('tm_name')->get();
 
-        return response()->json(compact('categories','employees','positions','departments','teams'));
+        return response()->json(compact('categories', 'employees', 'positions', 'departments', 'teams'));
     }
 
     // สร้างกิจกรรม + อัปโหลดไฟล์ + แนบพนักงาน + ส่งอีเมล (แนบไฟล์)
     public function store(Request $request)
     {
         $data = $request->validate([
-            'event_title'        => 'required|string|max:255',
-            'event_category_id'  => 'required|exists:ems_categories,id',
-            'event_description'  => 'nullable|string',
-            'event_date'         => 'required|date',
-            'event_timestart'    => 'required|date_format:H:i',
-            'event_timeend'      => 'required|date_format:H:i',
-            'event_duration'     => 'required|integer|min:0',   // นาทีจากฟอร์ม
-            'event_location'     => 'required|string|max:255',
+            'event_title' => 'required|string|max:255',
+            'event_category_id' => 'required|exists:ems_categories,id',
+            'event_description' => 'nullable|string',
+            'event_date' => 'required|date',
+            'event_timestart' => 'required|date_format:H:i',
+            'event_timeend' => 'required|date_format:H:i',
+            'event_duration' => 'required|integer|min:0',   // นาทีจากฟอร์ม
+            'event_location' => 'required|string|max:255',
 
-            'attachments'        => 'array',
-            'attachments.*'      => 'file|max:51200|mimes:pdf,txt,doc,docx,jpg,jpeg,png,xlsx,xls',
+            'attachments' => 'array',
+            'attachments.*' => 'file|max:51200|mimes:pdf,txt,doc,docx,jpg,jpeg,png,xlsx,xls',
 
-            'employee_ids'       => 'required|array|min:1',
-            'employee_ids.*'     => 'integer|exists:ems_employees,id',
+            'employee_ids' => 'required|array|min:1',
+            'employee_ids.*' => 'integer|exists:ems_employees,id',
         ]);
 
         // DB คุณเก็บ evn_duration เป็น "ชั่วโมง"
@@ -67,17 +89,17 @@ class EventController extends Controller
 
             // 1) สร้างกิจกรรม
             $event = Event::create([
-                'evn_title'        => $data['event_title'],
-                'evn_category_id'  => $data['event_category_id'],
-                'evn_description'  => $data['event_description'] ?? null,
-                'evn_date'         => $data['event_date'],
-                'evn_timestart'    => $data['event_timestart'],
-                'evn_timeend'      => $data['event_timeend'],
-                'evn_duration'     => $hours,
-                'evn_location'     => $data['event_location'],
-                'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
-                'evn_create_by'    => Auth::id(),
-                'evn_status'       => 'scheduled',
+                'evn_title' => $data['event_title'],
+                'evn_category_id' => $data['event_category_id'],
+                'evn_description' => $data['event_description'] ?? null,
+                'evn_date' => $data['event_date'],
+                'evn_timestart' => $data['event_timestart'],
+                'evn_timeend' => $data['event_timeend'],
+                'evn_duration' => $hours,
+                'evn_location' => $data['event_location'],
+                'evn_file' => $request->hasFile('attachments') ? 'have' : 'not_have',
+                'evn_create_by' => Auth::id(),
+                'evn_status' => 'scheduled',
             ]);
 
             // 2) อัปโหลดไฟล์ + บันทึก ems_event_files + เก็บรายการไว้สำหรับแนบในอีเมล
@@ -88,11 +110,11 @@ class EventController extends Controller
 
                     DB::table('ems_event_files')->insert([
                         'file_event_id' => $event->id,
-                        'file_name'     => $file->getClientOriginalName(),
-                        'file_path'     => $path,
-                        'file_type'     => $file->getClientMimeType(),
-                        'file_size'     => $file->getSize(),
-                        'uploaded_at'   => now(),
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'uploaded_at' => now(),
                     ]);
 
                     // เก็บข้อมูลไฟล์ไว้ใช้แนบใน Mailable
@@ -107,10 +129,10 @@ class EventController extends Controller
 
             // 3) แนบพนักงานเข้ากิจกรรม (ems_connect)
             $rows = collect($data['employee_ids'])->unique()->map(fn($eid) => [
-                'con_event_id'      => $event->id,
-                'con_employee_id'   => $eid,
-                'con_answer'        => 'invalid',
-                'con_reason'        => null,
+                'con_event_id' => $event->id,
+                'con_employee_id' => $eid,
+                'con_answer' => 'invalid',
+                'con_reason' => null,
                 'con_delete_status' => 'active',
             ])->values()->all();
 
@@ -118,17 +140,19 @@ class EventController extends Controller
 
             // 4) ส่งอีเมลเชิญ (แนบไฟล์)
             $employees = Employee::whereIn('id', $data['employee_ids'])
-                ->get(['id','emp_email','emp_firstname','emp_lastname']);
+                ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
             foreach ($employees as $emp) {
-                if (!$emp->emp_email) { continue; }
+                if (!$emp->emp_email) {
+                    continue;
+                }
                 // ถ้าใช้คิว: ->queue(new EventInvitation($emp, $event, $savedFiles));
                 Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles));
             }
 
             return response()->json([
                 'message' => 'สร้างกิจกรรมและส่งอีเมลเชิญแล้ว',
-                'event'   => $event,
+                'event' => $event,
                 'redirect' => '/event', // path ใน Vue
             ], 201);
         });

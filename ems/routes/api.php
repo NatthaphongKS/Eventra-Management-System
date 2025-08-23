@@ -13,11 +13,13 @@ Route::middleware(['web','auth'])->group(function () {
     Route::get('/event-info', [EventController::class, 'eventInfo']);
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
-
+    Route::get('/edit_event/{id}', [EventController::class, 'edit']);
+    
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']);
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
     Route::post('/event-save', [EventController::class, 'store']);
-    
+    Route::post('/edit-event', [EventController::class, 'Edit_event']);
+
 });
