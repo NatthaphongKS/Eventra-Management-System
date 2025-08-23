@@ -1,8 +1,11 @@
+<!-- pages/event_page.vue -->
 <template>
-    <div>
-        <h2>Event Page</h2>
-        <p>This is the event page content.</p>
-    </div>
+  <h1>Event List</h1>
+  <Button>
+    <router-link :to="{ path: '/edit-event/1' }"> Edit event</router-link>
+  </Button>
 </template>
-<script>
+
+<script setup>
+import Button from '../components/ButtonSuccess.vue'
 </script>
