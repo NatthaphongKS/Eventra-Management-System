@@ -2,13 +2,13 @@ services:
   app:
     image: php:8.2-apache
     container_name: ems_app
-    ports: ["7080:70"]
+    ports: ["7080:80"]
     working_dir: /var/www/html
     volumes:
-      - /var/www/ems/ems:/var/www/html        
+      - ./ems/ems:/var/www/html        
     environment:
       APACHE_DOCUMENT_ROOT: /var/www/html/public
-    depends_on: [db]
+    depends_on: [db,node]
     networks: [appnet]
 
   
@@ -21,7 +21,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
     volumes:
-      - /var/www/ems/ems:/app                  
+      - ./ems/ems:/app                  
     networks: [appnet]
 
   db:

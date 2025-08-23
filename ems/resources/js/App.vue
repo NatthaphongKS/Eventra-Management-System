@@ -8,6 +8,6 @@
   </template>
 
   <script>
-  import Layout from './components/Layout.vue'
+  import Layout from './componentslayout.vue'
   export default { components: { Layout } }
   </script>
