@@ -9,6 +9,7 @@ import History from '../pages/delete_page.vue'
 import create_event from '../pages/create_event.vue'
 import Category from '../pages/category_page.vue'
 import reply_form from '../pages/Reply_form.vue'
+import History_Employee from '../pages/history_employee.vue'
 
 
 const routes = [
@@ -24,6 +25,7 @@ const routes = [
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
   { path: '/reply-form', component: reply_form, meta: { title: 'Reply Form'}},
+  { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
 
 
 ]
