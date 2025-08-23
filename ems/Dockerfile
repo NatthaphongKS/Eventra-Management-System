@@ -17,5 +17,5 @@ RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
-EXPOSE 80
+EXPOSE 70
 CMD ["apache2-foreground"]
