@@ -1,12 +1,11 @@
 <template>
-    <!-- การ์ดหลัก -->
     <section class="p-0">
         <div
             class="w-full max-w-screen-2xl mx-auto bg-white rounded-2xl shadow border border-gray-200 p-5 md:p-6"
         >
             <!-- =================== Toolbar =================== -->
             <div class="flex items-center gap-3 mb-4 overflow-visible">
-                <!-- Search (ต้องกดแว่น หรือกด Enter เพื่อ Apply) -->
+                <!-- Search -->
                 <input
                     v-model.trim="searchInput"
                     placeholder="Search..."
@@ -22,7 +21,7 @@
                     <MagnifyingGlassIcon class="w-5 h-5" />
                 </button>
 
-                <!-- Filter (เป็นการ์ดแบบเลือกค่าอย่างเดียว ไม่มีช่องค้นหาภายใน) -->
+                <!-- Filter -->
                 <div class="relative z-50">
                     <button
                         type="button"
@@ -71,218 +70,31 @@
                                 </button>
                             </div>
 
-                            <!-- ID -->
-                            <div class="space-y-1">
-                                <label
-                                    class="block text-sm font-medium text-gray-700"
-                                    >ID</label
-                                >
-                                <div class="relative">
-                                    <button
-                                        type="button"
-                                        class="w-full h-9 px-3 rounded-md border border-rose-300 bg-white text-left flex items-center justify-between"
-                                        @click="toggleSelect('id')"
-                                    >
-                                        <span class="truncate">{{
-                                            filtersStage.id
-                                        }}</span>
-                                        <span class="ml-2 text-gray-400"
-                                            >▾</span
-                                        >
-                                    </button>
-                                    <div
-                                        v-if="openSelect === 'id'"
-                                        class="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg"
-                                    >
-                                        <ul class="max-h-56 overflow-auto py-1">
-                                            <li
-                                                v-for="opt in filteredIdOptions"
-                                                :key="'id-' + opt"
-                                                @click="chooseStage('id', opt)"
-                                                class="px-3 py-2 cursor-pointer hover:bg-rose-50"
-                                            >
-                                                {{ opt }}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Department -->
-                            <div class="space-y-1">
-                                <label
-                                    class="block text-sm font-medium text-gray-700"
-                                    >Department</label
-                                >
-                                <div class="relative">
-                                    <button
-                                        type="button"
-                                        class="w-full h-9 px-3 rounded-md border border-rose-300 bg-white text-left flex items-center justify-between"
-                                        @click="toggleSelect('department')"
-                                    >
-                                        <span class="truncate">{{
-                                            filtersStage.department
-                                        }}</span>
-                                        <span class="ml-2 text-gray-400"
-                                            >▾</span
-                                        >
-                                    </button>
-                                    <div
-                                        v-if="openSelect === 'department'"
-                                        class="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg"
-                                    >
-                                        <ul class="max-h-56 overflow-auto py-1">
-                                            <li
-                                                v-for="opt in filteredDeptOptions"
-                                                :key="'dept-' + opt"
-                                                @click="
-                                                    chooseStage(
-                                                        'department',
-                                                        opt
-                                                    )
-                                                "
-                                                class="px-3 py-2 cursor-pointer hover:bg-rose-50"
-                                            >
-                                                {{ opt }}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Team -->
-                            <div class="space-y-1">
-                                <label
-                                    class="block text-sm font-medium text-gray-700"
-                                    >Team</label
-                                >
-                                <div class="relative">
-                                    <button
-                                        type="button"
-                                        class="w-full h-9 px-3 rounded-md border border-rose-300 bg-white text-left flex items-center justify-between"
-                                        @click="toggleSelect('team')"
-                                    >
-                                        <span class="truncate">{{
-                                            filtersStage.team
-                                        }}</span>
-                                        <span class="ml-2 text-gray-400"
-                                            >▾</span
-                                        >
-                                    </button>
-                                    <div
-                                        v-if="openSelect === 'team'"
-                                        class="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg"
-                                    >
-                                        <ul class="max-h-56 overflow-auto py-1">
-                                            <li
-                                                v-for="opt in filteredTeamOptions"
-                                                :key="'team-' + opt"
-                                                @click="
-                                                    chooseStage('team', opt)
-                                                "
-                                                class="px-3 py-2 cursor-pointer hover:bg-rose-50"
-                                            >
-                                                {{ opt }}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Position -->
-                            <div class="space-y-1">
-                                <label
-                                    class="block text-sm font-medium text-gray-700"
-                                    >Position</label
-                                >
-                                <div class="relative">
-                                    <button
-                                        type="button"
-                                        class="w-full h-9 px-3 rounded-md border border-rose-300 bg-white text-left flex items-center justify-between"
-                                        @click="toggleSelect('position')"
-                                    >
-                                        <span class="truncate">{{
-                                            filtersStage.position
-                                        }}</span>
-                                        <span class="ml-2 text-gray-400"
-                                            >▾</span
-                                        >
-                                    </button>
-                                    <div
-                                        v-if="openSelect === 'position'"
-                                        class="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg"
-                                    >
-                                        <ul class="max-h-56 overflow-auto py-1">
-                                            <li
-                                                v-for="opt in filteredPositionOptions"
-                                                :key="'pos-' + opt"
-                                                @click="
-                                                    chooseStage('position', opt)
-                                                "
-                                                class="px-3 py-2 cursor-pointer hover:bg-rose-50"
-                                            >
-                                                {{ opt }}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ปุ่ม Apply ฟิลเตอร์ (เลือกใช้ปุ่มแว่น/Enter แทน) -->
+                            <!-- เรนเดอร์ SelectField แบบ loop -->
+                            <SelectField
+                                v-for="def in filterDefs"
+                                :key="def.field"
+                                :label="def.label"
+                                :field="def.field"
+                                :modelValue="def.modelValue"
+                                :options="def.options"
+                                :isOpen="openSelect === def.field"
+                                @toggle="toggleSelect"
+                                @choose="chooseStage"
+                            />
                         </div>
                     </div>
                 </div>
 
-                <!-- Sort (อัตโนมัติ + กดซ้ำเพื่อยกเลิก) -->
-                <div class="relative z-50">
-                    <button
-                        type="button"
-                        @click="toggleSort"
-                        aria-label="Sort"
-                        :aria-expanded="showSort"
-                        class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
-                        :class="{ 'bg-gray-100': showSort }"
-                    >
-                        <ArrowsUpDownIcon class="w-5 h-5" />
-                        <span class="hidden sm:inline">Sort</span>
-                    </button>
-
-                    <div
-                        v-if="showSort"
-                        class="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
-                        @click.stop
-                    >
-                        <div class="p-2">
-                            <div
-                                class="mb-2 px-2 text-sm font-semibold text-gray-700"
-                            >
-                                Sort
-                            </div>
-
-                            <!-- ตัวเลือกเรียง -->
-                            <button
-                                v-for="option in sortOptions"
-                                :key="option.key + '-' + option.order"
-                                @click="toggleSortOption(option)"
-                                class="w-full flex items-center gap-3 px-2 py-2 text-sm text-left hover:bg-gray-50 rounded"
-                                :class="{
-                                    'bg-rose-50 text-rose-700':
-                                        isActiveSort(option),
-                                }"
-                            >
-                                <span
-                                    class="w-4 h-4 flex items-center justify-center"
-                                >
-                                    <span
-                                        v-if="isActiveSort(option)"
-                                        class="text-rose-600"
-                                    ></span>
-                                </span>
-                                <span>{{ option.label }}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <!-- Sort -->
+                <SortMenu
+                    :isOpen="showSort"
+                    :options="sortOptions"
+                    :sortBy="sortBy"
+                    :sortOrder="sortOrder"
+                    @toggle="toggleSort"
+                    @choose="toggleSortOption"
+                />
 
                 <!-- Add New -->
                 <router-link
@@ -293,53 +105,17 @@
                 </router-link>
             </div>
 
-            <!-- =================== Chips ฟิลเตอร์ที่ถูก Apply แล้ว =================== -->
+            <!-- =================== Chips =================== -->
             <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 mb-4">
                 <div
-                    v-if="filters.id !== 'all'"
-                    class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+                    v-for="k in filterFields"
+                    :key="k"
+                    v-show="filters[k] !== 'all'"
+                    class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full"
+                    :class="chipClass(k)"
                 >
-                    ID: {{ filters.id }}
-                    <button
-                        @click="removeFilter('id')"
-                        class="text-rose-600 hover:text-rose-800"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div
-                    v-if="filters.department !== 'all'"
-                    class="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 text-rose-800 text-xs rounded-full"
-                >
-                    {{ filters.department }}
-                    <button
-                        @click="removeFilter('department')"
-                        class="text-rose-600 hover:text-rose-800"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div
-                    v-if="filters.team !== 'all'"
-                    class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                >
-                    {{ filters.team }}
-                    <button
-                        @click="removeFilter('team')"
-                        class="text-blue-600 hover:text-blue-800"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div
-                    v-if="filters.position !== 'all'"
-                    class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
-                >
-                    {{ filters.position }}
-                    <button
-                        @click="removeFilter('position')"
-                        class="text-green-600 hover:text-green-800"
-                    >
+                    {{ chipText(k) }}
+                    <button @click="removeFilter(k)" class="hover:opacity-80">
                         ✕
                     </button>
                 </div>
@@ -359,7 +135,6 @@
                         <col class="w-32" />
                         <col class="w-36" />
                     </colgroup>
-
                     <thead class="bg-gray-50">
                         <tr class="text-left">
                             <th
@@ -393,8 +168,6 @@
                             </th>
                         </tr>
                     </thead>
-
-                    <!-- เนื้อหา 15px -->
                     <tbody class="text-[15px]">
                         <tr
                             v-for="(emp, i) in paged"
@@ -470,7 +243,6 @@
                                 </div>
                             </td>
                         </tr>
-
                         <tr v-if="paged.length === 0">
                             <td
                                 :colspan="10"
@@ -487,11 +259,10 @@
                 </table>
             </div>
 
-            <!-- =================== Pagination (custom dropdown เล็ก) =================== -->
+            <!-- =================== Pagination =================== -->
             <div class="flex flex-wrap items-center gap-3 pt-3">
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-slate-700">แสดง</span>
-
                     <div ref="pageSizeWrap" class="relative inline-block">
                         <button
                             type="button"
@@ -511,7 +282,6 @@
                                 />
                             </svg>
                         </button>
-
                         <div
                             v-if="openPageSize"
                             class="absolute z-50 mt-1.5 w-full rounded-2xl border-2 border-[#D40E11] bg-white shadow-lg overflow-hidden"
@@ -537,14 +307,12 @@
                             </ul>
                         </div>
                     </div>
-
-                    <span class="ml-2 text-[11px] text-gray-500">
-                        {{ page }}-{{ totalPages }} จาก
-                        {{ sorted.length }} รายการ
-                    </span>
+                    <span class="ml-2 text-[11px] text-gray-500"
+                        >{{ page }}-{{ totalPages }} จาก
+                        {{ sorted.length }} รายการ</span
+                    >
                 </div>
 
-                <!-- ปุ่มเปลี่ยนหน้า -->
                 <div class="flex-1 flex justify-center">
                     <div class="flex items-center gap-2">
                         <button
@@ -555,7 +323,6 @@
                         >
                             ◄
                         </button>
-
                         <button
                             v-for="(p, idx) in pagesToShow"
                             :key="idx"
@@ -575,7 +342,6 @@
                         >
                             {{ p }}
                         </button>
-
                         <button
                             class="w-10 h-10 flex items-center justify-center rounded-full text-2xl leading-none text-rose-800 hover:text-rose-900 disabled:opacity-45 disabled:hover:text-rose-800"
                             @click="nextPage"
@@ -600,88 +366,13 @@
             class="fixed inset-0 z-40"
         ></div>
 
-        <!-- Confirm Delete Modal -->
-        <teleport to="body">
-            <div
-                v-if="confirmOpen"
-                class="fixed inset-0 z-[70] flex items-center justify-center"
-            >
-                <div
-                    class="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
-                    @click="cancelDelete"
-                ></div>
-                <div
-                    class="relative w-[360px] max-w-[90vw] bg-white rounded-2xl shadow-xl p-6 text-center"
-                >
-                    <div
-                        class="mx-auto w-14 h-14 rounded-full bg-yellow-400 grid place-items-center shadow-inner"
-                    >
-                        <QuestionMarkCircleIcon class="w-10 h-10 text-white" />
-                    </div>
-                    <h3 class="mt-4 font-semibold">ARE YOU SURE TO DELETE?</h3>
-                    <p class="mt-2 text-xs leading-5 text-gray-500">
-                        This will be deleted permanently.<br />Are you sure?
-                    </p>
-                    <div class="mt-5 flex items-center justify-center gap-3">
-                        <button
-                            type="button"
-                            @click="cancelDelete"
-                            class="w-28 h-10 rounded-lg bg-rose-600 text-white hover:bg-rose-700"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            @click="confirmDelete"
-                            class="w-28 h-10 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
-                            autofocus
-                        >
-                            OK
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </teleport>
-
-        <!-- Success Modal -->
-        <teleport to="body">
-            <div
-                v-if="successOpen"
-                class="fixed inset-0 z-[70] flex items-center justify-center"
-            >
-                <div
-                    class="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
-                    @click="closeSuccess"
-                ></div>
-                <div
-                    class="relative w-[440px] max-w-[92vw] bg-white rounded-2xl shadow-xl p-8 text-center"
-                >
-                    <div
-                        class="mx-auto w-16 h-16 rounded-full bg-emerald-500 grid place-items-center shadow-inner"
-                    >
-                        <CheckCircleIcon class="w-10 h-10 text-white" />
-                    </div>
-                    <h3
-                        class="mt-5 text-xl font-extrabold tracking-wide text-gray-800"
-                    >
-                        DELETE SUCCESS!
-                    </h3>
-                    <p class="mt-2 text-sm text-gray-500">
-                        We have deleted a new employee.
-                    </p>
-                    <div class="mt-6">
-                        <button
-                            type="button"
-                            @click="closeSuccess"
-                            class="px-6 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
-                            autofocus
-                        >
-                            OK
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </teleport>
+        <!-- Modals -->
+        <ConfirmDelete
+            :open="confirmOpen"
+            @cancel="cancelDelete"
+            @confirm="confirmDelete"
+        />
+        <DeleteSuccess :open="successOpen" @close="closeSuccess" />
     </section>
 </template>
 
@@ -690,37 +381,43 @@ import axios from "axios";
 import { inject } from "vue";
 import {
     MagnifyingGlassIcon,
-    ArrowsUpDownIcon,
     PencilSquareIcon,
     TrashIcon,
 } from "@heroicons/vue/24/outline";
-import {
-    QuestionMarkCircleIcon,
-    CheckCircleIcon,
-} from "@heroicons/vue/24/solid";
+import SelectField from "@/components/SelectField.vue";
+import SortMenu from "@/components/SortMenu.vue";
+import ConfirmDelete from "@/components/ConfirmDelete.vue";
+import DeleteSuccess from "@/components/DeleteSuccess.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
+
+const FILTER_LABELS = {
+    id: "ID",
+    department: "Department",
+    team: "Team",
+    position: "Position",
+};
 
 export default {
     name: "EmployeesPage",
     components: {
         MagnifyingGlassIcon,
-        ArrowsUpDownIcon,
         PencilSquareIcon,
         TrashIcon,
-        QuestionMarkCircleIcon,
-        CheckCircleIcon,
+        SelectField,
+        SortMenu,
+        ConfirmDelete,
+        DeleteSuccess,
     },
 
     data() {
         return {
             employees: [],
-            // ค้นหาแบบ Stage (searchInput) กับค่าที่ถูก Apply แล้ว (search)
+            // Search / Filters
             searchInput: "",
             search: "",
-
-            // ฟิลเตอร์แบบ Stage กับค่าที่ถูก Apply แล้ว
+            filterFields: ["id", "department", "team", "position"],
             filtersStage: {
                 id: "all",
                 department: "all",
@@ -734,16 +431,16 @@ export default {
                 position: "all",
             },
 
-            // Sort (อัตโนมัติ)
+            // Sort
             sortBy: null,
             sortOrder: null,
 
-            // UI state
+            // UI
             showFilter: false,
             showSort: false,
-            openSelect: null, // 'id' | 'department' | 'team' | 'position' | null
+            openSelect: null,
 
-            // Modal
+            // Modals
             confirmOpen: false,
             successOpen: false,
             deleting: null,
@@ -756,7 +453,7 @@ export default {
     },
 
     async created() {
-        await this.fetchEmployees(); // เปิดหน้ามาแสดง "ทั้งหมด" ก่อน
+        await this.fetchEmployees();
     },
 
     setup() {
@@ -772,7 +469,6 @@ export default {
     },
 
     computed: {
-        // ทำข้อมูลให้ปลอดภัย
         normalized() {
             return this.employees.map((e) => ({
                 ...e,
@@ -782,7 +478,6 @@ export default {
                 emp_lastname: e.emp_lastname ?? "",
                 emp_nickname: e.emp_nickname ?? "",
                 position_name: e.position_name ?? "",
-                // แก้ให้ดึงจาก emp_email/emp_phone
                 email: e.emp_email ?? "",
                 phone: e.emp_phone ?? "",
                 department_name: e.department_name ?? "",
@@ -791,47 +486,62 @@ export default {
             }));
         },
 
-        // Unique options (ไม่รวม 'all' ในลิสต์ให้เลือก)
+        // unique options
         uniqueIds() {
-            const ids = this.normalized.map((e) => e.emp_id).filter(Boolean);
-            return [...new Set(ids)].sort((a, b) =>
+            return [
+                ...new Set(
+                    this.normalized.map((e) => e.emp_id).filter(Boolean)
+                ),
+            ].sort((a, b) =>
                 String(a).localeCompare(String(b), "en", { numeric: true })
             );
         },
         uniqueDepartments() {
-            const arr = this.normalized
-                .map((e) => e.department_name)
-                .filter((v) => v && v !== "N/A");
-            return [...new Set(arr)].sort((a, b) => a.localeCompare(b, "th"));
+            return [
+                ...new Set(
+                    this.normalized
+                        .map((e) => e.department_name)
+                        .filter((v) => v && v !== "N/A")
+                ),
+            ].sort((a, b) => a.localeCompare(b, "th"));
         },
         uniqueTeams() {
-            const arr = this.normalized
-                .map((e) => e.team_name)
-                .filter((v) => v && v !== "N/A");
-            return [...new Set(arr)].sort((a, b) => a.localeCompare(b, "th"));
+            return [
+                ...new Set(
+                    this.normalized
+                        .map((e) => e.team_name)
+                        .filter((v) => v && v !== "N/A")
+                ),
+            ].sort((a, b) => a.localeCompare(b, "th"));
         },
         uniquePositions() {
-            const arr = this.normalized
-                .map((e) => e.position_name)
-                .filter((v) => v && v !== "N/A");
-            return [...new Set(arr)].sort((a, b) => a.localeCompare(b, "th"));
+            return [
+                ...new Set(
+                    this.normalized
+                        .map((e) => e.position_name)
+                        .filter((v) => v && v !== "N/A")
+                ),
+            ].sort((a, b) => a.localeCompare(b, "th"));
         },
 
-        // ใช้เป็นแหล่งข้อมูลในเมนู (ตั้งชื่อเดิม filtered* เพื่อไม่ต้องแก้ template อื่น)
-        filteredIdOptions() {
-            return this.uniqueIds;
-        },
-        filteredDeptOptions() {
-            return this.uniqueDepartments;
-        },
-        filteredTeamOptions() {
-            return this.uniqueTeams;
-        },
-        filteredPositionOptions() {
-            return this.uniquePositions;
+        optionsMap() {
+            return {
+                id: this.uniqueIds,
+                department: this.uniqueDepartments,
+                team: this.uniqueTeams,
+                position: this.uniquePositions,
+            };
         },
 
-        // ตัวเลือก sort
+        filterDefs() {
+            return this.filterFields.map((f) => ({
+                field: f,
+                label: FILTER_LABELS[f],
+                modelValue: this.filtersStage[f],
+                options: this.optionsMap[f] || [],
+            }));
+        },
+
         sortOptions() {
             return [
                 { key: "name", order: "asc", label: "ชื่อพนักงาน A–Z" },
@@ -847,21 +557,12 @@ export default {
             ];
         },
 
-        // มีฟิลเตอร์ถูก Apply อยู่ไหม (ใช้ค่าที่ apply แล้ว)
         hasActiveFilters() {
-            const f = this.filters;
-            return (
-                f.id !== "all" ||
-                f.department !== "all" ||
-                f.team !== "all" ||
-                f.position !== "all"
-            );
+            return this.filterFields.some((k) => this.filters[k] !== "all");
         },
 
-        // ค้นหา + ฟิลเตอร์ (ใช้ค่า apply แล้ว: search, filters)
         filtered() {
             let result = this.normalized;
-
             if (this.search) {
                 const q = this.search.toLowerCase();
                 result = result.filter((e) =>
@@ -870,7 +571,6 @@ export default {
                         .includes(q)
                 );
             }
-
             if (this.filters.id !== "all")
                 result = result.filter((e) => e.emp_id === this.filters.id);
             if (this.filters.department !== "all")
@@ -885,118 +585,73 @@ export default {
                 result = result.filter(
                     (e) => e.position_name === this.filters.position
                 );
-
             return result;
         },
 
-        // เรียงลำดับ (อัตโนมัติ)
         sorted() {
-            const result = [...this.filtered];
-            if (!this.sortBy || !this.sortOrder) return result;
+            const out = [...this.filtered];
+            if (!this.sortBy || !this.sortOrder) return out;
 
-            if (this.sortBy === "name") {
-                result.sort((a, b) => {
-                    const A = `${a.emp_firstname} ${a.emp_lastname}`.trim();
-                    const B = `${b.emp_firstname} ${b.emp_lastname}`.trim();
-                    return this.sortOrder === "asc"
-                        ? A.localeCompare(B, "th")
-                        : B.localeCompare(A, "th");
-                });
-            } else if (this.sortBy === "id") {
-                const cmp = (x, y) =>
-                    String(x ?? "").localeCompare(String(y ?? ""), "en", {
-                        numeric: true,
-                    });
-                result.sort((a, b) =>
-                    this.sortOrder === "asc"
-                        ? cmp(a.emp_id, b.emp_id)
-                        : -cmp(a.emp_id, b.emp_id)
-                );
-            } else if (this.sortBy === "department") {
-                result.sort((a, b) =>
-                    this.sortOrder === "asc"
-                        ? (a.department_name ?? "").localeCompare(
-                              b.department_name ?? "",
-                              "th"
-                          )
-                        : (b.department_name ?? "").localeCompare(
-                              a.department_name ?? "",
-                              "th"
-                          )
-                );
-            } else if (this.sortBy === "position") {
-                result.sort((a, b) =>
-                    this.sortOrder === "asc"
-                        ? (a.position_name ?? "").localeCompare(
-                              b.position_name ?? "",
-                              "th"
-                          )
-                        : (b.position_name ?? "").localeCompare(
-                              a.position_name ?? "",
-                              "th"
-                          )
-                );
-            } else if (this.sortBy === "team") {
-                result.sort((a, b) =>
-                    this.sortOrder === "asc"
-                        ? (a.team_name ?? "").localeCompare(
-                              b.team_name ?? "",
-                              "th"
-                          )
-                        : (b.team_name ?? "").localeCompare(
-                              a.team_name ?? "",
-                              "th"
-                          )
-                );
-            }
+            const getters = {
+                name: (e) => `${e.emp_firstname} ${e.emp_lastname}`.trim(),
+                id: (e) => e.emp_id ?? "",
+                department: (e) => e.department_name ?? "",
+                position: (e) => e.position_name ?? "",
+                team: (e) => e.team_name ?? "",
+            };
+            const get = getters[this.sortBy] || (() => "");
 
-            return result;
+            const cmp = (a, b) => {
+                const A = get(a),
+                    B = get(b);
+                return this.sortBy === "id"
+                    ? String(A).localeCompare(String(B), "en", {
+                          numeric: true,
+                      })
+                    : String(A).localeCompare(String(B), "th");
+            };
+            out.sort((a, b) =>
+                this.sortOrder === "asc" ? cmp(a, b) : -cmp(a, b)
+            );
+            return out;
         },
 
-        // ตัดหน้า
         totalPages() {
             return Math.ceil(this.sorted.length / this.pageSize);
         },
         paged() {
-            const start = (this.page - 1) * this.pageSize;
-            return this.sorted.slice(start, start + this.pageSize);
+            const s = (this.page - 1) * this.pageSize;
+            return this.sorted.slice(s, s + this.pageSize);
         },
 
-        // เลขหน้าแบบมี …
         pagesToShow() {
-            const total = this.totalPages;
-            const cur = this.page;
+            const total = this.totalPages,
+                cur = this.page;
             if (total <= 7)
                 return Array.from({ length: total }, (_, i) => i + 1);
-
-            const pages = [];
-            const left = Math.max(3, cur - 1);
-            const right = Math.min(total - 2, cur + 1);
-
-            pages.push(1, 2);
+            const pages = [1, 2],
+                left = Math.max(3, cur - 1),
+                right = Math.min(total - 2, cur + 1);
             if (left > 3) pages.push("…");
             for (let p = left; p <= right; p++) pages.push(p);
             if (right < total - 2) pages.push("…");
             pages.push(total - 1, total);
-
             return pages.filter((v, i) => pages.indexOf(v) === i);
         },
     },
 
     methods: {
-        /* ---------- Data ---------- */
         async fetchEmployees() {
             try {
                 const res = await axios.get("/get-employees");
                 this.employees = Array.isArray(res.data)
                     ? res.data
                     : res.data?.data || [];
-            } catch (err) {
-                console.error("Error fetching employees", err);
+            } catch (e) {
+                console.error("Error fetching employees", e);
             }
         },
 
-        /* ---------- Apply (ค้นหา + ฟิลเตอร์) เฉพาะเมื่อกดแว่น/Enter ---------- */
         applySearchAndFilters() {
             this.search = this.searchInput;
             this.filters = { ...this.filtersStage };
@@ -1005,7 +660,6 @@ export default {
             this.openSelect = null;
         },
 
-        /* ---------- Filter UI ---------- */
         toggleFilter() {
             this.showFilter = !this.showFilter;
             if (this.showFilter) {
@@ -1018,8 +672,7 @@ export default {
         },
         chooseStage(field, value) {
             this.filtersStage[field] = value;
-            this.openSelect = null; // ไม่มีช่องค้นหาในการ์ดแล้ว
-            // ยังไม่ apply จนกว่าจะกดแว่น/Enter
+            this.openSelect = null;
         },
         clearStageFilters() {
             this.filtersStage = {
@@ -1030,16 +683,26 @@ export default {
             };
             this.openSelect = null;
         },
-        // ลบ filter ที่ถูก apply (ทำงานทันที)
-        removeFilter(type) {
-            if (["id", "department", "team", "position"].includes(type)) {
-                this.filters[type] = "all";
-                this.filtersStage[type] = "all"; // sync ให้ UI ตรงกัน
-                this.page = 1;
-            }
+        removeFilter(k) {
+            this.filters[k] = "all";
+            this.filtersStage[k] = "all";
+            this.page = 1;
         },
 
-        /* ---------- Sort (อัตโนมัติ + กดซ้ำเพื่อยกเลิก) ---------- */
+        chipClass(k) {
+            return k === "id"
+                ? "bg-gray-100 text-gray-800"
+                : k === "department"
+                ? "bg-rose-100 text-rose-800"
+                : k === "team"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-green-100 text-green-800";
+        },
+        chipText(k) {
+            return k === "id" ? `ID: ${this.filters.id}` : this.filters[k];
+        },
+
+        // Sort
         toggleSort() {
             this.showSort = !this.showSort;
             if (this.showSort) {
@@ -1047,30 +710,19 @@ export default {
                 this.openSelect = null;
             }
         },
-        isActiveSort(option) {
-            return (
-                this.sortBy === option.key && this.sortOrder === option.order
-            );
-        },
-        toggleSortOption(option) {
-            if (this.isActiveSort(option)) {
+        toggleSortOption(opt) {
+            if (this.sortBy === opt.key && this.sortOrder === opt.order) {
                 this.sortBy = null;
                 this.sortOrder = null;
             } else {
-                this.sortBy = option.key;
-                this.sortOrder = option.order;
+                this.sortBy = opt.key;
+                this.sortOrder = opt.order;
             }
             this.showSort = false;
             this.page = 1;
         },
-        clearSort() {
-            this.sortBy = null;
-            this.sortOrder = null;
-            this.showSort = false;
-            this.page = 1;
-        },
 
-        /* ---------- Paging ---------- */
+        // Pagination
         prevPage() {
             if (this.page > 1) this.page--;
         },
@@ -1082,7 +734,7 @@ export default {
                 this.page = n;
         },
 
-        /* ---------- Page size dropdown ---------- */
+        // Page size dropdown
         togglePageSize() {
             this.openPageSize = !this.openPageSize;
         },
@@ -1097,7 +749,7 @@ export default {
                 this.openPageSize = false;
         },
 
-        /* ---------- Actions ---------- */
+        // Actions
         editEmployee(id) {
             if (!id) return;
             this.$router.push(`/edit-employee/${id}`);
@@ -1120,8 +772,8 @@ export default {
                 this.confirmOpen = false;
                 this.successOpen = true;
                 this.setLayoutBlur(true);
-            } catch (err) {
-                console.error("Error deleting employee", err);
+            } catch (e) {
+                console.error("Error deleting employee", e);
                 this.cancelDelete();
             } finally {
                 this.deleting = null;
