@@ -4,9 +4,34 @@ namespace App\Http\Controllers;
 
 
 use Illuminate\Http\Request;
+use App\Models\Employee;
+use App\Models\Event;
 
 class ReplyController extends Controller
 {
+    public function show(Request $req)
+    {
+        $employee = Employee::find($req->emp_id)
+        ->Select(
+            'emp_firstname',
+            'emp_lastname',
+            'emp_email',
+            'emp_phone'
+        );
+        
+
+        $event = Event::find($req->evn_id)
+        ->Select(
+
+        );
+
+        return respone()->json([
+            'employee' => $employee,
+            'event' => $event,
+        ]);
+    }
+
+
     public function store(Request $req)
     {
         $data = $req->validate([

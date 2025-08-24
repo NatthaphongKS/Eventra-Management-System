@@ -9,9 +9,9 @@ export default defineConfig({
     vue(),
   ],
   server: {
-    host: 'localhost',         // ใช้เครื่องตัวเอง (XAMPP) ไม่ต้อง 0.0.0.0
+    host: '0.0.0.0',          // ให้ container เปิดพอร์ตออกมาได้
     port: 5173,
     strictPort: true,
-    hmr: { host: 'localhost', port: 5173 }, // HMR ยิงกลับ localhost
+    hmr: { host: 'localhost', port: 5173 }, // ให้เบราว์เซอร์ยิงกลับ localhost
   },
 })
