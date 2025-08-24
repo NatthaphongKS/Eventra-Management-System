@@ -43,10 +43,10 @@ END:VCALENDAR";
 
 // ทุก path อื่น ๆ ต้อง login ก่อน
 Route::middleware('auth')->group(function () {
-   
+   Route::get('/{any}', fn() => view('spa'))->where('any', '.*');
 });
 
-Route::get('/{any}', fn() => view('spa'))->where('any', '.*');
+
 
 //my
 use App\Http\Controllers\ReplyController;

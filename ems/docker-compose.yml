@@ -1,54 +1,29 @@
 services:
   app:
     image: php:8.2-apache
-    container_name: ems_app
-    ports: ["7080:80"]
-    working_dir: /var/www/html
+    container_name: laravel_app
+    ports: ["8080:80"]            
     volumes:
-      - ./ems/ems:/var/www/html        
+      - ./:/var/www/html
     environment:
       APACHE_DOCUMENT_ROOT: /var/www/html/public
-    depends_on: [db,node]
+    depends_on: [node]
     networks: [appnet]
 
-  
   node:
     image: node:20
-    container_name: ems_vite_dev
+    container_name: vite_dev
     working_dir: /app
-    command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 7173"
-    ports: ["7173:7173"]
+    command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports: ["5173:5173"]          
     environment:
-      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_USEPOLLING: "true" 
     volumes:
-      - ./ems/ems:/app                  
+      - ./:/app
     networks: [appnet]
-
-  db:
-    image: mariadb:10.11
-    container_name: ems_db
-    environment:
-      MARIADB_DATABASE: Byteforge
-      MARIADB_USER: laravel
-      MARIADB_PASSWORD: secret
-      MARIADB_ROOT_PASSWORD: root
-    ports: ["7306:3306"]                   
-    volumes:
-      - dbdata:/var/lib/mysql
-    networks: [appnet]
-
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: ems_pma
-    ports: ["7081:80"]
-    environment:
-      PMA_HOST: db
-    depends_on: [db]
-    networks: [appnet]
-
-networks:
-  appnet:
 
 volumes:
   dbdata:
 
+networks:
+  appnet:
