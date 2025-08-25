@@ -117,132 +117,126 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted, watch } from "vue";
+import axios from "axios";
 
-/** ยิง ALL ก่อน */
-const ENDPOINTS = [
-    '/get-employees'                    
-]
+axios.defaults.baseURL = "/api";
+axios.defaults.headers.common["Accept"] = "application/json";
 
 /* ---------- state ---------- */
-const rows = ref([])
-const loading = ref(false)
-const query = ref('')
-const sortDir = ref('desc')
-const sortOpen = ref(false)
-const page = ref(1)
-const pageSize = ref(10)
+const rows = ref([]);
+const loading = ref(false);
+
+const query = ref("");
+const sortDir = ref("desc");      // 'asc' | 'desc'  (ใช้กับเมนู Sort)
+const sortOpen = ref(false);
+
+const page = ref(1);
+const pageSize = ref(10);
 
 /* ---------- utils ---------- */
-const startIndex = computed(() => (page.value - 1) * pageSize.value)
+const startIndex = computed(() => (page.value - 1) * pageSize.value);
 
 function formatDate(iso) {
-    if (!iso) return '-'
-    const d = new Date(iso)
-    if (Number.isNaN(d.getTime())) return '-'
-    const dd = String(d.getDate()).padStart(2, '0')
-    const mm = String(d.getMonth() + 1).padStart(2, '0')
-    const yy = d.getFullYear()
-    return `${dd}/${mm}/${yy}`
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "-";
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yy = d.getFullYear();
+    return `${dd}/${mm}/${yy}`;
 }
 
-const normalizeString = (s) => String(s ?? '').toLowerCase()
-const prefixLabel = (v) => ({ 1: 'นาย', 2: 'นาง', 3: 'นางสาว', 4: 'Dr.' }[v] || '')
+const normalize = (s) => String(s ?? "").toLowerCase();
+const prefixLabel = (v) => ({ 1: "นาย", 2: "นาง", 3: "นางสาว", 4: "Dr." }[v] || "");
 
-/** map payload -> แถวในตาราง */
+/** map payload -> แถวที่ตารางต้องใช้ (ชื่อคอลัมน์ให้ตรง template) */
 function mapRow(e) {
-    const name = `${prefixLabel(e.emp_prefix)} ${e.emp_firstname ?? ''} ${e.emp_lastname ?? ''}`
-        .replace(/\s+/g, ' ')
-        .trim()
+    const name =
+        `${prefixLabel(e.emp_prefix)} ${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""}`
+            .replace(/\s+/g, " ")
+            .trim();
 
     return {
         id: e.id,
         emp_id: e.emp_id,
         name,
-        nickname: e.emp_nickname ?? '',
-        department: e.department_name ?? '',
-        team: e.team_name ?? '',
-        position: e.position_name ?? '',
-        deleted_by_name: e.deleted_by_name ?? '',
-        deleted_by: e.emp_delete_by ?? e.deleted_by ?? '',
+        nickname: e.emp_nickname ?? "",
+        department: e.department_name ?? "",
+        team: e.team_name ?? "",
+        position: e.position_name ?? "",
+        deleted_by_name: e.deleted_by_name ?? "",
+        deleted_by: e.emp_delete_by ?? e.deleted_by ?? "",
         deleted_at: e.emp_deleted_at ?? e.deleted_at ?? null,
-        emp_delete_status: e.emp_delete_status ?? null, // เก็บไว้ให้ค้นหาได้
-    }
+        emp_delete_status: e.emp_delete_status ?? null,
+    };
 }
 
 /** ค้นหา */
 const filteredRows = computed(() => {
-    const q = normalizeString(query.value)
-    if (!q) return rows.value
-    return rows.value.filter(r =>
+    const q = normalize(query.value);
+    if (!q) return rows.value;
+    return rows.value.filter((r) =>
         [
-            r.emp_id, r.name, r.nickname, r.department, r.team, r.position,
-            r.deleted_by_name, r.deleted_by, r.deleted_at, r.emp_delete_status
-        ].some(v => normalizeString(v).includes(q))
-    )
-})
+            r.emp_id, r.name, r.nickname,
+            r.department, r.team, r.position,
+            r.deleted_by_name, r.deleted_by, r.deleted_at
+        ].some((v) => normalize(v).includes(q))
+    );
+});
 
-/** เรียงตาม Deleted Date (active จะลงท้ายเพราะ null) */
+/** เรียงตาม Deleted Date (desc=ล่าสุดก่อน, asc=เก่าสุดก่อน) */
 const sortedRows = computed(() => {
-    const arr = [...filteredRows.value]
-    arr.sort((a, b) => {
-        // เรียงตาม emp_id เป็นค่าเริ่มต้น
-        const A = String(a.emp_id || '')
-        const B = String(b.emp_id || '')
-        return sortDir.value === 'asc' ? A.localeCompare(B) : B.localeCompare(A)
-    })
-    return arr
-})
-
+    const arr = [...filteredRows.value];
+    const ts = (v) => {
+        const t = new Date(v || 0).getTime();
+        return Number.isFinite(t) ? t : 0;
+    };
+    arr.sort((a, b) =>
+        sortDir.value === "asc" ? ts(a.deleted_at) - ts(b.deleted_at) : ts(b.deleted_at) - ts(a.deleted_at)
+    );
+    return arr;
+});
 
 /** เพจ */
-const totalPages = computed(() => Math.max(1, Math.ceil(sortedRows.value.length / pageSize.value)))
-const pagedRows = computed(() => sortedRows.value.slice(startIndex.value, startIndex.value + pageSize.value))
+const totalPages = computed(() =>
+    Math.max(1, Math.ceil(sortedRows.value.length / pageSize.value))
+);
+const pagedRows = computed(() =>
+    sortedRows.value.slice(startIndex.value, startIndex.value + pageSize.value)
+);
 
 /** footer summary */
 const visibleCountText = computed(() => {
-    const total = sortedRows.value.length
-    const from = total ? startIndex.value + 1 : 0
-    const to = Math.min(startIndex.value + pageSize.value, total)
-    return `${from}-${to} จาก ${total} รายการ`
-})
+    const total = sortedRows.value.length;
+    const from = total ? startIndex.value + 1 : 0;
+    const to = Math.min(startIndex.value + pageSize.value, total);
+    return `${from}-${to} จาก ${total} รายการ`;
+});
 
 /* ---------- actions ---------- */
-function onSearch() { page.value = 1 }
-function applySort(dir) { sortDir.value = dir; sortOpen.value = false }
+function onSearch() { page.value = 1; }
+function applySort(dir) { sortDir.value = dir; sortOpen.value = false; }
 
-/** ยิงทีละ endpoint */
-async function fetchWithFallback() {
-    let lastErr = null
-    for (const url of ENDPOINTS) {
-        try {
-            const res = await axios.get(url, { withCredentials: true })
-            const list = Array.isArray(res.data) ? res.data : (res.data?.data ?? res.data)
-            if (!Array.isArray(list)) throw new Error('Unexpected payload format')
-            return list.map(mapRow)
-        } catch (e) {
-            lastErr = e
-            continue
-        }
-    }
-    throw lastErr ?? new Error('Cannot fetch employees')
-}
-
-async function load() {
-    loading.value = true
+/* ---------- data loading ---------- */
+async function fetchEmployees() {
+    loading.value = true;
     try {
-        const data = await fetchWithFallback()
-        rows.value = data // ✅ เอาทุกคนตาม API
-    } catch (e) {
-        console.error('Fetch error:', e)
-        rows.value = []
+        // ✅ เปลี่ยน URL นี้เป็น /history/employees?status=inactive หากต้องการเฉพาะ inactive
+        const res = await axios.get("/history/employees");
+        const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        rows.value = list.map(mapRow);
+    } catch (err) {
+        console.error("Error fetching employees", err);
+        rows.value = [];
     } finally {
-        loading.value = false
+        loading.value = false;
     }
 }
 
-onMounted(load)
-watch(pageSize, () => (page.value = 1))
-watch(query, () => (page.value = 1))
+onMounted(fetchEmployees);
+
+/* ---------- watchers ---------- */
+watch(pageSize, () => (page.value = 1));
+watch(query, () => (page.value = 1));
 </script>
