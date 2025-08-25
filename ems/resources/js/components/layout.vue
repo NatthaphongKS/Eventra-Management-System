@@ -20,13 +20,13 @@
             :to="item.to"
             class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium transition"
             :class="isActive(item.to)
-              ? 'bg-rose-100 text-rose-600'
+              ? 'bg-rose-100 text-red-600'
               : 'text-slate-700 hover:bg-slate-50'"
           >
             <!-- icon -->
             <span
               class="grid h-[30px] w-[30px] place-items-center rounded-lg"
-              :class="isActive(item.to) ? 'text-rose-600' : 'text-slate-700'"
+              :class="isActive(item.to) ? 'text-red-600' : 'text-slate-700'"
               v-html="item.icon"
             />
             <span class="leading-none">{{ item.label }}</span>
