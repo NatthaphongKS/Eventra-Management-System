@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-rose-50">
     <div class="grid min-h-screen grid-cols-[220px,1fr]">
       <!-- Sidebar -->
-      <aside class="sticky top-0 z-30 flex h-[100dvh] flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5">
+      <aside class="sticky top-0 z-30 flex h-[100dvh] flex-col overflow-y-auto rounded-2xl bg-white px-4 pt-5 shadow-lg">
         <!-- Brand -->
         <div class="mb-6 flex items-center gap-3 px-1">
           <div class="grid h-9 w-9 place-items-center rounded-2xl bg-rose-100 text-rose-600">
@@ -36,7 +36,7 @@
         <!-- Logout -->
         <div class="mt-6 pb-5">
           <button
-            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-rose-800"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-red-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-rose-800"
             @click="logout"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">

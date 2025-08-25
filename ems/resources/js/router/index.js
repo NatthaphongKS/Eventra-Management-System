@@ -9,7 +9,7 @@ import History from '../pages/delete_page.vue'
 import create_event from '../pages/create_event.vue'
 import Category from '../pages/category_page.vue'
 import reply_form from '../pages/Reply_form.vue'
-import History_Employee from '../pages/history_employee.vue'
+import History_Employee from '../pages/History_Employees_page.vue'
 
 
 const routes = [
