@@ -157,4 +157,54 @@ class EventController extends Controller
             ], 201);
         });
     }
+    public function Eventtable(Request $request){
+    $t = (new Event)->getTable(); // 'ems_event'
+
+    // allow-list สำหรับ sort จากฝั่ง server
+    $allowSort = [
+        'evn_title'      => 'e.evn_title',
+        'cat_name'       => 'c.cat_name',
+        'evn_date'       => 'e.evn_date',
+        'evn_duration'   => 'e.evn_duration',
+        'evn_num_guest'  => DB::raw('(SELECT COUNT(*) FROM ems_connect ci WHERE ci.con_event_id = e.id AND ci.con_delete_status="active")'),
+        'evn_sum_accept' => DB::raw('(SELECT COUNT(*) FROM ems_connect ca WHERE ca.con_event_id = e.id AND ca.con_delete_status="active" AND ca.con_answer = "accept")'),
+        'evn_status'     => 'e.evn_status',
+    ];
+
+    $sortBy  = $request->query('sortBy', 'evn_date');
+    $sortDir = strtolower($request->query('sortDir', 'desc')) === 'asc' ? 'asc' : 'desc';
+    $sortCol = $allowSort[$sortBy] ?? 'e.evn_date';
+
+    $q = trim((string) $request->query('q', ''));
+
+    $rows = DB::table("$t as e")
+        ->leftJoin('ems_categories as c', 'c.id', '=', 'e.evn_category_id')
+        ->select([
+            'e.id',
+            'e.evn_title',
+            DB::raw('e.evn_category_id as evn_cat_id'), // <-- alias ให้ Vue ใช้ catMap ได้
+            DB::raw('COALESCE(c.cat_name, "") as cat_name'),
+            'e.evn_description',
+            'e.evn_date',
+            'e.evn_timestart',
+            'e.evn_timeend',
+            'e.evn_duration',
+            // นับจำนวนจริงจาก ems_connect
+            DB::raw('(SELECT COUNT(*) FROM ems_connect ci WHERE ci.con_event_id = e.id AND ci.con_delete_status = "active") as evn_num_guest'),
+            DB::raw('(SELECT COUNT(*) FROM ems_connect ca WHERE ca.con_event_id = e.id AND ca.con_delete_status = "active" AND ca.con_answer = "accept") as evn_sum_accept'),
+            DB::raw('COALESCE(e.evn_status, "") as evn_status'),
+        ])
+        ->when($q !== '', function($b) use ($q) {
+            $like = '%'.$q.'%';
+            $b->where(function($w) use ($like) {
+                $w->where('e.evn_title', 'like', $like)
+                  ->orWhere('e.evn_description', 'like', $like)
+                  ->orWhere('e.evn_status', 'like', $like)
+                  ->orWhere('c.cat_name', 'like', $like);
+            });
+        })
+        ->orderBy($sortCol, $sortDir)
+        ->get();
+    return response()->json($rows);
+    }
 }
