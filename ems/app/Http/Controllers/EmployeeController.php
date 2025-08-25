@@ -9,6 +9,7 @@ use App\Models\Position;
 use App\Models\Department;
 use App\Models\Team;
 use App\Models\Employee; // Assuming you have an Employee model
+
 class EmployeeController extends Controller
 {
     public function index()
@@ -76,39 +77,43 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'emp_id' => 'required',
-            'emp_prefix' => 'required',
+            'emp_id' => 'required|unique:ems_employees,emp_id',
+            'emp_prefix' => 'required|integer|in:1,2,3,4',
             'emp_firstname' => 'required',
             'emp_lastname' => 'required',
             'emp_email' => 'required|email|unique:ems_employees,emp_email',
-            'emp_phone' => [
-                'required',
-                'unique:ems_employees,emp_phone',
-                'regex:/^[0-9]+$/', // รับเฉพาะตัวเลข
-                'min:10',
-                'max:10'
-            ],
+            'emp_phone' => ['required', 'unique:ems_employees,emp_phone', 'regex:/^[0-9]+$/', 'min:10', 'max:10'],
             'emp_position_id' => 'required|exists:ems_position,id',
             'emp_department_id' => 'required|exists:ems_department,id',
             'emp_team_id' => 'required|exists:ems_team,id',
             'emp_password' => 'required|min:6',
-            'emp_status' => 'required',
+            'emp_status' => 'required|integer|in:1,2,3,4',
         ]);
 
-        $employee = Employee::create([
-            'emp_id' => $request->emp_id,
-            'emp_prefix' => $request->emp_prefix,
-            'emp_firstname' => $request->emp_firstname,
-            'emp_lastname' => $request->emp_lastname,
-            'emp_email' => $request->emp_email,
-            'emp_phone' => $request->emp_phone,
-            'emp_position_id' => $request->emp_position_id,
-            'emp_department_id' => $request->emp_department_id,
-            'emp_team_id' => $request->emp_team_id,
-            'emp_password' => Hash::make($request->emp_password),
-            'emp_permission' => $request->emp_status,
-        ]);
+        try {
+            $employee = Employee::create([
+                'emp_id' => $request->emp_id,
+                'emp_prefix' => $request->emp_prefix,
+                'emp_firstname' => $request->emp_firstname,
+                'emp_lastname' => $request->emp_lastname,
+                'emp_nickname' => $request->emp_nickname,
+                'emp_email' => $request->emp_email,
+                'emp_phone' => $request->emp_phone,
+                'emp_position_id' => $request->emp_position_id,
+                'emp_department_id' => $request->emp_department_id,
+                'emp_team_id' => $request->emp_team_id,
+                'emp_password' => Hash::make($request->emp_password),
+                'emp_permission' => $request->emp_status,
+                'emp_delete_status' => 'active', // <= สำคัญ
+            ]);
 
-        return response()->json(['message' => 'Employee created', 'data' => $employee]);
+            return response()->json(['message' => 'Employee created', 'data' => $employee], 201);
+        } catch (\Throwable $e) {
+            \Log::error($e);
+            return response()->json([
+                'message' => 'Server error',
+                'error' => app()->hasDebugModeEnabled() ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }
