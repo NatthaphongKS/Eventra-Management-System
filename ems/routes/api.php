@@ -19,5 +19,5 @@ Route::middleware(['web','auth'])->group(function () {
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
     Route::post('/event-save', [EventController::class, 'store']);
-    
+
 });
