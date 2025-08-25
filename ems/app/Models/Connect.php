@@ -18,6 +18,8 @@ class Connect extends Model
         'ecn_delete_status',
     ];
 
+    protected $casts = [ 'ecn_answer' => 'boolean' ];
+
     public function event()
     {
         return $this->belongsTo(Event::class, 'ecn_event_id');
