@@ -86,7 +86,7 @@
     <tbody class="divide-y divide-gray-100">
         <tr v-for="(row, idx) in pagedRows" :key="row.id" class="text-sm text-gray-700 hover:bg-gray-50">
           <td class="px-4 py-3">{{ startIndex + idx + 1 }}</td>
-          <td class="px-4 py-3">{{ row.code || row.employee_code || row.id }}</td>
+          <td class="px-4 py-3">{{ row.emp_id || 'n/A' }}</td>
           <td class="px-4 py-3">{{ row.name }}</td>
           <td class="px-4 py-3">{{ row.nickname }}</td>
           <td class="px-4 py-3">{{ row.department }}</td>
@@ -96,17 +96,17 @@
           <td class="px-4 py-3">{{ formatDate(row.deleted_at) }}</td>
         </tr>
 
-        <tr v-if="!loading && pagedRows.length === 0">
-          <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">
-            ไม่พบข้อมูลที่ค้นหา
-          </td>
-        </tr>
+          <tr v-if="!loading && pagedRows.length === 0">
+        <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">
+          ไม่พบข้อมูลที่ค้นหา
+        </td>
+      </tr>
 
-        <tr v-if="loading">
-          <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">
-            กำลังโหลดข้อมูล...
-          </td>
-        </tr>
+      <tr v-if="loading">
+        <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">
+          กำลังโหลดข้อมูล...
+        </td>
+      </tr>
       </tbody>
   </table>
 </div>
@@ -151,48 +151,96 @@ import axios from 'axios'
 
 /**
  * ปรับให้ตรงกับ api.php ของคุณ:
- * - ถ้ามี route ชื่ออื่น ให้เปลี่ยนใน ENDPOINTS หรือตัดให้เหลือเส้นทางเดียวก็ได้
- * - ปรับ mapRow() ให้ตรงกับชื่อฟิลด์ที่ backend ส่งมา
- */
+ขยาย
+message.txt
+5 KB
+ไอsunnoi
+[JHRD]
+ — 21:36
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from 'axios'
+
 const ENDPOINTS = [
-  '/api/employees/inactive',
-  '/api/employees?status=inactive',
-  '/api/history/employees'
+  '/get-employees?status=inactive',   
+ขยาย
+Script.txt
+5 KB
+﻿
+ซันน้อยไม่คุ้นหูบ้างอ่ออออ
+ไอsunnoi
+lil.sunnoi
+IG : lil.sunnoi
+[JHRD]
+#ซันๆเองจ้า
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from 'axios'
+
+const ENDPOINTS = [
+  '/get-employees?status=inactive',   
+  '/api/employees?status=inactive',   
+  '/api/history/employees'            
 ]
 
-const rows = ref([])          // raw rows
+/* ---------- state ---------- */
+const rows = ref([])          
 const loading = ref(false)
 const query = ref('')
-const sortDir = ref('desc')   // asc | desc (ตาม Deleted Date)
+const sortDir = ref('desc')   
 const sortOpen = ref(false)
 
 const page = ref(1)
 const pageSize = ref(10)
 
+/* ---------- utils ---------- */
 const startIndex = computed(() => (page.value - 1) * pageSize.value)
 
-const formatDate = (iso) => {
+function formatDate(iso) {
   if (!iso) return '-'
   const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  if (Number.isNaN(d.getTime())) return '-'
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yy = d.getFullYear()
+  return `${dd}/${mm}/${yy}`
 }
 
 function normalizeString(s) {
   return String(s ?? '').toLowerCase()
 }
 
+const prefixLabel = (v) => ({ 1: 'นาย', 2: 'นาง', 3: 'นางสาว', 4: 'Dr.' }[v] || '')
+
+function mapRow(e) {
+  const name = `${prefixLabel(e.emp_prefix)} ${e.emp_firstname ?? ''} ${e.emp_lastname ?? ''}`
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return {
+    id: e.id,
+    emp_id: e.emp_id,
+    name,
+    nickname: e.emp_nickname ?? '',
+    department: e.department_name ?? '',
+    team: e.team_name ?? '',
+    position: e.position_name ?? '',
+    deleted_by_name: e.deleted_by_name ?? '',             
+    deleted_by: e.emp_delete_by ?? e.deleted_by ?? '',
+    deleted_at: e.emp_deleted_at ?? e.deleted_at ?? null,  
+  }
+}
+
 const filteredRows = computed(() => {
   const q = normalizeString(query.value)
   if (!q) return rows.value
-  return rows.value.filter((r) => {
-    return [
-      r.code, r.employee_code, r.id,
-      r.name, r.nickname, r.department,
-      r.team, r.position, r.deleted_by_name,
-      r.deleted_by, r.deleted_at
-    ].some((v) => normalizeString(v).includes(q))
-  })
+  return rows.value.filter(r =>
+    [
+      r.emp_id, r.name, r.nickname,
+      r.department, r.team, r.position,
+      r.deleted_by_name, r.deleted_by, r.deleted_at
+    ].some(v => normalizeString(v).includes(q))
+  )
 })
 
 const sortedRows = computed(() => {
@@ -205,13 +253,8 @@ const sortedRows = computed(() => {
   return arr
 })
 
-const totalPages = computed(() =>
-  Math.ceil(sortedRows.value.length / pageSize.value)
-)
-
-const pagedRows = computed(() =>
-  sortedRows.value.slice(startIndex.value, startIndex.value + pageSize.value)
-)
+const totalPages = computed(() => Math.max(1, Math.ceil(sortedRows.value.length / pageSize.value)))
+const pagedRows = computed(() => sortedRows.value.slice(startIndex.value, startIndex.value + pageSize.value))
 
 const visibleCountText = computed(() => {
   const total = sortedRows.value.length
@@ -229,36 +272,16 @@ function applySort(dir) {
   sortOpen.value = false
 }
 
-/** แปลงโครงสร้าง row จาก backend -> โครงสร้างที่ตารางใช้ */
-function mapRow(item) {
-  // ปรับ field name ตรงนี้ให้ตรงกับ Employee.php / HistoryEmployeeController.php ของคุณ
-  return {
-    id: item.id,
-    code: item.code || item.employee_code || item.emp_code,
-    name: item.name || item.full_name || `${item.first_name ?? ''} ${item.last_name ?? ''}`.trim(),
-    nickname: item.nickname || item.nick_name,
-    department: item.department?.name || item.department_name || item.department,
-    team: item.team?.name || item.team_name || item.team,
-    position: item.position?.name || item.position_name || item.position,
-    deleted_by_name: item.deleted_by_name || item.deletedBy || item.deleted_by,
-    deleted_by: item.deleted_by,
-    deleted_at: item.deleted_at || item.deletedDate || item.deleted_date
-  }
-}
-
-/** ลองเรียกหลาย endpoint จนกว่าจะสำเร็จ */
 async function fetchWithFallback() {
   let lastErr = null
   for (const url of ENDPOINTS) {
     try {
       const res = await axios.get(url, { withCredentials: true })
-      // รองรับทั้ง {data: [...]} หรือเป็น array ตรง ๆ
       const list = Array.isArray(res.data) ? res.data : (res.data?.data ?? res.data)
       if (!Array.isArray(list)) throw new Error('Unexpected payload format')
       return list.map(mapRow)
     } catch (e) {
       lastErr = e
-      // ถ้า 404 หรือ Network error ให้ลองตัวต่อไป
       continue
     }
   }
@@ -269,9 +292,10 @@ async function load() {
   loading.value = true
   try {
     const data = await fetchWithFallback()
-    rows.value = data
+    rows.value = data.filter(
+      r => (r.deleted_at && r.deleted_at !== '-') || true // ถ้าต้องใช้ emp_delete_status ให้แก้ตามฟิลด์จริง
+    )
   } catch (e) {
-    // ถ้าต้องการแจ้ง error UI: ใส่ toast/alert เพิ่มได้
     console.error('Fetch error:', e)
     rows.value = []
   } finally {
@@ -280,7 +304,7 @@ async function load() {
 }
 
 onMounted(load)
-
-// รีเซ็ตหน้าเมื่อ pageSize เปลี่ยน
 watch(pageSize, () => (page.value = 1))
+
+defineExpose({ formatDate, pagedRows, page, pageSize, totalPages, startIndex, visibleCountText, query, onSearch, sortDir, applySort, loading })
 </script>
