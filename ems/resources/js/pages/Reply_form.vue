@@ -8,7 +8,9 @@
             <p><strong>สถานที่:</strong> {{ location || '-' }}</p>
         </section>
 
-        <section class="card form">
+
+
+        <section v-if="show" class="card form">
             <form @submit.prevent="onSubmit">
                 <div class="field">
                     <label>ชื่อ–นามสกุล</label>
@@ -30,10 +32,10 @@
                     <label>เข้าร่วมหรือไม่</label>
                     <div class="radio-row">
                         <label class="radio">
-                            <input type="radio" value="yes" v-model="form.attend" /> เข้าร่วม
+                            <input type="radio" value="accept" v-model="form.attend" /> เข้าร่วม
                         </label>
                         <label class="radio">
-                            <input type="radio" value="no" v-model="form.attend" /> ไม่เข้าร่วม
+                            <input type="radio" value="denied" v-model="form.attend" /> ไม่เข้าร่วม
                         </label>
                     </div>
                     <small v-if="errors.attend" class="error">{{ errors.attend }}</small>
@@ -41,7 +43,7 @@
 
                 <div class="field" :class="{ disabled: form.attend !== 'no' }">
                     <label>หมายเหตุ (กรณีไม่เข้าร่วม)</label>
-                    <textarea v-model.trim="form.reason" :disabled="form.attend !== 'no'" rows="3"
+                    <textarea v-model.trim="form.reason" :disabled="form.attend !== 'denied'" rows="3"
                         placeholder="ระบุเหตุผลสั้น ๆ ค่ะ" />
                     <small v-if="errors.reason" class="error">{{ errors.reason }}</small>
                 </div>
@@ -53,6 +55,7 @@
                 </div>
             </form>
         </section>
+        <section v-else class="label card">คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว</section>
     </div>
 </template>
 
@@ -77,6 +80,8 @@ export default {
             emp_email: '',
             emp_phone: '',
 
+            reply_status: '',
+
             // ฟอร์มที่ให้ผู้ใช้กรอกจริง ๆ
             form: {
                 attend: '',   // 'yes' | 'no'
@@ -97,6 +102,10 @@ export default {
     },
 
     computed: {
+        show() {
+            console.log('reply_status:', this.reply_status === 'invalid')
+            return this.reply_status === 'invalid'
+        },
         // แสดง "30 กันยายน 2025 เวลา 13.00 - 14.00 น."
         formattedDateTime() {
             if (!this.date) return ''
@@ -119,7 +128,7 @@ export default {
     watch: {
         // ถ้าเลือก "เข้าร่วม" ให้ล้างเหตุผลทันที
         'form.attend'(val) {
-            if (val === 'yes') this.form.reason = ''
+            if (val === 'accept') this.form.reason = ''
         },
     },
 
@@ -141,6 +150,8 @@ export default {
                 // เก็บ id ไว้ใช้ตอนส่ง
                 this.evn_ID = evn_ID
                 this.emp_ID = emp_ID
+                this.reply_status = data.connect.con_answer
+                console.log('data.connect:', data.connect.con_answer)
 
                 // event
                 this.title = data.event?.evn_title || ''
@@ -153,6 +164,8 @@ export default {
                 this.emp_name = `${data.employee?.emp_firstname || ''} ${data.employee?.emp_lastname || ''}`.trim()
                 this.emp_email = data.employee?.emp_email || ''
                 this.emp_phone = data.employee?.emp_phone || ''
+
+                this.conne
             } catch (e) {
                 this.error = e.response?.data?.message ?? e.message ?? 'โหลดข้อมูลไม่สำเร็จ'
             } finally {
@@ -163,7 +176,7 @@ export default {
         validate() {
             this.errors.attend = this.form.attend ? '' : 'กรุณาเลือกว่าจะเข้าร่วมหรือไม่'
             this.errors.reason =
-                this.form.attend === 'no' && !this.form.reason ? 'กรุณาระบุเหตุผลสั้น ๆ' : ''
+                this.form.attend === 'denied' && !this.form.reason ? 'กรุณาระบุเหตุผลสั้น ๆ' : ''
             return !Object.values(this.errors).some(Boolean)
         },
 
@@ -174,14 +187,16 @@ export default {
                 const payload = {
                     evn_id: this.evn_ID,
                     emp_id: this.emp_ID,
-
                     // คำตอบฟอร์มจริง
-                    attend: this.form.attend === 'yes',
-                    reason: this.form.attend === 'no' ? this.form.reason : null,
+                    attend: this.form.attend,
+                    reason: this.form.reason ,
                 }
-
+                console.log('payload:', payload)
+                console.log('POST /api/store', payload)   // ดูใน Console ให้มีค่าจริง
                 await axios.post('/api/store', payload, { headers: { Accept: 'application/json' } })
-                alert('บันทึกคำตอบเรียบร้อย ขอบคุณค่ะ')
+                //alert('บันทึกคำตอบเรียบร้อย ขอบคุณค่ะ')
+                //รีเฟรชหน้าใหม่
+                window.location.reload()
 
                 // รีเซ็ตเฉพาะส่วนที่ผู้ใช้กรอก
                 this.form = { attend: '', reason: '' }
@@ -205,12 +220,13 @@ export default {
     background: #fdeceb;
     /* ชมพูอ่อน */
     padding: 32px 16px 64px;
-    display: grid;
+    /* display: grid; */
     gap: 24px;
-    place-items: start center;
+    place-items: start center ;
 }
 
 .card {
+    margin-top: 10px;
     width: min(820px, 94vw);
     background: #fff;
     border-radius: 14px;
@@ -248,6 +264,7 @@ label {
     font-weight: 700;
     margin-bottom: 8px;
 }
+
 
 input,
 textarea {
@@ -314,4 +331,6 @@ button.primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+
 </style>

@@ -28,8 +28,7 @@ class ReplyController extends Controller
             )
             ->where('id', $req->emp_id)
             ->first();
-        $event =
-            Event::query()
+        $event = Event::query()
             ->Select(
                 'evn_title',
                 'evn_date',
@@ -39,10 +38,16 @@ class ReplyController extends Controller
             )
             ->where('id', $req->evn_id)
             ->first();
+        $connect = Connect::query()
+            ->where('con_event_id', $req->evn_id)
+            ->where('con_employee_id', $req->emp_id)
+            ->first();
+
         return response()->json(
             [
                 'employee' => $employee,
                 'event' => $event,
+                'connect' => $connect,
             ]
         );
     }
@@ -50,34 +55,26 @@ class ReplyController extends Controller
 
     public function store(Request $req)
     {
-        dd($req->all());
-        // แปลง/ทำความสะอาด
-        $req->merge([
-            'attend' => $req->boolean('attend'),
-            'reason' => is_string($req->reason) ? trim($req->reason) : $req->reason,
-        ]);
-
-        // ถ้าคีย์ของ events/employees เป็น id จริง ใช้แบบนี้ได้เลย
         $data = $req->validate([
-            'evn_id' => 'required|integer|exists:events,id',
-            'emp_id' => 'required|integer|exists:employees,id',
-            'attend' => 'required|boolean',
+            'evn_id' => 'required|integer',
+            'emp_id' => 'required|integer',
+            'attend' => 'required|string',
             'reason' => 'nullable|string|max:500',
         ]);
 
         // เข้าร่วม → ล้างเหตุผล
-        if ($data['attend'] === true) {
+        if ($data['attend'] === 'accept') {
             $data['reason'] = null;
         }
 
-        // อัปเดตถ้ามีคู่นี้อยู่แล้ว ไม่มีก็สร้างใหม่
-        Connect::updateOrCreate(
-            ['ecn_event_id' => $data['evn_id'], 'ecn_employee_id' => $data['emp_id']],
-            [
-                'ecn_answer' => 'accept',
-                'ecn_reason' => null,
-            ]
-        );
+        // // อัปเดตถ้ามีคู่นี้อยู่แล้ว ไม่มีก็สร้างใหม่
+        $updated = Connect::where('con_event_id', $data['evn_id'])
+            ->where('con_employee_id', $data['evn_id'])
+            ->update([
+                'con_answer' => $data['attend'],                   // หรือ $answer
+                'con_reason' => $data['reason'],
+            ]);
+
 
         return response()->json(['ok' => true], 201);
     }
