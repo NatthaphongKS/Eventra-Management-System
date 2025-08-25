@@ -5,10 +5,10 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\HistoryEmployeeController;   
+use App\Http\Controllers\HistoryEmployeeController;
 
 // ตัวอย่าง API ที่ต้อง login (คุณมีอะไรใช้ก็ครอบไว้ได้)
-Route::middleware(['web','auth'])->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::get('/meta', [EmployeeController::class, 'meta']);
     Route::get('/get-employees', [EmployeeController::class, 'index']);
@@ -25,6 +25,5 @@ Route::middleware(['web','auth'])->group(function () {
     Route::get('categories', [CategoryController::class, 'index']);
     Route::post('categories', [CategoryController::class, 'store']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
-    Route::get('history-employees', [HistoryEmployeeController::class, 'getEmployees_History']);
-
+    Route::get('/history/employees', [HistoryEmployeeController::class, 'index']);
 });
