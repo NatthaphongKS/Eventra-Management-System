@@ -62,15 +62,44 @@
         <!-- Upload -->
         <div style="margin: 20px">
             <label>Upload attachments</label>
+            <!-- ไฟล์เดิม -->
+            <div v-if="filesExisting.length" class="file-list" style="margin-bottom:8px">
+                <p style="margin:4px 0 8px; opacity:.8">ไฟล์เดิม</p>
+                <ul style="list-style:none; padding:0; margin:0">
+                    <li v-for="f in filesExisting" :key="f.id"
+                        style="display:flex; gap:10px; align-items:center; padding:6px 0;">
+                        <a :href="f.url" target="_blank" rel="noopener">{{ f.file_name }}</a>
+                        <span style="opacity:.7; font-size:12px">
+                            ({{ (f.file_size / 1024 / 1024).toFixed(2) }} MB)
+                        </span>
+                        <!-- ปุ่มกากบาท -->
+                        <button type="button" @click="removeExisting(f.id)"
+                            style="border:0; background:#eee; border-radius:6px; padding:4px 8px; cursor:pointer">
+                            ✕
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- โซนอัปโหลดไฟล์ใหม่ (เหมือนหน้า create) -->
             <div class="dropzone" @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false"
                 @drop.prevent="onDrop" :class="{ dragging }">
                 <p>Choose a file or drag & drop it here</p>
                 <p class="muted">pdf, txt, docx, jpeg, xlsx – Up to 50MB</p>
                 <button type="button" @click="pickFiles">Browse files</button>
-                <input ref="fileInput" type="file" v-on:change="form.evn_file" multiple class="hidden-file"
+                <input ref="fileInput" type="file" multiple class="hidden-file"
                     accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
             </div>
+
+            <!-- รายการไฟล์ใหม่ที่จะเพิ่ม -->
+            <ul v-if="files.length" class="file-list">
+                <li v-for="(f, i) in files" :key="i">
+                    {{ f.name }} ({{ prettySize(f.size) }})
+                    <button type="button" @click="removeFile(i)">✕</button>
+                </li>
+            </ul>
         </div>
+
 
         <Button id="confirm_edit" @click="confirmEdit" :disabled="loading">
             {{ loading ? 'กำลังบันทึก...' : 'confirm edit' }}
@@ -94,6 +123,10 @@ const router = useRouter()
 const id = Number(route.params.id)
 
 const categories = ref([])
+const filesExisting = ref([])         // ไฟล์เดิมจากเซิร์ฟเวอร์
+const files = ref([])                 // ไฟล์ใหม่ (เหมือนหน้า create)
+const dragging = ref(false)
+
 const form = ref({
     id,
     evn_title: '',
@@ -103,18 +136,22 @@ const form = ref({
     evn_timestart: '',
     evn_timeend: '',
     evn_duration: 0,
-    evn_location: ''  // กำหนดค่าเริ่มต้น
+    evn_location: ''
+    // evn_file:  << ลบทิ้ง ไม่ให้ผูกกับฟอร์ม
 })
+
 const loading = ref(false)
 const message = ref('')
 
 onMounted(async () => {
     try {
+        // หมวดหมู่ (ถ้า /categories ไม่มี endpoint ให้ใช้ /event-info แล้ว map เอาเฉพาะ categories)
         const catRes = await axios.get('/categories')
         categories.value = catRes.data
 
         const { data } = await axios.get(`/edit_event/${id}`)
         const e = data?.event ?? {}
+        filesExisting.value = data?.files ?? []
 
         form.value.evn_title = e.evn_title ?? ''
         form.value.evn_category_id = e.evn_category_id ? Number(e.evn_category_id) : ''
@@ -124,11 +161,61 @@ onMounted(async () => {
         form.value.evn_timeend = e.evn_timeend ?? ''
         form.value.evn_duration = e.evn_duration ?? 0
         form.value.evn_location = e.evn_location ?? ''
-        form.value.evn_file = e.evn_file ?? ''
     } catch {
         message.value = 'โหลดข้อมูลไม่สำเร็จ'
     }
 })
+
+function removeExisting(id) {
+    filesExisting.value = filesExisting.value.filter(f => f.id !== id)
+    // เพิ่ม id ที่ถูกลบใส่ hidden list ส่งกลับไปหลังบ้าน
+    deletedIds.value.push(id)
+}
+
+const deletedIds = ref([]) // เก็บ id ไฟล์ที่ถูกลบจริง
+
+
+const MAX_FILE_MB = 50;
+const ALLOW_TYPES = [
+    "application/pdf",
+    "text/plain",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/jpeg",
+    "image/png",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+];
+
+function pickFiles() {
+    fileInput.value?.click?.()
+}
+function onPick(e) {
+    addFiles([...e.target.files])
+    e.target.value = ""
+}
+function onDrop(e) {
+    dragging.value = false
+    addFiles([...e.dataTransfer.files])
+}
+function addFiles(list) {
+    const errs = []
+    list.forEach(f => {
+        const tooBig = f.size > MAX_FILE_MB * 1024 * 1024
+        const badType = !ALLOW_TYPES.includes(f.type)
+        if (tooBig) errs.push(`${f.name}: ไฟล์เกิน ${MAX_FILE_MB}MB`)
+        else if (badType) errs.push(`${f.name}: ประเภทไฟล์ไม่รองรับ`)
+        else files.value.push(f)
+    })
+    if (errs.length) alert(errs.join('\n'))
+}
+function removeFile(i) { files.value.splice(i, 1) }
+function prettySize(b) {
+    const mb = b / (1024 * 1024)
+    return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(b / 1024).toFixed(0)} KB`
+}
+const fileInput = ref(null)
+
 
 /* ---------- helpers ---------- */
 function toMinutes(hhmm) {
@@ -168,18 +255,24 @@ async function confirmEdit() {
     loading.value = true
     message.value = ''
     try {
-        const { data } = await axios.post('/edit-event', {
-            id: form.value.id,
-            evn_title: form.value.evn_title,
-            evn_category_id: form.value.evn_category_id,
-            evn_description: form.value.evn_description,
-            evn_date: form.value.evn_date,
-            evn_timestart: form.value.evn_timestart,
-            evn_timeend: form.value.evn_timeend,
-            evn_duration: form.value.evn_duration,     // << ส่งนาทีไปด้วย
-            evn_location: form.value.evn_location,   // << ส่ง location ไปด้วย
-            evn_file: form.value.evn_file  
+        const fd = new FormData()
+        fd.append('id', form.value.id)
+        fd.append('evn_title', form.value.evn_title ?? '')
+        fd.append('evn_category_id', form.value.evn_category_id ?? '')
+        fd.append('evn_description', form.value.evn_description ?? '')
+        fd.append('evn_date', form.value.evn_date ?? '')
+        fd.append('evn_timestart', form.value.evn_timestart ?? '')
+        fd.append('evn_timeend', form.value.evn_timeend ?? '')
+        fd.append('evn_location', form.value.evn_location ?? '')
+
+        files.value.forEach(f => fd.append('attachments[]', f, f.name))
+
+        deletedIds.value.forEach(id => fd.append('delete_file_ids[]', id))
+
+        const { data } = await axios.post('/edit-event', fd, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         })
+
         message.value = data?.message ?? 'บันทึกสำเร็จ'
         router.push('/event')
     } catch (e) {
@@ -188,4 +281,5 @@ async function confirmEdit() {
         loading.value = false
     }
 }
+
 </script>

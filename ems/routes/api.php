@@ -27,7 +27,6 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/event-save', [EventController::class, 'store']);
     Route::post('/edit-event', [EventController::class, 'Edit_event']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
-    Route::delete('/events/{id}/attachments/{attId}', [EventController::class, 'deleteAttachment']);
 
     // (ถ้าคุณยังมี index() อยู่และใช้งาน ก็เก็บไว้)
     Route::get('/event', [EventController::class, 'index']);
