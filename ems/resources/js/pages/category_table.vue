@@ -69,6 +69,15 @@
   <!-- Table -->
   <div class="mt-4 overflow-hidden rounded-2xl ring-1 ring-gray-100">
     <table class="min-w-full divide-y divide-gray-100">
+
+         <colgroup>
+      <col class="w-14" />       <!-- # -->
+      <col class="w-[48%]" />    <!-- Category (กว้างสุด) -->
+      <col class="w-[22%]" />    <!-- Created by -->
+      <col class="w-[22%]" />    <!-- Created date -->
+      <col class="w-16" />       <!-- action (ถังขยะ) -->
+          </colgroup>
+
       <thead class="bg-gray-50 text-gray-600">
         <tr class="text-left text-sm">
           <th class="w-14 px-6 py-3 font-semibold">#</th>
@@ -86,7 +95,11 @@
           class="text-sm text-gray-700 hover:bg-gray-50"
         >
           <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
-          <td class="px-6 py-3">{{ row.name }}</td>
+          <td class="px-6 py-3 max-w-xs relative">
+            <div class="truncate-text" :title="row.name">
+                {{ row.name }}
+            </div>
+            </td>
           <td class="px-6 py-3">{{ row.createdBy }}</td>
           <td class="px-6 py-3">{{ formatDate(row.createdAt) }}</td>
           <td class="px-6 py-3">
@@ -167,7 +180,7 @@
       <div class="mt-6 flex justify-between">
         <button
           @click="closeAdd"
-          class="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-5 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+            class="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700"
         >
           ✕ Cancel
         </button>
@@ -441,3 +454,32 @@ function remove(id: number) {
 // ===== Expose helpers for template (ถ้าใช้) =====
 const $formatDate = formatDate;
 </script>
+
+<style scoped>
+.truncate-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 600px;
+  cursor: pointer;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: normal;
+  z-index: 20;
+  min-width: 200px;
+  max-width: 400px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.group:hover .tooltip {
+  display: block;
+}
+</style>
