@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('ems_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('cat_name')->unique();
+            $table->string('cat_name'); // ⬅️ เอา ->unique() ออก
             $table->enum('cat_delete_status', ['active', 'inactive'])->default('active');
+
+            // ⬇️ ใส่ unique แบบคอมโพสิท
+            $table->unique(['cat_name', 'cat_delete_status'], 'ems_categories_name_status_unique');
         });
 
         Schema::create('ems_event', function (Blueprint $table) {

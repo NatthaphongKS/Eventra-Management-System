@@ -186,29 +186,22 @@
 
 <script setup lang="ts">
 /**
- * ====== ส่วน import ที่จำเป็น ======
- * - computed, ref, onMounted: ฟังก์ชันจาก Vue สำหรับสถานะ/คำนวณ/ฮุคเมื่อเมานต์
- * - Swal: กล่องแจ้งเตือน SweetAlert2
- * - axios: เรียก REST API
+ * ===== Imports =====
  */
 import { computed, ref, onMounted } from "vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 
 /**
- * ====== ตั้งค่า Axios พื้นฐาน ======
- * - baseURL เป็น /api (ชี้ไปที่ Laravel api.php ผ่าน proxy ของ dev server)
- * - เพิ่ม header Accept: application/json
- * - withCredentials: true เพื่อส่ง cookie ไป-กลับ (จำเป็นถ้า route อยู่หลัง 'web' middleware / CSRF)
+ * ===== Axios base config =====
+ * ถ้าใช้ dev server proxy ไป Laravel ให้ตั้ง baseURL เป็น /api
  */
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
 axios.defaults.withCredentials = true;
 
 /**
- * ฟังก์ชัน ensureCsrf:
- * - เรียก /sanctum/csrf-cookie หนึ่งครั้งก่อน request แบบเปลี่ยนแปลงข้อมูล (POST/DELETE)
- * - Laravel จะเซ็ต cookie XSRF-TOKEN ให้ เบราว์เซอร์จะส่งกลับอัตโนมัติ
+ * ===== CSRF (สำหรับเส้นทางที่อยู่หลัง web + auth) =====
  */
 async function ensureCsrf() {
   try {
@@ -218,20 +211,19 @@ async function ensureCsrf() {
   }
 }
 
-/** ====== กำหนดประเภทข้อมูลของแถวในตาราง ====== */
-type Row = { id: number; name: string; createdBy: string; createdAt: string };
+/**
+ * ===== Types =====
+ * createdAt รองรับ null เพราะเราไม่ใช้เวลาปัจจุบันเป็นค่า fallback
+ */
+type Row = {
+  id: number;
+  name: string;
+  createdBy: string;
+  createdAt: string | null; // ISO หรือ null
+};
 
 /**
- * ====== State (สถานะของหน้า) ======
- * rows         : ข้อมูลที่จะแสดงในตาราง
- * query        : ข้อความค้นหา
- * page         : หน้าปัจจุบัน
- * pageSize     : จำนวนรายการต่อหน้า
- * sortOpen     : สถานะเปิด/ปิดเมนู Sort
- * sortDir      : ทิศทางการเรียง ('asc' = เก่าสุดก่อน, 'desc' = ล่าสุดก่อน)
- * addOpen      : เปิด/ปิดโมดัลเพิ่มข้อมูล
- * newName      : ชื่อหมวดหมู่ใหม่จากอินพุต
- * loading      : สถานะกำลังโหลดข้อมูล
+ * ===== State =====
  */
 const rows = ref<Row[]>([]);
 const query = ref("");
@@ -243,31 +235,25 @@ const addOpen = ref(false);
 const newName = ref("");
 const loading = ref(false);
 
-/**
- * userName:
- * - ใช้แสดงว่าใครเป็นผู้สร้างใน UI (ฝั่ง DB อาจจะยังไม่บันทึกผู้สร้างจริง)
- * - ถ้ามีระบบล็อกอินฝั่งหน้าเว็บ นำชื่อผู้ใช้จริงมาเซ็ตในตัวแปรนี้
- */
+// ใช้แสดงชื่อผู้สร้างใน UI เท่านั้น (ฝั่ง DB อาจไม่เก็บจริง)
 const userName = ref("");
 
-/** ====== Helpers (ฟังก์ชันช่วย) ====== */
-/** ทำให้สตริงอยู่ในรูป trim และ lower สำหรับเทียบ/ค้นหา */
+/**
+ * ===== Helpers =====
+ */
 function norm(s: string) {
   return s.trim().toLowerCase();
 }
-/**
- * แปลง ISO date เป็น timestamp (ms)
- * - ถ้า invalid หรือว่าง ให้คืน 0 เพื่อไม่ทำให้ sort พัง
- */
+
 function toTime(iso?: string | null) {
   const t = iso ? new Date(iso).getTime() : NaN;
   return Number.isFinite(t) ? t : 0;
 }
 
-
-/** แสดงวันที่แบบ DD/MM/YYYY เพื่อโชว์ในตาราง */
-function formatDate(iso: string) {
+function formatDate(iso?: string | null) {
+  if (!iso) return "-";
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return "-";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
@@ -275,10 +261,8 @@ function formatDate(iso: string) {
 }
 
 /**
- * ====== โหลดรายการหมวดหมู่จาก API ======
- * - GET /api/categories
- * - map ให้อยู่ในรูป Row เพื่อใช้กับตาราง
- * - createdAt: ใช้เวลาจาก DB ถ้ามี ไม่มีก็ fallback เป็นเวลาปัจจุบัน
+ * ===== Load categories from API =====
+ * ใช้เวลาใน DB เท่านั้น: cat_create_at หรือ created_at
  */
 async function loadCategories() {
   loading.value = true;
@@ -289,7 +273,7 @@ async function loadCategories() {
       id: c.id,
       name: c.cat_name ?? c.emc_name ?? "",
       createdBy: c.created_by ?? "-",
-      createdAt: c.created_at ?? new Date().toISOString(),
+      createdAt: c.cat_create_at ?? c.created_at ?? null, // ✅ เฉพาะเวลาจาก DB
     }));
   } catch (e: any) {
     console.error("GET /categories failed:", e?.response || e);
@@ -299,11 +283,6 @@ async function loadCategories() {
   }
 }
 
-/**
- * onMounted:
- * - โหลดรายการครั้งแรก
- * - ผูก handler เพื่อปิดเมนู sort เมื่อคลิกนอกกล่อง
- */
 onMounted(() => {
   loadCategories();
   // ปิดเมนู sort เมื่อคลิกนอก
@@ -314,10 +293,7 @@ onMounted(() => {
 });
 
 /**
- * ====== การจัดการ UI เบื้องต้น ======
- * openAdd/closeAdd  : เปิด/ปิด modal เพิ่มข้อมูล
- * onSearch          : เมื่อกดค้นหา ให้กลับไปหน้าแรก
- * applySort(dir)    : เปลี่ยนทิศทางการเรียง แล้วปิดเมนู sort
+ * ===== UI actions =====
  */
 function openAdd() {
   newName.value = "";
@@ -336,11 +312,7 @@ function applySort(dir: "asc" | "desc") {
 }
 
 /**
- * ====== คำนวณรายการสำหรับแสดง (Filter -> Sort -> Paginate) ======
- * filtered : กรองด้วยคำค้นจาก name หรือ createdBy
- * sorted   : เรียงตาม createdAt (timestamp) ตามทิศทาง sortDir
- * total    : จำนวนทั้งหมดหลังกรอง
- * totalPages, startIndex, endIndex, pagedRows, visibleCountText : สำหรับเพจจิเนชัน
+ * ===== Derived =====
  */
 const filtered = computed(() => {
   const q = norm(query.value);
@@ -351,11 +323,7 @@ const filtered = computed(() => {
 const sorted = computed(() => {
   const copy = filtered.value.slice();
   const dir = sortDir.value === "asc" ? 1 : -1;
-  copy.sort((a, b) => {
-    const ta = toTime(a.createdAt);
-    const tb = toTime(b.createdAt);
-    return (ta - tb) * dir;
-  });
+  copy.sort((a, b) => (toTime(a.createdAt) - toTime(b.createdAt)) * dir);
   return copy;
 });
 
@@ -369,9 +337,7 @@ const visibleCountText = computed(() =>
 );
 
 /**
- * ====== เช็คชื่อซ้ำใน UI ======
- * - กันเคสพิมพ์ซ้ำก่อนยิง API เพื่อลด error และ UX ดีขึ้น
- * - เปรียบเทียบแบบไม่สนเคส/ช่องว่างหัวท้าย
+ * ===== Duplicate check (UI) =====
  */
 const isDuplicate = computed(() => {
   const name = norm(newName.value);
@@ -380,38 +346,37 @@ const isDuplicate = computed(() => {
 });
 
 /**
- * ====== สร้างหมวดหมู่ใหม่ (POST -> DB + อัปเดต UI) ======
- * ขั้นตอน:
- * 1) validate ช่องว่าง
- * 2) เช็คชื่อซ้ำใน UI
- * 3) ensureCsrf() เพื่อรับ XSRF-TOKEN (เมื่อใช้ web + auth)
- * 4) POST /api/categories { cat_name }
- * 5) อัปเดตตารางแบบทันที (unshift ด้านบน)
- * 6) แจ้งผลลัพธ์
- * 7) จัดการ error 422 (unique) และ error อื่น ๆ
+ * ===== Create category =====
+ * ไม่ใช้เวลาปัจจุบันเป็น fallback:
+ * - ถ้า server ไม่ส่งเวลามา ให้ reload จาก DB
  */
 async function createCategory() {
   const name = newName.value.trim();
   if (!name) return;
 
-  // กันชื่อซ้ำใน UI
   if (isDuplicate.value) {
     Swal.fire({ title: "มีชื่อนี้อยู่แล้ว", text: `ชื่อ "${name}" ถูกใช้งานอยู่ในรายการ`, icon: "warning" });
     return;
   }
 
   try {
-    await ensureCsrf(); // สำคัญสำหรับ route ที่ครอบด้วย web+auth
-    const res = await axios.post("/categories", { cat_name: name }); // key ต้องตรง DB (cat_name)
+    await ensureCsrf();
+    const res = await axios.post("/categories", { cat_name: name });
     const created = res.data?.data ?? res.data;
 
-    rows.value.unshift({
-      id: created.id,
-      name: created.cat_name ?? name,
-      createdBy: userName.value || "-", // แสดงชื่อผู้ใช้ในตาราง ถ้าไม่มีให้เป็น "-"
-      // ใช้เวลาจริงจาก server ถ้ามี ไม่มีก็ fallback เวลาขณะบันทึก
-      createdAt: created.created_at ?? new Date().toISOString(),
-    });
+    const dbTime: string | null = created?.cat_create_at ?? created?.created_at ?? null;
+
+    if (dbTime) {
+      rows.value.unshift({
+        id: created.id,
+        name: created.cat_name ?? name,
+        createdBy: userName.value || "-",
+        createdAt: dbTime, // ✅ ใช้เวลา DB เท่านั้น
+      });
+    } else {
+      // ถ้า API ไม่คืนเวลา เพื่อความถูกต้องให้โหลดจาก DB
+      await loadCategories();
+    }
 
     closeAdd();
     page.value = 1;
@@ -434,12 +399,7 @@ async function createCategory() {
 }
 
 /**
- * ====== ลบหมวดหมู่ (Soft delete) ======
- * แนวคิด:
- * - UI เอาออกก่อน (optimistic update) และเก็บ backup ไว้
- * - เรียก DELETE /api/categories/:id เพื่อเปลี่ยนสถานะเป็น inactive ใน DB
- * - ถ้า API error ให้ rollback (คืน UI จาก backup)
- * - ปรับเลขหน้าถ้าจำนวนแถวลดจนเกินจำนวนหน้า
+ * ===== Soft delete =====
  */
 function remove(id: number) {
   Swal.fire({
@@ -460,13 +420,13 @@ function remove(id: number) {
     rows.value = rows.value.filter((r) => r.id !== id);
 
     try {
-      await ensureCsrf(); // สำคัญก่อนลบ
+      await ensureCsrf();
       await axios.delete(`/categories/${id}`);
       const tp = totalPages.value || 1;
       if (page.value > tp) page.value = tp;
       Swal.fire({ title: "Deleted!", text: "ลบออกจากตารางแล้ว (ฐานข้อมูลยังเก็บแบบ inactive)", icon: "success" });
     } catch (err: any) {
-      rows.value = backup; // rollback UI ถ้าพลาด
+      rows.value = backup;
       const status = err?.response?.status;
       const data = err?.response?.data;
       Swal.fire({
@@ -477,5 +437,7 @@ function remove(id: number) {
     }
   });
 }
-</script>
 
+// ===== Expose helpers for template (ถ้าใช้) =====
+const $formatDate = formatDate;
+</script>
