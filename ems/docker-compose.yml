@@ -15,7 +15,7 @@ services:
     container_name: vite_dev
     working_dir: /app
     command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 5173"
-    ports: ["5173:5173"]          
+    ports: ["5173:5173"]       
     environment:
       CHOKIDAR_USEPOLLING: "true" 
     volumes:
