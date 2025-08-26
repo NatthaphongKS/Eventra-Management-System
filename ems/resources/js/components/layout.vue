@@ -52,6 +52,7 @@
       <main class="p-6">
         <header class="mb-4">
           <h1 class="text-xl font-semibold text-slate-800">{{ pageTitle }}</h1>
+           <meta name="csrf-token" content="{{ csrf_token() }}">
         </header>
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <slot />
