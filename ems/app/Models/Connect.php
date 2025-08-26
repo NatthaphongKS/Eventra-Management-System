@@ -11,11 +11,11 @@ class Connect extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'ecn_event_id',
-        'ecn_employee_id',
-        'ecn_answer',
-        'ecn_reason',
-        'ecn_delete_status',
+        'con_event_id',
+        'con_employee_id',
+        'con_answer',
+        'con_reason',
+        'con_delete_status',
     ];
 
     public function event()
