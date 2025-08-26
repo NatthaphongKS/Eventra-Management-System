@@ -241,9 +241,9 @@ export default {
       this.page = p;
     },
 
-    editEvent(id) {
+    editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
       console.log("Edit event ID:", id);
-      // this.$router.push(`/edit-event/${id}`)
+      this.$router.push(`/edit-event/${id}`)
     },
 
     async deleteEvent(id) {
