@@ -14,7 +14,7 @@
     $empid  = $employee->id ?? 0;
 
     // --- LINKS ---
-    $eventUrl   = url('/reply/'.$eid'/'$empid);
+    $eventUrl   = url('/reply/'.$eid.'/'.$empid);
     $icsUrl     = url('/event/'.$eid.'/calendar.ics');
     $mapUrl     = 'https://www.google.com/maps/search/?api=1&query='.urlencode($loc);
 
