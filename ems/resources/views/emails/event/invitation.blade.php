@@ -11,11 +11,10 @@
     $loc     = $event->evn_location ?? $event->event_location ?? '';
     $desc    = $event->evn_description ?? $event->event_description ?? '';
     $eid     = $event->id ?? 0;
+    $empid  = $employee->id ?? 0;
 
     // --- LINKS ---
-    $eventUrl   = url('/event/'.$eid);
-    $acceptUrl  = url('/event/'.$eid.'/rsvp?response=accept&employee='.$employee->id);
-    $declineUrl = url('/event/'.$eid.'/rsvp?response=decline&employee='.$employee->id);
+    $eventUrl   = url('/reply/'.$eid'/'$empid);
     $icsUrl     = url('/event/'.$eid.'/calendar.ics');
     $mapUrl     = 'https://www.google.com/maps/search/?api=1&query='.urlencode($loc);
 
@@ -248,27 +247,6 @@ table{border-collapse:collapse}
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding:10px 24px 0 24px;">
-                    <!-- ปุ่มรอง -->
-                    <!--[if mso]>
-                      <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-                        <td style="padding-right:8px">
-                          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $acceptUrl }}" arcsize="20%" fillcolor="#69FFD6" stroke="f" style="height:34px;v-text-anchor:middle;width:160px;">
-                            <center style="color:#08221a;font-family:Segoe UI, Arial;font-size:13px;font-weight:700;">ยืนยันเข้าร่วม (RSVP)</center>
-                          </v:roundrect>
-                        </td>
-                        <td>
-                          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $declineUrl }}" arcsize="20%" fillcolor="#FFC1CE" stroke="f" style="height:34px;v-text-anchor:middle;width:140px;">
-                            <center style="color:#30060e;font-family:Segoe UI, Arial;font-size:13px;font-weight:700;">ขอปฏิเสธ</center>
-                          </v:roundrect>
-                        </td>
-                      </tr></table>
-                    <![endif]-->
-                    <!--[if !mso]><!-- -->
-                    <a href="{{ $acceptUrl }}" class="btn-yes" style="margin-right:8px;">ยืนยันเข้าร่วม (RSVP)</a>
-                    <a href="{{ $declineUrl }}" class="btn-no">ขอปฏิเสธ</a>
-                    <!--<![endif]-->
-                  </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding:10px 24px 18px 24px;">
