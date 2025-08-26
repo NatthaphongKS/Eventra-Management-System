@@ -29,7 +29,7 @@ class Employee extends Authenticatable
         'emp_department_id',
         'emp_team_id',
         'emp_permission',
-        'ems_delete_status',
+        'emp_delete_status',
         'emp_delete_by',
     ];
 
@@ -44,7 +44,7 @@ class Employee extends Authenticatable
     public function events()
     {
         return $this->belongsToMany(Event::class, 'ems_connect', 'con_employee_id', 'con_event_id')
-                    ->withPivot(['con_answer','con_reason','con_delete_status']);
+            ->withPivot(['con_answer', 'con_reason', 'con_delete_status']);
     }
 
     public function position(): BelongsTo
