@@ -24,8 +24,6 @@ const routes = [
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
   { path: '/reply-form', component: reply_form, meta: { title: 'Reply Form'}},
-  { path: '/categories', component: Category, meta: { title: 'Category' } }
-
 ]
 
 export default createRouter({
