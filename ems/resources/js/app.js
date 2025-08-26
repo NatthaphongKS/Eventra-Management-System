@@ -3,6 +3,8 @@ import '../css/app.css'
 import axios from 'axios'
 import App from './App.vue'
 import ReplyForm from './pages/Reply_form.vue'
+// [เพิ่ม] import router อย่างเดียว
+import router from './router'
 
 axios.defaults.baseURL = window.location.origin
 axios.defaults.headers.common['Accept'] = 'application/json'
@@ -16,3 +18,4 @@ if (document.getElementById('reply-app')) {
 } else if (document.getElementById('app')) {
   createApp(App).mount('#app')               // สำหรับหน้าอื่น
 }
+
