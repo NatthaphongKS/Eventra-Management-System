@@ -1,11 +1,12 @@
 <template>
     <section class="p-0">
+        <!-- คอนเทนเนอร์หน้าเพจหลัก (ไม่มี padding) -->
         <div
             class="w-full max-w-screen-2xl mx-auto bg-white rounded-2xl shadow border border-gray-200 p-5 md:p-6"
         >
             <!-- =================== Toolbar =================== -->
             <div class="flex items-center gap-3 mb-4 overflow-visible">
-                <!-- Search -->
+                <!-- ช่องค้นหา: ผูกค่ากับ searchInput กด Enter จะ apply -->
                 <input
                     v-model.trim="searchInput"
                     placeholder="Search..."
@@ -21,8 +22,9 @@
                     <MagnifyingGlassIcon class="w-5 h-5" />
                 </button>
 
-                <!-- Filter -->
+                <!-- กล่องควบคุม Filter (เป็น relative เพื่อวางเมนูย่อย) -->
                 <div class="relative z-50">
+                    <!-- ปุ่มเปิด/ปิดแผงฟิลเตอร์ แสดง active เมื่อเปิด -->
                     <button
                         type="button"
                         @click="toggleFilter"
@@ -45,19 +47,21 @@
                             <line x1="8" y1="17" x2="12" y2="17" />
                         </svg>
                         <span class="hidden sm:inline">Filter</span>
+                        <!-- จุดแจ้งเตือนเมื่อมีฟิลเตอร์ใช้งาน -->
                         <span
                             v-if="hasActiveFilters"
                             class="w-2 h-2 bg-rose-600 rounded-full"
                         ></span>
                     </button>
 
-                    <!-- Filter Card -->
+                    <!-- แผงฟิลเตอร์แบบดรอปดาวน์ -->
                     <div
                         v-if="showFilter"
                         class="absolute top-full right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
                         @click.stop
                     >
                         <div class="p-4 space-y-4">
+                            <!-- แถวหัวข้อฟิลเตอร์ -->
                             <div class="flex items-center justify-between">
                                 <h3 class="font-semibold text-gray-800">
                                     Filter
@@ -70,7 +74,7 @@
                                 </button>
                             </div>
 
-                            <!-- เรนเดอร์ SelectField แบบ loop -->
+                            <!-- สร้างช่องเลือกตามนิยาม filterDefs -->
                             <SelectField
                                 v-for="def in filterDefs"
                                 :key="def.field"
@@ -86,7 +90,7 @@
                     </div>
                 </div>
 
-                <!-- Sort -->
+                <!-- เมนูเรียงข้อมูล: เปิด/ปิด และเลือกตัวเลือก -->
                 <SortMenu
                     :isOpen="showSort"
                     :options="sortOptions"
@@ -96,7 +100,7 @@
                     @choose="toggleSortOption"
                 />
 
-                <!-- Add New -->
+                <!-- ปุ่มลิงก์ไปหน้าเพิ่มพนักงาน -->
                 <router-link
                     to="/add-employee"
                     class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-rose-600 text-white hover:bg-rose-700 whitespace-nowrap z-0"
@@ -106,6 +110,7 @@
             </div>
 
             <!-- =================== Chips =================== -->
+            <!-- แถวแท็กเมื่อเลือก Filter -->
             <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 mb-4">
                 <div
                     v-for="k in filterFields"
@@ -122,8 +127,11 @@
             </div>
 
             <!-- =================== Table =================== -->
+            <!-- ครอบตารางให้เลื่อนแนวนอนได้ -->
             <div class="overflow-auto">
+                <!-- ตารางความกว้างคงที่ -->
                 <table class="w-full table-fixed">
+                    <!-- กำหนดความกว้างคอลัมน์ -->
                     <colgroup>
                         <col class="w-12" />
                         <col class="w-24" />
@@ -135,51 +143,69 @@
                         <col class="w-32" />
                         <col class="w-36" />
                     </colgroup>
+
+                    <!-- ส่วนหัวตาราง พื้นเทอ่อน -->
                     <thead class="bg-gray-50">
+                        <!-- แถวหัวตาราง ชิดซ้าย -->
                         <tr class="text-left">
+                            <!-- ลำดับแถว -->
                             <th
                                 class="px-2.5 py-2 font-semibold text-[13px] text-center"
                             >
                                 #
                             </th>
+                            <!-- รหัสพนักงาน -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 ID
                             </th>
+                            <!-- ชื่อ-นามสกุล -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Name
                             </th>
+                            <!-- ชื่อเล่น -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Nickname
                             </th>
+                            <!-- โทรศัพท์ -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Phone
                             </th>
+                            <!-- แผนก -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Department
                             </th>
+                            <!-- ทีม -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Team
                             </th>
+                            <!-- ตำแหน่ง -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Position
                             </th>
+                            <!-- วันที่เพิ่ม -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Date Add (D/M/Y)
                             </th>
                         </tr>
                     </thead>
+
+                    <!-- เนื้อหาตาราง ขนาดฟอนต์ 15px -->
                     <tbody class="text-[15px]">
+                        <!-- ลูปข้อมูลพนักงาน (เฉพาะหน้าปัจจุบัน) -->
                         <tr
                             v-for="(emp, i) in paged"
                             :key="emp.id ?? emp.emp_id ?? i"
                             class="border-b border-gray-200 last:border-0 hover:bg-rose-50"
                         >
+                            <!-- คำนวณลำดับจริงตามหน้า -->
                             <td class="px-2.5 py-2 text-center">
                                 {{ (page - 1) * pageSize + i + 1 }}
                             </td>
+                            <!-- แสดงรหัส หรือ N/A -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.emp_id || "N/A" }}
                             </td>
+                            <!-- แสดงคำนำหน้า + ชื่อ + นามสกุล ตัดคำเกินด้วย truncate -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 <span class="block truncate">
                                     {{
@@ -192,21 +218,27 @@
                                     }}
                                 </span>
                             </td>
+                            <!-- ชื่อเล่น -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.emp_nickname || "N/A" }}
                             </td>
+                            <!-- โทรศัพท์ (ใช้ key phone หลัง normalize) -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.phone || "N/A" }}
                             </td>
+                            <!-- ชื่อแผนก -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.department_name || "N/A" }}
                             </td>
+                            <!-- ชื่อทีม -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.team_name || "N/A" }}
                             </td>
+                            <!-- ชื่อตำแหน่ง -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.position_name || "N/A" }}
                             </td>
+                            <!-- วันที่สร้าง แปลงเป็น D/M/Y แบบ en-GB -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{
                                     emp.created_at
@@ -216,10 +248,12 @@
                                         : "N/A"
                                 }}
                             </td>
+                            <!-- ปุ่มแอ็กชัน ชิดขวา -->
                             <td class="px-2.5 py-2">
                                 <div
                                     class="flex items-center justify-end gap-1.5"
                                 >
+                                    <!-- ปุ่มแก้ไข -->
                                     <button
                                         @click="editEmployee(emp.id)"
                                         aria-label="Edit"
@@ -230,6 +264,7 @@
                                             class="w-4 h-4 text-gray-600"
                                         />
                                     </button>
+                                    <!-- ปุ่มลบ -->
                                     <button
                                         @click="requestDelete(emp)"
                                         aria-label="Delete"
@@ -243,7 +278,10 @@
                                 </div>
                             </td>
                         </tr>
+
+                        <!-- กรณีไม่มีข้อมูลในหน้านี้ -->
                         <tr v-if="paged.length === 0">
+                            <!-- ข้อความเมื่อไม่มีข้อมูล/ไม่ตรงฟิลเตอร์ -->
                             <td
                                 :colspan="10"
                                 class="px-3 py-6 text-center text-gray-500"
@@ -261,13 +299,18 @@
 
             <!-- =================== Pagination =================== -->
             <div class="flex flex-wrap items-center gap-3 pt-3">
+                <!-- ส่วนเลือก Page Size และสถานะ -->
                 <div class="flex items-center gap-2">
+                    <!-- ป้ายข้อความ -->
                     <span class="text-xs text-slate-700">แสดง</span>
+
+                    <!-- ครอบปุ่มเลือกจำนวนแถว/หน้า -->
                     <div ref="pageSizeWrap" class="relative inline-block">
+                        <!-- ปุ่มเปิดเมนู page size -->
                         <button
                             type="button"
                             @click="togglePageSize()"
-                            class="relative h-9 min-w-[72px] px-4 pr-9 rounded-full border-2 border-[#D40E11] bg-white text-[14px] font-medium text-black text-left select-none focus:outline-none focus:ring-2 focus:ring-[#D40E11]/20"
+                            class="relative h-9 min-w-[72px] px-4 pr-9 rounded-full border-2 bg-white text-[14px] font-medium text-black text-left select-none focus:outline-none focus:ring-2 focus:ring-[#D40E11]/20"
                             :aria-expanded="openPageSize"
                             aria-haspopup="listbox"
                         >
@@ -282,9 +325,11 @@
                                 />
                             </svg>
                         </button>
+
+                        <!-- เมนูตัวเลือก page size -->
                         <div
                             v-if="openPageSize"
-                            class="absolute z-50 mt-1.5 w-full rounded-2xl border-2 border-[#D40E11] bg-white shadow-lg overflow-hidden"
+                            class="absolute z-50 mt-1.5 w-full rounded-2xl border-2 bg-white shadow-lg overflow-hidden"
                             role="listbox"
                         >
                             <ul class="py-1">
@@ -307,14 +352,18 @@
                             </ul>
                         </div>
                     </div>
+
+                    <!-- แสดงสถานะหน้าปัจจุบัน/จำนวนหน้า/จำนวนรายการทั้งหมด -->
                     <span class="ml-2 text-[11px] text-gray-500"
                         >{{ page }}-{{ totalPages }} จาก
                         {{ sorted.length }} รายการ</span
                     >
                 </div>
 
+                <!-- ปุ่มเปลี่ยนหน้า -->
                 <div class="flex-1 flex justify-center">
                     <div class="flex items-center gap-2">
+                        <!-- ปุ่มย้อนหน้า -->
                         <button
                             class="w-10 h-10 flex items-center justify-center rounded-full text-2xl leading-none text-rose-800 hover:text-rose-900 disabled:opacity-45 disabled:hover:text-rose-800"
                             @click="prevPage"
@@ -323,6 +372,8 @@
                         >
                             ◄
                         </button>
+
+                        <!-- ปุ่มตัวเลขหน้า/จุดไข่ปลา -->
                         <button
                             v-for="(p, idx) in pagesToShow"
                             :key="idx"
@@ -342,6 +393,8 @@
                         >
                             {{ p }}
                         </button>
+
+                        <!-- ปุ่มไปหน้าถัดไป -->
                         <button
                             class="w-10 h-10 flex items-center justify-center rounded-full text-2xl leading-none text-rose-800 hover:text-rose-900 disabled:opacity-45 disabled:hover:text-rose-800"
                             @click="nextPage"
@@ -366,32 +419,45 @@
             class="fixed inset-0 z-40"
         ></div>
 
-        <!-- Modals -->
+        <!-- โมดัลยืนยันลบ -->
         <ConfirmDelete
             :open="confirmOpen"
             @cancel="cancelDelete"
             @confirm="confirmDelete"
         />
+
+        <!-- โมดัลแจ้งลบสำเร็จ -->
         <DeleteSuccess :open="successOpen" @close="closeSuccess" />
     </section>
 </template>
 
 <script>
+// เริ่มส่วนสคริปต์ของคอมโพเนนต์
+// ใช้เรียก API
 import axios from "axios";
+// ใช้ inject รับฟังก์ชันจาก parent
 import { inject } from "vue";
+// ไอคอน Heroicons
 import {
     MagnifyingGlassIcon,
     PencilSquareIcon,
     TrashIcon,
 } from "@heroicons/vue/24/outline";
+// คอมโพเนนต์เลือกฟิลเตอร์
 import SelectField from "@/components/SelectField.vue";
+// คอมโพเนนต์เมนูเรียงลำดับ
 import SortMenu from "@/components/SortMenu.vue";
+// โมดัลยืนยันลบ
 import ConfirmDelete from "@/components/ConfirmDelete.vue";
+// โมดัลแจ้งลบสำเร็จ
 import DeleteSuccess from "@/components/DeleteSuccess.vue";
 
+// ตั้งค่า base URL ของ axios
 axios.defaults.baseURL = "/api";
+// บอกว่าจะรับ JSON
 axios.defaults.headers.common["Accept"] = "application/json";
 
+// แมปชื่อแสดงผลของฟิลเตอร์
 const FILTER_LABELS = {
     id: "ID",
     department: "Department",
@@ -400,7 +466,9 @@ const FILTER_LABELS = {
 };
 
 export default {
+    // ประกาศคอมโพเนนต์แบบ Options API
     name: "EmployeesPage",
+    // ลงทะเบียนคอมโพเนนต์ลูกที่ใช้ใน template
     components: {
         MagnifyingGlassIcon,
         PencilSquareIcon,
@@ -411,19 +479,26 @@ export default {
         DeleteSuccess,
     },
 
+    // สถานะภายในคอมโพเนนต์
     data() {
         return {
+            // เก็บรายการพนักงานที่ดึงมาจาก API
             employees: [],
             // Search / Filters
+            // ค่าที่พิมพ์ในช่องค้นหา (ทันที)
             searchInput: "",
+            // ค่าค้นหาที่ apply แล้ว
             search: "",
+            // ลำดับฟิลเตอร์
             filterFields: ["id", "department", "team", "position"],
+            // ค่าฟิลเตอร์ในแผง (ยังไม่ apply)
             filtersStage: {
                 id: "all",
                 department: "all",
                 team: "all",
                 position: "all",
             },
+            // ค่าฟิลเตอร์ที่ใช้งานจริงบนตาราง
             filters: {
                 id: "all",
                 department: "all",
@@ -432,43 +507,65 @@ export default {
             },
 
             // Sort
+            // ฟิลด์ที่ใช้เรียง
             sortBy: null,
+            // ทิศทางเรียง (asc/desc)
             sortOrder: null,
 
             // UI
+            // เปิด/ปิดแผงฟิลเตอร์
             showFilter: false,
+            // เปิด/ปิดเมนู sort
             showSort: false,
+            // ระบุ select ที่กำลังเปิดอยู่ในแผง
             openSelect: null,
 
             // Modals
+            // เปิด/ปิดโมดัลยืนยันลบ
             confirmOpen: false,
+            // เปิด/ปิดโมดัลลบสำเร็จ
             successOpen: false,
+            // เก็บ item ที่กำลังจะลบ
             deleting: null,
 
             // Paging
+            // หน้าปัจจุบัน
             page: 1,
+            // จำนวนแถวต่อหน้า
             pageSize: 10,
+            // เปิด/ปิดเมนูเลือก page size
             openPageSize: false,
         };
     },
 
+    // ไลฟ์ไซเคิล: เรียกทันทีเมื่อถูกสร้าง (ก่อน mount)
     async created() {
+        // โหลดข้อมูลพนักงานครั้งแรก
         await this.fetchEmployees();
     },
 
+    // ใช้ Composition API บางส่วนเพื่อ inject ฟังก์ชันจาก layout
     setup() {
+        // รับฟังก์ชันเบลอพื้นหลัง (เผื่อไม่มีให้ fallback)
         const setLayoutBlur = inject("setLayoutBlur", () => {});
+        // ส่งให้ template/methods ใช้งาน
         return { setLayoutBlur };
     },
 
+    // ไลฟ์ไซเคิล: หลังผูก DOM แล้ว
     mounted() {
+        // ฟังคลิกนอกเมนู page size เพื่อปิด
         document.addEventListener("click", this.onClickOutsidePageSize);
     },
+    // ไลฟ์ไซเคิล: ก่อนคอมโพเนนต์ถูกถอด
     beforeUnmount() {
+        // ถอน event listener
         document.removeEventListener("click", this.onClickOutsidePageSize);
     },
 
+    // ค่าคำนวณจาก state (แคชตาม dependency)
     computed: {
+        // ทำข้อมูลพนักงานให้มีค่าเริ่มต้นไม่เป็น undefined
         normalized() {
             return this.employees.map((e) => ({
                 ...e,
@@ -486,7 +583,7 @@ export default {
             }));
         },
 
-        // unique options
+        // สร้างรายการรหัสพนักงานไม่ซ้ำ สำหรับตัวเลือกฟิลเตอร์
         uniqueIds() {
             return [
                 ...new Set(
@@ -496,6 +593,7 @@ export default {
                 String(a).localeCompare(String(b), "en", { numeric: true })
             );
         },
+        // รายชื่อแผนกไม่ซ้ำ (เรียงตามภาษาไทย)
         uniqueDepartments() {
             return [
                 ...new Set(
@@ -505,6 +603,7 @@ export default {
                 ),
             ].sort((a, b) => a.localeCompare(b, "th"));
         },
+        // รายชื่อทีมไม่ซ้ำ
         uniqueTeams() {
             return [
                 ...new Set(
@@ -514,6 +613,7 @@ export default {
                 ),
             ].sort((a, b) => a.localeCompare(b, "th"));
         },
+        // รายชื่อตำแหน่งไม่ซ้ำ
         uniquePositions() {
             return [
                 ...new Set(
@@ -524,6 +624,7 @@ export default {
             ].sort((a, b) => a.localeCompare(b, "th"));
         },
 
+        // แมปฟิลด์ -> ตัวเลือกที่ไม่ซ้ำ
         optionsMap() {
             return {
                 id: this.uniqueIds,
@@ -533,6 +634,7 @@ export default {
             };
         },
 
+        // นิยามรายการ SelectField สำหรับ loop ในแผงฟิลเตอร์
         filterDefs() {
             return this.filterFields.map((f) => ({
                 field: f,
@@ -542,6 +644,7 @@ export default {
             }));
         },
 
+        // ตัวเลือกการเรียง (แสดงใน SortMenu)
         sortOptions() {
             return [
                 { key: "name", order: "asc", label: "ชื่อพนักงาน A–Z" },
@@ -557,41 +660,56 @@ export default {
             ];
         },
 
+        // true ถ้ามีฟิลเตอร์ใดๆ ที่ไม่ใช่ 'all'
         hasActiveFilters() {
             return this.filterFields.some((k) => this.filters[k] !== "all");
         },
 
+        // กรองข้อมูลตาม search และ filters
         filtered() {
+            // เริ่มจากข้อมูล normalize
             let result = this.normalized;
+            // ถ้ามีคำค้นหา
             if (this.search) {
+                // แปลงเป็นตัวเล็ก
                 const q = this.search.toLowerCase();
+                // แมตช์อย่างง่ายจากการรวมสตริง
                 result = result.filter((e) =>
                     `${e.emp_id} ${e.emp_prefix} ${e.emp_firstname} ${e.emp_lastname} ${e.emp_nickname} ${e.position_name} ${e.email} ${e.phone} ${e.department_name} ${e.team_name}`
                         .toLowerCase()
                         .includes(q)
                 );
             }
+            // กรองตามรหัส
             if (this.filters.id !== "all")
                 result = result.filter((e) => e.emp_id === this.filters.id);
+            // กรองตามแผนก
             if (this.filters.department !== "all")
                 result = result.filter(
                     (e) => e.department_name === this.filters.department
                 );
+            // กรองตามทีม
             if (this.filters.team !== "all")
                 result = result.filter(
                     (e) => e.team_name === this.filters.team
                 );
+            // กรองตามตำแหน่ง
             if (this.filters.position !== "all")
                 result = result.filter(
                     (e) => e.position_name === this.filters.position
                 );
+            // คืนรายการที่ผ่านการกรอง
             return result;
         },
 
+        // เรียงข้อมูลตาม sortBy/sortOrder
         sorted() {
+            // ก็อปเพื่อไม่แก้ของเดิม
             const out = [...this.filtered];
+            // หากไม่ตั้งค่า sort ให้คืนทันที
             if (!this.sortBy || !this.sortOrder) return out;
 
+            // ฟังก์ชันดึงคีย์ที่ใช้เรียง
             const getters = {
                 name: (e) => `${e.emp_firstname} ${e.emp_lastname}`.trim(),
                 id: (e) => e.emp_id ?? "",
@@ -599,8 +717,10 @@ export default {
                 position: (e) => e.position_name ?? "",
                 team: (e) => e.team_name ?? "",
             };
+            // เลือก getter ตามคีย์
             const get = getters[this.sortBy] || (() => "");
 
+            // ตัวเปรียบเทียบตามคีย์
             const cmp = (a, b) => {
                 const A = get(a),
                     B = get(b);
@@ -610,70 +730,98 @@ export default {
                       })
                     : String(A).localeCompare(String(B), "th");
             };
+            // เรียงตามทิศทาง
             out.sort((a, b) =>
                 this.sortOrder === "asc" ? cmp(a, b) : -cmp(a, b)
             );
+            // คืนผลลัพธ์ที่เรียงแล้ว
             return out;
         },
 
+        // จำนวนหน้าทั้งหมด
         totalPages() {
             return Math.ceil(this.sorted.length / this.pageSize);
         },
+        // ตัดข้อมูลเฉพาะหน้าปัจจุบัน
         paged() {
             const s = (this.page - 1) * this.pageSize;
             return this.sorted.slice(s, s + this.pageSize);
         },
 
+        // คำนวณรายการหมายเลขหน้าที่จะแสดง (มี '…')
         pagesToShow() {
             const total = this.totalPages,
                 cur = this.page;
+            // ถ้าน้อยแสดงทั้งหมด
             if (total <= 7)
                 return Array.from({ length: total }, (_, i) => i + 1);
             const pages = [1, 2],
                 left = Math.max(3, cur - 1),
                 right = Math.min(total - 2, cur + 1);
+            // จุดซ้าย
             if (left > 3) pages.push("…");
+            // แทรกช่วงกลาง
             for (let p = left; p <= right; p++) pages.push(p);
+            // จุดขวา
             if (right < total - 2) pages.push("…");
             pages.push(total - 1, total);
+            // ลบซ้ำ
             return pages.filter((v, i) => pages.indexOf(v) === i);
         },
     },
 
+    // ฟังก์ชันการทำงานต่างๆ
     methods: {
+        // โหลดรายชื่อพนักงานจาก API
         async fetchEmployees() {
             try {
+                // เรียก GET
                 const res = await axios.get("/get-employees");
+                // รองรับทั้ง {data:[]} หรือ []
                 this.employees = Array.isArray(res.data)
                     ? res.data
                     : res.data?.data || [];
             } catch (e) {
+                // ล็อกเมื่อผิดพลาด
                 console.error("Error fetching employees", e);
             }
         },
 
+        // เมื่อกดค้นหา/กด Enter: นำค่า stage มาใช้จริง
         applySearchAndFilters() {
+            // ย้ายค่า search input -> search (จริง)
             this.search = this.searchInput;
+            // ย้ายฟิลเตอร์ stage -> ใช้งานจริง
             this.filters = { ...this.filtersStage };
+            // รีเซ็ตไปหน้าแรก
             this.page = 1;
+            // ปิดแผงฟิลเตอร์
             this.showFilter = false;
+            // ปิด select ภายใน
             this.openSelect = null;
         },
 
+        // เปิด/ปิดแผงฟิลเตอร์
         toggleFilter() {
             this.showFilter = !this.showFilter;
             if (this.showFilter) {
+                // ถ้าเปิดฟิลเตอร์ให้ปิด sort
                 this.showSort = false;
+                // ปิด select
                 this.openSelect = null;
             }
         },
+        // เปิด/ปิด select ย่อยตามชื่อฟิลด์
         toggleSelect(name) {
             this.openSelect = this.openSelect === name ? null : name;
         },
+        // เลือกค่าฟิลเตอร์ใน stage
         chooseStage(field, value) {
             this.filtersStage[field] = value;
+            // ปิด select หลังเลือก
             this.openSelect = null;
         },
+        // ล้างค่าฟิลเตอร์ใน stage
         clearStageFilters() {
             this.filtersStage = {
                 id: "all",
@@ -681,14 +829,18 @@ export default {
                 team: "all",
                 position: "all",
             };
+            // ปิด select
             this.openSelect = null;
         },
+        // กดลบชิป -> เซ็ตฟิลเตอร์นั้นเป็น 'all'
         removeFilter(k) {
             this.filters[k] = "all";
             this.filtersStage[k] = "all";
+            // รีเซ็ตหน้า
             this.page = 1;
         },
 
+        // คืนคลาสสีของชิปตามชนิดฟิลเตอร์
         chipClass(k) {
             return k === "id"
                 ? "bg-gray-100 text-gray-800"
@@ -698,72 +850,87 @@ export default {
                 ? "bg-blue-100 text-blue-800"
                 : "bg-green-100 text-green-800";
         },
+        // ข้อความบนชิป (id จะแสดงเป็น 'ID: xxx')
         chipText(k) {
             return k === "id" ? `ID: ${this.filters.id}` : this.filters[k];
         },
 
-        // Sort
+        // เปิด/ปิดเมนู sort
         toggleSort() {
             this.showSort = !this.showSort;
             if (this.showSort) {
+                // เปิด sort ให้ปิดฟิลเตอร์
                 this.showFilter = false;
                 this.openSelect = null;
             }
         },
+        // เลือกตัวเลือก sort (กดซ้ำเพื่อยกเลิก)
         toggleSortOption(opt) {
             if (this.sortBy === opt.key && this.sortOrder === opt.order) {
+                // ยกเลิกการเรียง
                 this.sortBy = null;
                 this.sortOrder = null;
             } else {
+                // ตั้งค่าการเรียงใหม่
                 this.sortBy = opt.key;
                 this.sortOrder = opt.order;
             }
+            // ปิดเมนู
             this.showSort = false;
+            // รีเซ็ตหน้า
             this.page = 1;
         },
 
-        // Pagination
+        // ไปหน้าก่อนหน้า (ถ้ามี)
         prevPage() {
             if (this.page > 1) this.page--;
         },
+        // ไปหน้าถัดไป (ถ้ามี)
         nextPage() {
             if (this.page < this.totalPages) this.page++;
         },
+        // ไปหน้าที่ระบุ (ตรวจสอบขอบเขต)
         goToPage(n) {
             if (typeof n === "number" && n >= 1 && n <= this.totalPages)
                 this.page = n;
         },
 
-        // Page size dropdown
+        // เปิด/ปิดเมนูเลือกขนาดหน้า
         togglePageSize() {
             this.openPageSize = !this.openPageSize;
         },
+        // เลือกขนาดหน้าใหม่
         choosePageSize(s) {
             this.pageSize = s;
             this.openPageSize = false;
+            // รีเซ็ตหน้า
             this.page = 1;
         },
+        // คลิกนอกเมนู page size -> ปิด
         onClickOutsidePageSize(e) {
             const el = this.$refs.pageSizeWrap;
             if (this.openPageSize && el && !el.contains(e.target))
                 this.openPageSize = false;
         },
 
-        // Actions
+        // ไปหน้าแก้ไขพนักงานตาม id
         editEmployee(id) {
             if (!id) return;
             this.$router.push(`/edit-employee/${id}`);
         },
+        // เปิดโมดัลยืนยันลบ พร้อมเบลอเลย์เอาต์
         requestDelete(emp) {
             this.deleting = emp;
             this.confirmOpen = true;
             this.setLayoutBlur(true);
         },
+        // ยกเลิกลบ -> ปิดโมดัลและเอาเบลอออก
         cancelDelete() {
             this.confirmOpen = false;
             this.deleting = null;
             this.setLayoutBlur(false);
         },
+        // ยืนยันลบ -> เรียก API ลบ แล้วรีโหลดข้อมูล
         async confirmDelete() {
             if (!this.deleting) return;
             try {
@@ -774,11 +941,14 @@ export default {
                 this.setLayoutBlur(true);
             } catch (e) {
                 console.error("Error deleting employee", e);
+                // ปิดทุกอย่างเมื่อ error
                 this.cancelDelete();
             } finally {
+                // เคลียร์สถานะ
                 this.deleting = null;
             }
         },
+        // ปิดโมดัลสำเร็จ และเอาเบลอออก
         closeSuccess() {
             this.successOpen = false;
             this.setLayoutBlur(false);
