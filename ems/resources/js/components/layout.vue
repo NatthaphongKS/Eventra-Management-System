@@ -1,4 +1,6 @@
 <template>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=history" />
+
   <div class="min-h-screen bg-rose-50">
     <div class="grid min-h-screen grid-cols-[220px,1fr]">
       <!-- Sidebar -->
@@ -9,9 +11,9 @@
             <!-- วางไอคอน/ตัวอักษรตามภาพ -->
             <span class="text-lg font-extrabold">c</span>
           </div>
-          <span class="text-[22px] font-semibold tracking-wide text-rose-600">Eventra</span>
+          <span class="m-10 text-[30px] font-semibold tracking-wide text-red-700">Eventra</span>
         </div>
-
+        
         <!-- Nav -->
         <nav class="flex flex-1 flex-col gap-2">
           <RouterLink
@@ -20,9 +22,10 @@
             :to="item.to"
             class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium transition"
             :class="isActive(item.to)
-              ? 'bg-rose-100 text-red-600'
+              ? 'bg-rose-100 text-red-700'
               : 'text-slate-700 hover:bg-slate-50'"
           >
+          
             <!-- icon -->
             <span
               class="grid h-[30px] w-[30px] place-items-center rounded-lg"
@@ -32,6 +35,7 @@
             <span class="leading-none">{{ item.label }}</span>
           </RouterLink>
         </nav>
+        
 
         <!-- Logout -->
         <div class="mt-6 pb-5">

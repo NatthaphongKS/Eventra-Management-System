@@ -69,6 +69,7 @@
   <!-- Table -->
   <div class="mt-4 min-w-full overflow-hidden rounded-2xl border border-gray-200">
   <table class="min-w-full">
+
     <thead class="bg-gray-100">
       <tr class="bg-gray-100 text-gray-700 text-sm font-semibold">
         <th class="w-14 px-6 py-3 text-left">#</th>
@@ -78,21 +79,16 @@
         <th class="w-16 px-6 py-3"></th>
       </tr>
     </thead>
-  </table>
-</div>
 
-<div>
-  <table class="min-w-full">
     <tbody class="divide-y divide-gray-100">
       <tr
         v-for="(row, idx) in pagedRows"
         :key="row.id"
-        class="text-sm text-gray-700 hover:bg-gray-50"
-      >
+        class="text-sm text-gray-700 hover:bg-gray-50">
         <td class="w-14 px-6 py-3 text-left">{{ startIndex + idx + 1 }}</td>
-        <td class="px-6 py-3 text-left">{{ row.name }}</td>
-        <td class="px-12 py-3 text-left">{{ row.createdBy }}</td>
-        <td class="px-8 py-3 text-left">{{ formatDate(row.createdAt) }}</td>
+        <td class="px-6 py-3 text-lef">{{ row.name }}</td>
+        <td class="px-6 py-3 text-left">{{ row.createdBy }}</td>
+        <td class="px-6 py-3 text-lef">{{ formatDate(row.createdAt) }}</td>
         <td class="w-16 px-6 py-3">
           <button
             class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
@@ -134,11 +130,12 @@
     </div>
 
     <div class="flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
       <button
         class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
         :disabled="page === 1"
-        @click="page--"
-      >
+        @click="page--">
         ก่อนหน้า
       </button>
       <span class="text-sm text-gray-600">หน้า {{ page }} / {{ totalPages || 1 }}</span>
