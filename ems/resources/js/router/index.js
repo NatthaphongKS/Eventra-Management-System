@@ -23,7 +23,8 @@ const routes = [
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
-  { path: '/reply-form', component: reply_form, meta: { title: 'Reply Form'}},
+  { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
+
 ]
 
 export default createRouter({
