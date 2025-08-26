@@ -12,6 +12,7 @@ class Category extends Model
     protected $fillable = [
         'cat_name',
         'cat_delete_status',
+        'cat_create_at',
     ];
 
     public $timestamps = false;
