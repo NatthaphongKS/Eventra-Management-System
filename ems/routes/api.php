@@ -20,16 +20,4 @@ Route::middleware(['web','auth'])->group(function () {
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
     Route::post('/event-save', [EventController::class, 'store']);
 
-    // เพิ่มเส้นทางสำหรับอ่าน/แก้ไขรายบุคคล
-Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
-Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
-
-// (ตัวเลือก dropdown) เอาไว้ดึงรายการแผนก/ทีม/ตำแหน่ง
-Route::get('/departments', fn() => Department::orderBy('name')->get());
-Route::get('/teams', fn() => Team::orderBy('name')->get());
-Route::get('/positions', fn() => Position::orderBy('name')->get());
-
-Route::get('/employees/{id}',  [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
-Route::put('/employees/{id}',  [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
-Route::get('/employees-meta',  [EmployeeController::class, 'meta']);    // รายการตำแหน่ง/แผนก/ทีม
 });
