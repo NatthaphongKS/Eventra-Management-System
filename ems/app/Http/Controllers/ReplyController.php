@@ -74,6 +74,7 @@ class ReplyController extends Controller
                 'con_answer' => $data['attend'],                   // หรือ $answer
                 'con_reason' => $data['reason'],
             ]);
+            
 
 
         return response()->json(['ok' => true], 201);
