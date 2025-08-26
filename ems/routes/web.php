@@ -7,6 +7,8 @@ use App\Http\Controllers\LoginController;
 // หน้า login ของ Vue (ไม่ครอบ auth)
 Route::get('/login', fn() => view('spa'))->name('login');
 
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 // ทำ login (ไม่ครอบ auth)
 Route::post('/logined', [LoginController::class, 'login'])->name('logined');
 

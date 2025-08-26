@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\DashboardController;
 
 // ตัวอย่าง API ที่ต้อง login (คุณมีอะไรใช้ก็ครอบไว้ได้)
 Route::middleware(['web','auth'])->group(function () {
@@ -13,7 +14,7 @@ Route::middleware(['web','auth'])->group(function () {
     Route::get('/event-info', [EventController::class, 'eventInfo']);
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
-
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']);
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
