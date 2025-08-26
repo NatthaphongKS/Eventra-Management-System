@@ -6,7 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
 
 // ตัวอย่าง API ที่ต้อง login (คุณมีอะไรใช้ก็ครอบไว้ได้)
-Route::middleware(['web','auth'])->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::get('/meta', [EmployeeController::class, 'meta']);
     Route::get('/get-employees', [EmployeeController::class, 'index']);
@@ -19,5 +19,10 @@ Route::middleware(['web','auth'])->group(function () {
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
     Route::post('/event-save', [EventController::class, 'store']);
+    Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
 
+    Route::get('/employees/{id}',  [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
+    Route::put('/employees/{id}',  [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
+    Route::get('/employees-meta',  [EmployeeController::class, 'meta']);    // รายการตำแหน่ง/แผนก/ทีม
 });

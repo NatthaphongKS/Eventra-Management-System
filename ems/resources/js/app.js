@@ -1,6 +1,4 @@
-import { createApp } from 'vue';
 import '../css/app.css'
-import App from './App.vue';
 import axios from 'axios'
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
