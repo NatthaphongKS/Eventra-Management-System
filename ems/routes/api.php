@@ -3,7 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
-
+use App\Http\Controllers\CategoryController;
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
 Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
@@ -26,9 +26,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     Route::post('/event-save', [EventController::class, 'store']);
     Route::post('/edit-event', [EventController::class, 'Edit_event']);
-
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::delete('/events/{id}/attachments/{attId}', [EventController::class, 'deleteAttachment']);
 
     // (ถ้าคุณยังมี index() อยู่และใช้งาน ก็เก็บไว้)
     Route::get('/event', [EventController::class, 'index']);
+
+    // === Category ===
+    Route::get('/categories', [CategoryController::class, 'index']);
 });
