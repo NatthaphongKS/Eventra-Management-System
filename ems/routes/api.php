@@ -5,6 +5,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ReplyController;
+use App\Http\Controllers\CategoryController;
 
 // ตัวอย่าง API ที่ต้อง login (คุณมีอะไรใช้ก็ครอบไว้ได้)
 Route::middleware(['web', 'auth'])->group(function () {
@@ -27,11 +28,17 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/employees/{id}',  [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
     Route::put('/employees/{id}',  [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
     Route::get('/employees-meta',  [EmployeeController::class, 'meta']);    // รายการตำแหน่ง/แผนก/ทีม
-
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+    Route::post('categories', [CategoryController::class, 'store']);
 
 });
 
 
 Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
+
+
+
+
 
