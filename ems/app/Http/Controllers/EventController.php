@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Event;
 use App\Models\Employee;
 use App\Models\Position;
@@ -21,43 +22,119 @@ class EventController extends Controller
     public function edit($id) // GET /api/edit_event/{id}
     {
         $event = Event::findOrFail($id);
-        return response()->json(['event' => $event]);
+
+        $files = DB::table('ems_event_files')
+            ->where('file_event_id', $event->id)
+            ->select('id', 'file_name', 'file_path', 'file_type', 'file_size', 'uploaded_at')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($f) {
+                $f->url = Storage::disk('public')->url($f->file_path); // /storage/...
+                return $f;
+            });
+
+        return response()->json([
+            'event' => $event,
+            'files' => $files, // ← ส่งกลับไป
+        ]);
     }
 
     public function Edit_event(Request $request)
-    {
-        $data = $request->validate([
-            'id' => 'required|integer|exists:ems_event,id',
-            'evn_title' => 'required|string|max:255',
-            'evn_category_id' => 'required|integer|exists:ems_categories,id',
-            'evn_description' => 'nullable|string',
-            'evn_date' => 'required|date',
-            'evn_timestart' => 'required',
-            'evn_timeend' => 'required',
-            'evn_location' => 'required|string|max:255',
-        ]);
+{
+    $data = $request->validate([
+        'id'              => 'required|integer|exists:ems_event,id',
+        'evn_title'       => 'required|string|max:255',
+        'evn_category_id' => 'required|integer|exists:ems_categories,id',
+        'evn_description' => 'nullable|string',
+        'evn_date'        => 'required|date',
+        'evn_timestart'   => 'required',
+        'evn_timeend'     => 'required',
+        'evn_location'    => 'required|string|max:255',
 
-        $event = Event::findOrFail($data['id']);
-        $event->evn_title = $data['evn_title'];
+        // ไฟล์ใหม่ (อาจไม่มี)
+        'attachments'     => 'sometimes|array',
+        'attachments.*'   => 'file|max:51200|mimes:pdf,txt,doc,docx,jpg,jpeg,png,xlsx,xls',
+
+        // id ไฟล์เดิมที่ติ๊กเพื่อลบ
+        'delete_file_ids'   => 'sometimes|array',
+        'delete_file_ids.*' => 'integer|exists:ems_event_files,id',
+    ]);
+
+    return DB::transaction(function () use ($request, $data) {
+        $event = Event::lockForUpdate()->findOrFail($data['id']);
+
+        // 1) อัปเดตข้อมูลทั่วไป
+        $event->evn_title       = $data['evn_title'];
         $event->evn_description = $data['evn_description'] ?? null;
-        $event->evn_date = $data['evn_date'];
-        $event->evn_timestart = $data['evn_timestart'];
-        $event->evn_timeend = $data['evn_timeend'];
-        $event->evn_location = $data['evn_location'];
-        $event->evn_file = $data['evn_file'] ?? $event->evn_file;
-
+        $event->evn_date        = $data['evn_date'];
+        $event->evn_timestart   = $data['evn_timestart'];
+        $event->evn_timeend     = $data['evn_timeend'];
+        $event->evn_location    = $data['evn_location'];
         $event->evn_category_id = $data['evn_category_id'];
         $event->save();
 
-        // ส่งชื่อหมวดหมู่กลับไปด้วย
+        // 2) ลบไฟล์เดิมตามที่ผู้ใช้เลือก
+        if ($request->filled('delete_file_ids')) {
+            $ids = array_unique($request->input('delete_file_ids', []));
+            $filesToDelete = DB::table('ems_event_files')
+                ->where('file_event_id', $event->id)
+                ->whereIn('id', $ids)
+                ->get();
+
+            foreach ($filesToDelete as $f) {
+                Storage::disk('public')->delete($f->file_path);
+            }
+
+            DB::table('ems_event_files')
+                ->where('file_event_id', $event->id)
+                ->whereIn('id', $ids)
+                ->delete();
+        }
+
+        // 3) เพิ่มไฟล์ใหม่ (ถ้ามี)
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store("events/{$event->id}", 'public');
+
+                DB::table('ems_event_files')->insert([
+                    'file_event_id' => $event->id,
+                    'file_name'     => $file->getClientOriginalName(),
+                    'file_path'     => $path,
+                    'file_type'     => $file->getClientMimeType(),
+                    'file_size'     => $file->getSize(),
+                    'uploaded_at'   => now(),
+                ]);
+            }
+        }
+
+        // 4) คำนวณสถานะ evn_file จากจำนวนไฟล์ที่เหลือจริง
+        $remain = DB::table('ems_event_files')
+            ->where('file_event_id', $event->id)
+            ->count();
+
+        $event->evn_file = $remain > 0 ? 'have' : 'not_have';
+        $event->save();
+
+        // 5) ตอบกลับ event + ชื่อหมวด + รายการไฟล์ล่าสุด
         $event->load(['category:id,cat_name']);
+        $files = DB::table('ems_event_files')
+            ->where('file_event_id', $event->id)
+            ->select('id','file_name','file_path','file_type','file_size','uploaded_at')
+            ->orderBy('id','asc')
+            ->get()
+            ->map(function ($f) {
+                $f->url = Storage::disk('public')->url($f->file_path);
+                return $f;
+            });
 
         return response()->json([
-            'message' => 'อัปเดตข้อมูลอีเวนต์สำเร็จ',
-            'event' => $event,
+            'message'       => 'อัปเดตข้อมูลอีเวนต์สำเร็จ',
+            'event'         => $event,
             'category_name' => optional($event->category)->cat_name,
+            'files'         => $files,
         ]);
-    }
+    });
+}
     function eventInfo()
     {
         $employees = Employee::join('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
