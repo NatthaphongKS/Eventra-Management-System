@@ -21,6 +21,7 @@ class Category extends Model
     protected $fillable = [
         'cat_name',
         'cat_delete_status',
+        'cat_create_at',
     ];
 
     // ตารางนี้ไม่มี created_at/updated_at
