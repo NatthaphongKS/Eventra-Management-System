@@ -1,56 +1,26 @@
-version: "3.9"
-
 services:
   app:
-    build: .
+    image: php:8.2-apache
     container_name: laravel_app
-    ports:
-      - "8080:80"              # เว็บ Laravel เปิดที่ http://localhost:8080
+    ports: ["8080:80"]            
     volumes:
-      - ./:/var/www/html       # เมานต์โค้ดทั้งโปรเจกต์
+      - ./:/var/www/html
     environment:
       APACHE_DOCUMENT_ROOT: /var/www/html/public
-    depends_on:
-      - db
-    networks:
-      - appnet
-
-  node:
-    image: node:20-alpine
-    container_name: vite_dev
-    working_dir: /app
-    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
-    ports:
-      - "5173:5173"            # Vite dev server (HMR) http://localhost:5173
-    volumes:
-      - ./:/app
-    networks:
-      - appnet
-
-  db:
-    image: mysql:8.0
-    container_name: mysql_db
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      MYSQL_DATABASE: Byteforge
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: root
-    ports:
-      - "3306:3306"
-    volumes:
-      - dbdata:/var/lib/mysql
-    networks:
-      - appnet
-
-  phpmyadmin:
-    image: phpmyadmin:5
-    ports: ["8081:80"]
-    environment:
-      PMA_HOST: db
-    depends_on: [db]
+    depends_on: [node]
     networks: [appnet]
 
+  node:
+    image: node:20
+    container_name: vite_dev
+    working_dir: /app
+    command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports: ["5173:5173"]          
+    environment:
+      CHOKIDAR_USEPOLLING: "true" 
+    volumes:
+      - ./:/app
+    networks: [appnet]
 
 volumes:
   dbdata:

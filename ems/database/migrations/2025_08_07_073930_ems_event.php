@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('cat_name'); // ⬅️ เอา ->unique() ออก
             $table->enum('cat_delete_status', ['active', 'inactive'])->default('active');
-
-            // ⬇️ ใส่ unique แบบคอมโพสิท
-            $table->unique(['cat_name', 'cat_delete_status'], 'ems_categories_name_status_unique');
+            $table->date('cat_created_at')->useCurrent();
+            $table->foreignId('cat_created_by')->constrained('ems_employees')->onDelete('cascade');
+            $table->timestamp('cat_deleted_at')->nullable();
+            $table->string('cat_deleted_by')->constrained('ems_employees')->onDelete('cascade')->nullable();
         });
 
         Schema::create('ems_event', function (Blueprint $table) {
@@ -35,7 +36,7 @@ return new class extends Migration
             $table->timestamp('evn_created_at')->useCurrent();
             $table->timestamp('evn_deleted_at')->nullable();
             $table->foreignId('evn_deleted_by')->nullable()->constrained('ems_employees')->nullOnDelete();
-            $table->enum('evn_status', ['scheduled', 'ongoing', 'completed', 'cancelled'])->default('scheduled');
+            $table->enum('evn_status', ['upcoming','done','deleted'])->default('upcoming');
         });
 
         Schema::create('ems_connect', function (Blueprint $table) {
@@ -67,5 +68,6 @@ return new class extends Migration
         Schema::dropIfExists('ems_connect');
         Schema::dropIfExists('ems_event');
         Schema::dropIfExists('ems_categories');
+        Schema::dropIfExists('ems_event_files');
     }
 };
