@@ -90,6 +90,7 @@ class DatabaseSeeder extends Seeder
             'emp_password'      => Hash::make('Pass1234'),
             'emp_permission'        => 'disabled',
             'emp_delete_status' => 'active',
+            'emp_create_by'     => 1,
         ]);
         Employee::create([
             'emp_id'            => 'CN0002',
@@ -106,6 +107,8 @@ class DatabaseSeeder extends Seeder
             'emp_password'      => Hash::make('Pass1234'),
             'emp_permission'        => 'disabled',
             'emp_delete_status' => 'active',
+            'emp_create_by'     => 1,
+
         ]);
         Category::create([
             'cat_name' => 'ประชุม',
