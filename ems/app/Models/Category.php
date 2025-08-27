@@ -19,9 +19,9 @@ class Category extends Model
 
     // ให้ตรงกับชื่อคอลัมน์ใน DB
     protected $fillable = [
-        'emc_name',
-        'ems_delete_status',
-        'ems_create_at',
+        'cat_name',
+        'cat_delete_status',
+        'cat_create_at',
         'ems_create_by',
         'ems_delete_at',
         'ems_delete_by',
