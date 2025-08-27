@@ -106,7 +106,7 @@ export default {
 
     computed: {
         show() {
-            console.log('reply_status:', this.reply_status === 'invalid')
+            //console.log('reply_status (Show):', this.reply_status === 'invalid')
             return this.reply_status === 'invalid'
         },
         // แสดง "30 กันยายน 2025 เวลา 13.00 - 14.00 น."
@@ -145,6 +145,7 @@ export default {
 
         async fetchFromApi(evn_ID, emp_ID) {
             try {
+            console.log('Fetching data for evn_ID:', evn_ID, 'emp_ID:', emp_ID),
                 this.loading = true
                 const { data } = await axios.get(`/api/reply/${evn_ID}/${emp_ID}`, {
                     headers: { Accept: 'application/json' }
@@ -195,6 +196,7 @@ export default {
                     reason: this.form.reason ,
                 }
                 console.log('payload:', payload)
+                console.log('evn_ID:', this.evn_ID, 'emp_ID:', this.emp_ID, this.form.attend, this.form.reason)
                 console.log('POST /api/store', payload)   // ดูใน Console ให้มีค่าจริง
                 await axios.post('/api/store', payload, { headers: { Accept: 'application/json' } })
                 //alert('บันทึกคำตอบเรียบร้อย ขอบคุณค่ะ')

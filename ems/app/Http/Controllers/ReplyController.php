@@ -69,7 +69,7 @@ class ReplyController extends Controller
 
         // // อัปเดตถ้ามีคู่นี้อยู่แล้ว ไม่มีก็สร้างใหม่
         $updated = Connect::where('con_event_id', $data['evn_id'])
-            ->where('con_employee_id', $data['evn_id'])
+            ->where('con_employee_id', $data['emp_id'])
             ->update([
                 'con_answer' => $data['attend'],                   // หรือ $answer
                 'con_reason' => $data['reason'],
