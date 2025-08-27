@@ -74,6 +74,10 @@ class DatabaseSeeder extends Seeder
             'emp_password'      => Hash::make('Pass1234'),
             'emp_permission'        => 'enabled',
             'emp_delete_status' => 'active',
+            'emp_create_by'     => null,
+            'emp_create_at'     => now(),
+            'emp_delete_by'     => null,
+            'emp_delete_at'     => null,
         ]);
         Employee::create([
             'emp_id'            => 'CN0001',
@@ -91,6 +95,9 @@ class DatabaseSeeder extends Seeder
             'emp_permission'        => 'disabled',
             'emp_delete_status' => 'active',
             'emp_create_by'     => 1,
+            'emp_create_at'     => now(),
+            'emp_delete_by'     => null,
+            'emp_delete_at'     => null,
         ]);
         Employee::create([
             'emp_id'            => 'CN0002',
@@ -108,6 +115,9 @@ class DatabaseSeeder extends Seeder
             'emp_permission'        => 'disabled',
             'emp_delete_status' => 'active',
             'emp_create_by'     => 1,
+            'emp_create_at'     => now(),
+            'emp_delete_by'     => null,
+            'emp_delete_at'     => null,
 
         ]);
         Category::create([
