@@ -11,7 +11,12 @@ class Category extends Model
 
     protected $fillable = [
         'cat_name',
-        'cat_delete_status',
+        'cat_deleted_status',
+        'cat_created_at',
+        'cat_created_by',
+        'cat_deleted_at',
+        'cat_deleted_by',
+
     ];
 
     public $timestamps = false;
@@ -19,5 +24,13 @@ class Category extends Model
     public function events()
     {
         return $this->hasMany(Event::class, 'evn_category_id');
+    }
+    public function creator()
+    {
+        return $this->belongsTo(Employee::class, 'cat_created_by');
+    }
+    public function deleter()
+    {
+        return $this->belongsTo(Employee::class, 'cat_deleted_by');
     }
 }
