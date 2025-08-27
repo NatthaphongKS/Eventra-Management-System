@@ -110,17 +110,17 @@ class EventController extends Controller
 
             // 1) สร้างกิจกรรม
             $event = Event::create([
-                'evn_title' => $data['event_title'],
-                'evn_category_id' => $data['event_category_id'],
-                'evn_description' => $data['event_description'] ?? null,
-                'evn_date' => $data['event_date'],
-                'evn_timestart' => $data['event_timestart'],
-                'evn_timeend' => $data['event_timeend'],
-                'evn_duration' => $hours,
-                'evn_location' => $data['event_location'],
-                'evn_file' => $request->hasFile('attachments') ? 'have' : 'not_have',
-                'evn_create_by' => Auth::id(),
-                'evn_status' => 'scheduled',
+                'evn_title'        => $data['event_title'],
+                'evn_category_id'  => $data['event_category_id'],
+                'evn_description'  => $data['event_description'] ?? null,
+                'evn_date'         => $data['event_date'],
+                'evn_timestart'    => $data['event_timestart'],
+                'evn_timeend'      => $data['event_timeend'],
+                'evn_duration'     => $hours,
+                'evn_location'     => $data['event_location'],
+                'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
+                'evn_create_by'    => Auth::id(),
+                'evn_status'       => 'upcoming',
             ]);
 
             // 2) อัปโหลดไฟล์ + บันทึก ems_event_files + เก็บรายการไว้สำหรับแนบในอีเมล
