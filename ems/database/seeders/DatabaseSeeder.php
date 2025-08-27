@@ -10,40 +10,23 @@ use App\Models\Category;
 use App\Models\Company;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Database\Seeders\PositionSeeder;
+use Database\Seeders\DepartmentSeeder;
+use Database\Seeders\TeamSeeder;
+
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Team::create([
-            'tm_name' => 'Team1',
-        ]);
-        Team::create([
-            'tm_name' => 'Team2',
-        ]);
-        Team::create([
-            'tm_name' => 'Team3',
+        $this->call([
+            PositionSeeder::class,
+            DepartmentSeeder::class,
+            TeamSeeder::class,
         ]);
 
-        Department::create([
-            'dpm_name' => 'Department1',
-        ]);
-        Department::create([
-            'dpm_name' => 'Department2',
-        ]);
-        Department::create([
-            'dpm_name' => 'Department3',
-        ]);
 
-        Position::create([
-            'pst_name' => 'Administrator',
-        ]);
-        Position::create([
-            'pst_name' => 'Human Resources',
-        ]);
-        Position::create([
-            'pst_name' => 'Position1',
-        ]);
 
         Company::create([
             'com_name' => 'CN',
@@ -74,6 +57,10 @@ class DatabaseSeeder extends Seeder
             'emp_password'      => Hash::make('Pass1234'),
             'emp_permission'        => 'enabled',
             'emp_delete_status' => 'active',
+            'emp_create_by'     => null,
+            'emp_create_at'     => now(),
+            'emp_delete_by'     => null,
+            'emp_delete_at'     => null,
         ]);
         Employee::create([
             'emp_id'            => 'CN0001',
@@ -90,6 +77,10 @@ class DatabaseSeeder extends Seeder
             'emp_password'      => Hash::make('Pass1234'),
             'emp_permission'        => 'disabled',
             'emp_delete_status' => 'active',
+            'emp_create_by'     => 1,
+            'emp_create_at'     => now(),
+            'emp_delete_by'     => null,
+            'emp_delete_at'     => null,
         ]);
         Employee::create([
             'emp_id'            => 'CN0002',
@@ -106,6 +97,11 @@ class DatabaseSeeder extends Seeder
             'emp_password'      => Hash::make('Pass1234'),
             'emp_permission'        => 'disabled',
             'emp_delete_status' => 'active',
+            'emp_create_by'     => 1,
+            'emp_create_at'     => now(),
+            'emp_delete_by'     => null,
+            'emp_delete_at'     => null,
+
         ]);
         Category::create([
             'cat_name' => 'ประชุม',

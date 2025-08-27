@@ -77,7 +77,7 @@ class EventController extends Controller
                 'evn_location'     => $data['event_location'],
                 'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
                 'evn_create_by'    => Auth::id(),
-                'evn_status'       => 'scheduled',
+                'evn_status'       => 'upcoming',
             ]);
 
             // 2) อัปโหลดไฟล์ + บันทึก ems_event_files + เก็บรายการไว้สำหรับแนบในอีเมล
