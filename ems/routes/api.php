@@ -13,7 +13,6 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/get-employees', [EmployeeController::class, 'index']);
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
-    Route::get('/edit_event/{id}', [EventController::class, 'edit']);
 
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']);
@@ -25,8 +24,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
     Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     Route::post('/event-save', [EventController::class, 'store']);
-    Route::post('/edit-event', [EventController::class, 'Edit_event']);
+    // Route::post('/edit-event', [EventController::class, 'Edit_event']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']);
+
 
     // (ถ้าคุณยังมี index() อยู่และใช้งาน ก็เก็บไว้)
     Route::get('/event', [EventController::class, 'index']);
