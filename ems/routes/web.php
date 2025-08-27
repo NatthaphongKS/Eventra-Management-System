@@ -2,7 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ReplyController;
 
+
+
+Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
 
 // หน้า login ของ Vue (ไม่ครอบ auth)
 Route::get('/login', fn() => view('spa'))->name('login');
@@ -41,12 +45,11 @@ END:VCALENDAR";
     ]);
 });
 
-// ทุก path อื่น ๆ ต้อง login ก่อน
+
+//ทุก path อื่น ๆ ต้อง login ก่อน
 Route::middleware('auth')->group(function () {
-    Route::get('/{any}', fn() => view('spa'))->where('any', '.*');
+   Route::get('/{any}', fn() => view('spa'))->where('any', '.*');
 });
 
-//my
-use App\Http\Controllers\ReplyController;
 
 Route::post('/replies', [ReplyController::class, 'store']);
