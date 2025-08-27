@@ -26,7 +26,7 @@ const routes = [
   { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
 
   // [เพิ่ม] เส้นทางหน้าแก้ไขพนักงาน
-  { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Edit Employee' } },
+  { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Employee' } },
 ]
 
 export default createRouter({

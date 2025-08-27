@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen">
+  <div class="min-screen">
     <header class="max-w-6xl mx-auto px-6 pt-6"></header>
 
     <section class="px-6 py-8">
-      <div class="bg-white max-w-3xl mx-auto rounded-2xl border">
+      <div class=" max-w-1xl mx-auto rounded-2xl ">
         <div class="px-6 py-5">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-800">
