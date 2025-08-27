@@ -17,6 +17,7 @@ use App\Mail\EventInvitation;
 
 class EventController extends Controller
 {
+
     // ดึงข้อมูลทั้งหมดสำหรับแบบฟอร์มเดียว
     public function eventInfo()
     {
