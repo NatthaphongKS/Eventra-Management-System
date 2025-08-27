@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\Category;
+use App\Models\Company;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -45,9 +46,23 @@ class DatabaseSeeder extends Seeder
             'pst_name' => 'Position1',
         ]);
 
+        Company::create([
+            'com_name' => 'CN',
+        ]);
+        Company::create([
+            'com_name' => 'CNI',
+        ]);
+        Company::create([
+            'com_name' => 'CNT',
+        ]);
+        Company::create([
+            'com_name' => 'WA',
+        ]);
+
 
         Employee::create([
             'emp_id'            => 'CN0000',
+            'emp_company_id'  => '1',
             'emp_prefix'        => 'นาย',
             'emp_firstname'     => 'แอดมิน',
             'emp_lastname'      => 'แอดมิน',
@@ -63,6 +78,7 @@ class DatabaseSeeder extends Seeder
         ]);
         Employee::create([
             'emp_id'            => 'CN0001',
+            'emp_company_id'  => '1',
             'emp_prefix'        => 'นาย',
             'emp_firstname'     => 'ชิตดนัย',
             'emp_lastname'      => 'หล่อสุด',
@@ -78,6 +94,7 @@ class DatabaseSeeder extends Seeder
         ]);
         Employee::create([
             'emp_id'            => 'CN0002',
+            'emp_company_id'  => '1',
             'emp_prefix'        => 'นาย',
             'emp_firstname'     => 'ณัฐพงศ์',
             'emp_lastname'      => 'คงคำมา',
@@ -94,14 +111,17 @@ class DatabaseSeeder extends Seeder
         Category::create([
             'cat_name' => 'ประชุม',
             'cat_delete_status' => 'active',
+            'cat_created_by' => 1,
         ]);
         Category::create([
             'cat_name' => 'สัมนา',
             'cat_delete_status' => 'active',
+            'cat_created_by' => 1,
         ]);
         Category::create([
             'cat_name' => 'อบรม',
             'cat_delete_status' => 'active',
+            'cat_created_by' => 1,
         ]);
 
     }
