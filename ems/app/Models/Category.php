@@ -10,12 +10,12 @@ class Category extends Model
     protected $table = 'ems_categories';
 
     protected $fillable = [
-        'emc_name',
-        'ems_delete_status',
-        'ems_create_at',
-        'ems_create_by',
-        'ems_delete_at',
-        'ems_delete_by',
+        'cat_name',
+        'cat_deleted_status',
+        'cat_created_at',
+        'cat_created_by',
+        'cat_deleted_at',
+        'cat_deleted_by',
 
     ];
 
