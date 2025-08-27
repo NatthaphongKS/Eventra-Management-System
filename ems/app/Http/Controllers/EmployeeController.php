@@ -28,10 +28,12 @@ class EmployeeController extends Controller
                 'e.emp_nickname','e.emp_email','e.emp_phone',
                 'e.emp_position_id','e.emp_department_id','e.emp_team_id',
                 'e.emp_permission','e.emp_delete_status',
-                // 'e.created_at', // <-- ถ้าตารางมีคอลัมน์นี้อยู่จริง ให้เอา comment ออก
+                'e.emp_create_at', // <-- ถ้าตารางมีคอลัมน์นี้อยู่จริง ให้เอา comment ออก
                 'p.pst_name  as position_name',
                 'd.dpm_name  as department_name',
-                't.tm_name   as team_name'
+                't.tm_name   as team_name',
+
+
             )
             ->where(function ($q) {
                 $q->where('e.emp_delete_status', 'active')
