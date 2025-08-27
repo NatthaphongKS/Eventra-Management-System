@@ -16,32 +16,66 @@ class CategoryController extends Controller
                        ->get();
     }
 
-    public function store(Request $request)
-    {
-        // ✅ validate key cat_name ให้ตรง migration
-        $validated = $request->validate([
-            'cat_name' => [
-                'required','string','max:255',
-                Rule::unique('ems_categories','cat_name')
-                    ->where('cat_delete_status','active'), // กันซ้ำเฉพาะ active
-            ],
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'cat_name' => ['required','string','max:255'],
+    ]);
 
-        $category = Category::create([
-            'cat_name' => $validated['cat_name'],
+    $name = $validated['cat_name'];
+
+    // ถ้ามี inactive ชื่อเดียวกัน → Reactivate และอัปเดตเวลาใหม่
+    $inactive = Category::where('cat_name', $name)
+        ->where('cat_delete_status', 'inactive')
+        ->first();
+
+    if ($inactive) {
+        $inactive->update([
             'cat_delete_status' => 'active',
+            'cat_create_at'     => now(),   // ← อัปเดตทุกครั้งที่ Reactivate
         ]);
-
-        // ส่งกลับ 201 + ข้อมูลที่สร้าง
-        return response()->json($category, 201);
+        return response()->json($inactive, 200);
     }
 
-    public function destroy($id)
-    {
-        // soft delete -> เปลี่ยนสถานะเป็น inactive
-        $category = Category::findOrFail($id);
-        $category->update(['cat_delete_status' => 'inactive']);
+    // กันซ้ำใน active
+    $existsActive = Category::where('cat_name', $name)
+        ->where('cat_delete_status', 'active')
+        ->exists();
 
-        return response()->json(['message' => 'ok']);
+    if ($existsActive) {
+        return response()->json([
+            'message' => 'ชื่อหมวดหมู่ซ้ำ (active อยู่แล้ว)',
+        ], 422);
     }
+
+    // สร้างใหม่ + เวลา
+    $category = Category::create([
+        'cat_name'          => $name,
+        'cat_delete_status' => 'active',
+        'cat_created_by'   => auth()->id(),
+        'cat_create_at'     => now(),     // ← เก็บเวลาตอนสร้าง
+    ]);
+
+    return response()->json($category, 201);
+}
+
+public function destroy($id)
+{
+    $category = Category::findOrFail($id);
+
+    $countInactive = Category::where('cat_name', 'LIKE', $category->cat_name.'%')
+        ->where('cat_delete_status', 'inactive')
+        ->count();
+
+    $payload = ['cat_delete_status' => 'inactive'];
+
+    if ($countInactive > 0) {
+        $suffix = str_pad($countInactive, 2, '0', STR_PAD_LEFT);
+        $payload['cat_name'] = $category->cat_name . '_' . $suffix;
+    }
+
+    $category->update($payload);
+
+    return response()->json(['message' => 'ok']);
+}
 }

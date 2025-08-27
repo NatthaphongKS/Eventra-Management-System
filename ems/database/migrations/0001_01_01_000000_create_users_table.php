@@ -26,9 +26,15 @@ return new class extends Migration
             $table->string('tm_name')->unique();
             $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
         });
+        Schema::create('ems_company', function (Blueprint $table) {
+            $table->id();
+            $table->string('com_name')->unique();
+            $table->enum('com_delete_status', ['active', 'inactive'])->default('active');
+        });
         Schema::create('ems_employees', function (Blueprint $table) {
             $table->id();
             $table->string('emp_id')->unique();
+            $table->foreignId('emp_company_id')->constrained('ems_company')->onDelete('cascade');
             $table->enum('emp_prefix',['นาย', 'นาง', 'นางสาว'])->default('นาย');
             $table->string('emp_firstname');
             $table->string('emp_lastname');
@@ -41,8 +47,11 @@ return new class extends Migration
             $table->foreignId('emp_team_id')->constrained('ems_team')->onDelete('cascade');
             $table->string('emp_password');
             $table->enum('emp_permission', ['enabled', 'disabled'])->default('disabled');
+            $table->date('emp_create_at')->useCurrent();
+            $table->unsignedBigInteger('emp_create_by')->nullable();
             $table->enum('emp_delete_status', ['active', 'inactive'])->default('active');
-            $table->string('emp_delete_by')->nullable();
+            $table->date('emp_delete_at')->nullable();
+            $table->unsignedBigInteger('emp_delete_by')->nullable();
             $table->rememberToken()->nullable();
         });
 
@@ -64,6 +73,7 @@ return new class extends Migration
         Schema::dropIfExists('ems_employees');
         Schema::dropIfExists('ems_position');
         Schema::dropIfExists('ems_department');
+        Schema::dropIfExists('ems_company');
         Schema::dropIfExists('ems_team');
         Schema::dropIfExists('users');
         Schema::dropIfExists('sessions');
