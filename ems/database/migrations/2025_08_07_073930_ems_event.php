@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('ems_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('cat_name'); // ⬅️ เอา ->unique() ออก
+            $table->string('cat_name')->unique(); // ⬅️ เอา ->unique() ออก
             $table->enum('cat_delete_status', ['active', 'inactive'])->default('active');
             $table->date('cat_created_at')->useCurrent();
             $table->foreignId('cat_created_by')->constrained('ems_employees')->onDelete('cascade');
