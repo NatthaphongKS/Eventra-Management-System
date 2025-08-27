@@ -52,6 +52,7 @@ public function store(Request $request)
     $category = Category::create([
         'cat_name'          => $name,
         'cat_delete_status' => 'active',
+        'cat_created_by'   => auth()->id(),
         'cat_create_at'     => now(),     // ← เก็บเวลาตอนสร้าง
     ]);
 
