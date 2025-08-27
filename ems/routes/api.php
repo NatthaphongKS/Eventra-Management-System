@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HistoryEmployeeController;
+use App\Http\Controllers\HistoryEventController;
 
 // ตัวอย่าง API ที่ต้อง login (คุณมีอะไรใช้ก็ครอบไว้ได้)
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
@@ -31,6 +32,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
     Route::get('/history/employees', [HistoryEmployeeController::class, 'index']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::get('/history/events', [HistoryEventController::class, 'eventInfo']);
 
     // (ถ้าคุณยังมี index() อยู่และใช้งาน ก็เก็บไว้)
     Route::get('/event', [EventController::class, 'index']);
