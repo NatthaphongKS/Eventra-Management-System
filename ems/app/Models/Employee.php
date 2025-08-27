@@ -17,6 +17,7 @@ class Employee extends Authenticatable
 
     protected $fillable = [
         'emp_id',
+        'emp_company_id',
         'emp_prefix',
         'emp_firstname',
         'emp_lastname',
@@ -29,6 +30,8 @@ class Employee extends Authenticatable
         'emp_department_id',
         'emp_team_id',
         'emp_permission',
+        'emp_create_at',
+        'emp_create_by',
         'emp_delete_status',
         'emp_delete_by',
     ];
@@ -41,6 +44,14 @@ class Employee extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'emp_company_id');
+    }
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'emp_create_by');
+    }
     public function events()
     {
         return $this->belongsToMany(Event::class, 'ems_connect', 'con_employee_id', 'con_event_id')
