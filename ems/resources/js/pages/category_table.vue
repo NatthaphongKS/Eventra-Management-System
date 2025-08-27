@@ -185,126 +185,259 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * ===== Imports =====
+ */
 import { computed, ref, onMounted } from "vue";
 import Swal from "sweetalert2";
+import axios from "axios";
 
+/**
+ * ===== Axios base config =====
+ * ถ้าใช้ dev server proxy ไป Laravel ให้ตั้ง baseURL เป็น /api
+ */
+axios.defaults.baseURL = "/api";
+axios.defaults.headers.common["Accept"] = "application/json";
+axios.defaults.withCredentials = true;
+
+/**
+ * ===== CSRF (สำหรับเส้นทางที่อยู่หลัง web + auth) =====
+ */
+async function ensureCsrf() {
+  try {
+    await axios.get("/sanctum/csrf-cookie");
+  } catch (e) {
+    console.error("Get CSRF cookie failed:", e);
+  }
+}
+
+/**
+ * ===== Types =====
+ * createdAt รองรับ null เพราะเราไม่ใช้เวลาปัจจุบันเป็นค่า fallback
+ */
 type Row = {
   id: number;
   name: string;
   createdBy: string;
-  createdAt: string; // ISO string
+  createdAt: string | null; // ISO หรือ null
 };
 
-/* ข้อมูลเริ่มต้นว่าง (ต้องเพิ่มเอง) */
+/**
+ * ===== State =====
+ */
 const rows = ref<Row[]>([]);
-
-/* ผู้ใช้ปัจจุบัน (ดึงจากระบบจริงได้) */
-const userName = ref("สมใจ");
-
-/* state */
 const query = ref("");
 const page = ref(1);
 const pageSize = ref(10);
-
-/* sort: 'desc' = วันที่ล่าสุด, 'asc' = วันที่เก่าสุด */
 const sortOpen = ref(false);
-const sortDir = ref<'asc'|'desc'>('desc');
-
-/* modal */
+const sortDir = ref<"asc" | "desc">("desc");
 const addOpen = ref(false);
 const newName = ref("");
+const loading = ref(false);
 
-function openAdd() { newName.value = ""; addOpen.value = true; }
-function closeAdd() { addOpen.value = false; }
+// ใช้แสดงชื่อผู้สร้างใน UI เท่านั้น (ฝั่ง DB อาจไม่เก็บจริง)
+const userName = ref("");
 
-function onSearch() { page.value = 1; }
-function applySort(dir: 'asc'|'desc') { sortDir.value = dir; sortOpen.value = false; page.value = 1; }
-
-/* filter */
-const filtered = computed(() => {
-  const q = query.value.trim().toLowerCase();
-  if (!q) return rows.value.slice();
-  return rows.value.filter(r =>
-    r.name.toLowerCase().includes(q) || r.createdBy.toLowerCase().includes(q)
-  );
-});
-
-/* sort by createdAt (จริง/ISO) */
-const sorted = computed(() => {
-  const copy = filtered.value.slice();
-  const dir = sortDir.value === 'asc' ? 1 : -1;
-  copy.sort((a, b) => {
-    const ta = new Date(a.createdAt).getTime();
-    const tb = new Date(b.createdAt).getTime();
-    return (ta - tb) * dir;
-  });
-  return copy;
-});
-
-/* pagination */
-const total = computed(() => sorted.value.length);
-const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
-const startIndex = computed(() => (page.value - 1) * pageSize.value);
-const endIndex = computed(() => Math.min(startIndex.value + pageSize.value, total.value));
-const pagedRows = computed(() => sorted.value.slice(startIndex.value, endIndex.value));
-const visibleCountText = computed(() => total.value === 0 ? "0 จาก 0 รายการ" : `${endIndex.value} จาก ${total.value} รายการ`);
-
-/* actions */
-function createCategory() {
-  const name = newName.value.trim();
-  if (!name) return;
-  const nextId = Math.max(0, ...rows.value.map(r => r.id)) + 1;
-  rows.value.push({
-    id: nextId,
-    name,
-    createdBy: userName.value,
-    createdAt: new Date().toISOString(), // วัน-เวลาแบบเรียลไทม์
-  });
-  closeAdd();
-
-   // แจ้งเตือนหลังเพิ่มสำเร็จ
-  Swal.fire({
-    title: "เพิ่มหมวดหมู่สำเร็จ!",
-    text: `คุณได้เพิ่ม "${name}" แล้ว`,
-    icon: "success",
-    draggable: true
-  });
-
-}
-function remove(id: number) { rows.value = rows.value.filter(r => r.id !== id);
-Swal.fire({
-  title: "Are you sure?",
-  text: "You won't be able to revert this!",
-  icon: "warning",
-  showCancelButton: true,
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Yes, delete it!"
-}).then((result) => {
-  if (result.isConfirmed) {
-    Swal.fire({
-      title: "Deleted!",
-      text: "Your file has been deleted.",
-      icon: "success"
-    });
-  }
-});
+/**
+ * ===== Helpers =====
+ */
+function norm(s: string) {
+  return s.trim().toLowerCase();
 }
 
-/* display date D/M/Y */
-function formatDate(iso: string) {
+function toTime(iso?: string | null) {
+  const t = iso ? new Date(iso).getTime() : NaN;
+  return Number.isFinite(t) ? t : 0;
+}
+
+function formatDate(iso?: string | null) {
+  if (!iso) return "-";
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return "-";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 }
 
-/* ปิด dropdown เมื่อคลิกนอก */
+/**
+ * ===== Load categories from API =====
+ * ใช้เวลาใน DB เท่านั้น: cat_create_at หรือ created_at
+ */
+async function loadCategories() {
+  loading.value = true;
+  try {
+    const res = await axios.get("/categories");
+    const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+    rows.value = (data as any[]).map((c) => ({
+      id: c.id,
+      name: c.cat_name ?? c.emc_name ?? "",
+      createdBy: c.created_by ?? "-",
+      createdAt: c.cat_create_at ?? c.created_at ?? null, // ✅ เฉพาะเวลาจาก DB
+    }));
+  } catch (e: any) {
+    console.error("GET /categories failed:", e?.response || e);
+    Swal.fire({ title: "โหลดข้อมูลไม่สำเร็จ", text: e?.message ?? "", icon: "error" });
+  } finally {
+    loading.value = false;
+  }
+}
+
 onMounted(() => {
+  loadCategories();
+  // ปิดเมนู sort เมื่อคลิกนอก
   document.addEventListener("click", (e) => {
     const el = e.target as HTMLElement;
     if (!el.closest(".relative")) sortOpen.value = false;
   });
 });
+
+/**
+ * ===== UI actions =====
+ */
+function openAdd() {
+  newName.value = "";
+  addOpen.value = true;
+}
+function closeAdd() {
+  addOpen.value = false;
+}
+function onSearch() {
+  page.value = 1;
+}
+function applySort(dir: "asc" | "desc") {
+  sortDir.value = dir;
+  sortOpen.value = false;
+  page.value = 1;
+}
+
+/**
+ * ===== Derived =====
+ */
+const filtered = computed(() => {
+  const q = norm(query.value);
+  if (!q) return rows.value.slice();
+  return rows.value.filter((r) => norm(r.name).includes(q) || norm(r.createdBy).includes(q));
+});
+
+const sorted = computed(() => {
+  const copy = filtered.value.slice();
+  const dir = sortDir.value === "asc" ? 1 : -1;
+  copy.sort((a, b) => (toTime(a.createdAt) - toTime(b.createdAt)) * dir);
+  return copy;
+});
+
+const total = computed(() => sorted.value.length);
+const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
+const startIndex = computed(() => (page.value - 1) * pageSize.value);
+const endIndex = computed(() => Math.min(startIndex.value + pageSize.value, total.value));
+const pagedRows = computed(() => sorted.value.slice(startIndex.value, endIndex.value));
+const visibleCountText = computed(() =>
+  total.value === 0 ? "0 จาก 0 รายการ" : `${endIndex.value} จาก ${total.value} รายการ`
+);
+
+/**
+ * ===== Duplicate check (UI) =====
+ */
+const isDuplicate = computed(() => {
+  const name = norm(newName.value);
+  if (!name) return false;
+  return rows.value.some((r) => norm(r.name) === name);
+});
+
+/**
+ * ===== Create category =====
+ * ไม่ใช้เวลาปัจจุบันเป็น fallback:
+ * - ถ้า server ไม่ส่งเวลามา ให้ reload จาก DB
+ */
+async function createCategory() {
+  const name = newName.value.trim();
+  if (!name) return;
+
+  if (isDuplicate.value) {
+    Swal.fire({ title: "มีชื่อนี้อยู่แล้ว", text: `ชื่อ "${name}" ถูกใช้งานอยู่ในรายการ`, icon: "warning" });
+    return;
+  }
+
+  try {
+    await ensureCsrf();
+    const res = await axios.post("/categories", { cat_name: name });
+    const created = res.data?.data ?? res.data;
+
+    const dbTime: string | null = created?.cat_create_at ?? created?.created_at ?? null;
+
+    if (dbTime) {
+      rows.value.unshift({
+        id: created.id,
+        name: created.cat_name ?? name,
+        createdBy: userName.value || "-",
+        createdAt: dbTime, // ✅ ใช้เวลา DB เท่านั้น
+      });
+    } else {
+      // ถ้า API ไม่คืนเวลา เพื่อความถูกต้องให้โหลดจาก DB
+      await loadCategories();
+    }
+
+    closeAdd();
+    page.value = 1;
+    Swal.fire({ title: "เพิ่มหมวดหมู่สำเร็จ!", text: `เพิ่ม "${name}" เรียบร้อย`, icon: "success" });
+  } catch (err: any) {
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+
+    if (status === 422) {
+      const msg = data?.errors?.cat_name?.[0] || data?.message || "ข้อมูลไม่ถูกต้อง";
+      Swal.fire({ title: "เพิ่มไม่สำเร็จ", text: msg, icon: "error" });
+    } else {
+      Swal.fire({
+        title: `เพิ่มไม่สำเร็จ${status ? ` (HTTP ${status})` : ""}`,
+        text: typeof data === "string" ? data : JSON.stringify(data ?? {}, null, 2),
+        icon: "error",
+      });
+    }
+  }
+}
+
+/**
+ * ===== Soft delete =====
+ */
+function remove(id: number) {
+  Swal.fire({
+    title: "ARE YOU SURE TO DELETE?",
+    text: "ข้อมูลนี้จะถูกลบออกจากหน้าจอ (DB เก็บสถานะ inactive)",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+  }).then(async (result) => {
+    if (!result.isConfirmed) return;
+
+    const backup = rows.value.slice();
+    rows.value = rows.value.filter((r) => r.id !== id);
+
+    try {
+      await ensureCsrf();
+      await axios.delete(`/categories/${id}`);
+      const tp = totalPages.value || 1;
+      if (page.value > tp) page.value = tp;
+      Swal.fire({ title: "Deleted!", text: "ลบออกจากตารางแล้ว (ฐานข้อมูลยังเก็บแบบ inactive)", icon: "success" });
+    } catch (err: any) {
+      rows.value = backup;
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+      Swal.fire({
+        title: `ลบไม่สำเร็จ${status ? ` (HTTP ${status})` : ""}`,
+        text: typeof data === "string" ? data : JSON.stringify(data ?? {}, null, 2),
+        icon: "error",
+      });
+    }
+  });
+}
+
+// ===== Expose helpers for template (ถ้าใช้) =====
+const $formatDate = formatDate;
 </script>
