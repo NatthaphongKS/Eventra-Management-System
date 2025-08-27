@@ -10,40 +10,23 @@ use App\Models\Category;
 use App\Models\Company;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Database\Seeders\PositionSeeder;
+use Database\Seeders\DepartmentSeeder;
+use Database\Seeders\TeamSeeder;
+
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Team::create([
-            'tm_name' => 'Team1',
-        ]);
-        Team::create([
-            'tm_name' => 'Team2',
-        ]);
-        Team::create([
-            'tm_name' => 'Team3',
+        $this->call([
+            PositionSeeder::class,
+            DepartmentSeeder::class,
+            TeamSeeder::class,
         ]);
 
-        Department::create([
-            'dpm_name' => 'Department1',
-        ]);
-        Department::create([
-            'dpm_name' => 'Department2',
-        ]);
-        Department::create([
-            'dpm_name' => 'Department3',
-        ]);
 
-        Position::create([
-            'pst_name' => 'Administrator',
-        ]);
-        Position::create([
-            'pst_name' => 'Human Resources',
-        ]);
-        Position::create([
-            'pst_name' => 'Position1',
-        ]);
 
         Company::create([
             'com_name' => 'CN',
