@@ -22,19 +22,8 @@ class EventController extends Controller
     public function edit_pages($id) // GET /api/edit_event/{id}
     {
         $event = Event::join(
-            'ems_categories as cat', 'cat.id', '=', 'ems_event.evn_category_id'
-        )->select(
-            'ems_event.evn_title',
-            'ems_event.evn_category_id',
-            'ems_event.evn_description',
-            'ems_event.evn_date',
-            'ems_event.evn_timestart',
-            'ems_event.evn_timeend',
-            'ems_event.evn_duration',
-            'ems_event.evn_location'
-        )
-        ->where('id', $id)
-        ->first(); // ได้ Model ไม่ใช่ Collection
+            'ems_categories', 'ems_event.evn_category_id', '=', 'evn_category_id'
+        )->where('ems_event.id',$id)->first(); // ได้ Model ไม่ใช่ Collection
         return response()->json($event); // ส่งอ็อบเจ็กต์เดียว
     }
 
