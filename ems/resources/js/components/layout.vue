@@ -1,63 +1,93 @@
 <!-- resources/js/components/layout.vue -->
 <template>
-  <div class="min-h-screen bg-white">
-    <div class="grid min-h-screen grid-cols-[220px,1fr]">
-      <!-- Sidebar -->
-      <aside
-        class="sticky top-0 z-30 flex h-[100dvh] flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5"
-      >
-        <!-- Brand -->
-        <div class="mb-6 flex items-center gap-3 px-1">
-          <div class="grid h-9 w-9 place-items-center rounded-2xl bg-rose-100 text-rose-600">
-            <span class="text-lg font-extrabold">c</span>
-          </div>
-          <span class="text-[22px] font-semibold tracking-wide text-rose-600">Eventra</span>
+    <div class="min-h-screen bg-white">
+        <div class="grid min-h-screen grid-cols-[220px,1fr]">
+            <!-- Sidebar -->
+            <aside
+                class="sticky top-0 z-30 flex h-[100dvh] flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5"
+            >
+                <!-- Brand -->
+                <div class="mb-6 flex items-center gap-3 px-1">
+                    <div
+                        class="grid h-9 w-9 place-items-center rounded-2xl bg-rose-100 text-rose-600"
+                    >
+                        <span class="text-lg font-extrabold">c</span>
+                    </div>
+                    <span
+                        class="text-[22px] font-semibold tracking-wide text-rose-600"
+                        >Eventra</span
+                    >
+                </div>
+
+                <!-- Nav -->
+                <nav class="flex flex-1 flex-col gap-2">
+                    <RouterLink
+                        v-for="item in items"
+                        :key="item.to"
+                        :to="item.to"
+                        class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium transition"
+                        :class="
+                            isActive(item.to)
+                                ? 'bg-rose-100 text-rose-600'
+                                : 'text-slate-700 hover:bg-slate-50'
+                        "
+                    >
+                        <span
+                            class="grid h-[30px] w-[30px] place-items-center rounded-lg"
+                            :class="
+                                isActive(item.to)
+                                    ? 'text-rose-600'
+                                    : 'text-slate-700'
+                            "
+                            v-html="item.icon"
+                        />
+                        <span class="leading-none">{{ item.label }}</span>
+                    </RouterLink>
+                </nav>
+
+                <!-- Logout -->
+                <div class="mt-6 pb-5">
+                    <button
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-rose-800"
+                        @click="logout"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-[18px] w-[18px]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H6A2.25 2.25 0 0 0 3.75 5.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6"
+                            />
+                        </svg>
+                        <span>Log out</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main (พื้นหลังเปลี่ยนเฉพาะคอนเทนต์, ไม่กระทบ Sidebar) -->
+            <main
+                class="p-6 transition"
+                :class="[contentBg, blurMain ? 'blur-[1px]' : '']"
+            >
+                <header class="mb-4">
+                    <h1 class="text-xl font-semibold text-slate-800">
+                        {{ pageTitle }}
+                    </h1>
+                </header>
+                <section
+                    class="rounded-2xl border border-slate-200 shadow-sm"
+                >
+                    <slot />
+                </section>
+            </main>
         </div>
-
-        <!-- Nav -->
-        <nav class="flex flex-1 flex-col gap-2">
-          <RouterLink
-            v-for="item in items"
-            :key="item.to"
-            :to="item.to"
-            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium transition"
-            :class="isActive(item.to) ? 'bg-rose-100 text-rose-600' : 'text-slate-700 hover:bg-slate-50'"
-          >
-            <span
-              class="grid h-[30px] w-[30px] place-items-center rounded-lg"
-              :class="isActive(item.to) ? 'text-rose-600' : 'text-slate-700'"
-              v-html="item.icon"
-            />
-            <span class="leading-none">{{ item.label }}</span>
-          </RouterLink>
-        </nav>
-
-        <!-- Logout -->
-        <div class="mt-6 pb-5">
-          <button
-            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-rose-800"
-            @click="logout"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H6A2.25 2.25 0 0 0 3.75 5.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6"/>
-            </svg>
-            <span>Log out</span>
-          </button>
-        </div>
-      </aside>
-
-      <!-- Main (พื้นหลังเปลี่ยนเฉพาะคอนเทนต์, ไม่กระทบ Sidebar) -->
-      <main class="p-6 transition" :class="[contentBg, blurMain ? 'blur-[1px]' : '']">
-        <header class="mb-4">
-          <h1 class="text-xl font-semibold text-slate-800">{{ pageTitle }}</h1>
-        </header>
-        <section class="rounded-2xl border border-slate-200 shadow-sm bg-white">
-          <slot />
-        </section>
-      </main>
     </div>
-  </div>
 </template>
 
 <script setup>
