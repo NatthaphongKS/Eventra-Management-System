@@ -25,6 +25,9 @@ const routes = [
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
+  { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
+  { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
+
   { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
   { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees' } },
 

@@ -3,8 +3,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HistoryEmployeeController;
+use App\Http\Controllers\HistoryEventController;
+use App\Http\Controllers\ReplyController;
+
 
 // API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
@@ -33,6 +36,13 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
     Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     Route::post('/event-save', [EventController::class, 'store']);
+
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::post('categories', [CategoryController::class, 'store']);
+    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+    Route::get('/history/employees', [HistoryEmployeeController::class, 'index']);
+    Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::get('/history/events', [HistoryEventController::class, 'eventInfo']);
     //Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
     Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
@@ -51,3 +61,4 @@ Route::middleware(['web', 'auth'])->group(function () {
 
 Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
+
