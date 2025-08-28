@@ -127,120 +127,215 @@
             </div>
 
             <!-- =================== Table (Desktop) =================== -->
-<div class="hidden md:block overflow-x-auto">
-  <table class="w-full border-collapse">
-    <thead class="bg-gray-50">
-      <tr class="text-left">
-        <th class="px-2.5 py-2 font-semibold text-[13px] text-center">#</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">ID</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">Name</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">Nickname</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">Phone</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">Department</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">Team</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">Position</th>
-        <th class="px-2.5 py-2 font-semibold text-[13px]">Date Add (D/M/Y)</th>
-      </tr>
-    </thead>
-    <tbody class="text-[15px]">
-      <tr
-        v-for="(emp, i) in paged"
-        :key="emp.id ?? emp.emp_id ?? i"
-        class="border-b border-gray-200 last:border-0 hover:bg-rose-50"
-      >
-        <td class="px-2.5 py-2 text-center">
-          {{ (page - 1) * pageSize + i + 1 }}
-        </td>
-        <td class="px-2.5 py-2 whitespace-nowrap">{{ emp.emp_id || "N/A" }}</td>
-        <td class="px-2.5 py-2 whitespace-nowrap">
-          <span class="block truncate"
-            :title="`${emp.emp_prefix ?? ''} ${emp.emp_firstname ?? ''} ${emp.emp_lastname ?? ''}`">
-            {{ (emp.emp_prefix ? emp.emp_prefix + " " : "") + (emp.emp_firstname || "") + " " + (emp.emp_lastname || "") }}
-          </span>
-        </td>
-        <td class="px-2.5 py-2 whitespace-nowrap">{{ emp.emp_nickname || "N/A" }}</td>
-        <td class="px-2.5 py-2 whitespace-nowrap">{{ emp.phone || "N/A" }}</td>
-        <td class="px-2.5 py-2 whitespace-nowrap">{{ emp.department_name || "N/A" }}</td>
-        <td class="px-2.5 py-2 whitespace-nowrap">
-          <span class="block truncate" :title="emp.team_name">
-            {{ emp.team_name || "N/A" }}
-          </span>
-        </td>
-        <td class="px-2.5 py-2 whitespace-nowrap">
-          <span class="block truncate" :title="emp.position_name">
-            {{ emp.position_name || "N/A" }}
-          </span>
-        </td>
-        <td class="px-2.5 py-2 whitespace-nowrap">
-          {{ emp.created_at ? new Date(emp.created_at).toLocaleDateString("en-GB") : "N/A" }}
-        </td>
-        <td class="px-2.5 py-2">
-          <div class="flex items-center justify-end gap-1.5">
-            <button @click="editEmployee(emp.id)" aria-label="Edit"
-              class="p-1.5 rounded-lg hover:bg-gray-100" title="Edit">
-              <PencilSquareIcon class="w-4 h-4 text-gray-600" />
-            </button>
-            <button @click="requestDelete(emp)" aria-label="Delete"
-              class="p-1.5 rounded-lg hover:bg-rose-50" title="Delete">
-              <TrashIcon class="w-4 h-4 text-rose-600" />
-            </button>
-          </div>
-        </td>
-      </tr>
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead class="bg-gray-50">
+                        <tr class="text-left">
+                            <th
+                                class="px-2.5 py-2 font-semibold text-[13px] text-center"
+                            >
+                                #
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                ID
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                Name
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                Nickname
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                Phone
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                Department
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                Team
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                Position
+                            </th>
+                            <th class="px-2.5 py-2 font-semibold text-[13px]">
+                                Date Add (D/M/Y)
+                            </th>
+                            <th
+                                class="px-2.5 py-2 font-semibold text-[13px]"
+                            ></th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-[15px]">
+                        <tr
+                            v-for="(emp, i) in paged"
+                            :key="emp.id ?? emp.emp_id ?? i"
+                            class="border-b border-gray-200 last:border-0 hover:bg-rose-50"
+                        >
+                            <td class="px-2.5 py-2 text-center">
+                                {{ (page - 1) * pageSize + i + 1 }}
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                {{ emp.emp_id || "N/A" }}
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                <span
+                                    class="block truncate"
+                                    :title="`${emp.emp_prefix ?? ''} ${
+                                        emp.emp_firstname ?? ''
+                                    } ${emp.emp_lastname ?? ''}`"
+                                >
+                                    {{
+                                        (emp.emp_prefix
+                                            ? emp.emp_prefix + " "
+                                            : "") +
+                                        (emp.emp_firstname || "") +
+                                        " " +
+                                        (emp.emp_lastname || "")
+                                    }}
+                                </span>
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                {{ emp.emp_nickname || "N/A" }}
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                {{ emp.phone || "N/A" }}
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                {{ emp.department_name || "N/A" }}
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                <span
+                                    class="block truncate"
+                                    :title="emp.team_name"
+                                >
+                                    {{ emp.team_name || "N/A" }}
+                                </span>
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                <span
+                                    class="block truncate"
+                                    :title="emp.position_name"
+                                >
+                                    {{ emp.position_name || "N/A" }}
+                                </span>
+                            </td>
+                            <td class="px-2.5 py-2 whitespace-nowrap">
+                                {{
+                                    emp.created_at
+                                        ? new Date(
+                                              emp.created_at
+                                          ).toLocaleDateString("en-GB")
+                                        : "N/A"
+                                }}
+                            </td>
+                            <td class="px-2.5 py-2">
+                                <div
+                                    class="flex items-center justify-end gap-1.5"
+                                >
+                                    <button
+                                        @click="editEmployee(emp.id)"
+                                        aria-label="Edit"
+                                        class="p-1.5 rounded-lg hover:bg-rose-100"
+                                        title="Edit"
+                                    >
+                                       <PencilIcon class="w-4 h-4 text-gray-600" />
+                                    </button>
+                                    <button
+                                        @click="requestDelete(emp)"
+                                        aria-label="Delete"
+                                        class="p-1.5 rounded-lg hover:bg-rose-100"
+                                        title="Delete"
+                                    >
+                                        <TrashIcon
+                                            class="w-4 h-4 text-gray-600"
+                                        />
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
 
-      <tr v-if="paged.length === 0">
-        <td :colspan="10" class="px-3 py-6 text-center text-gray-500">
-          {{ filtered.length === 0 && hasActiveFilters
-              ? "No employees match the selected filters"
-              : "No data found" }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+                        <tr v-if="paged.length === 0">
+                            <td
+                                :colspan="10"
+                                class="px-3 py-6 text-center text-gray-500"
+                            >
+                                {{
+                                    filtered.length === 0 && hasActiveFilters
+                                        ? "No employees match the selected filters"
+                                        : "No data found"
+                                }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-<!-- =================== Card Layout (Mobile ) =================== -->
-<div class="md:hidden space-y-4">
-  <div v-for="(emp, i) in paged" :key="emp.id ?? i"
-    class="p-4 rounded-xl border border-gray-200 shadow-sm bg-white">
-    <div class="flex justify-between items-center mb-2">
-      <div class="font-semibold text-gray-800">
-        {{ emp.emp_firstname }} {{ emp.emp_lastname }}
-      </div>
-      <span class="text-xs text-gray-500">
-        #{{ (page - 1) * pageSize + i + 1 }}
-      </span>
-    </div>
-    <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
-      <div><span class="font-medium">ID:</span> {{ emp.emp_id || "N/A" }}</div>
-      <div><span class="font-medium">Nickname:</span> {{ emp.emp_nickname || "N/A" }}</div>
-      <div><span class="font-medium">Phone:</span> {{ emp.phone || "N/A" }}</div>
-      <div><span class="font-medium">Department:</span> {{ emp.department_name || "N/A" }}</div>
-      <div><span class="font-medium">Team:</span> {{ emp.team_name || "N/A" }}</div>
-      <div><span class="font-medium">Position:</span> {{ emp.position_name || "N/A" }}</div>
-      <div class="col-span-2">
-        <span class="font-medium">Date:</span>
-        {{ emp.created_at ? new Date(emp.created_at).toLocaleDateString("en-GB") : "N/A" }}
-      </div>
-    </div>
-    <div class="flex gap-2 mt-3">
-      <button @click="editEmployee(emp.id)"
-        class="flex-1 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm">
-        Edit
-      </button>
-      <button @click="requestDelete(emp)"
-        class="flex-1 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 text-sm">
-        Delete
-      </button>
-    </div>
-  </div>
+            <!-- =================== Card Layout (Mobile ) =================== -->
+            <div class="md:hidden space-y-4">
+                <div
+                    v-for="(emp, i) in paged"
+                    :key="emp.id ?? i"
+                    class="p-4 rounded-xl border border-gray-200 shadow-sm bg-white"
+                >
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-semibold text-gray-800">
+                            {{ emp.emp_firstname }} {{ emp.emp_lastname }}
+                        </div>
+                        <span class="text-xs text-gray-500">
+                            #{{ (page - 1) * pageSize + i + 1 }}
+                        </span>
+                    </div>
+                    <div
+                        class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600"
+                    >
+                        <div>
+                            <span class="font-medium">ID:</span>
+                            {{ emp.emp_id || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Nickname:</span>
+                            {{ emp.emp_nickname || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Phone:</span>
+                            {{ emp.phone || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Department:</span>
+                            {{ emp.department_name || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Team:</span>
+                            {{ emp.team_name || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Position:</span>
+                            {{ emp.position_name || "N/A" }}
+                        </div>
+                        <div class="col-span-2">
+                            <span class="font-medium">Date:</span>
+                            {{
+                                emp.created_at
+                                    ? new Date(
+                                          emp.created_at
+                                      ).toLocaleDateString("en-GB")
+                                    : "N/A"
+                            }}
+                        </div>
+                    </div>
+                </div>
 
-  <div v-if="paged.length === 0" class="p-4 text-center text-gray-500">
-    {{ filtered.length === 0 && hasActiveFilters
-        ? "No employees match the selected filters"
-        : "No data found" }}
-  </div>
-</div>
+                <div
+                    v-if="paged.length === 0"
+                    class="p-4 text-center text-gray-500"
+                >
+                    {{
+                        filtered.length === 0 && hasActiveFilters
+                            ? "No employees match the selected filters"
+                            : "No data found"
+                    }}
+                </div>
+            </div>
 
             <!-- =================== Pagination =================== -->
             <div class="flex flex-wrap items-center gap-3 pt-3">
@@ -385,9 +480,9 @@ import { inject } from "vue";
 // ไอคอน Heroicons
 import {
     MagnifyingGlassIcon,
-    PencilSquareIcon,
+    PencilIcon,
     TrashIcon,
-} from "@heroicons/vue/24/outline";
+   } from "@heroicons/vue/24/outline";
 // คอมโพเนนต์เลือกฟิลเตอร์
 import SelectField from "@/components/SelectField.vue";
 // คอมโพเนนต์เมนูเรียงลำดับ
@@ -416,7 +511,7 @@ export default {
     // ลงทะเบียนคอมโพเนนต์ลูกที่ใช้ใน template
     components: {
         MagnifyingGlassIcon,
-        PencilSquareIcon,
+        PencilIcon,
         TrashIcon,
         SelectField,
         SortMenu,
