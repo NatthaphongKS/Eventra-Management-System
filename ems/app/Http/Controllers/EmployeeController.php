@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use App\Models\Position;
+use Carbon\Carbon;
 
 
 class EmployeeController extends Controller
@@ -144,38 +145,49 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'emp_id'            => ['required'],
-            'emp_prefix'        => ['required'],
-            'emp_firstname'     => ['required'],
-            'emp_lastname'      => ['required'],
-            'emp_email'         => ['required','email','unique:ems_employees,emp_email'],
-            'emp_phone'         => ['required','regex:/^[0-9]+$/','min:10','max:10','unique:ems_employees,emp_phone'],
-            'emp_position_id'   => ['required','exists:ems_position,id'],
-            'emp_department_id' => ['required','exists:ems_department,id'],
-            'emp_team_id'       => ['required','exists:ems_team,id'],
-            'emp_password'      => ['required','min:6'],
-            'emp_status'        => ['required'], // จะ map เป็น emp_permission
+            'emp_id' => ['required', 'unique:ems_employees,emp_id'],
+            'emp_prefix' => ['required', 'integer'],
+            'emp_firstname' => ['required'],
+            'emp_lastname' => ['required'],
+            'emp_email' => ['required', 'email', 'unique:ems_employees,emp_email'],
+            'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10', 'unique:ems_employees,emp_phone'],
+            'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
+            'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
+            'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
+            'emp_password' => ['required', 'min:6'],
+            'emp_status' => ['required', 'integer'],
         ]);
 
-        $employee = Employee::create([
-            'emp_id'            => $request->emp_id,
-            'emp_prefix'        => $request->emp_prefix,
-            'emp_firstname'     => $request->emp_firstname,
-            'emp_lastname'      => $request->emp_lastname,
-            'emp_email'         => $request->emp_email,
-            'emp_phone'         => $request->emp_phone,
-            'emp_position_id'   => $request->emp_position_id,
-            'emp_department_id' => $request->emp_department_id,
-            'emp_team_id'       => $request->emp_team_id,
-            'emp_password'      => Hash::make($request->emp_password),
-            'emp_permission'    => $request->emp_status,
-            'emp_delete_status' => 'active',
-            // ถ้ามีคอลัมน์ผู้สร้าง:
-            'emp_create_by'   => auth()->id(),
-            'emp_create_at'   => now(),
-        ]);
+        try {
+            $employee = Employee::create([
+                'emp_company_id' => $request->emp_company_id ?? (auth()->user()->emp_company_id ?? 1),
+                'emp_id' => $request->emp_id,
+                'emp_prefix' => $request->emp_prefix,
+                'emp_firstname' => $request->emp_firstname,
+                'emp_lastname' => $request->emp_lastname,
+                'emp_nickname' => $request->emp_nickname,
+                'emp_email' => $request->emp_email,
+                'emp_phone' => $request->emp_phone,
+                'emp_position_id' => $request->emp_position_id,
+                'emp_department_id' => $request->emp_department_id,
+                'emp_team_id' => $request->emp_team_id,
+                'emp_password' => Hash::make($request->emp_password),
+                'emp_permission' => $request->emp_status,
+                'emp_delete_status' => 'active',
+                'emp_create_at' => Carbon::now(),
+                'emp_create_by' => Auth::id(),
+            ]);
 
             return response()->json(['message' => 'Employee created', 'data' => $employee], 201);
+
+        } catch (QueryException $e) {
+            Log::error('EMP_CREATE_FAIL', [
+                'sqlstate' => $e->errorInfo[0] ?? null,
+                'code' => $e->errorInfo[1] ?? null,
+                'msg' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'DB_ERROR', 'message' => $e->getMessage()], 500);
+        }
     }
 
 
