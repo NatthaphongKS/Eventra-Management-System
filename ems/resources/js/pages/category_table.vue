@@ -282,12 +282,14 @@ async function loadCategories() {
   try {
     const res = await axios.get("/categories");
     const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
-    rows.value = (data as any[]).map((c) => ({
-      id: c.id,
-      name: c.cat_name ?? c.emc_name ?? "",
-      createdBy: c.created_by ?? "-",
-      createdAt: c.cat_create_at ?? c.created_at ?? null, // ✅ เฉพาะเวลาจาก DB
-    }));
+   rows.value = (data as any[]).map((c) => ({
+  id: c.id,
+  name: c.cat_name ?? c.emc_name ?? "",
+  // ใช้ชื่อที่ API ส่งมา ถ้าไม่มีค่อย fallback เป็น id/ขีด
+  createdBy: c.created_by_name ?? c.created_by ?? "-",
+  // รองรับได้ทั้ง cat_created_at / cat_create_at / created_at
+  createdAt: c.cat_created_at ?? c.cat_create_at ?? c.created_at ?? null,
+}));
   } catch (e: any) {
     console.error("GET /categories failed:", e?.response || e);
     Swal.fire({ title: "โหลดข้อมูลไม่สำเร็จ", text: e?.message ?? "", icon: "error" });
@@ -478,6 +480,7 @@ const $formatDate = formatDate;
   font-size: 13px;
   line-height: 1.4;
 }
+
 .group:hover .tooltip {
   display: block;
 }
