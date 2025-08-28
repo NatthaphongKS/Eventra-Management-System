@@ -9,6 +9,7 @@ import History from '../pages/delete_page.vue'
 import create_event from '../pages/create_event.vue'
 import Category from '../pages/category_table.vue'
 import reply_form from '../pages/Reply_form.vue'
+import UploadFile from '../pages/upload_file.vue'
 
 // [เพิ่ม] หน้าแก้ไข
 import EditEmployee from '../pages/edit_employee.vue'
@@ -24,6 +25,8 @@ const routes = [
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
   { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
+  { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees' } },
+
 
   // [เพิ่ม] เส้นทางหน้าแก้ไขพนักงาน
   { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Edit Employee' } },
