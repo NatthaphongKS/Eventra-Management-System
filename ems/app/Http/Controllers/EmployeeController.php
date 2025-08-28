@@ -3,107 +3,139 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Models\Employee;
+use App\Models\Position;
+use App\Models\Department;
+use App\Models\Team;
 
 class EmployeeController extends Controller
 {
     /**
-     * ดึงรายการพนักงานทั้งหมดสำหรับตารางหน้า Employee
-     * - leftJoin กับ position/department/team เพื่อเอาชื่อมาแสดง
-     * - เงื่อนไขสถานะ: แสดง active หรือค่า NULL/ว่าง (กันกรณีคอลัมน์ยังไม่ได้ตั้งค่า)
-     * - **ถ้าตารางคุณมี created_at จริง ๆ** ให้เพิ่มใน select ได้ตามคอมเมนต์ด้านล่าง
+     * แสดงรายการพนักงาน (หน้า Table)
+     * - ใช้ Eloquent + with() เพื่อ eager load ความสัมพันธ์ (position/department/team)
+     * - กรองเฉพาะพนักงานที่ยังไม่ถูกลบ: emp_delete_status = 'active' หรือค่าว่าง/NULL
+     * - คืนข้อมูลเป็น array แบน โดย map ชื่อทีม/ตำแหน่ง/แผนกเป็น *_name
      */
     public function index()
     {
-        $query = DB::table('ems_employees as e')
-            ->leftJoin('ems_position as p',   'e.emp_position_id',   '=', 'p.id')
-            ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->leftJoin('ems_team as t',       'e.emp_team_id',       '=', 't.id')
-            ->select(
-                'e.id',
-                'e.emp_id','e.emp_prefix','e.emp_firstname','e.emp_lastname',
-                'e.emp_nickname','e.emp_email','e.emp_phone',
-                'e.emp_position_id','e.emp_department_id','e.emp_team_id',
-                'e.emp_permission','e.emp_delete_status',
-                'e.emp_create_at', // <-- ถ้าตารางมีคอลัมน์นี้อยู่จริง ให้เอา comment ออก
-                'p.pst_name  as position_name',
-                'd.dpm_name  as department_name',
-                't.tm_name   as team_name',
-
-
+        $employees = Employee::with([
+                'position:id,pst_name',
+                'department:id,dpm_name',
+                'team:id,tm_name',
+            ])
+            ->where(fn ($q) => $q
+                ->where('emp_delete_status', 'active')
+                ->orWhereNull('emp_delete_status')
+                ->orWhere('emp_delete_status', '')
             )
-            ->where(function ($q) {
-                $q->where('e.emp_delete_status', 'active')
-                  ->orWhereNull('e.emp_delete_status')
-                  ->orWhere('e.emp_delete_status', '');
-            })
-            ->orderBy('e.id', 'desc');
+            ->orderByDesc('id')
+            ->get([
+                'id',
+                'emp_id','emp_prefix','emp_firstname','emp_lastname',
+                'emp_nickname','emp_email','emp_phone',
+                'emp_position_id','emp_department_id','emp_team_id',
+                'emp_permission','emp_delete_status',
+                'emp_create_at', // ถ้ามีคอลัมน์นี้จริง
+            ]);
 
-        return $query->get();
+        // แปลงเป็นโครงสร้างเดิม (มี *_name แทนที่จะเป็น nested relation)
+        $rows = $employees->map(function (Employee $e) {
+            return [
+                'id'                 => $e->id,
+                'emp_id'             => $e->emp_id,
+                'emp_prefix'         => $e->emp_prefix,
+                'emp_firstname'      => $e->emp_firstname,
+                'emp_lastname'       => $e->emp_lastname,
+                'emp_nickname'       => $e->emp_nickname,
+                'emp_email'          => $e->emp_email,
+                'emp_phone'          => $e->emp_phone,
+                'emp_position_id'    => $e->emp_position_id,
+                'emp_department_id'  => $e->emp_department_id,
+                'emp_team_id'        => $e->emp_team_id,
+                'emp_permission'     => $e->emp_permission,
+                'emp_delete_status'  => $e->emp_delete_status,
+                'emp_create_at'      => $e->emp_create_at,
+                'position_name'      => optional($e->position)->pst_name,
+                'department_name'    => optional($e->department)->dpm_name,
+                'team_name'          => optional($e->team)->tm_name,
+            ];
+        });
+
+        return response()->json($rows);
     }
 
     /**
-     * อ่านข้อมูลพนักงานรายคน (ใช้หน้าแก้ไข)
+     * อ่านข้อมูลพนักงานรายคน (ใช้สำหรับหน้าแก้ไข)
+     * - with() โหลดความสัมพันธ์เพื่อเอาชื่อมาแสดง
+     * - คืนรูปแบบแบนเหมือน index
      */
     public function show($id)
     {
-        $emp = DB::table('ems_employees as e')
-            ->leftJoin('ems_position as p',   'e.emp_position_id',   '=', 'p.id')
-            ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->leftJoin('ems_team as t',       'e.emp_team_id',       '=', 't.id')
-            ->where('e.id', $id)
-            ->select(
-                'e.id',
-                'e.emp_id','e.emp_prefix','e.emp_firstname','e.emp_lastname',
-                'e.emp_nickname','e.emp_email','e.emp_phone',
-                'e.emp_position_id','e.emp_department_id','e.emp_team_id',
-                'e.emp_permission','e.emp_delete_status',
-                'p.pst_name as position_name',
-                'd.dpm_name as department_name',
-                't.tm_name  as team_name'
-            )
-            ->first();
+        $e = Employee::with(['position:id,pst_name','department:id,dpm_name','team:id,tm_name'])
+            ->findOrFail($id, [
+                'id',
+                'emp_id','emp_prefix','emp_firstname','emp_lastname',
+                'emp_nickname','emp_email','emp_phone',
+                'emp_position_id','emp_department_id','emp_team_id',
+                'emp_permission','emp_delete_status',
+            ]);
 
-        abort_if(!$emp, 404, 'Employee not found');
+        $row = [
+            'id'                 => $e->id,
+            'emp_id'             => $e->emp_id,
+            'emp_prefix'         => $e->emp_prefix,
+            'emp_firstname'      => $e->emp_firstname,
+            'emp_lastname'       => $e->emp_lastname,
+            'emp_nickname'       => $e->emp_nickname,
+            'emp_email'          => $e->emp_email,
+            'emp_phone'          => $e->emp_phone,
+            'emp_position_id'    => $e->emp_position_id,
+            'emp_department_id'  => $e->emp_department_id,
+            'emp_team_id'        => $e->emp_team_id,
+            'emp_permission'     => $e->emp_permission,
+            'emp_delete_status'  => $e->emp_delete_status,
+            'position_name'      => optional($e->position)->pst_name,
+            'department_name'    => optional($e->department)->dpm_name,
+            'team_name'          => optional($e->team)->tm_name,
+        ];
 
-        return response()->json($emp);
+        return response()->json($row);
     }
 
     /**
-     * เมทาดาต้า dropdown (ตำแหน่ง/แผนก/ทีม)
+     * ดึงเมทาดาต้าสำหรับ dropdown (ตำแหน่ง/แผนก/ทีม)
+     * - ใช้โมเดลโดยตรง + where active
      */
     public function meta()
     {
-        $positions = DB::table('ems_position')
-            ->select('id', 'pst_name')
-            ->where('pst_delete_status', 'active')
+        $positions = Position::query()
+            ->select('id','pst_name')
+            ->where('pst_delete_status','active')
             ->orderBy('pst_name')
             ->get();
 
-        $departments = DB::table('ems_department')
-            ->select('id', 'dpm_name')
-            ->where('dpm_delete_status', 'active')
+        $departments = Department::query()
+            ->select('id','dpm_name')
+            ->where('dpm_delete_status','active')
             ->orderBy('dpm_name')
             ->get();
 
-        $teams = DB::table('ems_team')
-            ->select('id', 'tm_name')
-            ->where('tm_delete_status', 'active')
+        $teams = Team::query()
+            ->select('id','tm_name')
+            ->where('tm_delete_status','active')
             ->orderBy('tm_name')
             ->get();
 
-        return response()->json([
-            'positions'   => $positions,
-            'departments' => $departments,
-            'teams'       => $teams,
-        ]);
+        return response()->json(compact('positions','departments','teams'));
     }
 
     /**
      * บันทึกพนักงานใหม่
+     * - validate ฟิลด์ที่จำเป็น
+     * - hash รหัสผ่านก่อนเก็บ
+     * - map emp_status -> emp_permission
      */
     public function store(Request $request)
     {
@@ -118,7 +150,7 @@ class EmployeeController extends Controller
             'emp_department_id' => ['required','exists:ems_department,id'],
             'emp_team_id'       => ['required','exists:ems_team,id'],
             'emp_password'      => ['required','min:6'],
-            'emp_status'        => ['required'], // map -> emp_permission
+            'emp_status'        => ['required'], // จะ map เป็น emp_permission
         ]);
 
         $employee = Employee::create([
@@ -134,6 +166,9 @@ class EmployeeController extends Controller
             'emp_password'      => Hash::make($request->emp_password),
             'emp_permission'    => $request->emp_status,
             'emp_delete_status' => 'active',
+            // ถ้ามีคอลัมน์ผู้สร้าง:
+            // 'emp_create_by'   => auth()->id(),
+            // 'emp_create_at'   => now(),
         ]);
 
         return response()->json([
@@ -144,10 +179,10 @@ class EmployeeController extends Controller
 
     /**
      * อัปเดตข้อมูลพนักงาน
-     * - ส่งเฉพาะฟิลด์ที่ต้องการแก้ (sometimes/nullable)
-     * - email/phone ต้อง unique โดย ignore แถวเดิม
-     * - ถ้าส่ง emp_password เข้ามา จะถูก hash ก่อนเก็บ
-     * - รองรับ alias emp_status -> emp_permission
+     * - validate แบบบางฟิลด์ (sometimes)
+     * - บังคับ unique ของ email/phone โดย ignore แถวเดิม
+     * - แปลง emp_status -> emp_permission ถ้าส่งมา
+     * - hash รหัสผ่านเมื่อส่งมาใหม่
      */
     public function update(Request $request, $id)
     {
@@ -160,9 +195,9 @@ class EmployeeController extends Controller
             'emp_lastname'      => ['sometimes','required'],
             'emp_nickname'      => ['sometimes','nullable','string','max:100'],
             'emp_email'         => ['sometimes','nullable','email',
-                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id)],
+                Rule::unique('ems_employees','emp_email')->ignore($emp->id)],
             'emp_phone'         => ['sometimes','nullable','regex:/^[0-9]+$/','min:10','max:10',
-                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id)],
+                Rule::unique('ems_employees','emp_phone')->ignore($emp->id)],
             'emp_position_id'   => ['sometimes','nullable','exists:ems_position,id'],
             'emp_department_id' => ['sometimes','nullable','exists:ems_department,id'],
             'emp_team_id'       => ['sometimes','nullable','exists:ems_team,id'],
@@ -171,16 +206,13 @@ class EmployeeController extends Controller
             'emp_password'      => ['sometimes','nullable','min:6'],
         ]);
 
-        // เตรียมข้อมูลอัปเดต (ตัด emp_status ออกก่อน map)
-        $update = collect($validated)->except(['emp_status'])->toArray();
+        $update = collect($validated)->except('emp_status')->toArray();
 
-        // map emp_status -> emp_permission ถ้าส่งมา
         if ($request->filled('emp_status')) {
             $update['emp_permission'] = $request->emp_status;
         }
 
-        // ถ้าส่งรหัสผ่านมา → hash ก่อนเก็บ
-        if (array_key_exists('emp_password', $update) && !empty($update['emp_password'])) {
+        if (!empty($update['emp_password'] ?? null)) {
             $update['emp_password'] = Hash::make($update['emp_password']);
         } else {
             unset($update['emp_password']);
@@ -195,7 +227,7 @@ class EmployeeController extends Controller
     }
 
     /**
-     * ลบแบบ soft delete (ตั้งสถานะ inactive)
+     * ลบแบบ soft (ปรับสถานะเป็น inactive)
      */
     public function destroy($id)
     {
