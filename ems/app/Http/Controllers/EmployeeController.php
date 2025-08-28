@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Models\Employee;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
+use Carbon\Carbon;
+
 
 class EmployeeController extends Controller
 {
@@ -19,15 +24,23 @@ class EmployeeController extends Controller
     public function index()
     {
         $query = DB::table('ems_employees as e')
-            ->leftJoin('ems_position as p',   'e.emp_position_id',   '=', 'p.id')
+            ->leftJoin('ems_position as p', 'e.emp_position_id', '=', 'p.id')
             ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->leftJoin('ems_team as t',       'e.emp_team_id',       '=', 't.id')
+            ->leftJoin('ems_team as t', 'e.emp_team_id', '=', 't.id')
             ->select(
                 'e.id',
-                'e.emp_id','e.emp_prefix','e.emp_firstname','e.emp_lastname',
-                'e.emp_nickname','e.emp_email','e.emp_phone',
-                'e.emp_position_id','e.emp_department_id','e.emp_team_id',
-                'e.emp_permission','e.emp_delete_status',
+                'e.emp_id',
+                'e.emp_prefix',
+                'e.emp_firstname',
+                'e.emp_lastname',
+                'e.emp_nickname',
+                'e.emp_email',
+                'e.emp_phone',
+                'e.emp_position_id',
+                'e.emp_department_id',
+                'e.emp_team_id',
+                'e.emp_permission',
+                'e.emp_delete_status',
                 'e.emp_create_at', // <-- ถ้าตารางมีคอลัมน์นี้อยู่จริง ให้เอา comment ออก
                 'p.pst_name  as position_name',
                 'd.dpm_name  as department_name',
@@ -37,8 +50,8 @@ class EmployeeController extends Controller
             )
             ->where(function ($q) {
                 $q->where('e.emp_delete_status', 'active')
-                  ->orWhereNull('e.emp_delete_status')
-                  ->orWhere('e.emp_delete_status', '');
+                    ->orWhereNull('e.emp_delete_status')
+                    ->orWhere('e.emp_delete_status', '');
             })
             ->orderBy('e.id', 'desc');
 
@@ -51,16 +64,24 @@ class EmployeeController extends Controller
     public function show($id)
     {
         $emp = DB::table('ems_employees as e')
-            ->leftJoin('ems_position as p',   'e.emp_position_id',   '=', 'p.id')
+            ->leftJoin('ems_position as p', 'e.emp_position_id', '=', 'p.id')
             ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->leftJoin('ems_team as t',       'e.emp_team_id',       '=', 't.id')
+            ->leftJoin('ems_team as t', 'e.emp_team_id', '=', 't.id')
             ->where('e.id', $id)
             ->select(
                 'e.id',
-                'e.emp_id','e.emp_prefix','e.emp_firstname','e.emp_lastname',
-                'e.emp_nickname','e.emp_email','e.emp_phone',
-                'e.emp_position_id','e.emp_department_id','e.emp_team_id',
-                'e.emp_permission','e.emp_delete_status',
+                'e.emp_id',
+                'e.emp_prefix',
+                'e.emp_firstname',
+                'e.emp_lastname',
+                'e.emp_nickname',
+                'e.emp_email',
+                'e.emp_phone',
+                'e.emp_position_id',
+                'e.emp_department_id',
+                'e.emp_team_id',
+                'e.emp_permission',
+                'e.emp_delete_status',
                 'p.pst_name as position_name',
                 'd.dpm_name as department_name',
                 't.tm_name  as team_name'
@@ -96,9 +117,9 @@ class EmployeeController extends Controller
             ->get();
 
         return response()->json([
-            'positions'   => $positions,
+            'positions' => $positions,
             'departments' => $departments,
-            'teams'       => $teams,
+            'teams' => $teams,
         ]);
     }
 
@@ -108,38 +129,49 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'emp_id'            => ['required'],
-            'emp_prefix'        => ['required'],
-            'emp_firstname'     => ['required'],
-            'emp_lastname'      => ['required'],
-            'emp_email'         => ['required','email','unique:ems_employees,emp_email'],
-            'emp_phone'         => ['required','regex:/^[0-9]+$/','min:10','max:10','unique:ems_employees,emp_phone'],
-            'emp_position_id'   => ['required','exists:ems_position,id'],
-            'emp_department_id' => ['required','exists:ems_department,id'],
-            'emp_team_id'       => ['required','exists:ems_team,id'],
-            'emp_password'      => ['required','min:6'],
-            'emp_status'        => ['required'], // map -> emp_permission
+            'emp_id' => ['required', 'unique:ems_employees,emp_id'],
+            'emp_prefix' => ['required', 'integer'],
+            'emp_firstname' => ['required'],
+            'emp_lastname' => ['required'],
+            'emp_email' => ['required', 'email', 'unique:ems_employees,emp_email'],
+            'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10', 'unique:ems_employees,emp_phone'],
+            'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
+            'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
+            'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
+            'emp_password' => ['required', 'min:6'],
+            'emp_status' => ['required', 'integer'],
         ]);
 
-        $employee = Employee::create([
-            'emp_id'            => $request->emp_id,
-            'emp_prefix'        => $request->emp_prefix,
-            'emp_firstname'     => $request->emp_firstname,
-            'emp_lastname'      => $request->emp_lastname,
-            'emp_email'         => $request->emp_email,
-            'emp_phone'         => $request->emp_phone,
-            'emp_position_id'   => $request->emp_position_id,
-            'emp_department_id' => $request->emp_department_id,
-            'emp_team_id'       => $request->emp_team_id,
-            'emp_password'      => Hash::make($request->emp_password),
-            'emp_permission'    => $request->emp_status,
-            'emp_delete_status' => 'active',
-        ]);
+        try {
+            $employee = Employee::create([
+                'emp_company_id' => $request->emp_company_id ?? (auth()->user()->emp_company_id ?? 1),
+                'emp_id' => $request->emp_id,
+                'emp_prefix' => $request->emp_prefix,
+                'emp_firstname' => $request->emp_firstname,
+                'emp_lastname' => $request->emp_lastname,
+                'emp_nickname' => $request->emp_nickname,
+                'emp_email' => $request->emp_email,
+                'emp_phone' => $request->emp_phone,
+                'emp_position_id' => $request->emp_position_id,
+                'emp_department_id' => $request->emp_department_id,
+                'emp_team_id' => $request->emp_team_id,
+                'emp_password' => Hash::make($request->emp_password),
+                'emp_permission' => $request->emp_status,
+                'emp_delete_status' => 'active',
+                'emp_create_at' => Carbon::now(),
+                'emp_create_by' => Auth::id(),           
+            ]);
 
-        return response()->json([
-            'message' => 'Employee created',
-            'data'    => $employee,
-        ], 201);
+            return response()->json(['message' => 'Employee created', 'data' => $employee], 201);
+
+        } catch (QueryException $e) {
+            Log::error('EMP_CREATE_FAIL', [
+                'sqlstate' => $e->errorInfo[0] ?? null,
+                'code' => $e->errorInfo[1] ?? null,
+                'msg' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'DB_ERROR', 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -154,21 +186,31 @@ class EmployeeController extends Controller
         $emp = Employee::findOrFail($id);
 
         $validated = $request->validate([
-            'emp_id'            => ['sometimes','required'],
-            'emp_prefix'        => ['sometimes','required'],
-            'emp_firstname'     => ['sometimes','required'],
-            'emp_lastname'      => ['sometimes','required'],
-            'emp_nickname'      => ['sometimes','nullable','string','max:100'],
-            'emp_email'         => ['sometimes','nullable','email',
-                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id)],
-            'emp_phone'         => ['sometimes','nullable','regex:/^[0-9]+$/','min:10','max:10',
-                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id)],
-            'emp_position_id'   => ['sometimes','nullable','exists:ems_position,id'],
-            'emp_department_id' => ['sometimes','nullable','exists:ems_department,id'],
-            'emp_team_id'       => ['sometimes','nullable','exists:ems_team,id'],
-            'emp_permission'    => ['sometimes','nullable','string','max:50'],
-            'emp_status'        => ['sometimes','nullable','string','max:50'], // alias
-            'emp_password'      => ['sometimes','nullable','min:6'],
+            'emp_id' => ['sometimes', 'required'],
+            'emp_prefix' => ['sometimes', 'required'],
+            'emp_firstname' => ['sometimes', 'required'],
+            'emp_lastname' => ['sometimes', 'required'],
+            'emp_nickname' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'emp_email' => [
+                'sometimes',
+                'nullable',
+                'email',
+                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id)
+            ],
+            'emp_phone' => [
+                'sometimes',
+                'nullable',
+                'regex:/^[0-9]+$/',
+                'min:10',
+                'max:10',
+                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id)
+            ],
+            'emp_position_id' => ['sometimes', 'nullable', 'exists:ems_position,id'],
+            'emp_department_id' => ['sometimes', 'nullable', 'exists:ems_department,id'],
+            'emp_team_id' => ['sometimes', 'nullable', 'exists:ems_team,id'],
+            'emp_permission' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'emp_status' => ['sometimes', 'nullable', 'string', 'max:50'], // alias
+            'emp_password' => ['sometimes', 'nullable', 'min:6'],
         ]);
 
         // เตรียมข้อมูลอัปเดต (ตัด emp_status ออกก่อน map)
@@ -190,7 +232,7 @@ class EmployeeController extends Controller
 
         return response()->json([
             'message' => 'updated',
-            'data'    => $emp->fresh(),
+            'data' => $emp->fresh(),
         ]);
     }
 
