@@ -24,6 +24,39 @@ class EventController extends Controller
      * - Employees: ใช้ Eloquent + with() โหลดความสัมพันธ์ แล้ว map ให้มี *_name
      * - Positions/Departments/Teams/Categories: ดึงเฉพาะ active และจัดเรียงชื่อ
      */
+
+     // GET /api/event-info
+    public function index()
+    {
+        // คืนข้อมูลเป็น array ของอีเวนต์
+        return response()->json(Event::orderBy('id', 'asc')->get());
+    }
+        //คืนชุด employee_ids ของอีเวนต์นั้น
+        public function connectList($id)
+    {
+        $ids = DB::table('ems_connect')
+            ->where('con_event_id', $id)
+            ->where(function($q){
+                $q->whereNull('con_delete_status')
+                ->orWhere('con_delete_status', '')
+                ->orWhere('con_delete_status', 'active');
+            })
+            ->pluck('con_employee_id'); // => [1,2,3,...]
+
+        return response()->json(['employee_ids' => $ids]);
+    }
+
+    // GET /api/event/{id}
+    public function show($id)
+    {
+        $event = Event::find($id);
+        if (!$event) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+        // คืน object ของอีเวนต์เดียว (ไม่ห่อ data)
+        return response()->json($event);
+    }
+    // ดึงข้อมูลทั้งหมดสำหรับแบบฟอร์มเดียว
     public function eventInfo()
     {
         $employees = Employee::with([
@@ -100,7 +133,7 @@ class EventController extends Controller
                 'evn_date'         => $data['event_date'],
                 'evn_timestart'    => $data['event_timestart'],
                 'evn_timeend'      => $data['event_timeend'],
-                'evn_duration'     => $data['event_duration'] , 
+                'evn_duration'     => $data['event_duration'] ,
                 'evn_location'     => $data['event_location'],
                 'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
                 'evn_create_by'    => Auth::id(),
