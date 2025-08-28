@@ -1,31 +1,30 @@
 <!-- resources/js/components/layout.vue -->
 <template>
-    <div class="min-h-screen bg-white">
-        <div class="grid min-h-screen grid-cols-[220px,1fr]">
-            <!-- Sidebar -->
-            <aside
-                class="sticky top-0 z-30 flex h-[100dvh] flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5">
-                <!-- Brand -->
-                <div class="mb-6 flex items-center gap-3 px-1">
-                    <div class="grid h-9 w-9 place-items-center rounded-2xl bg-rose-100 text-rose-600">
-                        <span class="text-lg font-extrabold">c</span>
-                    </div>
-                    <span class="text-[22px] font-semibold tracking-wide text-rose-600">Eventra</span>
-                </div>
+  <div class="min-h-screen bg-rose-50">
+    <div class="grid min-h-screen grid-cols-[220px,1fr]">
+      <!-- Sidebar -->
+      <aside class="sticky top-0 z-30 flex h-[100dvh] rounded rounded-3xl flex-col overflow-y-auto bg-white px-4 pt-5 shadow-lg">
+        <!-- Brand -->
+        <div class="mb-6 flex items-center gap-3 px-1">
+          <div class="grid h-9 w-9 place-items-center rounded-2xl text-rose-600">
+            <!-- วางไอคอน/ตัวอักษรตามภาพ -->
+          </div>
+          <span class="text-[25px] font-semibold tracking-wide text-red-700 mb-12">Eventra</span>
+        </div>
 
-                <!-- Nav -->
-                <nav class="flex flex-1 flex-col gap-2">
+        <!-- Nav -->
+        <nav class="flex flex-1 flex-col gap-2 ">
                     <template v-for="item in items" :key="item.to">
                         <!-- มี children = เมนูหลักแบบพับได้ -->
-                        <div v-if="item.children" class="flex flex-col">
+                        <div v-if="item.children" class="flex flex-col ">
                             <button type="button" @click="toggle(item.to)"
-                                class="group inline-flex items-center justify-between rounded-2xl px-3 py-2.5 text-[15px] font-medium transition"
+                                class="group inline-flex items-center justify-between rounded-2xl px-3 py-2.5 text-lg font-medium transition"
                                 :class="(isActive(item.to) || expanded[item.to])
-                                    ? 'bg-rose-100 text-rose-600'
-                                    : 'text-slate-700 hover:bg-slate-50'">
+                                    ? 'bg-rose-100 text-red-700'
+                                    : 'text-gray-700 hover:bg-slate-50'">
                                 <span class="inline-flex items-center gap-3">
                                     <span class="grid h-[30px] w-[30px] place-items-center rounded-lg"
-                                        :class="(isActive(item.to) || expanded[item.to]) ? 'text-rose-600' : 'text-slate-700'"
+                                        :class="(isActive(item.to) || expanded[item.to]) ? 'text-red-700' : 'text-gray-700'"
                                         v-html="item.icon" />
                                     <span class="leading-none">{{ item.label }}</span>
                                 </span>
@@ -46,7 +45,7 @@
                                         ? 'bg-rose-50 text-rose-700'
                                         : 'text-slate-700 hover:bg-slate-50'">
                                     <span class="h-1.5 w-1.5 rounded-full"
-                                        :class="isActive(child.to) ? 'bg-rose-600' : 'bg-slate-300'" />
+                                        :class="isActive(child.to) ? 'bg-red-700' : 'bg-slate-300'" />
                                     <span>{{ child.label }}</span>
                                 </RouterLink>
                             </div>
@@ -54,43 +53,43 @@
 
                         <!-- ไม่มี children = ลิงก์ปกติ -->
                         <RouterLink v-else :to="item.to"
-                            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium transition"
+                            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-lg font-medium transition"
                             :class="isActive(item.to)
-                                ? 'bg-rose-100 text-rose-600'
+                                ? 'bg-rose-100 text-red-700'
                                 : 'text-slate-700 hover:bg-slate-50'">
                             <span class="grid h-[30px] w-[30px] place-items-center rounded-lg"
-                                :class="isActive(item.to) ? 'text-rose-600' : 'text-slate-700'" v-html="item.icon" />
+                                :class="isActive(item.to) ? 'text-red-700' : 'text-slate-700'" v-html="item.icon" />
                             <span class="leading-none">{{ item.label }}</span>
                         </RouterLink>
                     </template>
                 </nav>
-                <!-- Logout -->
-                <div class="mt-6 pb-5">
-                    <button
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-700 px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-rose-800"
-                        @click="logout">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H6A2.25 2.25 0 0 0 3.75 5.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6" />
-                        </svg>
-                        <span>Log out</span>
-                    </button>
-                </div>
 
-            </aside>
-
-            <!-- Main (ตัวอย่างโครง) -->
-            <main class="p-6">
-                <header class="mb-4">
-                    <h1 class="text-xl font-semibold text-slate-800">{{ pageTitle }}</h1>
-                </header>
-                <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <slot />
-                </section>
-            </main>
+        <!-- Logout -->
+        <div class="mt-6 pb-5">
+          <button
+            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-red-700 px-5 py-3 text-lg font-medium text-white shadow-lg transition hover:bg-red-600"
+            @click="logout"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H6A2.25 2.25 0 0 0 3.75 5.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6"/>
+            </svg>
+            <span>Log out</span>
+          </button>
         </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="p-6">
+        <header class="mb-4">
+          <h1 class="text-4xl text-red-700 font-semibold">{{ pageTitle }}</h1>
+        </header>
+        <section class="rounded-2xl bg-white p-5 shadow-lg">
+          <slot />
+        </section>
+      </main>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -134,14 +133,14 @@ const items = ref([
     },
     {
         label: 'History',
-        to: '/history',
+        to: '',
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 8v5l3 2M12 3a9 9 0 1 1-9 9H1l3.5-3.5L8 12H6a6 6 0 1 0 6-6Z"/>
     </svg>`,
         children: [
-            { label: 'Event', to: '/history/event' },
-            { label: 'Employee', to: '/history/employee' },
-            { label: 'Category', to: '/history/category' }
+            { label: 'Event', to: '/history-event' },
+            { label: 'Employee', to: '/history-employee' },
+            { label: 'Category', to: '/history-category' }
         ]
     }
 ])
