@@ -61,8 +61,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 defineProps({ pageTitle: { type: String, default: '' } })
@@ -71,55 +71,81 @@ const route = useRoute()
 const router = useRouter()
 
 const items = ref([
-  {
-    label: 'Dashboard',
-    to: '/',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    {
+        label: 'Dashboard',
+        to: '/',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10ZM13 3v6h8V3h-8Z"/>
     </svg>`
-  },
-  {
-    label: 'Event',
-    to: '/event',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    },
+    {
+        label: 'Event',
+        to: '/event',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M7 3v4M17 3v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>
     </svg>`
-  },
-  {
-    label: 'Employee',
-    to: '/employee',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    },
+    {
+        label: 'Employee',
+        to: '/employee',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M16 14a4 4 0 1 1-8 0"/><circle cx="12" cy="7" r="3"/><path d="M4 21a8 8 0 0 1 16 0"/>
     </svg>`
-  },
-  {
-    label: 'Category',
-    to: '/categories',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    },
+    {
+        label: 'Category',
+        to: '/categories',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="7.5" r="2.5"/><path d="M5 15h6v4H5zM13 15h6v4h-6z"/>
     </svg>`
-  },
-  {
-    label: 'History',
-    to: '/history',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    },
+    {
+        label: 'History',
+        to: '/history',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 8v5l3 2M12 3a9 9 0 1 1-9 9H1l3.5-3.5L8 12H6a6 6 0 1 0 6-6Z"/>
-    </svg>`
-  }
+    </svg>`,
+        children: [
+            { label: 'Event', to: '/history/event' },
+            { label: 'Employee', to: '/history/employee' },
+            { label: 'Category', to: '/history/category' }
+        ]
+    }
 ])
 
-const isActive = (to) => route.path.startsWith(to)
+// เช็ก active: ตรง path หรือเป็น child (/xxx/...)
+const isActive = (to) => route.path === to || route.path.startsWith(to + '/')
+
+// สถานะเปิด/ปิดของเมนูที่มี children
+const expanded = ref({})
+
+// เปิดอัตโนมัติเมื่ออยู่ใต้ /history/*
+const syncExpandedWithRoute = () => {
+    items.value.forEach(item => {
+        if (item.children) {
+            expanded.value[item.to] = route.path.startsWith(item.to)
+        }
+    })
+}
+
+// ให้ทำทันทีตอนโหลด และอัปเดตเมื่อ path เปลี่ยน
+watch(() => route.path, syncExpandedWithRoute, { immediate: true })
+
+const toggle = (key) => {
+    expanded.value[key] = !expanded.value[key]
+}
 
 axios.defaults.withCredentials = true
 const token = document.querySelector('meta[name="csrf-token"]')?.content
 if (token) axios.defaults.headers.common['X-CSRF-TOKEN'] = token
 
+const routerPush = (path) => router.push(path) // เผื่อใช้ต่อ
 const logout = async () => {
-  try {
-    await axios.post('/logout')
-    router.push('/login')
-  } catch (e) {
-    console.error('Logout failed', e)
-  }
+    try {
+        await axios.post('/logout')
+        router.push('/login')
+    } catch (e) {
+        console.error('Logout failed', e)
+    }
 }
 </script>
