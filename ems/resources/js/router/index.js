@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../pages/Home.vue'
-import About from '../pages/About.vue'
 import Login from '../pages/Login.vue'
 import AddEmployee from '../pages/add_employee.vue'
 import Event from '../pages/event_page.vue'
@@ -17,7 +16,6 @@ import EditEmployee from '../pages/edit_employee.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
-  { path: '/about', component: About, meta: { title: 'About' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
 

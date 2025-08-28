@@ -9,7 +9,7 @@ use App\Http\Controllers\HistoryEventController;
 use App\Http\Controllers\ReplyController;
 
 
-// ตัวอย่าง API ที่ต้อง login (คุณมีอะไรใช้ก็ครอบไว้ได้)
+// API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
 Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
