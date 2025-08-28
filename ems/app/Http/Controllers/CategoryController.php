@@ -8,23 +8,39 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\log;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
-   public function index()
+  public function index()
 {
-    $rows = Category::where('cat_delete_status', 'active')
-        ->orderBy('cat_name', 'asc')
-        ->orderBy('cat_created_at', 'desc') // ← ตามคอลัมน์จริง
+    $rows = Category::query()
+        ->leftJoin('ems_employees as e', 'e.id', '=', 'ems_categories.cat_created_by')
+        ->where('ems_categories.cat_delete_status', 'active')
+        ->orderBy('ems_categories.cat_name', 'asc')
+        ->orderBy('ems_categories.cat_created_at', 'desc')
         ->get([
-            'id',
-            'cat_name',
-            'cat_delete_status',
-            'cat_created_by as created_by',   
-            'cat_created_at as cat_create_at',
+            'ems_categories.id',
+            'ems_categories.cat_name',
+            'ems_categories.cat_delete_status',
+            'ems_categories.cat_created_by',
+            'ems_categories.cat_created_at as cat_create_at',
+            DB::raw("TRIM(CONCAT_WS(' ', e.emp_firstname)) as created_by_name"),
+            'e.emp_nickname as created_by_nickname',
         ]);
 
-    return response()->json(['data' => $rows], 200);
+    // ส่งชื่อที่อ่านง่ายให้ FE (fallback เป็นชื่อเล่นถ้าชื่อเต็มว่าง)
+    $data = $rows->map(function ($r) {
+        return [
+            'id'              => $r->id,
+            'cat_name'        => $r->cat_name,
+            'created_by'      => $r->cat_created_by,                   // id เดิม
+            'created_by_name' => $r->created_by_name ?: $r->created_by_nickname,
+            'cat_created_at'   => $r->cat_create_at,                    // FE จะ format เอง
+        ];
+    });
+
+    return response()->json(['data' => $data], 200);
 }
 
 
