@@ -30,12 +30,13 @@ public function store(Request $request)
         ->first();
 
     if ($inactive) {
-        $inactive->update([
-            'cat_delete_status' => 'active',
-            'cat_create_at'     => now(),   // ← อัปเดตทุกครั้งที่ Reactivate
-        ]);
+        $inactive-> cat_delete_status = 'active';
+        $inactive-> cat_deleted_at = null;
+        $inactive-> cat_deleted_by = null;
+        $inactive->save();
         return response()->json($inactive, 200);
     }
+
 
     // กันซ้ำใน active
     $existsActive = Category::where('cat_name', $name)
@@ -60,22 +61,13 @@ public function store(Request $request)
 }
 
 public function destroy($id)
-{
-    $category = Category::findOrFail($id);
+    {
+        $category = Category::findOrFail($id);
+        $category-> cat_delete_status = 'inactive';
+        $category-> cat_deleted_at = now();
+        $category-> cat_deleted_by = auth()->id();
+        $category->save();
 
-    $countInactive = Category::where('cat_name', 'LIKE', $category->cat_name.'%')
-        ->where('cat_delete_status', 'inactive')
-        ->count();
-
-    $payload = ['cat_delete_status' => 'inactive'];
-
-    if ($countInactive > 0) {
-        $suffix = str_pad($countInactive, 2, '0', STR_PAD_LEFT);
-        $payload['cat_name'] = $category->cat_name . '_' . $suffix;
+        return response()->json(['message' => 'Deleted successfully']);
     }
-
-    $category->update($payload);
-
-    return response()->json(['message' => 'ok']);
-}
 }
