@@ -20,11 +20,11 @@ class Connect extends Model
 
     public function event()
     {
-        return $this->belongsTo(Event::class, 'ecn_event_id');
+        return $this->belongsTo(Event::class, 'con_event_id');
     }
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class, 'ecn_employee_id');
+        return $this->belongsTo(Employee::class, 'con_employee_id');
     }
 }
