@@ -5,19 +5,31 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\log;
+use Illuminate\Support\Carbon;
 
 class CategoryController extends Controller
 {
-    public function index()
-    {
-        // ดึงเฉพาะ active ถ้าต้องการ
-        return Category::where('cat_delete_status', 'active')
-                       ->orderBy('cat_name')
-                       ->get();
-    }
-
-public function store(Request $request)
+   public function index()
 {
+    $rows = Category::where('cat_delete_status', 'active')
+        ->orderBy('cat_name', 'asc')
+        ->orderBy('cat_created_at', 'desc') // ← ตามคอลัมน์จริง
+        ->get([
+            'id',
+            'cat_name',
+            'cat_delete_status',
+            'cat_created_by as created_by',   
+            'cat_created_at as cat_create_at',
+        ]);
+
+    return response()->json(['data' => $rows], 200);
+}
+
+
+    public function store(Request $request)
+    {
     $validated = $request->validate([
         'cat_name' => ['required','string','max:255'],
     ]);
@@ -58,6 +70,8 @@ public function store(Request $request)
     ]);
 
     return response()->json($category, 201);
+
+
 }
 
 public function destroy($id)

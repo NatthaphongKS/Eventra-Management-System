@@ -478,7 +478,6 @@ const $formatDate = formatDate;
   font-size: 13px;
   line-height: 1.4;
 }
-
 .group:hover .tooltip {
   display: block;
 }
