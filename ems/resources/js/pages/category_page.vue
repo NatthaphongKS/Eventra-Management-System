@@ -9,6 +9,7 @@
                 v-model="searchInput"
                 type="text"
                 placeholder="Search..."
+                @keyup.enter="onSearch"
 
                 class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition focus:border-red-300 focus:bg-white"
                 />
@@ -497,3 +498,4 @@ const $formatDate = formatDate;
   display: block;
 }
 </style>
+
