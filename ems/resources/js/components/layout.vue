@@ -138,9 +138,9 @@ const items = ref([
       <path d="M12 8v5l3 2M12 3a9 9 0 1 1-9 9H1l3.5-3.5L8 12H6a6 6 0 1 0 6-6Z"/>
     </svg>`,
         children: [
-            { label: 'Event', to: '/history/event' },
-            { label: 'Employee', to: '/history/employee' },
-            { label: 'Category', to: '/history/category' }
+            { label: 'Event', to: '/history-event' },
+            { label: 'Employee', to: '/history-employee' },
+            { label: 'Category', to: '/history-category' }
         ]
     }
 ])
