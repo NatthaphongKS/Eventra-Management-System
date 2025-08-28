@@ -6,9 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Models\Employee;
-use App\Models\Position;
 use App\Models\Department;
 use App\Models\Team;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
+use Carbon\Carbon;
+use App\Models\Position;
+
 
 class EmployeeController extends Controller
 {
@@ -167,14 +172,20 @@ class EmployeeController extends Controller
             'emp_permission'    => $request->emp_status,
             'emp_delete_status' => 'active',
             // ถ้ามีคอลัมน์ผู้สร้าง:
-            // 'emp_create_by'   => auth()->id(),
-            // 'emp_create_at'   => now(),
+            'emp_create_by'   => auth()->id(),
+            'emp_create_at'   => now(),
         ]);
 
-        return response()->json([
-            'message' => 'Employee created',
-            'data'    => $employee,
-        ], 201);
+            return response()->json(['message' => 'Employee created', 'data' => $employee], 201);
+
+        } catch (QueryException $e) {
+            Log::error('EMP_CREATE_FAIL', [
+                'sqlstate' => $e->errorInfo[0] ?? null,
+                'code' => $e->errorInfo[1] ?? null,
+                'msg' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'DB_ERROR', 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -222,7 +233,7 @@ class EmployeeController extends Controller
 
         return response()->json([
             'message' => 'updated',
-            'data'    => $emp->fresh(),
+            'data' => $emp->fresh(),
         ]);
     }
 
