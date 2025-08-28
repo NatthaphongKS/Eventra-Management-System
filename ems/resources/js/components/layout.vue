@@ -80,7 +80,7 @@
                     </h1>
                 </header>
                 <section
-                    class="rounded-2xl border border-slate-200 shadow-sm"
+                    class="border-slate-200 shadow-sm"
                 >
                     <slot />
                 </section>
