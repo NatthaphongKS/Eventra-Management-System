@@ -12,10 +12,10 @@ use App\Models\Event;
 
 class HistoryEventController extends Controller
 {
-    public function eventInfo()
+    public function show()
     {
         $events = Event::join('ems_categories', 'ems_event.evn_category_id', '=', 'ems_categories.id')
             ->where('evn_status', 'deleted')->get();
-        return response()->json($events);
+        return response()->json($events);  
     }
 }
