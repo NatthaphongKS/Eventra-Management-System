@@ -11,7 +11,6 @@ use App\Models\Team;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
-use Carbon\Carbon;
 use App\Models\Position;
 
 
@@ -177,16 +176,10 @@ class EmployeeController extends Controller
         ]);
 
             return response()->json(['message' => 'Employee created', 'data' => $employee], 201);
-
-        } catch (QueryException $e) {
-            Log::error('EMP_CREATE_FAIL', [
-                'sqlstate' => $e->errorInfo[0] ?? null,
-                'code' => $e->errorInfo[1] ?? null,
-                'msg' => $e->getMessage()
-            ]);
-            return response()->json(['error' => 'DB_ERROR', 'message' => $e->getMessage()], 500);
-        }
     }
+
+
+
 
     /**
      * อัปเดตข้อมูลพนักงาน
@@ -248,4 +241,5 @@ class EmployeeController extends Controller
 
         return response()->json(['message' => 'Deleted successfully']);
     }
+
 }
