@@ -8,29 +8,60 @@
           <div class="grid h-9 w-9 place-items-center rounded-2xl text-rose-600">
             <!-- วางไอคอน/ตัวอักษรตามภาพ -->
           </div>
-          <span class="text-[30px] font-semibold tracking-wide text-red-700 mb-12">Eventra</span>
+          <span class="text-[25px] font-semibold tracking-wide text-red-700 mb-12">Eventra</span>
         </div>
 
         <!-- Nav -->
-        <nav class="flex flex-1 flex-col gap-2">
-          <RouterLink
-            v-for="item in items"
-            :key="item.to"
-            :to="item.to"
-            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-lg font-medium transition"
-            :class="isActive(item.to)
-              ? 'bg-red-100 text-red-700'
-              : 'text-slate-700 hover:bg-slate-50'"
-          >
-            <!-- icon -->
-            <span
-              class="grid h-[30px] w-[30px] place-items-center rounded-lg"
-              :class="isActive(item.to) ? 'text-rose-600' : 'text-slate-700'"
-              v-html="item.icon"
-            />
-            <span class="leading-none">{{ item.label }}</span>
-          </RouterLink>
-        </nav>
+        <nav class="flex flex-1 flex-col gap-2 ">
+                    <template v-for="item in items" :key="item.to">
+                        <!-- มี children = เมนูหลักแบบพับได้ -->
+                        <div v-if="item.children" class="flex flex-col ">
+                            <button type="button" @click="toggle(item.to)"
+                                class="group inline-flex items-center justify-between rounded-2xl px-3 py-2.5 text-lg font-medium transition"
+                                :class="(isActive(item.to) || expanded[item.to])
+                                    ? 'bg-rose-100 text-red-700'
+                                    : 'text-gray-700 hover:bg-slate-50'">
+                                <span class="inline-flex items-center gap-3">
+                                    <span class="grid h-[30px] w-[30px] place-items-center rounded-lg"
+                                        :class="(isActive(item.to) || expanded[item.to]) ? 'text-red-700' : 'text-gray-700'"
+                                        v-html="item.icon" />
+                                    <span class="leading-none">{{ item.label }}</span>
+                                </span>
+
+                                <!-- caret -->
+                                <svg class="h-4 w-4 transition-transform" :class="expanded[item.to] ? 'rotate-90' : ''"
+                                    viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 6l6 6-6 6" />
+                                </svg>
+                            </button>
+
+                            <!-- Submenu -->
+                            <div v-show="expanded[item.to]"
+                                class="ml-4 mt-1 flex flex-col gap-1 border-l border-slate-200 pl-3">
+                                <RouterLink v-for="child in item.children" :key="child.to" :to="child.to"
+                                    class="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-[14px] transition"
+                                    :class="isActive(child.to)
+                                        ? 'bg-rose-50 text-rose-700'
+                                        : 'text-slate-700 hover:bg-slate-50'">
+                                    <span class="h-1.5 w-1.5 rounded-full"
+                                        :class="isActive(child.to) ? 'bg-red-700' : 'bg-slate-300'" />
+                                    <span>{{ child.label }}</span>
+                                </RouterLink>
+                            </div>
+                        </div>
+
+                        <!-- ไม่มี children = ลิงก์ปกติ -->
+                        <RouterLink v-else :to="item.to"
+                            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-lg font-medium transition"
+                            :class="isActive(item.to)
+                                ? 'bg-rose-100 text-red-700'
+                                : 'text-slate-700 hover:bg-slate-50'">
+                            <span class="grid h-[30px] w-[30px] place-items-center rounded-lg"
+                                :class="isActive(item.to) ? 'text-red-700' : 'text-slate-700'" v-html="item.icon" />
+                            <span class="leading-none">{{ item.label }}</span>
+                        </RouterLink>
+                    </template>
+                </nav>
 
         <!-- Logout -->
         <div class="mt-6 pb-5">
@@ -101,14 +132,14 @@ const items = ref([
     },
     {
         label: 'History',
-        to: '/history',
+        to: '',
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 8v5l3 2M12 3a9 9 0 1 1-9 9H1l3.5-3.5L8 12H6a6 6 0 1 0 6-6Z"/>
     </svg>`,
         children: [
-            { label: 'Event', to: '/history/event' },
-            { label: 'Employee', to: '/history/employee' },
-            { label: 'Category', to: '/history/category' }
+            { label: 'Event', to: '/history-event' },
+            { label: 'Employee', to: '/history-employee' },
+            { label: 'Category', to: '/history-category' }
         ]
     }
 ])
