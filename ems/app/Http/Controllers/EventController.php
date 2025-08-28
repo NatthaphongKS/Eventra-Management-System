@@ -17,6 +17,38 @@ use App\Mail\EventInvitation;
 
 class EventController extends Controller
 {
+
+     // GET /api/event-info
+    public function index()
+    {
+        // คืนข้อมูลเป็น array ของอีเวนต์
+        return response()->json(Event::orderBy('id', 'asc')->get());
+    }
+        //คืนชุด employee_ids ของอีเวนต์นั้น
+        public function connectList($id)
+    {
+        $ids = DB::table('ems_connect')
+            ->where('con_event_id', $id)
+            ->where(function($q){
+                $q->whereNull('con_delete_status')
+                ->orWhere('con_delete_status', '')
+                ->orWhere('con_delete_status', 'active');
+            })
+            ->pluck('con_employee_id'); // => [1,2,3,...]
+
+        return response()->json(['employee_ids' => $ids]);
+    }
+
+    // GET /api/event/{id}
+    public function show($id)
+    {
+        $event = Event::find($id);
+        if (!$event) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+        // คืน object ของอีเวนต์เดียว (ไม่ห่อ data)
+        return response()->json($event);
+    }
     // ดึงข้อมูลทั้งหมดสำหรับแบบฟอร์มเดียว
     public function eventInfo()
     {

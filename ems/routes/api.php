@@ -14,7 +14,15 @@ Route::middleware(['web', 'auth'])->group(function () {
     // === Employee ===
     Route::get('/meta', [EmployeeController::class, 'meta']);
     Route::get('/get-employees', [EmployeeController::class, 'index']);
+    Route::get('/employees',     [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+    Route::get('/event-info', [EventController::class, 'index']);
+    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+    Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::get('/event/{id}',   [EventController::class, 'show']);
+    Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
+
+
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']);
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
