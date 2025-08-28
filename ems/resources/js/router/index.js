@@ -6,10 +6,10 @@ import Event from '../pages/event_page.vue'
 import Employees from '../pages/employees_page.vue'
 import History from '../pages/delete_page.vue'
 import create_event from '../pages/create_event.vue'
-import Category from '../pages/category_page.vue'
+import Category from '../pages/category_table.vue'
 import reply_form from '../pages/Reply_form.vue'
 import History_Employee from '../pages/History_Employees_page.vue'
-import History_Event from '../pages/History_Event.vue'     
+import History_Event from '../pages/History_Event.vue'
 
 // [เพิ่ม] หน้าแก้ไข
 import EditEmployee from '../pages/edit_employee.vue'
