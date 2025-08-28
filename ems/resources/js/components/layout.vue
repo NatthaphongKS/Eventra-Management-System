@@ -84,7 +84,9 @@
                 <header class="mb-4">
                     <h1 class="text-xl font-semibold text-slate-800">{{ pageTitle }}</h1>
                 </header>
-                <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <section
+                    class="border-slate-200 shadow-sm"
+                >
                     <slot />
                 </section>
             </main>

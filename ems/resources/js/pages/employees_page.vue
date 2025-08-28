@@ -126,88 +126,64 @@
                 </div>
             </div>
 
-            <!-- =================== Table =================== -->
-            <!-- ครอบตารางให้เลื่อนแนวนอนได้ -->
-            <div class="overflow-auto">
-                <!-- ตารางความกว้างคงที่ -->
-                <table class="w-full table-fixed">
-                    <!-- กำหนดความกว้างคอลัมน์ -->
-                    <colgroup>
-                        <col class="w-12" />
-                        <col class="w-24" />
-                        <col class="w-[20%]" />
-                        <col class="w-28" />
-                        <col class="w-24" />
-                        <col class="w-32" />
-                        <col class="w-24" />
-                        <col class="w-32" />
-                        <col class="w-36" />
-                    </colgroup>
-
-                    <!-- ส่วนหัวตาราง พื้นเทอ่อน -->
+            <!-- =================== Table (Desktop) =================== -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full border-collapse">
                     <thead class="bg-gray-50">
-                        <!-- แถวหัวตาราง ชิดซ้าย -->
                         <tr class="text-left">
-                            <!-- ลำดับแถว -->
                             <th
                                 class="px-2.5 py-2 font-semibold text-[13px] text-center"
                             >
                                 #
                             </th>
-                            <!-- รหัสพนักงาน -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 ID
                             </th>
-                            <!-- ชื่อ-นามสกุล -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Name
                             </th>
-                            <!-- ชื่อเล่น -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Nickname
                             </th>
-                            <!-- โทรศัพท์ -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Phone
                             </th>
-                            <!-- แผนก -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Department
                             </th>
-                            <!-- ทีม -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Team
                             </th>
-                            <!-- ตำแหน่ง -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Position
                             </th>
-                            <!-- วันที่เพิ่ม -->
                             <th class="px-2.5 py-2 font-semibold text-[13px]">
                                 Date Add (D/M/Y)
                             </th>
+                            <th
+                                class="px-2.5 py-2 font-semibold text-[13px]"
+                            ></th>
                         </tr>
                     </thead>
-
-                    <!-- เนื้อหาตาราง ขนาดฟอนต์ 15px -->
                     <tbody class="text-[15px]">
-                        <!-- ลูปข้อมูลพนักงาน (เฉพาะหน้าปัจจุบัน) -->
                         <tr
                             v-for="(emp, i) in paged"
                             :key="emp.id ?? emp.emp_id ?? i"
                             class="border-b border-gray-200 last:border-0 hover:bg-rose-50"
                         >
-                            <!-- คำนวณลำดับจริงตามหน้า -->
                             <td class="px-2.5 py-2 text-center">
                                 {{ (page - 1) * pageSize + i + 1 }}
                             </td>
-                            <!-- แสดงรหัส หรือ N/A -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.emp_id || "N/A" }}
                             </td>
-                            <!-- แสดงคำนำหน้า + ชื่อ + นามสกุล ตัดคำเกินด้วย truncate -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
-                                <span class="block truncate">
+                                <span
+                                    class="block truncate"
+                                    :title="`${emp.emp_prefix ?? ''} ${
+                                        emp.emp_firstname ?? ''
+                                    } ${emp.emp_lastname ?? ''}`"
+                                >
                                     {{
                                         (emp.emp_prefix
                                             ? emp.emp_prefix + " "
@@ -218,27 +194,31 @@
                                     }}
                                 </span>
                             </td>
-                            <!-- ชื่อเล่น -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.emp_nickname || "N/A" }}
                             </td>
-                            <!-- โทรศัพท์ (ใช้ key phone หลัง normalize) -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.phone || "N/A" }}
                             </td>
-                            <!-- ชื่อแผนก -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{ emp.department_name || "N/A" }}
                             </td>
-                            <!-- ชื่อทีม -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.team_name || "N/A" }}
+                                <span
+                                    class="block truncate"
+                                    :title="emp.team_name"
+                                >
+                                    {{ emp.team_name || "N/A" }}
+                                </span>
                             </td>
-                            <!-- ชื่อตำแหน่ง -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.position_name || "N/A" }}
+                                <span
+                                    class="block truncate"
+                                    :title="emp.position_name"
+                                >
+                                    {{ emp.position_name || "N/A" }}
+                                </span>
                             </td>
-                            <!-- วันที่สร้าง แปลงเป็น D/M/Y แบบ en-GB -->
                             <td class="px-2.5 py-2 whitespace-nowrap">
                                 {{
                                     emp.created_at
@@ -248,40 +228,33 @@
                                         : "N/A"
                                 }}
                             </td>
-                            <!-- ปุ่มแอ็กชัน ชิดขวา -->
                             <td class="px-2.5 py-2">
                                 <div
                                     class="flex items-center justify-end gap-1.5"
                                 >
-                                    <!-- ปุ่มแก้ไข -->
                                     <button
                                         @click="editEmployee(emp.id)"
                                         aria-label="Edit"
-                                        class="p-1.5 rounded-lg hover:bg-gray-100"
+                                        class="p-1.5 rounded-lg hover:bg-rose-100"
                                         title="Edit"
                                     >
-                                        <PencilSquareIcon
-                                            class="w-4 h-4 text-gray-600"
-                                        />
+                                       <PencilIcon class="w-4 h-4 text-gray-600" />
                                     </button>
-                                    <!-- ปุ่มลบ -->
                                     <button
                                         @click="requestDelete(emp)"
                                         aria-label="Delete"
-                                        class="p-1.5 rounded-lg hover:bg-rose-50"
+                                        class="p-1.5 rounded-lg hover:bg-rose-100"
                                         title="Delete"
                                     >
                                         <TrashIcon
-                                            class="w-4 h-4 text-rose-600"
+                                            class="w-4 h-4 text-gray-600"
                                         />
                                     </button>
                                 </div>
                             </td>
                         </tr>
 
-                        <!-- กรณีไม่มีข้อมูลในหน้านี้ -->
                         <tr v-if="paged.length === 0">
-                            <!-- ข้อความเมื่อไม่มีข้อมูล/ไม่ตรงฟิลเตอร์ -->
                             <td
                                 :colspan="10"
                                 class="px-3 py-6 text-center text-gray-500"
@@ -295,6 +268,73 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- =================== Card Layout (Mobile ) =================== -->
+            <div class="md:hidden space-y-4">
+                <div
+                    v-for="(emp, i) in paged"
+                    :key="emp.id ?? i"
+                    class="p-4 rounded-xl border border-gray-200 shadow-sm bg-white"
+                >
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-semibold text-gray-800">
+                            {{ emp.emp_firstname }} {{ emp.emp_lastname }}
+                        </div>
+                        <span class="text-xs text-gray-500">
+                            #{{ (page - 1) * pageSize + i + 1 }}
+                        </span>
+                    </div>
+                    <div
+                        class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600"
+                    >
+                        <div>
+                            <span class="font-medium">ID:</span>
+                            {{ emp.emp_id || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Nickname:</span>
+                            {{ emp.emp_nickname || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Phone:</span>
+                            {{ emp.phone || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Department:</span>
+                            {{ emp.department_name || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Team:</span>
+                            {{ emp.team_name || "N/A" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Position:</span>
+                            {{ emp.position_name || "N/A" }}
+                        </div>
+                        <div class="col-span-2">
+                            <span class="font-medium">Date:</span>
+                            {{
+                                emp.created_at
+                                    ? new Date(
+                                          emp.created_at
+                                      ).toLocaleDateString("en-GB")
+                                    : "N/A"
+                            }}
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    v-if="paged.length === 0"
+                    class="p-4 text-center text-gray-500"
+                >
+                    {{
+                        filtered.length === 0 && hasActiveFilters
+                            ? "No employees match the selected filters"
+                            : "No data found"
+                    }}
+                </div>
             </div>
 
             <!-- =================== Pagination =================== -->
@@ -440,9 +480,9 @@ import { inject } from "vue";
 // ไอคอน Heroicons
 import {
     MagnifyingGlassIcon,
-    PencilSquareIcon,
+    PencilIcon,
     TrashIcon,
-} from "@heroicons/vue/24/outline";
+   } from "@heroicons/vue/24/outline";
 // คอมโพเนนต์เลือกฟิลเตอร์
 import SelectField from "@/components/SelectField.vue";
 // คอมโพเนนต์เมนูเรียงลำดับ
@@ -471,7 +511,7 @@ export default {
     // ลงทะเบียนคอมโพเนนต์ลูกที่ใช้ใน template
     components: {
         MagnifyingGlassIcon,
-        PencilSquareIcon,
+        PencilIcon,
         TrashIcon,
         SelectField,
         SortMenu,
