@@ -14,68 +14,59 @@
     <span class="summary">ทั้งหมด {{ filtered.length }} รายการ</span>
   </div>
 
-  <!-- Table -->
-  <div class="table-wrap">
+    <!-- Table -->
+    <div class="table-wrap">
     <table class="table compact">
-      <thead>
-        <tr>
-          <th class="th col-idx">#</th>
-          <th class="th sortable col-title" @click="setSort('evn_title')">
-            Event <span v-if="sortBy==='evn_title'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
-          </th>
-          <th class="th sortable col-cat" @click="setSort('cat_name')">
-            Category <span v-if="sortBy==='cat_name'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
-          </th>
-          <th class="th sortable col-date" @click="setSort('evn_date')">
-            Date (D/M/Y) <span v-if="sortBy==='evn_date'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
-          </th>
-          <th class="th sortable col-time" @click="setSort('evn_timestart')">
-            Time
-          </th>
-          <th class="th sortable col-num" @click="setSort('evn_num_guest')">
-            Invited <span v-if="sortBy==='evn_num_guest'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
-          </th>
-          <th class="th sortable col-num" @click="setSort('evn_sum_accept')">
-            Accepted <span v-if="sortBy==='evn_sum_accept'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
-          </th>
-          <th class="th sortable col-status" @click="setSort('evn_status')">
-            Status <span v-if="sortBy==='evn_status'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
-          </th>
-          <th class="th col-action">Action</th>
-        </tr>
-      </thead>
+        <thead>…</thead>
 
-    <!-- วน loop แสดง event -->
-      <tbody>
-        <tr v-for="(ev, i) in paged" :key="ev.id">
-          <td class="col-idx">{{ (page-1)*pageSize + i + 1 }}</td>
-          <td class="col-title"><span class="truncate">{{ ev.evn_title || 'N/A' }}</span></td>
-          <td class="col-cat"><span class="truncate">{{ ev.cat_name || 'N/A' }}</span></td>
-          <td class="col-date">{{ formatDate(ev.evn_date) }}</td>
-          <!-- Show Time start - end -->
-          <td class="col-time">
-            {{ ev.evn_timestart ? ev.evn_timestart.slice(0,5) : '??:??' }}
-            -
+        <tbody>
+        <tr
+            v-for="(ev, i) in paged"
+            :key="ev.id"
+            @click="gotoDetails(ev.id)"
+            class="cursor-pointer hover:bg-rose-50 transition-colors"
+        >
+            <td class="col-idx">{{ (page-1)*pageSize + i + 1 }}</td>
+
+            <!-- จะกดที่ชื่อก็ได้ -->
+            <td class="col-title">
+            <router-link
+                :to="{ name:'event.details', params:{ id: ev.id } }"
+                class="truncate text-rose-700 hover:underline"
+                @click.stop
+            >
+                {{ ev.evn_title || 'N/A' }}
+            </router-link>
+            </td>
+
+            <td class="col-cat"><span class="truncate">{{ ev.cat_name || 'N/A' }}</span></td>
+            <td class="col-date">{{ formatDate(ev.evn_date) }}</td>
+
+            <td class="col-time">
+            {{ ev.evn_timestart ? ev.evn_timestart.slice(0,5) : '??:??' }} -
             {{ ev.evn_timeend ? ev.evn_timeend.slice(0,5) : '??:??' }}
-          </td>
-          <!--End Show Time start - end -->
-          <td class="col-num">{{ ev.evn_num_guest ?? '0' }}</td>
-          <td class="col-num">{{ ev.evn_sum_accept ?? '0' }}</td>
-          <td class="col-status">
+            </td>
+
+            <td class="col-num">{{ ev.evn_num_guest ?? '0' }}</td>
+            <td class="col-num">{{ ev.evn_sum_accept ?? '0' }}</td>
+            <td class="col-status">
             <span :class="['badge', ev.evn_status]">{{ ev.evn_status || 'N/A' }}</span>
-          </td>
-          <td class="col-action">
-            <button class="btn-link" @click="editEvent(ev.id)">✏ Edit</button>
-            <button class="btn-link danger" @click="deleteEvent(ev.id)">🗑 Delete</button>
-          </td>
+            </td>
+
+            <td class="col-action">
+            <!-- กันคลิกไม่ให้ไปกระทบทั้งแถว -->
+            <button class="btn-link" @click.stop="editEvent(ev.id)">✏ Edit</button>
+            <button class="btn-link danger" @click.stop="deleteEvent(ev.id)">🗑 Delete</button>
+            </td>
         </tr>
-        <!-- ถ้าไม่มีข้อมูล -->
+
         <tr v-if="paged.length === 0">
-          <td :colspan="9" style="text-align:center">No data found</td>
+            <td :colspan="9" style="text-align:center">No data found</td>
         </tr>
-      </tbody>
+        </tbody>
     </table>
-  </div>
+    </div>
+
 
   <!-- Pagination (red, with dots) V.1 -->
   <div class="pager2">
