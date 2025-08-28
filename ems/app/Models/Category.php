@@ -28,6 +28,12 @@ class Category extends Model
 
     ];
 
+    protected $casts = [
+        'cat_created_at' => 'datetime',
+        'cat_deleted_at' => 'datetime',
+    ];
+
+
     // ตารางนี้ไม่มี created_at/updated_at
     public $timestamps = false;
 
