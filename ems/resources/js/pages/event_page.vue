@@ -75,19 +75,22 @@
           <td class="col-num">{{ ev.evn_sum_accept ?? 'N/A' }}</td>
           <td class="col-status">
             <span :class="['badge', ev.evn_status]">{{ ev.evn_status || 'N/A' }}</span>
-          </td>
-          <td class="col-action">
-            <button class="btn-link" @click="editEvent(ev.id)">✏ Edit</button>
-            <button class="btn-link danger" @click="deleteEvent(ev.id)">🗑 Delete</button>
-          </td>
+            </td>
+
+            <td class="col-action">
+            <!-- กันคลิกไม่ให้ไปกระทบทั้งแถว -->
+            <button class="btn-link" @click.stop="editEvent(ev.id)">✏ Edit</button>
+            <button class="btn-link danger" @click.stop="deleteEvent(ev.id)">🗑 Delete</button>
+            </td>
         </tr>
 
         <tr v-if="paged.length === 0">
-          <td :colspan="9" style="text-align:center">No data found</td>
+            <td :colspan="9" style="text-align:center">No data found</td>
         </tr>
-      </tbody>
+        </tbody>
     </table>
-  </div>
+    </div>
+
 
   <!-- ===== Pagination ===== -->
   <div class="pager2">

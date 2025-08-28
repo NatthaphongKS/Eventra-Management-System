@@ -272,8 +272,8 @@ async function loadCategories() {
     rows.value = (data as any[]).map((c) => ({
       id: c.id,
       name: c.cat_name ?? c.emc_name ?? "",
-      createdBy: c.created_by ?? "-",
-      createdAt: c.cat_create_at ?? c.created_at ?? null, // ✅ เฉพาะเวลาจาก DB
+      createdBy: c.cat_created_by ?? "-",
+      createdAt: c.cat_created_at ?? c.created_at ?? null, // ✅ เฉพาะเวลาจาก DB
     }));
   } catch (e: any) {
     console.error("GET /categories failed:", e?.response || e);
