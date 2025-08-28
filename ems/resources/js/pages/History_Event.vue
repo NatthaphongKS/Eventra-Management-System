@@ -8,11 +8,11 @@
           v-model="query"
           type="text"
           placeholder="Search..."
-          class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-2.5 text-sm outline-none transition focus:border-red-300 focus:bg-white"
+          class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-2.5 text-sm outline-none transition focus:border-rose-300 focus:bg-white"
         />
       </div>
       <button
-        class="inline-flex items-center justify-center rounded-full bg-[#C91818] p-3 text-white shadow hover:opacity-95 active:scale-[0.98]"
+        class="inline-flex items-center justify-center rounded-full bg-rose-600 p-3 text-white shadow hover:opacity-95 active:scale-[0.98]"
         @click="onSearch"
         aria-label="search"
       >
@@ -28,25 +28,18 @@
         <button
           class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           @click="sortOpen = !sortOpen"
-          :title="sortDir === 'desc' ? 'วันที่ล่าสุด' : 'วันที่เก่าสุด'"
+          :title="sortDir === 'desc' ? 'วันที่ลบล่าสุด' : 'วันที่ลบเก่าสุด'"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M6 2a1 1 0 011 1v14.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4A1 1 0 013.707 15.293L6 17.586V3a1 1 0 011-1zM14 22a1 1 0 01-1-1V6.414l-2.293 2.293a1 1 0 11-1.414-1.414l4-4a1 1 0 011.414 0l4 4A1 1 0 0117.293 8.707L15 6.414V21a1 1 0 01-1 1z"/>
           </svg>
           <span>Sort</span>
-          <span class="text-gray-400">({{ sortDir === 'desc' ? 'วันที่ล่าสุด' : 'วันที่เก่าสุด' }})</span>
+          <span class="text-gray-400">({{ sortDir === 'desc' ? 'ลบล่าสุด' : 'ลบเก่าสุด' }})</span>
         </button>
 
-        <div
-          v-if="sortOpen"
-          class="absolute right-0 z-10 mt-2 w-44 rounded-xl border border-gray-200 bg-white p-1 text-sm shadow-lg"
-        >
-          <button class="w-full rounded-lg px-3 py-2 text-left hover:bg-red-50" @click="applySort('desc')">
-            วันที่ล่าสุด
-          </button>
-          <button class="w-full rounded-lg px-3 py-2 text-left hover:bg-red-50" @click="applySort('asc')">
-            วันที่เก่าสุด
-          </button>
+        <div v-if="sortOpen" class="absolute right-0 z-10 mt-2 w-44 rounded-xl border border-gray-200 bg-white p-1 text-sm shadow-lg">
+          <button class="w-full rounded-lg px-3 py-2 text-left hover:bg-rose-50" @click="applySort('desc')">วันที่ลบล่าสุด</button>
+          <button class="w-full rounded-lg px-3 py-2 text-left hover:bg-rose-50" @click="applySort('asc')">วันที่ลบเก่าสุด</button>
         </div>
       </div>
     </div>
@@ -55,49 +48,57 @@
   <!-- Table -->
   <div class="mt-4 overflow-x-auto rounded-2xl border border-gray-200">
     <table class="min-w-full table-fixed">
+      <colgroup>
+        <col class="w-14" />
+        <col class="w-[28%]" />
+        <col class="w-[14%]" />
+        <col class="w-[14%]" />
+        <col class="w-[14%]" />
+        <col class="w-[12%]" />
+        <col class="w-[12%]" />
+        <col class="w-[14%]" />
+      </colgroup>
+
       <thead class="bg-gray-100 sticky top-0 z-10">
         <tr class="text-gray-700 text-sm font-semibold">
-          <th class="w-14 px-4 py-3 text-left">#</th>
-          <th class="w-28 px-4 py-3 text-left whitespace-nowrap">Event</th>
-          <th class="w-56 px-4 py-3 text-left">Category</th>
-          <th class="w-32 px-4 py-3 text-left">Date(D/M/Y)</th>
-          <th class="w-56 px-4 py-3 text-left">Time</th>
-          <th class="w-56 px-4 py-3 text-left">Invited</th>
-          <th class="w-56 px-4 py-3 text-left">Accepted</th>
-          <th class="w-40 px-4 py-3 text-left">Status</th>
-          <!-- เปลี่ยนชื่อหัวคอลัมน์เป็น Deleted Date -->
-          <th class="w-40 px-4 py-3 text-left whitespace-nowrap">Deleted Date</th>
+          <th class="px-4 py-3 text-left">#</th>
+          <th class="px-4 py-3 text-left">Event</th>
+          <th class="px-4 py-3 text-left">Category</th>
+          <th class="px-4 py-3 text-left whitespace-nowrap">Date (D/M/Y)</th>
+          <th class="px-4 py-3 text-left">Time</th>
+          <th class="px-4 py-3 text-left">Created by</th>
+          <th class="px-4 py-3 text-left">Deleted by</th>
+          <th class="px-4 py-3 text-left whitespace-nowrap">Deleted Date</th>
         </tr>
       </thead>
 
       <tbody class="divide-y divide-gray-100">
         <tr
           v-for="(ev, idx) in pagedRows"
-          :key="ev.id"
-          class="text-sm text-gray-700 hover:bg-gray-50"
+          :key="ev.id ?? idx"
+          class="text-sm text-gray-700 hover:bg-rose-50"
         >
           <td class="px-4 py-3">{{ startIndex + idx + 1 }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">{{ ev.evn_title || 'N/A' }}</td>
+          <td class="px-4 py-3">
+            <span class="block truncate">{{ ev.evn_title || 'N/A' }}</span>
+          </td>
           <td class="px-4 py-3">{{ ev.category || 'N/A' }}</td>
           <td class="px-4 py-3">{{ formatDate(ev.date) }}</td>
-          <td class="px-4 py-3">{{ ev.time || 'N/A' }}</td>
-          <td class="px-4 py-3">{{ ev.invited || 'N/A' }}</td>
-          <td class="px-4 py-3">{{ ev.accepted || 'N/A' }}</td>
-          <td class="px-4 py-3">{{ ev.status || 'N/A' }}</td>
-          <!-- แสดงวันที่ถูกลบ -->
+          <td class="px-4 py-3">
+            {{ ev?.timeStart ? String(ev.timeStart).slice(0, 5) : (ev?.time ? String(ev.time).slice(0,5) : '??:??') }}
+            -
+            {{ ev?.timeEnd ? String(ev.timeEnd).slice(0, 5) : (ev?.time ? String(ev.time).slice(0,5) : '??:??') }}
+          </td>
+                    <td class="px-4 py-3">{{ ev.created_by || 'N/A' }}</td>
+          <td class="px-4 py-3">{{ ev.deleted_by || 'N/A' }}</td>
           <td class="px-4 py-3 whitespace-nowrap">{{ formatDate(ev.deleted_at) }}</td>
         </tr>
 
         <tr v-if="!loading && pagedRows.length === 0">
-          <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">
-            ไม่พบข้อมูลที่ค้นหา
-          </td>
+          <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">ไม่พบข้อมูลที่ค้นหา</td>
         </tr>
-
         <tr v-if="loading">
-          <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">
-            กำลังโหลดข้อมูล...
-          </td>
+          <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">กำลังโหลดข้อมูล...</td>
         </tr>
       </tbody>
     </table>
@@ -108,7 +109,7 @@
     <div class="flex items-center gap-2 text-sm text-gray-600">
       <span>แสดง</span>
       <select v-model.number="pageSize" class="rounded-xl border border-gray-200 px-2.5 py-1.5 outline-none">
-        <option v-for="n in [5, 10, 20, 50]" :key="n" :value="n">{{ n }}</option>
+        <option v-for="n in [5,10,20,50]" :key="n" :value="n">{{ n }}</option>
       </select>
       <span>{{ visibleCountText }}</span>
     </div>
@@ -117,20 +118,20 @@
       <button
         class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
         :disabled="page === 1"
-        @click="page--"
-      >
+        @click="page--">
         ก่อนหน้า
       </button>
       <span class="text-sm text-gray-600">หน้า {{ page }} / {{ totalPages || 1 }}</span>
       <button
         class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
         :disabled="page === totalPages || totalPages === 0"
-        @click="page++"
-      >
+        @click="page++">
         ถัดไป
       </button>
     </div>
   </div>
+
+  <div v-if="sortOpen" class="fixed inset-0 z-0" @click="sortOpen=false"></div>
 </template>
 
 <script setup>
@@ -163,18 +164,58 @@ function formatDate(iso) {
   const yy = d.getFullYear();
   return `${dd}/${mm}/${yy}`;
 }
+function z(n){ return String(n).padStart(2, "0"); }
+function formatTime(start, end, single) {
+  // แปลงเป็น "HH:mm" รองรับ "HH:mm", "HH:mm:ss", ISO datetime
+  const toHM = (v) => {
+    if (!v) return null;
+    const s = String(v);
+    if (/^\d{1,2}:\d{2}$/.test(s)) return s;        // "10:30"
+    if (/^\d{1,2}:\d{2}:\d{2}$/.test(s)) return s.slice(0,5); // "10:30:00" -> "10:30"
+    const d = new Date(s);                           // ISO
+    if (!Number.isNaN(d.getTime())) return `${z(d.getHours())}:${z(d.getMinutes())}`;
+    return null;
+  };
+
+  const sHM = toHM(start);
+  const eHM = toHM(end);
+
+  if (sHM && eHM) return `${sHM} - ${eHM}`;
+  if (sHM) return sHM;
+  if (eHM) return eHM;
+
+  const one = toHM(single);
+  return one ? `${one} - ${one}` : "??:?? - ??:??";
+}
+
 
 const normalize = (s) => String(s ?? "").toLowerCase();
 
 /* ---------- filtering / sorting / paging ---------- */
 const filteredRows = computed(() => {
   const q = normalize(query.value);
-  const onlyDeleted = rows.value.filter(r => !!r.deleted_at); // แสดงเฉพาะที่ถูกลบ
+
+  // เฉพาะอีเวนต์ที่ถูกลบ: มี deleted_at หรือ status === 'deleted'
+  const onlyDeleted = rows.value.filter((r) => {
+    const status = normalize(r.status);
+    return !!r.deleted_at || status === "deleted";
+  });
+
   if (!q) return onlyDeleted;
 
   return onlyDeleted.filter((r) =>
-    [r.evn_title, r.category, r.date, r.time, r.invited, r.accepted, r.status, r.deleted_at]
-      .some((v) => normalize(v).includes(q))
+    [
+      r.evn_title,
+      r.category,
+      r.date,
+      r.created_by,
+      r.deleted_by,
+      r.deleted_at,
+      formatTime(r.timeStart, r.timeEnd, r.time),
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(q)
   );
 });
 
@@ -183,7 +224,7 @@ const sortedRows = computed(() => {
   const ts = (v) => {
     const t = new Date(v || 0).getTime();
     return Number.isFinite(t) ? t : 0;
-    };
+  };
   arr.sort((a, b) =>
     sortDir.value === "asc" ? ts(a.deleted_at) - ts(b.deleted_at) : ts(b.deleted_at) - ts(a.deleted_at)
   );
@@ -204,11 +245,10 @@ const visibleCountText = computed(() => {
 
 /* ---------- actions ---------- */
 function onSearch() { page.value = 1; }
-function applySort(dir) { sortDir.value = dir; sortOpen.value = false; }
+function applySort(dir) { sortDir.value = dir; sortOpen.value = false; page.value = 1; }
 
 /* ---------- data loading ---------- */
-/* ปรับ endpoint ให้ตรงกับแบ็กเอนด์ของคุณได้
-   โค้ดนี้จะลองหลาย endpoint ที่พบบ่อยจนกว่าจะได้ข้อมูล */
+/* ปรับ mapping ให้รองรับชื่อคีย์หลายแบบจาก backend */
 async function fetchDeletedEvents() {
   loading.value = true;
   rows.value = [];
@@ -222,20 +262,29 @@ async function fetchDeletedEvents() {
     try {
       const res = await axios.get(c.url, { params: c.params });
       const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      if (list.length >= 0) {
-        rows.value = list.map((e) => ({
+
+      rows.value = list.map((e) => {
+        const rawStatus = e.status ?? e.evn_status ?? "";
+        // หาเวลาจากหลายคีย์ที่พบบ่อย
+        const timeStart = e.evn_time_start ?? e.time_start ?? e.start_time ?? e.start ?? null;
+        const timeEnd   = e.evn_time_end   ?? e.time_end   ?? e.end_time   ?? e.end   ?? null;
+        const timeOne   = e.evn_time       ?? e.time       ?? null;
+
+        return {
           id: e.id ?? e.evn_id,
           evn_title: e.evn_title ?? e.title ?? "",
           category: e.cat_name ?? e.category_name ?? e.category ?? "",
-          date: e.evn_date ?? e.date ?? e.evn_date_start ?? null,
-          time: e.evn_time ?? e.time ?? null,
-          invited: e.invited ?? e.invited_count ?? e.total_invited ?? null,
-          accepted: e.accepted ?? e.accepted_count ?? e.total_accepted ?? null,
-          status: e.status ?? e.evn_status ?? "",
+          date: e.evn_date ?? e.date ?? e.evn_date_start ?? e.start_date ?? null,
+          timeStart,
+          timeEnd,
+          time: timeOne,
+          created_by: e.created_by_name ?? e.created_by ?? e.creator_name ?? e.creator ?? "",
+          deleted_by: e.deleted_by_name ?? e.deleted_by ?? e.deleter_name ?? e.deleter ?? "",
+          status: normalize(rawStatus),
           deleted_at: e.deleted_at ?? e.evn_deleted_at ?? null,
-        }));
-        break;
-      }
+        };
+      });
+      break; // ได้ข้อมูลแล้วหยุด
     } catch (e) {
       // ลองตัวถัดไป
     }
