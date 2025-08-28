@@ -1,9 +1,6 @@
 <template>
     <section class="p-0">
-        <!-- คอนเทนเนอร์หน้าเพจหลัก (ไม่มี padding) -->
-        <div
-            class="w-full max-w-screen-2xl mx-auto bg-white rounded-2xl shadow border border-gray-200 p-5 md:p-6"
-        >
+
             <!-- =================== Toolbar =================== -->
             <div class="flex items-center gap-3 mb-4 overflow-visible">
                 <!-- ช่องค้นหา: ผูกค่ากับ searchInput กด Enter จะ apply -->
@@ -14,7 +11,7 @@
                     class="flex-1 h-10 px-4 rounded-full border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-500"
                 />
                 <button
-                    class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center hover:bg-rose-700"
+                    class="w-10 h-10 rounded-full bg-red-700 text-white flex items-center justify-center hover:bg-rose-700"
                     @click="applySearchAndFilters"
                     aria-label="Search"
                     title="ค้นหา/ใช้ฟิลเตอร์ (คลิกหรือกด Enter)"
@@ -103,7 +100,7 @@
                 <!-- ปุ่มลิงก์ไปหน้าเพิ่มพนักงาน -->
                 <router-link
                     to="/add-employee"
-                    class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-rose-600 text-white hover:bg-rose-700 whitespace-nowrap z-0"
+                    class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-red-700 text-white hover:bg-rose-700 whitespace-nowrap z-0"
                 >
                     + Add New
                 </router-link>
@@ -341,112 +338,24 @@
             <div class="flex flex-wrap items-center gap-3 pt-3">
                 <!-- ส่วนเลือก Page Size และสถานะ -->
                 <div class="flex items-center gap-2">
-                    <!-- ป้ายข้อความ -->
-                    <span class="text-xs text-slate-700">แสดง</span>
-
-                    <!-- ครอบปุ่มเลือกจำนวนแถว/หน้า -->
-                    <div ref="pageSizeWrap" class="relative inline-block">
-                        <!-- ปุ่มเปิดเมนู page size -->
-                        <button
-                            type="button"
-                            @click="togglePageSize()"
-                            class="relative h-9 min-w-[72px] px-4 pr-9 rounded-full border-2 bg-white text-[14px] font-medium text-black text-left select-none focus:outline-none focus:ring-2 focus:ring-[#D40E11]/20"
-                            :aria-expanded="openPageSize"
-                            aria-haspopup="listbox"
-                        >
-                            {{ pageSize }}
-                            <svg
-                                class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 fill-[#D40E11] transition-transform"
-                                :class="openPageSize ? 'rotate-180' : ''"
-                                viewBox="0 0 20 20"
-                            >
-                                <path
-                                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.17l3.71-2.94a.75.75 0 1 1 .94 1.16l-4.24 3.36a.75.75 0 0 1-.94 0L5.21 8.39a.75.75 0 0 1 .02-1.18z"
-                                />
-                            </svg>
-                        </button>
-
-                        <!-- เมนูตัวเลือก page size -->
-                        <div
-                            v-if="openPageSize"
-                            class="absolute z-50 mt-1.5 w-full rounded-2xl border-2 bg-white shadow-lg overflow-hidden"
-                            role="listbox"
-                        >
-                            <ul class="py-1">
-                                <li v-for="s in [10, 25, 50, 100]" :key="s">
-                                    <button
-                                        type="button"
-                                        @click="choosePageSize(s)"
-                                        class="w-full text-left px-3 py-1.5 text-[14px] hover:bg-rose-50"
-                                        :class="
-                                            s === pageSize
-                                                ? 'text-[#D40E11] font-semibold bg-rose-50/50'
-                                                : 'text-black'
-                                        "
-                                        role="option"
-                                        :aria-selected="s === pageSize"
-                                    >
-                                        {{ s }}
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- แสดงสถานะหน้าปัจจุบัน/จำนวนหน้า/จำนวนรายการทั้งหมด -->
-                    <span class="ml-2 text-[11px] text-gray-500"
-                        >{{ page }}-{{ totalPages }} จาก
-                        {{ sorted.length }} รายการ</span
-                    >
-                </div>
-
-                <!-- ปุ่มเปลี่ยนหน้า -->
-                <div class="flex-1 flex justify-center">
-                    <div class="flex items-center gap-2">
-                        <!-- ปุ่มย้อนหน้า -->
-                        <button
-                            class="w-10 h-10 flex items-center justify-center rounded-full text-2xl leading-none text-rose-800 hover:text-rose-900 disabled:opacity-45 disabled:hover:text-rose-800"
-                            @click="prevPage"
-                            :disabled="page === 1"
-                            aria-label="Previous page"
-                        >
-                            ◄
-                        </button>
-
-                        <!-- ปุ่มตัวเลขหน้า/จุดไข่ปลา -->
-                        <button
-                            v-for="(p, idx) in pagesToShow"
-                            :key="idx"
-                            :disabled="p === '…'"
-                            @click="p !== '…' && goToPage(p)"
-                            :aria-current="p === page ? 'page' : null"
-                            class="w-9 h-9 px-3 rounded-full border transition disabled:cursor-default select-none"
-                            :class="[
-                                p === '…'
-                                    ? 'border-transparent bg-transparent text-gray-400 cursor-default'
-                                    : 'border-rose-600',
-                                p !== page && p !== '…'
-                                    ? 'bg-white text-rose-600 hover:bg-rose-50 hover:text-rose-700'
-                                    : '',
-                                p === page ? 'bg-rose-600 text-white' : '',
-                            ]"
-                        >
-                            {{ p }}
-                        </button>
-
-                        <!-- ปุ่มไปหน้าถัดไป -->
-                        <button
-                            class="w-10 h-10 flex items-center justify-center rounded-full text-2xl leading-none text-rose-800 hover:text-rose-900 disabled:opacity-45 disabled:hover:text-rose-800"
-                            @click="nextPage"
-                            :disabled="page === totalPages || totalPages === 0"
-                            aria-label="Next page"
-                        >
-                            ►
-                        </button>
-                    </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                <button
+                    class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                    :disabled="page === 1"
+                    @click="page--">
+                    ก่อนหน้า
+                </button>
+                <span class="text-sm text-gray-600">หน้า {{ page }} / {{ totalPages || 1 }}</span>
+                <button
+                    class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                    :disabled="page === totalPages || totalPages === 0"
+                    @click="page++"
+                >
+                    ถัดไป
+                </button>
                 </div>
             </div>
-        </div>
 
         <!-- คลิกนอกเพื่อปิด Filter/Sort -->
         <div
