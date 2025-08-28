@@ -1,9 +1,6 @@
 <template>
     <section class="p-0">
-        <!-- คอนเทนเนอร์หน้าเพจหลัก (ไม่มี padding) -->
-        <div
-            class="w-full max-w-screen-2xl mx-auto bg-white rounded-2xl shadow border border-gray-200 p-5 md:p-6"
-        >
+       
             <!-- =================== Toolbar =================== -->
             <div class="flex items-center gap-3 mb-4 overflow-visible">
                 <!-- ช่องค้นหา: ผูกค่ากับ searchInput กด Enter จะ apply -->
@@ -14,7 +11,7 @@
                     class="flex-1 h-10 px-4 rounded-full border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-500"
                 />
                 <button
-                    class="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center hover:bg-rose-700"
+                    class="w-10 h-10 rounded-full bg-red-700 text-white flex items-center justify-center hover:bg-rose-700"
                     @click="applySearchAndFilters"
                     aria-label="Search"
                     title="ค้นหา/ใช้ฟิลเตอร์ (คลิกหรือกด Enter)"
@@ -103,7 +100,7 @@
                 <!-- ปุ่มลิงก์ไปหน้าเพิ่มพนักงาน -->
                 <router-link
                     to="/add-employee"
-                    class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-rose-600 text-white hover:bg-rose-700 whitespace-nowrap z-0"
+                    class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-red-700 text-white hover:bg-rose-700 whitespace-nowrap z-0"
                 >
                     + Add New
                 </router-link>
@@ -126,287 +123,139 @@
                 </div>
             </div>
 
-            <!-- =================== Table =================== -->
-            <!-- ครอบตารางให้เลื่อนแนวนอนได้ -->
-            <div class="overflow-auto">
-                <!-- ตารางความกว้างคงที่ -->
-                <table class="w-full table-fixed">
-                    <!-- กำหนดความกว้างคอลัมน์ -->
-                    <colgroup>
-                        <col class="w-12" />
-                        <col class="w-24" />
-                        <col class="w-[20%]" />
-                        <col class="w-28" />
-                        <col class="w-24" />
-                        <col class="w-32" />
-                        <col class="w-24" />
-                        <col class="w-32" />
-                        <col class="w-36" />
-                    </colgroup>
+                        <!-- =================== Table =================== -->
+                        <!-- ครอบตารางให้เลื่อนแนวนอนได้ -->
+                        <!-- Table (สไตล์เดียวกับหน้า Category) -->
+            <div class="mt-4 min-w-full overflow-hidden rounded-2xl border border-gray-200">
+            <table class="min-w-full">
+                <thead class="bg-gray-100">
+                <tr class="bg-gray-100 text-gray-700 text-sm font-semibold">
+                    <th class="w-14 px-6 py-3 text-left">#</th>
+                    <th class="px-6 py-3 text-left">ID</th>
+                    <th class="px-6 py-3 text-left">Name</th>
+                    <th class="px-6 py-3 text-left">Nickname</th>
+                    <th class="px-6 py-3 text-left">Phone</th>
+                    <th class="px-6 py-3 text-left">Department</th>
+                    <th class="px-6 py-3 text-left">Team</th>
+                    <th class="px-6 py-3 text-left">Position</th>
+                    <th class="px-6 py-3 text-left">Date Add (D/M/Y)</th>
+                    <th class="w-16 px-6 py-3"></th>
+                </tr>
+                </thead>
 
-                    <!-- ส่วนหัวตาราง พื้นเทอ่อน -->
-                    <thead class="bg-gray-50">
-                        <!-- แถวหัวตาราง ชิดซ้าย -->
-                        <tr class="text-left">
-                            <!-- ลำดับแถว -->
-                            <th
-                                class="px-2.5 py-2 font-semibold text-[13px] text-center"
-                            >
-                                #
-                            </th>
-                            <!-- รหัสพนักงาน -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                ID
-                            </th>
-                            <!-- ชื่อ-นามสกุล -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Name
-                            </th>
-                            <!-- ชื่อเล่น -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Nickname
-                            </th>
-                            <!-- โทรศัพท์ -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Phone
-                            </th>
-                            <!-- แผนก -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Department
-                            </th>
-                            <!-- ทีม -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Team
-                            </th>
-                            <!-- ตำแหน่ง -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Position
-                            </th>
-                            <!-- วันที่เพิ่ม -->
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Date Add (D/M/Y)
-                            </th>
-                        </tr>
-                    </thead>
+                <tbody class="divide-y divide-gray-100">
+                <tr
+                    v-for="(emp, i) in paged"
+                    :key="emp.id ?? emp.emp_id ?? i"
+                    class="text-sm text-gray-700 hover:bg-gray-50"
+                >
+                    <td class="w-14 px-6 py-3 text-left">
+                    {{ (page - 1) * pageSize + i + 1 }}
+                    </td>
 
-                    <!-- เนื้อหาตาราง ขนาดฟอนต์ 15px -->
-                    <tbody class="text-[15px]">
-                        <!-- ลูปข้อมูลพนักงาน (เฉพาะหน้าปัจจุบัน) -->
-                        <tr
-                            v-for="(emp, i) in paged"
-                            :key="emp.id ?? emp.emp_id ?? i"
-                            class="border-b border-gray-200 last:border-0 hover:bg-rose-50"
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    {{ emp.emp_id || 'N/A' }}
+                    </td>
+
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    <span class="block truncate">
+                        {{
+                        (emp.emp_prefix ? emp.emp_prefix + ' ' : '') +
+                        (emp.emp_firstname || '') + ' ' +
+                        (emp.emp_lastname || '')
+                        }}
+                    </span>
+                    </td>
+
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    {{ emp.emp_nickname || 'N/A' }}
+                    </td>
+
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    {{ emp.phone || 'N/A' }}
+                    </td>
+
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    {{ emp.department_name || 'N/A' }}
+                    </td>
+
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    {{ emp.team_name || 'N/A' }}
+                    </td>
+
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    {{ emp.position_name || 'N/A' }}
+                    </td>
+
+                    <td class="px-6 py-3 text-left whitespace-nowrap">
+                    {{ emp.created_at ? new Date(emp.created_at).toLocaleDateString('en-GB') : 'N/A' }}
+                    </td>
+
+                    <td class="w-16 px-6 py-3">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <button
+                        @click="editEmployee(emp.id)"
+                        aria-label="Edit"
+                        class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        title="Edit"
                         >
-                            <!-- คำนวณลำดับจริงตามหน้า -->
-                            <td class="px-2.5 py-2 text-center">
-                                {{ (page - 1) * pageSize + i + 1 }}
-                            </td>
-                            <!-- แสดงรหัส หรือ N/A -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.emp_id || "N/A" }}
-                            </td>
-                            <!-- แสดงคำนำหน้า + ชื่อ + นามสกุล ตัดคำเกินด้วย truncate -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                <span class="block truncate">
-                                    {{
-                                        (emp.emp_prefix
-                                            ? emp.emp_prefix + " "
-                                            : "") +
-                                        (emp.emp_firstname || "") +
-                                        " " +
-                                        (emp.emp_lastname || "")
-                                    }}
-                                </span>
-                            </td>
-                            <!-- ชื่อเล่น -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.emp_nickname || "N/A" }}
-                            </td>
-                            <!-- โทรศัพท์ (ใช้ key phone หลัง normalize) -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.phone || "N/A" }}
-                            </td>
-                            <!-- ชื่อแผนก -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.department_name || "N/A" }}
-                            </td>
-                            <!-- ชื่อทีม -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.team_name || "N/A" }}
-                            </td>
-                            <!-- ชื่อตำแหน่ง -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.position_name || "N/A" }}
-                            </td>
-                            <!-- วันที่สร้าง แปลงเป็น D/M/Y แบบ en-GB -->
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{
-                                    emp.created_at
-                                        ? new Date(
-                                              emp.created_at
-                                          ).toLocaleDateString("en-GB")
-                                        : "N/A"
-                                }}
-                            </td>
-                            <!-- ปุ่มแอ็กชัน ชิดขวา -->
-                            <td class="px-2.5 py-2">
-                                <div
-                                    class="flex items-center justify-end gap-1.5"
-                                >
-                                    <!-- ปุ่มแก้ไข -->
-                                    <button
-                                        @click="editEmployee(emp.id)"
-                                        aria-label="Edit"
-                                        class="p-1.5 rounded-lg hover:bg-gray-100"
-                                        title="Edit"
-                                    >
-                                        <PencilSquareIcon
-                                            class="w-4 h-4 text-gray-600"
-                                        />
-                                    </button>
-                                    <!-- ปุ่มลบ -->
-                                    <button
-                                        @click="requestDelete(emp)"
-                                        aria-label="Delete"
-                                        class="p-1.5 rounded-lg hover:bg-rose-50"
-                                        title="Delete"
-                                    >
-                                        <TrashIcon
-                                            class="w-4 h-4 text-rose-600"
-                                        />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        <PencilSquareIcon class="h-5 w-5" />
+                        </button>
+                        <button
+                        @click="requestDelete(emp)"
+                        aria-label="Delete"
+                        class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        title="Delete"
+                        >
+                        <TrashIcon class="h-5 w-5" />
+                        </button>
+                    </div>
+                    </td>
+                </tr>
 
-                        <!-- กรณีไม่มีข้อมูลในหน้านี้ -->
-                        <tr v-if="paged.length === 0">
-                            <!-- ข้อความเมื่อไม่มีข้อมูล/ไม่ตรงฟิลเตอร์ -->
-                            <td
-                                :colspan="10"
-                                class="px-3 py-6 text-center text-gray-500"
-                            >
-                                {{
-                                    filtered.length === 0 && hasActiveFilters
-                                        ? "No employees match the selected filters"
-                                        : "No data found"
-                                }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <tr v-if="paged.length === 0">
+                    <td colspan="10" class="px-6 py-8 text-center text-sm text-gray-500">
+                    ไม่พบข้อมูลที่ค้นหา
+                    </td>
+                </tr>
+                </tbody>
+            </table>
             </div>
 
-            <!-- =================== Pagination =================== -->
-            <div class="flex flex-wrap items-center gap-3 pt-3">
-                <!-- ส่วนเลือก Page Size และสถานะ -->
+
+                        <!-- =================== Pagination =================== -->
+                        <!-- Footer -->
+            <div class="mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span>แสดง</span>
+                <select
+                    v-model.number="pageSize"
+                    class="rounded-xl border border-gray-200 px-2.5 py-1.5 outline-none"
+                >
+                    <option v-for="n in [5,10,20,50]" :key="n" :value="n">{{ n }}</option>
+                </select>
+                <span>{{ visibleCountText }}</span>
+                </div>
+
                 <div class="flex items-center gap-2">
-                    <!-- ป้ายข้อความ -->
-                    <span class="text-xs text-slate-700">แสดง</span>
-
-                    <!-- ครอบปุ่มเลือกจำนวนแถว/หน้า -->
-                    <div ref="pageSizeWrap" class="relative inline-block">
-                        <!-- ปุ่มเปิดเมนู page size -->
-                        <button
-                            type="button"
-                            @click="togglePageSize()"
-                            class="relative h-9 min-w-[72px] px-4 pr-9 rounded-full border-2 bg-white text-[14px] font-medium text-black text-left select-none focus:outline-none focus:ring-2 focus:ring-[#D40E11]/20"
-                            :aria-expanded="openPageSize"
-                            aria-haspopup="listbox"
-                        >
-                            {{ pageSize }}
-                            <svg
-                                class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 fill-[#D40E11] transition-transform"
-                                :class="openPageSize ? 'rotate-180' : ''"
-                                viewBox="0 0 20 20"
-                            >
-                                <path
-                                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.17l3.71-2.94a.75.75 0 1 1 .94 1.16l-4.24 3.36a.75.75 0 0 1-.94 0L5.21 8.39a.75.75 0 0 1 .02-1.18z"
-                                />
-                            </svg>
-                        </button>
-
-                        <!-- เมนูตัวเลือก page size -->
-                        <div
-                            v-if="openPageSize"
-                            class="absolute z-50 mt-1.5 w-full rounded-2xl border-2 bg-white shadow-lg overflow-hidden"
-                            role="listbox"
-                        >
-                            <ul class="py-1">
-                                <li v-for="s in [10, 25, 50, 100]" :key="s">
-                                    <button
-                                        type="button"
-                                        @click="choosePageSize(s)"
-                                        class="w-full text-left px-3 py-1.5 text-[14px] hover:bg-rose-50"
-                                        :class="
-                                            s === pageSize
-                                                ? 'text-[#D40E11] font-semibold bg-rose-50/50'
-                                                : 'text-black'
-                                        "
-                                        role="option"
-                                        :aria-selected="s === pageSize"
-                                    >
-                                        {{ s }}
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- แสดงสถานะหน้าปัจจุบัน/จำนวนหน้า/จำนวนรายการทั้งหมด -->
-                    <span class="ml-2 text-[11px] text-gray-500"
-                        >{{ page }}-{{ totalPages }} จาก
-                        {{ sorted.length }} รายการ</span
-                    >
-                </div>
-
-                <!-- ปุ่มเปลี่ยนหน้า -->
-                <div class="flex-1 flex justify-center">
-                    <div class="flex items-center gap-2">
-                        <!-- ปุ่มย้อนหน้า -->
-                        <button
-                            class="w-10 h-10 flex items-center justify-center rounded-full text-2xl leading-none text-rose-800 hover:text-rose-900 disabled:opacity-45 disabled:hover:text-rose-800"
-                            @click="prevPage"
-                            :disabled="page === 1"
-                            aria-label="Previous page"
-                        >
-                            ◄
-                        </button>
-
-                        <!-- ปุ่มตัวเลขหน้า/จุดไข่ปลา -->
-                        <button
-                            v-for="(p, idx) in pagesToShow"
-                            :key="idx"
-                            :disabled="p === '…'"
-                            @click="p !== '…' && goToPage(p)"
-                            :aria-current="p === page ? 'page' : null"
-                            class="w-9 h-9 px-3 rounded-full border transition disabled:cursor-default select-none"
-                            :class="[
-                                p === '…'
-                                    ? 'border-transparent bg-transparent text-gray-400 cursor-default'
-                                    : 'border-rose-600',
-                                p !== page && p !== '…'
-                                    ? 'bg-white text-rose-600 hover:bg-rose-50 hover:text-rose-700'
-                                    : '',
-                                p === page ? 'bg-rose-600 text-white' : '',
-                            ]"
-                        >
-                            {{ p }}
-                        </button>
-
-                        <!-- ปุ่มไปหน้าถัดไป -->
-                        <button
-                            class="w-10 h-10 flex items-center justify-center rounded-full text-2xl leading-none text-rose-800 hover:text-rose-900 disabled:opacity-45 disabled:hover:text-rose-800"
-                            @click="nextPage"
-                            :disabled="page === totalPages || totalPages === 0"
-                            aria-label="Next page"
-                        >
-                            ►
-                        </button>
-                    </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                <button
+                    class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                    :disabled="page === 1"
+                    @click="page--">
+                    ก่อนหน้า
+                </button>
+                <span class="text-sm text-gray-600">หน้า {{ page }} / {{ totalPages || 1 }}</span>
+                <button
+                    class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                    :disabled="page === totalPages || totalPages === 0"
+                    @click="page++"
+                >
+                    ถัดไป
+                </button>
                 </div>
             </div>
-        </div>
 
         <!-- คลิกนอกเพื่อปิด Filter/Sort -->
         <div
