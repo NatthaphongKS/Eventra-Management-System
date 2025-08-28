@@ -84,12 +84,8 @@
           </td>
           <td class="px-4 py-3">{{ ev.category || 'N/A' }}</td>
           <td class="px-4 py-3">{{ formatDate(ev.date) }}</td>
-          <td class="px-4 py-3">
-            {{ ev?.timeStart ? String(ev.timeStart).slice(0, 5) : (ev?.time ? String(ev.time).slice(0,5) : '??:??') }}
-            -
-            {{ ev?.timeEnd ? String(ev.timeEnd).slice(0, 5) : (ev?.time ? String(ev.time).slice(0,5) : '??:??') }}
-          </td>
-                    <td class="px-4 py-3">{{ ev.created_by || 'N/A' }}</td>
+          <td class="px-4 py-3">{{ formatTime(ev.timeStart, ev.timeEnd, ev.time) }}</td>
+          <td class="px-4 py-3">{{ ev.created_by || 'N/A' }}</td>
           <td class="px-4 py-3">{{ ev.deleted_by || 'N/A' }}</td>
           <td class="px-4 py-3 whitespace-nowrap">{{ formatDate(ev.deleted_at) }}</td>
         </tr>
@@ -166,28 +162,21 @@ function formatDate(iso) {
 }
 function z(n){ return String(n).padStart(2, "0"); }
 function formatTime(start, end, single) {
-  // แปลงเป็น "HH:mm" รองรับ "HH:mm", "HH:mm:ss", ISO datetime
+  // รองรับหลายกรณี: start/end เป็น "HH:mm" หรือ ISO; single เป็น string เดียว
   const toHM = (v) => {
     if (!v) return null;
-    const s = String(v);
-    if (/^\d{1,2}:\d{2}$/.test(s)) return s;        // "10:30"
-    if (/^\d{1,2}:\d{2}:\d{2}$/.test(s)) return s.slice(0,5); // "10:30:00" -> "10:30"
-    const d = new Date(s);                           // ISO
-    if (!Number.isNaN(d.getTime())) return `${z(d.getHours())}:${z(d.getMinutes())}`;
-    return null;
+    // ถ้าเป็น "HH:mm" อยู่แล้ว
+    if (/^\d{1,2}:\d{2}$/.test(v)) return v;
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) return null;
+    return `${z(d.getHours())}:${z(d.getMinutes())}`;
   };
-
-  const sHM = toHM(start);
-  const eHM = toHM(end);
-
-  if (sHM && eHM) return `${sHM} - ${eHM}`;
-  if (sHM) return sHM;
-  if (eHM) return eHM;
-
-  const one = toHM(single);
-  return one ? `${one} - ${one}` : "??:?? - ??:??";
+  const s = toHM(start), e = toHM(end);
+  if (s && e) return `${s}–${e}`;
+  if (single) return single;
+  if (s) return s;
+  return "N/A";
 }
-
 
 const normalize = (s) => String(s ?? "").toLowerCase();
 
