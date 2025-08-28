@@ -5,18 +5,19 @@
     <!-- Search -->
     <div class="flex w-full items-center gap-2 sm:max-w-xl">
       <div class="relative flex-1">
-        <input
-          v-model="query"
-          type="text"
-          placeholder="Search..."
-          class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-2.5 text-sm outline-none transition focus:border-red-300 focus:bg-white"
-        />
-      </div>
-      <button
-        class="inline-flex items-center justify-center rounded-full bg-[#C91818] p-3 text-white shadow hover:opacity-95 active:scale-[0.98]"
-        @click="onSearch"
-        aria-label="search"
-      >
+            <input
+                v-model="searchInput"
+                type="text"
+                placeholder="Search..."
+
+                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition focus:border-red-300 focus:bg-white"
+                />
+                </div>
+
+                <button
+                class="inline-flex items-center justify-center rounded-full bg-[#C91818] p-3 text-white shadow hover:opacity-95 active:scale-[0.98]"
+                @click="onSearch"
+                aria-label="search">
         <!-- search icon -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 4a6 6 0 104.472 10.03l4.249 4.25a1 1 0 101.415-1.415l-4.25-4.249A6 6 0 0010 4zm-4 6a4 4 0 118 0 4 4 0 01-8 0z"/>
@@ -67,54 +68,65 @@
   </div>
 
   <!-- Table -->
-  <div class="mt-4 min-w-full overflow-hidden rounded-2xl border border-gray-200">
-  <table class="min-w-full">
+  <div class="mt-4 overflow-hidden rounded-2xl ring-1 ring-gray-100">
+    <table class="min-w-full divide-y divide-gray-100">
 
-    <thead class="bg-gray-100">
-      <tr class="bg-gray-100 text-gray-700 text-sm font-semibold">
-        <th class="w-14 px-6 py-3 text-left">#</th>
-        <th class="px-6 py-3 text-left">Category</th>
-        <th class="px-6 py-3 text-left">Created by</th>
-        <th class="px-6 py-3 text-left">Created date (D/M/Y)</th>
-        <th class="w-16 px-6 py-3"></th>
-      </tr>
-    </thead>
+         <colgroup>
+      <col class="w-14" />       <!-- # -->
+      <col class="w-[48%]" />    <!-- Category (กว้างสุด) -->
+      <col class="w-[22%]" />    <!-- Created by -->
+      <col class="w-[22%]" />    <!-- Created date -->
+      <col class="w-16" />       <!-- action (ถังขยะ) -->
+          </colgroup>
 
-    <tbody class="divide-y divide-gray-100">
-      <tr
-        v-for="(row, idx) in pagedRows"
-        :key="row.id"
-        class="text-sm text-gray-700 hover:bg-gray-50">
-        <td class="w-14 px-6 py-3 text-left">{{ startIndex + idx + 1 }}</td>
-        <td class="px-6 py-3 text-lef">{{ row.name }}</td>
-        <td class="px-6 py-3 text-left">{{ row.createdBy }}</td>
-        <td class="px-6 py-3 text-lef">{{ formatDate(row.createdAt) }}</td>
-        <td class="w-16 px-6 py-3">
-          <button
-            class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
-            @click="remove(row.id)"
-            aria-label="delete"
-          >
-            <!-- trash -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M9 3a1 1 0 00-1 1v1H5a1 1 0 100 2h.278l.84 12.255A2 2 0 008.114 22h7.772a2 2 0 001.996-2.745L18.722 7H19a1 1 0 100-2h-3V4a1 1 0 00-1-1H9zm2 4a1 1 0 112 0v10a1 1 0 11-2 0V7z"
-              />
-            </svg>
-          </button>
-        </td>
-      </tr>
+      <thead class="bg-gray-50 text-gray-600">
+        <tr class="text-left text-sm">
+          <th class="w-14 px-6 py-3 font-semibold">#</th>
+          <th class="px-6 py-3 font-semibold">Category</th>
+          <th class="px-6 py-3 font-semibold">Created by</th>
+          <th class="px-6 py-3 font-semibold">Created date (D/M/Y)</th>
+          <th class="w-16 px-6 py-3"></th>
+        </tr>
 
-      <tr v-if="pagedRows.length === 0">
-        <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
-          ไม่พบข้อมูลที่ค้นหา
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr
+          v-for="(row, idx) in pagedRows"
+          :key="row.id"
+          class="text-sm text-gray-700 hover:bg-gray-50"
+        >
+          <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
+          <td class="px-6 py-3 max-w-xs relative">
+            <div class="truncate-text" :title="row.name">
+                {{ row.name }}
+            </div>
+            </td>
+          <td class="px-6 py-3">{{ row.createdBy }}</td>
+          <td class="px-6 py-3">{{ formatDate(row.createdAt) }}</td>
+          <td class="px-6 py-3">
+            <button
+              class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+              @click="remove(row.id)"
+              aria-label="delete"
+            >
+              <!-- trash -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 3a1 1 0 00-1 1v1H5a1 1 0 100 2h.278l.84 12.255A2 2 0 008.114 22h7.772a2 2 0 001.996-2.745L18.722 7H19a1 1 0 100-2h-3V4a1 1 0 00-1-1H9zm2 4a1 1 0 112 0v10a1 1 0 11-2 0V7z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
 
-  
+        <tr v-if="pagedRows.length === 0">
+          <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+            ไม่พบข้อมูลที่ค้นหา
+          </td>
+        </tr>
+
+
+      </tbody>
+    </table>
+  </div>
 
   <!-- Footer -->
   <div class="mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
@@ -130,12 +142,11 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
       <button
         class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
         :disabled="page === 1"
-        @click="page--">
+        @click="page--"
+      >
         ก่อนหน้า
       </button>
       <span class="text-sm text-gray-600">หน้า {{ page }} / {{ totalPages || 1 }}</span>
@@ -155,7 +166,7 @@
       <h3 class="text-xl font-semibold text-gray-900">Create Category</h3>
       <div class="mt-5">
         <label class="mb-1 block text-sm font-medium text-gray-700">
-          Type name <span class="text-red-700">*</span>
+          Type name <span class="text-red-600">*</span>
         </label>
         <input
           v-model="newName"
@@ -172,95 +183,177 @@
       <div class="mt-6 flex justify-between">
         <button
           @click="closeAdd"
-          class="inline-flex items-center gap-2 rounded-full border border-red-200 bg-white px-5 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+            class="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700"
         >
           ✕ Cancel
         </button>
         <button
           :disabled="!newName.trim()"
           @click="createCategory"
-          class="inline-flex items-center gap-2 rounded-full bg-emerald-00 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           + Create
         </button>
       </div>
     </div>
   </div>
-
 </template>
 
+
 <script setup lang="ts">
+/**
+ * ===== Imports =====
+ */
 import { computed, ref, onMounted } from "vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 
-/** ---- Axios base ---- */
+
+/**
+ * ===== Axios base config =====
+ * ถ้าใช้ dev server proxy ไป Laravel ให้ตั้ง baseURL เป็น /api
+ */
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
+axios.defaults.withCredentials = true;
 
-/** ---- Types ---- */
-type Row = { id: number; name: string; createdBy: string; createdAt: string };
+/**
+ * ===== CSRF (สำหรับเส้นทางที่อยู่หลัง web + auth) =====
+ */
+async function ensureCsrf() {
+  try {
+    await axios.get("/sanctum/csrf-cookie");
+  } catch (e) {
+    console.error("Get CSRF cookie failed:", e);
+  }
+}
 
-/** ---- State ---- */
+/**
+ * ===== Types =====
+ * createdAt รองรับ null เพราะเราไม่ใช้เวลาปัจจุบันเป็นค่า fallback
+ */
+type Row = {
+  id: number;
+  name: string;
+  createdBy: string;
+  createdAt: string | null; // ISO หรือ null
+};
+
+/**
+ * ===== State =====
+ */
 const rows = ref<Row[]>([]);
 const query = ref("");
 const page = ref(1);
 const pageSize = ref(10);
 const sortOpen = ref(false);
-const sortDir = ref<'asc'|'desc'>('desc');
+const sortDir = ref<"asc" | "desc">("desc");
 const addOpen = ref(false);
 const newName = ref("");
 const loading = ref(false);
+const searchInput = ref("");      // ค่าที่พิมพ์ในช่อง
+const appliedQuery = ref("");     // ค่าที่ใช้กรองจริง (อัปเดตเมื่อกดปุ่ม)
 
-/** ผู้ใช้ปัจจุบัน (เพื่อแสดง/บันทึกในตาราง) */
-const userName = ref(""); // <-- ถ้ามีชื่อผู้ใช้จริงให้แทนที่
+// ใช้แสดงชื่อผู้สร้างใน UI เท่านั้น (ฝั่ง DB อาจไม่เก็บจริง)
+const userName = ref("");
 
-/** ---- Helper: normalize name (trim + lowercase) ---- */
-function norm(s: string) { return s.trim().toLowerCase(); }
+/**
+ * ===== Helpers =====
+ */
+function norm(s: unknown) {
+  return String(s ?? "").trim().toLowerCase();
+}
 
-/** ---- Load categories ---- */
+function toTime(iso?: string | null) {
+  const t = iso ? new Date(iso).getTime() : NaN;
+  return Number.isFinite(t) ? t : 0;
+}
+
+function formatDate(iso?: string | null) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "-";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+/**
+ * ===== Load categories from API =====
+ * ใช้เวลาใน DB เท่านั้น: cat_create_at หรือ created_at
+ */
 async function loadCategories() {
   loading.value = true;
   try {
     const res = await axios.get("/categories");
-    const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-    rows.value = data.map((c: any) => ({
-      id: c.id,
-      name: c.cat_name ?? c.emc_name ?? "",
-      createdBy: c.created_by ?? "-",       // << ใส่ createdBy ให้ตาราง
-      createdAt: c.created_at ?? new Date().toISOString(),
-    }));
+    const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+   rows.value = (data as any[]).map((c) => ({
+  id: c.id,
+  name: c.cat_name ?? c.emc_name ?? "",
+  // ใช้ชื่อที่ API ส่งมา ถ้าไม่มีค่อย fallback เป็น id/ขีด
+  createdBy: c.created_by_name ?? c.created_by ?? "-",
+  // รองรับได้ทั้ง cat_created_at / cat_create_at / created_at
+  createdAt: c.cat_created_at ?? c.cat_create_at ?? c.created_at ?? null,
+}));
   } catch (e: any) {
-    console.error("GET /categories failed:", e?.response);
+    console.error("GET /categories failed:", e?.response || e);
     Swal.fire({ title: "โหลดข้อมูลไม่สำเร็จ", text: e?.message ?? "", icon: "error" });
   } finally {
     loading.value = false;
   }
 }
-onMounted(loadCategories);
 
-/** ---- UI actions ---- */
-function openAdd() { newName.value = ""; addOpen.value = true; }
-function closeAdd() { addOpen.value = false; }
-function onSearch() { page.value = 1; }
-function applySort(dir: 'asc'|'desc') { sortDir.value = dir; sortOpen.value = false; page.value = 1; }
-
-/** ---- Filter & Sort & Pagination ---- */
-const filtered = computed(() => {
-  const q = norm(query.value);
-  if (!q) return rows.value.slice();
-  return rows.value.filter(r => norm(r.name).includes(q) || norm(r.createdBy).includes(q));
+onMounted(() => {
+  loadCategories();
+  // ปิดเมนู sort เมื่อคลิกนอก
+  document.addEventListener("click", (e) => {
+    const el = e.target as HTMLElement;
+    if (!el.closest(".relative")) sortOpen.value = false;
+  });
 });
+
+/**
+ * ===== UI actions =====
+ */
+function openAdd() {
+  newName.value = "";
+  addOpen.value = true;
+}
+function closeAdd() {
+  addOpen.value = false;
+}
+function onSearch() {
+  appliedQuery.value = searchInput.value.trim(); // ว่างได้ -> filtered จะคืนทั้งหมด
+  page.value = 1;                                // รีเซ็ตไปหน้าแรก
+}
+function applySort(dir: "asc" | "desc") {
+  sortDir.value = dir;
+  sortOpen.value = false;
+  page.value = 1;
+}
+
+/**
+ * ===== Derived =====
+ */
+const filtered = computed(() => {
+  const q = norm(appliedQuery.value);
+  if (!q) return rows.value.slice();  // ว่าง -> แสดงทั้งหมด
+
+  return rows.value.filter(
+    (r) => norm(r.name).includes(q) || norm(r.createdBy).includes(q)
+  );
+});
+
+
+
 const sorted = computed(() => {
   const copy = filtered.value.slice();
-  const dir = sortDir.value === 'asc' ? 1 : -1;
-  copy.sort((a, b) => {
-    const ta = new Date(a.createdAt).getTime();
-    const tb = new Date(b.createdAt).getTime();
-    return (ta - tb) * dir;
-  });
+  const dir = sortDir.value === "asc" ? 1 : -1;
+  copy.sort((a, b) => (toTime(a.createdAt) - toTime(b.createdAt)) * dir);
   return copy;
 });
+
 const total = computed(() => sorted.value.length);
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
 const startIndex = computed(() => (page.value - 1) * pageSize.value);
@@ -270,49 +363,55 @@ const visibleCountText = computed(() =>
   total.value === 0 ? "0 จาก 0 รายการ" : `${endIndex.value} จาก ${total.value} รายการ`
 );
 
-/** ---- Duplicate checker (UI) ---- */
+/**
+ * ===== Duplicate check (UI) =====
+ */
 const isDuplicate = computed(() => {
   const name = norm(newName.value);
   if (!name) return false;
-  return rows.value.some(r => norm(r.name) === name);
+  return rows.value.some((r) => norm(r.name) === name);
 });
 
-/** ---- Create (POST -> DB + update UI) ---- */
+/**
+ * ===== Create category =====
+ * ไม่ใช้เวลาปัจจุบันเป็น fallback:
+ * - ถ้า server ไม่ส่งเวลามา ให้ reload จาก DB
+ */
 async function createCategory() {
-  const raw = newName.value;
-  const name = raw.trim();
+  const name = newName.value.trim();
   if (!name) return;
 
-  // ✅ กันชื่อซ้ำใน UI ก่อนยิง API
   if (isDuplicate.value) {
-    Swal.fire({
-      title: "มีชื่อนี้อยู่แล้ว",
-      text: `ชื่อ "${name}" ถูกใช้งานอยู่ในรายการ`,
-      icon: "warning",
-    });
+    Swal.fire({ title: "มีชื่อนี้อยู่แล้ว", text: `ชื่อ "${name}" ถูกใช้งานอยู่ในรายการ`, icon: "warning" });
     return;
   }
 
   try {
-    const res = await axios.post("/categories", { cat_name: name }); // KEY ต้องตรง DB
+    await ensureCsrf();
+    const res = await axios.post("/categories", { cat_name: name });
     const created = res.data?.data ?? res.data;
 
-    rows.value.unshift({
-      id: created.id,
-      name: created.cat_name ?? name,
-      createdBy: userName.value,                            // << โชว์ชื่อผู้ใช้ในตาราง
-      createdAt: created.created_at ?? new Date().toISOString(),
-    });
+    const dbTime: string | null = created?.cat_create_at ?? created?.created_at ?? null;
+
+    if (dbTime) {
+      rows.value.unshift({
+        id: created.id,
+        name: created.cat_name ?? name,
+        createdBy: userName.value || "-",
+        createdAt: dbTime, // ✅ ใช้เวลา DB เท่านั้น
+      });
+    } else {
+      // ถ้า API ไม่คืนเวลา เพื่อความถูกต้องให้โหลดจาก DB
+      await loadCategories();
+    }
 
     closeAdd();
     page.value = 1;
     Swal.fire({ title: "เพิ่มหมวดหมู่สำเร็จ!", text: `เพิ่ม "${name}" เรียบร้อย`, icon: "success" });
-
   } catch (err: any) {
     const status = err?.response?.status;
-    const data   = err?.response?.data;
+    const data = err?.response?.data;
 
-    // fallback: 422 จาก Laravel (unique)
     if (status === 422) {
       const msg = data?.errors?.cat_name?.[0] || data?.message || "ข้อมูลไม่ถูกต้อง";
       Swal.fire({ title: "เพิ่มไม่สำเร็จ", text: msg, icon: "error" });
@@ -326,7 +425,9 @@ async function createCategory() {
   }
 }
 
-/** ---- Delete (soft delete: UI ออก, DB เปลี่ยนสถานะ) ---- */
+/**
+ * ===== Soft delete =====
+ */
 function remove(id: number) {
   Swal.fire({
     title: "ARE YOU SURE TO DELETE?",
@@ -338,14 +439,15 @@ function remove(id: number) {
     confirmButtonColor: "#3085d6",
     cancelButtonColor: "#d33",
     allowOutsideClick: false,
-    allowEscapeKey: false
+    allowEscapeKey: false,
   }).then(async (result) => {
     if (!result.isConfirmed) return;
 
     const backup = rows.value.slice();
-    rows.value = rows.value.filter(r => r.id !== id);
+    rows.value = rows.value.filter((r) => r.id !== id);
 
     try {
+      await ensureCsrf();
       await axios.delete(`/categories/${id}`);
       const tp = totalPages.value || 1;
       if (page.value > tp) page.value = tp;
@@ -353,7 +455,7 @@ function remove(id: number) {
     } catch (err: any) {
       rows.value = backup;
       const status = err?.response?.status;
-      const data   = err?.response?.data;
+      const data = err?.response?.data;
       Swal.fire({
         title: `ลบไม่สำเร็จ${status ? ` (HTTP ${status})` : ""}`,
         text: typeof data === "string" ? data : JSON.stringify(data ?? {}, null, 2),
@@ -363,20 +465,35 @@ function remove(id: number) {
   });
 }
 
-/** ---- Helpers ---- */
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
+// ===== Expose helpers for template (ถ้าใช้) =====
+const $formatDate = formatDate;
+</script>
+
+<style scoped>
+.truncate-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 600px;
+  cursor: pointer;
 }
 
-/** ---- Close sort menu ---- */
-onMounted(() => {
-  document.addEventListener("click", (e) => {
-    const el = e.target as HTMLElement;
-    if (!el.closest(".relative")) sortOpen.value = false;
-  });
-});
-</script>
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: normal;
+  z-index: 20;
+  min-width: 200px;
+  max-width: 400px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.group:hover .tooltip {
+  display: block;
+}
+</style>
