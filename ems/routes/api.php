@@ -59,6 +59,6 @@ Route::middleware(['web', 'auth'])->group(function () {
 });
 
 
-Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'show']);
+Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
 
