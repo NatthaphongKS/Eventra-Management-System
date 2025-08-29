@@ -12,7 +12,7 @@ import Category from '../pages/category_page.vue'
 import reply_form from '../pages/Reply_form.vue'
 import UploadFile from '../pages/upload_file.vue'
 import History_Employee from '../pages/history_employees.vue'
-import History_Event from '../pages/history_event.vue'
+import History_Event from '../pages/History_Event.vue'
 // [เพิ่ม] หน้าแก้ไข
 import EditEmployee from '../pages/edit_employee.vue'
 import EventDetails from '../pages/event_details.vue'
