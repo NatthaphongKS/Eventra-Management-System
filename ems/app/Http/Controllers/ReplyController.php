@@ -11,9 +11,9 @@ class ReplyController extends Controller
 {
 
     // app/Http/Controllers/ReplyController.php
-    public function openForm($evn_id, $emp_id)
+    public function openForm($evnID, $empID)
     {
-        return view('reply', ['evnId' => $evn_id, 'empId' => $emp_id]);
+        return view('reply', ['evnID' => $evnID, 'empID' => $empID]);
     }
 
     public function show(Request $req)
@@ -26,7 +26,7 @@ class ReplyController extends Controller
                 'emp_email',
                 'emp_phone'
             )
-            ->where('id', $req->emp_id)
+            ->where('id', $req->empID)
             ->first();
         $event = Event::query()
             ->Select(
@@ -36,11 +36,11 @@ class ReplyController extends Controller
                 'evn_timeend',
                 'evn_location'
             )
-            ->where('id', $req->evn_id)
+            ->where('id', $req->evnID)
             ->first();
         $connect = Connect::query()
-            ->where('con_event_id', $req->evn_id)
-            ->where('con_employee_id', $req->emp_id)
+            ->where('con_event_id', $req->evnID)
+            ->where('con_employee_id', $req->empID)
             ->first();
 
         return response()->json(
@@ -56,8 +56,8 @@ class ReplyController extends Controller
     public function store(Request $req)
     {
         $data = $req->validate([
-            'evn_id' => 'required|integer',
-            'emp_id' => 'required|integer',
+            'evnID' => 'required|integer',
+            'empID' => 'required|integer',
             'attend' => 'required|string',
             'reason' => 'nullable|string|max:500',
         ]);
@@ -68,8 +68,8 @@ class ReplyController extends Controller
         }
 
         // // อัปเดตถ้ามีคู่นี้อยู่แล้ว ไม่มีก็สร้างใหม่
-        $updated = Connect::where('con_event_id', $data['evn_id'])
-            ->where('con_employee_id', $data['emp_id'])
+        $updated = Connect::where('con_event_id', $data['evnID'])
+            ->where('con_employee_id', $data['empID'])
             ->update([
                 'con_answer' => $data['attend'],                   // หรือ $answer
                 'con_reason' => $data['reason'],
