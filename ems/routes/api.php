@@ -29,15 +29,16 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/event-save', [EventController::class, 'store']);
     // Route::post('/edit-event', [EventController::class, 'Edit_event']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
-    Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']);
+
+    Route::post('/edit-event', [EventController::class, 'Update']);
 
     //Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
     Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
-
-    Route::get('/employees/{id}',  [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
-    Route::put('/employees/{id}',  [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
-    Route::get('/employees-meta',  [EmployeeController::class, 'meta']);    // รายการตำแหน่ง/แผนก/ทีม
+    Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']);
+    Route::get('/employees/{id}', [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
+    Route::put('/employees/{id}', [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
+    Route::get('/employees-meta', [EmployeeController::class, 'meta']);    // รายการตำแหน่ง/แผนก/ทีม
     Route::get('categories', [CategoryController::class, 'index']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
     Route::post('categories', [CategoryController::class, 'store']);
