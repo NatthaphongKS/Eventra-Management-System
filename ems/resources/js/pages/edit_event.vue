@@ -9,20 +9,20 @@
     <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
          trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
     <label>Event Title</label><br />
-    <input type="text" style="border: 1px solid black;" v-model.trim="evn_title" /><br />
+    <input type="text" style="border: 1px solid black;" v-model.trim="eventTitle" /><br />
 
 
     <!-- เลือก Category -->
     <label>Event Category</label><br />
-    <select style="border: 1px solid black;" v-model="evn_category_id">
+    <select style="border: 1px solid black;" v-model="eventCategoryId">
         <!-- v-model ตรงนี้จะผูกค่ากับ evn_category_id โหลดครั้งแรกจะได้ค่าเก่า + ถ้าเลืกใหม่จะได้ค่าใหม่ เวลาส่งไป save ก็จะส่งเป็น id -->
 
         <!-- ถ้าหมวดเดิมเป็น inactive แต่อยากแสดงไว้ -->
-        <option :value="evn_category_id" hidden> <!-- เก็บ id ค่าเดิมไว้ -->
-            {{ evn_category_name }}<!-- แสดงตัวเลือกจากตัวแปร evn_category_name ที่ดึงมาจาก controller -->
+        <option :value="eventCategoryId" hidden> <!-- เก็บ id ค่าเดิมไว้ -->
+            {{ vnentCategoryName }}<!-- แสดงตัวเลือกจากตัวแปร evn_category_name ที่ดึงมาจาก controller -->
         </option>
 
-        <option v-for="cat in select_category" :value="cat.id">
+        <option v-for="cat in selectCategory" :value="cat.id">
             {{ cat.cat_name }}
             <!-- cat เก็บข้อมูลในช่อง array ของ select_category ทุกรอบที่วน {id= 1 name=ประชุม ...}
         cat.id เอา cat ที่เก็บข้อมูลในช่อง array แล้วดึงค่ามาแค่ name เพื่อเอาไว้แสดงค่าที่ให้เลือก -->
@@ -34,30 +34,30 @@
     <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
     <!-- v-model.trim="evn_description" = ผูกค่ากับตัวแปร evn_description อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม-->
     <label>Event Description</label><br />
-    <textarea style="border: 2px solid black;" v-model.trim="evn_description"></textarea><br>
+    <textarea style="border: 2px solid black;" v-model.trim="eventDescription"></textarea><br>
 
     <!-- วันที่ -->
     <label>Date</label><br>
-    <input type="date" v-model="evn_date">
+    <input type="date" v-model="eventDate">
 
     <label>Time</label>
     <div>
-        <input type="time" v-model="evn_time_start"></input>
+        <input type="time" v-model="eventTimeStart"></input>
         <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData
         2 ตอนเลือกค่า ใน Input ค่าก็จะเปลี่ยนไปตามที่เราเลือกแล้วส่งไปคำนวณ-->
 
         <label> : </label>
-        <input type="time" v-model="evn_time_end"></input>
+        <input type="time" v-model="eventTimeEnd"></input>
     </div>
 
     <!-- ส่วนแสดงช่วงเวลา -->
     <label>duration</label><br>
-    <input disabled v-model="evn_duration"></input><br>
+    <input disabled v-model="eventDuration"></input><br>
     <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
 
     <!-- ส่วนแสดงสถานที่ -->
     <label>Location</label><br>
-    <input type="text" v-model="evn_location"></input>
+    <input type="text" v-model="eventLocation"></input>
 
     <!-- Upload attachments -->
     <div style="margin: 20px">
@@ -244,18 +244,18 @@ import ButtonSuccess from '../components/ButtonSuccess.vue';
 export default {
     data() { // เก็บ state ของฟอร์มไว้ใน component
         return {
-            evn_title: '',        // ตัวแปรสำหรับ input "Event Title" เอาไว้เก็บค่าตอน controller ส่งค่ามา
-            evn_category_name: '', // ตัวแปรสำหรับ select "Event Category" ที่ส่งมาจาก table อื่น
-            evn_category_id: '',     // <-- ใช้ค่านี้ส่งไป backend ตอนกด save
-            select_category: [], //เก็บข้อมูล catagory ที่มีทั้งหมด เลยเก็บเป็น array
-            evn_description: '',
-            evn_date: '',
-            evn_time_start: '',
-            evn_time_end: '',
-            evn_duration: 0,
-            evn_location: '',
+            eventTitle: '',        // ตัวแปรสำหรับ input "Event Title" เอาไว้เก็บค่าตอน controller ส่งค่ามา
+            evnentCategoryName: '', // ตัวแปรสำหรับ select "Event Category" ที่ส่งมาจาก table อื่น
+            eventCategoryId: '',     // <-- ใช้ค่านี้ส่งไป backend ตอนกด save
+            selectCategory: [], //เก็บข้อมูล catagory ที่มีทั้งหมด เลยเก็บเป็น array
+            eventDescription: '',
+            eventDate: '',
+            eventTimeStart: '',
+            eventTimeEnd: '',
+            eventDuration: 0,
+            eventLocation: '',
             saving: false,
-            evn_duration_minutes: 0, // นาทีจริงที่จะส่งไป backend
+            eventDurationMinutes: 0, // นาทีจริงที่จะส่งไป backend
 
             // ⬇️ state สำหรับไฟล์โ
             filesExisting: [],    // ตัวแปรรับข้อมูล [{id,file_name,url,file_size,...}] จาก backend
@@ -298,19 +298,19 @@ export default {
                 const catResponse = await axios.get('/categories')
                 const categories = catResponse.data //ส่งมาเป็น array
 
-                this.evn_category_id = data?.evn_category_id ?? ''   //เก็บ
+                this.eventCategoryId = data?.evn_category_id ?? ''   //เก็บ
                 //เอาข้อมูลจาก controller ที่ส่งมา มาเก็บในตัวแปรแต่ละตัวใน data()
                 // เอาข้อมูลที่ได้มา map ลงในตัวแปรที่ bind กับ input/textarea
-                this.evn_title = data?.evn_title ?? '' // ถ้า data หรือ data.evn_title เป็น undefined ให้ใช้ '' แทน
-                this.evn_description = data?.evn_description ?? ''
-                this.evn_category_name = data?.cat_name ?? ''
-                this.evn_date = data.evn_date.split("T")[0]; //เอาข้อมูลวันมาที่ได้มาแปลง format เป็น "yyyy-MM-dd".ก่อนส่งไปแสดงในช่องกรอก
+                this.eventTitle = data?.evn_title ?? '' // ถ้า data หรือ data.evn_title เป็น undefined ให้ใช้ '' แทน
+                this.eventDescription = data?.evn_description ?? ''
+                this.vnentCategoryName = data?.cat_name ?? ''
+                this.eventDate = data.evn_date.split("T")[0]; //เอาข้อมูลวันมาที่ได้มาแปลง format เป็น "yyyy-MM-dd".ก่อนส่งไปแสดงในช่องกรอก
                 //spit(T) คือแยกข้อมูลเป็น array 2 ช่อง จะได้ ["2023-08-01", "00:00:00.000000Z"] จากแบบ "2023-08-01T00:00:00.000000Z".split("T")
 
-                this.evn_time_start = data?.evn_timestart ?? ''
-                this.evn_time_end = data?.evn_timeend ?? ''
-                this.evn_location = data?.evn_location ?? ''
-                this.select_category = categories
+                this.eventTimeStart = data?.evn_timestart ?? ''
+                this.eventTimeEnd = data?.evn_timeend ?? ''
+                this.eventLocation = data?.evn_location ?? ''
+                this.selectCategory = categories
 
                 // ⬇️ ไฟล์เดิม
                 this.filesExisting = payload?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
@@ -352,7 +352,7 @@ export default {
             } catch (err) {
                 // ถ้า error ให้แจ้งใน console + set ค่า
                 console.error(err)
-                this.evn_title = '(โหลดข้อมูลไม่สำเร็จ)'
+                this.eventTitle = '(โหลดข้อมูลไม่สำเร็จ)'
             }
         }, pickFiles() { this.$refs.fileInput?.click?.() },
         //<input ref="fileInput" ... style="display:none" /> → ช่อง input hidden ถูกซ่อนตลอด ในส่วน input ใต้ browsefile
@@ -456,25 +456,25 @@ export default {
         },
 
         async saveEvent() {
-            if (!this.evn_title?.trim()) return alert('กรอกชื่ออีเวนต์ก่อน')
+            if (!this.eventTitle?.trim()) return alert('กรอกชื่ออีเวนต์ก่อน')
             try {
                 this.saving = true
                 const id = this.$route.params.id
                 const formData = new FormData()
 
                 formData.append('id', id)
-                formData.append('evn_title', this.evn_title.trim())
+                formData.append('evn_title', this.eventTitle.trim())
 
                 // ฟิลด์อื่นๆ (ส่งเฉพาะที่ใช้งานอยู่)
-                if (this.evn_category_id) formData.append('evn_category_id', this.evn_category_id)
-                if (this.evn_description !== undefined) formData.append('evn_description', this.evn_description ?? '')
-                if (this.evn_date) formData.append('evn_date', this.evn_date)
-                if (this.evn_time_start) formData.append('evn_timestart', this.evn_time_start)
-                if (this.evn_time_end) formData.append('evn_timeend', this.evn_time_end)
-                if (this.evn_location) formData.append('evn_location', this.evn_location)
+                if (this.eventCategoryId) formData.append('evn_category_id', this.eventCategoryId)
+                if (this.eventDescription !== undefined) formData.append('evn_description', this.eventDescription ?? '')
+                if (this.eventDate) formData.append('evn_date', this.eventDate)
+                if (this.eventTimeStart) formData.append('evn_timestart', this.eventTimeStart)
+                if (this.eventTimeEnd) formData.append('evn_timeend', this.eventTimeEnd)
+                if (this.eventLocation) formData.append('evn_location', this.eventLocation)
 
                 // duration เป็น “นาที”
-                formData.append('evn_duration', String(this.evn_duration_minutes || 0))
+                formData.append('evn_duration', String(this.eventDurationMinutes || 0))
 
                 // ไฟล์
                 this.filesNew.forEach(file => formData.append('attachments[]', file, file.name))
@@ -500,10 +500,10 @@ export default {
         },
 
         calDuration() {
-            const [startHour, startMinute] = (this.evn_time_start || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
+            const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
             // startHour เก็บ ชั่วโมง startMinute เก็บนาที
             //เอาแต่ละ element ใน array ไปผ่านฟังก์ชัน Number() เพื่อแปลงจาก string → number :  ["09", "30"].map(Number) → [9, 30]
-            const [endHour, endMinute] = (this.evn_time_end || '0:0').split(':').map(Number);
+            const [endHour, endMinute] = (this.eventTimeEnd || '0:0').split(':').map(Number);
 
             let sumStartMin = startHour * 60 + startMinute; //แปลงแล้วรวมเวลาเป็นนาที
             let sumEndMin = endHour * 60 + endMinute;
@@ -511,12 +511,12 @@ export default {
             if (diff < 0) diff += 24 * 60; // รองรับข้ามเที่ยงคืน ถ้าลบ แล้วได้ค่า ติดลบให้ diff เพิ่มไป 24 ชม แบบนาที
 
 
-            this.evn_duration_minutes = Math.max(0, diff); //กัน bug เพื่อ diff ที่เข้ามาตรงนี้ติดลบ จะได้ค่า 0 แทน
+            this.eventDurationMinutes = Math.max(0, diff); //กัน bug เพื่อ diff ที่เข้ามาตรงนี้ติดลบ จะได้ค่า 0 แทน
 
             // ส่วนโชว์ ใน input :
             const hour = Math.floor(diff / 60), //hour เก็บชม ที่แปลง นาที จากdiff เศษปัดลง
                 min = diff % 60;  //min เก็บนาที เอาเศษ
-            this.evn_duration = `${hour}h${min}m`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
+            this.eventDuration = `${hour}h${min}m`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
         },
     },
     computed: {
@@ -573,8 +573,8 @@ export default {
     },
 
     watch: {
-        evn_time_start: 'calDuration',//เรียก calDuration ไม่ว่าค่าจะเปลี่ยนจากการส่งมาผ่าน controller หรือ คนใช้เลือกเปลี่ยนเองตอนเลือก Input
-        evn_time_end: 'calDuration',// ใช้เพราะว่าต้องการคำนวณ duration ทุกครั้งที่มีการส่งข้อมูลมาจาก controller เวลาโหลดข้อมูลเก่าด้วย
+        eventTimeStart: 'calDuration',//เรียก calDuration ไม่ว่าค่าจะเปลี่ยนจากการส่งมาผ่าน controller หรือ คนใช้เลือกเปลี่ยนเองตอนเลือก Input
+        eventTimeEnd: 'calDuration',// ใช้เพราะว่าต้องการคำนวณ duration ทุกครั้งที่มีการส่งข้อมูลมาจาก controller เวลาโหลดข้อมูลเก่าด้วย
 
         search() { this.page = 1 },
         filters: { deep: true, handler() { this.page = 1 } },
