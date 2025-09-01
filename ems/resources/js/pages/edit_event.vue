@@ -294,9 +294,8 @@ export default {
                 const payload = evn_response.data      // สร้างตัวแปร Payload อีก 1 ตัวมาเพื่อมาเก็บข้อมูลเฉพาะ data
                 const data = payload?.event ?? {}      // data เป็นตัวที่เก็บจาก payload อีกทีแล้วเพิ่มเงื่อนไขกัน null
 
-
-                const catResponse = await axios.get('/categories')
-                const categories = catResponse.data //ส่งมาเป็น array
+                const response = await axios.get('/categories')
+                const categories = response.data?.data ?? []
 
                 this.eventCategoryId = data?.evn_category_id ?? ''   //เก็บ
                 //เอาข้อมูลจาก controller ที่ส่งมา มาเก็บในตัวแปรแต่ละตัวใน data()
