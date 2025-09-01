@@ -1,6 +1,8 @@
 <template>
     <div class="min-h-screen">
         <header class="max-w-6xl mx-auto px-6 pt-6">
+            <link rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         </header>
 
         <section class="px-6 py-8">
@@ -15,12 +17,10 @@
                                 <button type="button"
                                     class="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 text-[#444444]"
                                     @click="goImport">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
-                                        fill="currentColor">
-                                        <path
-                                            d="M5 20h14a1 1 0 0 0 1-1v-7h-2v6H6V6h6V4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1Zm7-9v3h2v-3h3l-4-4-4 4h3Z" />
-                                    </svg>
-                                    Import
+                                    <span class="material-symbols-outlined text-[16px] leading-none" aria-hidden="true">
+                                        download
+                                    </span>
+                                    <b>Import</b>
                                 </button>
                             </div>
                         </div>
@@ -96,15 +96,19 @@
          text-white bg-red-700 border border-transparent
          hover:bg-red-800 active:bg-red-900
          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300">
-                                <span class="text-xs mr-1">✕</span>
+                                <span class="material-symbols-outlined text-[18px] leading-none">close</span>
                                 Cancel
                             </button>
 
 
+
                             <button type="submit" :disabled="submitting"
                                 class="inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                                <span class="text-base">+</span> Create
+                                <span class="material-symbols-outlined text-[18px] leading-none"
+                                    aria-hidden="true">add</span>
+                                Create
                             </button>
+
                         </div>
                     </div>
                 </form>
@@ -117,6 +121,8 @@
 import { reactive, computed, watch, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 // components
 import FormField from '../components/FormField.vue'
@@ -139,10 +145,9 @@ const permissions = [
 ]
 const PREFIX_MAP = { 'นาย': 1, 'นาง': 2, 'นางสาว': 3 }
 
-
 const departments = ref([])  // [{label, value}]
-const teams = ref([])  // [{label, value, department_id}]
-const positions = ref([])  // [{label, value}]
+const teams = ref([])        // [{label, value, department_id}]
+const positions = ref([])    // [{label, value}]
 const loadingMeta = ref(true)
 
 /* ------- form ------- */
@@ -156,30 +161,30 @@ const form = reactive({
 /* ------- โหลด meta จาก backend ------- */
 onMounted(async () => {
     try {
-        // ถ้าคุณวาง route นี้ไว้ใน web.php (middleware web,auth) => path คือ /meta
-        // ถ้าวางใน api.php และมี prefix /api ให้เปลี่ยนเป็น /api/employees/meta
         const { data } = await axios.get('/meta')
         departments.value = (data.departments || []).map(d => ({ label: d.dpm_name, value: d.id }))
         positions.value = (data.positions || []).map(p => ({ label: p.pst_name, value: p.id }))
-        // ต้องแก้ meta() ให้ส่ง tm_department_id มาด้วย (ดูข้อ 2 ด้านล่าง)
-        teams.value = (data.teams || []).map(t => ({ label: t.tm_name, value: t.id, department_id: t.tm_department_id ?? null }))
+        teams.value = (data.teams || []).map(t => ({
+            label: t.tm_name, value: t.id, department_id: t.tm_department_id ?? null
+        }))
     } catch (e) {
-        console.error(e)
-        alert('โหลด Department/Team/Position ไม่สำเร็จ')
+        await Swal.fire({
+            icon: 'error',
+            title: 'Load failed',
+            text: 'โหลด Department/Team/Position ไม่สำเร็จ',
+            confirmButtonText: 'OK',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'rounded-2xl',
+                confirmButton: 'rounded-full px-5 py-2.5 bg-gray-800 text-white font-semibold hover:bg-gray-900'
+            }
+        })
     } finally {
         loadingMeta.value = false
     }
 })
 
 const teamOptions = computed(() => teams.value)
-
-// watch(() => form.department, (depId) => {
-//     if (!depId) return
-//     const valid = teams.value.some(
-//         t => t.value === form.team && t.department_id === depId
-//     )
-//     if (!valid) form.team = ''
-// })
 
 /* ====== Validation ====== */
 const MSG = {
@@ -216,7 +221,7 @@ function validateField(key, value) {
         }
         else if (r === 'requiredNumber') {
             if (!value) return MSG.requiredNumber
-            if (!/^\d{10}$/.test(value)) return MSG.requiredNumber  // เบอร์ 10 หลัก
+            if (!/^\d{10}$/.test(value)) return MSG.requiredNumber // เบอร์ 10 หลัก
         }
         else if (r === 'requiredEmail') {
             if (!value) return MSG.requiredEmail
@@ -254,12 +259,11 @@ async function handleSubmit() {
         const payload = {
             emp_id: (form.employeeId || '').trim(),
             emp_prefix: Number(form.prefix),
-            emp_prefix: form.prefix,
-            emp_nickname: form.nickname,
+            emp_nickname: form.nickname || null,
             emp_firstname: form.firstName,
             emp_lastname: form.lastName,
             emp_email: form.email,
-            emp_phone: form.phone,
+            emp_phone: String(form.phone || ''),
             emp_position_id: Number(form.position),
             emp_department_id: Number(form.department),
             emp_team_id: Number(form.team),
@@ -267,17 +271,43 @@ async function handleSubmit() {
             emp_status: Number(form.permission)
         }
 
-
-        // เส้นทางปัจจุบันของคุณใน web.php คือ /save-employee
         await axios.post('/save-employee', payload)
 
-
-        alert('Employee created!')
+        // เคลียร์ฟอร์มและ error
         Object.keys(form).forEach(k => (form[k] = ''))
         Object.keys(errors).forEach(k => delete errors[k])
-        router.push({ name: 'employees_page' })
+
+        await Swal.fire({
+            // ใช้ไอคอนแบบ custom ให้เหมือนภาพ
+            icon: undefined,
+            iconHtml: `
+    <div class="okmark">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M9.6 16.2 5.8 12.4l1.4-1.4 2.4 2.4 6.2-6.2 1.4 1.4-7.6 7.6z"/>
+      </svg>
+    </div>
+  `,
+            title: 'CREATE SUCCESS!',
+            html: 'We have created a new employee.',
+            width: 340,
+            padding: '24px 24px 28px',
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            buttonsStyling: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            customClass: {
+                popup: 'swal-compact',
+                icon: 'swal-icon',
+                title: 'swal-title',
+                htmlContainer: 'swal-text',
+                confirmButton: 'swal-confirm'
+            }
+        })
+        router.push('/employee')
+
+
     } catch (err) {
-        // รับ validation 422 จาก Laravel ให้อ่าน error ใต้ช่อง
         if (err.response?.status === 422) {
             const e = err.response.data.errors || {}
             errors.employeeId = e.emp_id?.[0] || ''
@@ -291,9 +321,36 @@ async function handleSubmit() {
             errors.team = e.emp_team_id?.[0] || ''
             errors.password = e.emp_password?.[0] || ''
             errors.permission = e.emp_status?.[0] || ''
+
+            // แจ้งเตือน validate ผิด
+            const msg = Object.values(e).flat().join('<br>')
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Invalid data',
+                html: msg || 'Please check your input.',
+                confirmButtonText: 'OK',
+                buttonsStyling: false,
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton:
+                        'rounded-full px-5 py-2.5 bg-rose-600 text-white font-semibold hover:bg-rose-700'
+                }
+            })
         } else {
-            const msg = err.response?.data?.error || err.message || 'Server error'
-            alert(msg) // ช่วยเห็นสาเหตุจริงจาก Controller
+            // แจ้ง server error
+            const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Server error'
+            await Swal.fire({
+                icon: 'error',
+                title: 'Create failed',
+                text: msg,
+                confirmButtonText: 'OK',
+                buttonsStyling: false,
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton:
+                        'rounded-full px-5 py-2.5 bg-gray-800 text-white font-semibold hover:bg-gray-900'
+                }
+            })
         }
     } finally {
         submitting.value = false
@@ -304,6 +361,75 @@ function onCancel() {
     Object.keys(form).forEach(k => (form[k] = ''))
     Object.keys(errors).forEach(k => delete errors[k])
     router.push('/employee')
-    // router.push('/employees')
 }
 </script>
+
+<style>
+/* กล่องป็อปอัป */
+.swal-compact {
+    border-radius: 20px;
+}
+
+/* พื้นที่ไอคอน + วงกลมเขียว */
+.swal-icon {
+    margin-top: 6px !important;
+}
+
+.swal-icon .okmark {
+    width: 80px;
+    /* ขนาดใกล้เคียงรูป */
+    height: 80px;
+    border-radius: 9999px;
+    background: #22c55e;
+    /* เขียวทรงเดียวกับภาพ */
+    color: #fff;
+    /* สีไอคอนไว้ที่ white */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.swal-icon .okmark svg {
+    width: 36px;
+    height: 36px;
+}
+
+/* หัวเรื่องตัวหนา พิมพ์ใหญ่ */
+.swal-title {
+    margin-top: 14px !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: #111827;
+    /* gray-900 */
+}
+
+/* ข้อความด้านล่าง */
+.swal-text {
+    margin-top: 6px !important;
+    font-size: 14px !important;
+    color: #4b5563;
+    /* gray-600 */
+}
+
+/* ปุ่ม OK สีเขียวกลมมน */
+.swal-confirm {
+    margin-top: 16px;
+    border-radius: 9999px !important;
+    background: #22c55e !important;
+    /* emerald-500 */
+    color: #fff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    padding: 10px 22px !important;
+    line-height: 1.1;
+    box-shadow: none !important;
+}
+
+.swal-confirm:hover {
+    background: #16a34a !important;
+}
+
+/* emerald-600 */
+</style>

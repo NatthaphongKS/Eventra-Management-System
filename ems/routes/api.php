@@ -3,10 +3,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HistoryEmployeeController;
+use App\Http\Controllers\HistoryEventController;
+use App\Http\Controllers\ReplyController;
 
-// ตัวอย่าง API ที่ต้อง login (คุณมีอะไรใช้ก็ครอบไว้ได้)
+
+// API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
 Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
@@ -14,8 +17,15 @@ Route::middleware(['web', 'auth'])->group(function () {
     // === Employee ===
     Route::get('/meta', [EmployeeController::class, 'meta']);
     Route::get('/get-employees', [EmployeeController::class, 'index']);
+    Route::get('/employees',     [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::get('/event-info', [EventController::class, 'index']);
+    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+    Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::get('/event/{id}',   [EventController::class, 'show']);
+    Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
+
 
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']);
@@ -32,6 +42,13 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::post('/edit-event', [EventController::class, 'Update']);
 
+
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::post('categories', [CategoryController::class, 'store']);
+    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+    Route::get('/history/employees', [HistoryEmployeeController::class, 'index']);
+    Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    Route::get('/history/events', [HistoryEventController::class, 'eventInfo']);
     //Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
     Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
@@ -50,5 +67,6 @@ Route::middleware(['web', 'auth'])->group(function () {
 });
 
 
-Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'show']);
+Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
+
