@@ -4,10 +4,10 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [
-        laravel({
-            input: ['resources/js/app.js'],
-            refresh: true,
-        }),
+    laravel({
+      input: ['resources/js/app.js'],   // ถ้ามี css แยกก็ใส่เพิ่ม
+      refresh: true,
+    }),
     vue(),
   ],
 })
