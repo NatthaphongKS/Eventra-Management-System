@@ -14,18 +14,18 @@
             <form @submit.prevent="onSubmit">
                 <div class="field">
                     <label>ชื่อ–นามสกุล</label>
-                    <input type="text" :placeholder="emp_name || '—'" readonly />
+                    <input type="text" :placeholder="empName || '—'" readonly />
                     <!-- ไม่ต้องมี error เพราะล็อกไม่ให้แก้ -->
                 </div>
 
                 <div class="field">
                     <label>Email</label>
-                    <input type="email" :placeholder="emp_email || '—'" readonly />
+                    <input type="email" :placeholder="empEmail || '—'" readonly />
                 </div>
 
                 <div class="field">
                     <label>เบอร์โทร</label>
-                    <input type="tel" :placeholder="emp_phone || '—'" readonly />
+                    <input type="tel" :placeholder="empPhone || '—'" readonly />
                 </div>
 
                 <div class="field">
@@ -69,20 +69,20 @@ export default {
     data() {
         return {
             // จาก URL
-            evn_ID: null,
-            emp_ID: null,
+            evnID: null,
+            empID: null,
 
             // จาก API (event + employee)
             title: '',
             date: '',         // "2025-09-30T00:00:00.000000Z"
-            time_start: '',   // "13:00:00"
-            time_end: '',     // "14:00:00"
+            timeStart: '',   // "13:00:00"
+            timeEnd: '',     // "14:00:00"
             location: '',
-            emp_name: '',
-            emp_email: '',
-            emp_phone: '',
+            empName: '',
+            empEmail: '',
+            empPhone: '',
 
-            reply_status: '',
+            replyStatus: '',
 
             // ฟอร์มที่ให้ผู้ใช้กรอกจริง ๆ
             form: {
@@ -100,14 +100,15 @@ export default {
     },
 
     created() {
-        const { evn_ID, emp_ID } = this.resolveIds()
-        this.fetchFromApi(evn_ID, emp_ID)
+        const { evnID, empID } = this.resolveIds()
+        this.fetchFromApi(evnID, empID)
     },
 
     computed: {
+        
         show() {
-            //console.log('reply_status (Show):', this.reply_status === 'invalid')
-            return this.reply_status === 'invalid'
+            //console.log('replyStatus (Show):', this.replyStatus === 'invalid')
+            return this.replyStatus === 'invalid'
         },
         // แสดง "30 กันยายน 2025 เวลา 13.00 - 14.00 น."
         formattedDateTime() {
@@ -119,8 +120,8 @@ export default {
             ).format(d)
 
             const hhmmDot = t => (t ? t.slice(0, 5).replace(':', '.') : '')
-            const s = hhmmDot(this.time_start)
-            const e = hhmmDot(this.time_end)
+            const s = hhmmDot(this.timeStart)
+            const e = hhmmDot(this.timeEnd)
 
             if (s && e) return `${dateStr} เวลา ${s} - ${e} น.`
             if (s) return `${dateStr} เวลา ${s} น.`
@@ -139,35 +140,35 @@ export default {
         // รองรับทั้ง /reply/1/2 และกรณีมี path นำหน้า
         resolveIds() {
             const m = window.location.pathname.match(/\/reply\/(\d+)\/(\d+)(?:\/|$)/)
-            if (!m) throw new Error('ไม่พบ evn_ID/emp_ID ใน URL')
-            return { evn_ID: m[1], emp_ID: m[2] } // d เล็กทั้งคู่
+            if (!m) throw new Error('ไม่พบ evnID/empID ใน URL')
+            return { evnID: m[1], empID: m[2] } // d เล็กทั้งคู่
         },
 
-        async fetchFromApi(evn_ID, emp_ID) {
+        async fetchFromApi(evnID, empID) {
             try {
-            console.log('Fetching data for evn_ID:', evn_ID, 'emp_ID:', emp_ID),
+            console.log('Fetching data for evnID:', evnID, 'empID:', empID),
                 this.loading = true
-                const { data } = await axios.get(`/api/reply/${evn_ID}/${emp_ID}`, {
+                const { data } = await axios.get(`/api/reply/${evnID}/${empID}`, {
                     headers: { Accept: 'application/json' }
                 })
 
                 // เก็บ id ไว้ใช้ตอนส่ง
-                this.evn_ID = evn_ID
-                this.emp_ID = emp_ID
-                this.reply_status = data.connect.con_answer
+                this.evnID = evnID
+                this.empID = empID
+                this.replyStatus = data.connect.con_answer
                 console.log('data.connect:', data.connect.con_answer)
 
                 // event
                 this.title = data.event?.evn_title || ''
                 this.date = data.event?.evn_date || ''
-                this.time_start = data.event?.evn_timestart || ''
-                this.time_end = data.event?.evn_timeend || ''
+                this.timeStart = data.event?.evn_timestart || ''
+                this.timeEnd = data.event?.evn_timeend || ''
                 this.location = data.event?.evn_location || ''
 
                 // employee
-                this.emp_name = `${data.employee?.emp_firstname || ''} ${data.employee?.emp_lastname || ''}`.trim()
-                this.emp_email = data.employee?.emp_email || ''
-                this.emp_phone = data.employee?.emp_phone || ''
+                this.empName = `${data.employee?.emp_firstname || ''} ${data.employee?.emp_lastname || ''}`.trim()
+                this.empEmail = data.employee?.emp_email || ''
+                this.empPhone = data.employee?.emp_phone || ''
 
                 this.conne
             } catch (e) {
@@ -189,14 +190,14 @@ export default {
             this.submitting = true
             try {
                 const payload = {
-                    evn_id: this.evn_ID,
-                    emp_id: this.emp_ID,
+                    evnID: this.evnID,
+                    empID: this.empID,
                     // คำตอบฟอร์มจริง
                     attend: this.form.attend,
                     reason: this.form.reason ,
                 }
                 console.log('payload:', payload)
-                console.log('evn_ID:', this.evn_ID, 'emp_ID:', this.emp_ID, this.form.attend, this.form.reason)
+                console.log('evnID:', this.evnID, 'empID:', this.empID, this.form.attend, this.form.reason)
                 console.log('POST /api/store', payload)   // ดูใน Console ให้มีค่าจริง
                 await axios.post('/api/store', payload, { headers: { Accept: 'application/json' } })
                 //alert('บันทึกคำตอบเรียบร้อย ขอบคุณค่ะ')
