@@ -235,7 +235,6 @@ export default {
     toggleSort() { this.showSort = !this.showSort; },
 
     goToPage(p) { if (p < 1) p = 1; if (p > this.totalPages) p = this.totalPages || 1; this.page = p; },
-    editEvent(id) { console.log("Edit event", id); },
     async deleteEvent(id) {
       if (confirm("Delete?")) {
         try { await axios.delete(`/event/${id}`); this.fetchEvent(); }

@@ -14,6 +14,7 @@ import UploadFile from '../pages/upload_file.vue'
 import History_Employee from '../pages/history_employees.vue'
 import History_Event from '../pages/History_Event.vue'
 // [เพิ่ม] หน้าแก้ไข
+import EditEvent from '../pages/edit_event.vue'
 import EditEmployee from '../pages/edit_employee.vue'
 import EventDetails from '../pages/event_details.vue'
 
@@ -21,7 +22,7 @@ const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
-  { path: '/edit-event/:id', component: Edit_event, meta: { title: 'Event' } },
+  { path: '/edit-event/:id', component: EditEvent, meta: { title: 'editEvent' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
   { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event' } },
