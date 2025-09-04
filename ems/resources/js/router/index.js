@@ -13,7 +13,6 @@ import reply_form from '../pages/Reply_form.vue'
 import UploadFile from '../pages/upload_file.vue'
 import History_Employee from '../pages/history_employees.vue'
 import History_Event from '../pages/History_Event.vue'
-// [เพิ่ม] หน้าแก้ไข
 import EditEvent from '../pages/edit_event.vue'
 import EditEmployee from '../pages/edit_employee.vue'
 import EventDetails from '../pages/event_details.vue'
@@ -22,7 +21,7 @@ const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
-  { path: '/edit-event/:id', component: EditEvent, meta: { title: 'editEvent' } },
+  { path: '/edit-event/:id', component: EditEvent, meta: { title: 'Edit Event' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
   { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event' } },
@@ -32,16 +31,14 @@ const routes = [
   { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
   { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
 
-  { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
+  { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'} },
   { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees' } },
 
-
-  // [เพิ่ม] เส้นทางหน้าแก้ไขพนักงาน
-  { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Employee' } },
-  // ✅ หน้า Details – ใช้ชื่อ route 'event.details' และส่ง :id เป็น props
+  { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Edit Employee' } },
   { path: '/events/:id', name: 'event.details', component: EventDetails, props: true, meta: { title: 'Event Details' } },
-  // ✅ เพิ่ม redirect กันพลาด (ถ้าใครไป /event/2 จะถูกส่งมาที่ /events/2)
   { path: '/event/:id', redirect: to => ({ name: 'event.details', params: { id: to.params.id } }) },
+
+
 ]
 
 export default createRouter({
