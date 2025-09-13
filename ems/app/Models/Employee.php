@@ -1,5 +1,9 @@
 <?php
 
+/*
+Model : Employee
+Edit by : Chitdanai
+*/
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -44,30 +48,33 @@ class Employee extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    //เชื่อมกับตาราง company
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'emp_company_id');
     }
+    //เชื่อมกับตาราง employee
     public function creator(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'emp_create_by');
     }
+    //เชื่อมกับตาราง event
     public function events()
     {
         return $this->belongsToMany(Event::class, 'ems_connect', 'con_employee_id', 'con_event_id')
             ->withPivot(['con_answer', 'con_reason', 'con_delete_status']);
     }
-
+    //เชื่อมกับตาราง position
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class, 'emp_position_id');
     }
-
+    //เชื่อมกับตาราง department
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'emp_department_id');
     }
-
+//เชื่อมกับตาราง team
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'emp_team_id');

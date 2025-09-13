@@ -1,5 +1,8 @@
 <?php
-
+/*
+Model : Event
+Edit by : Chitdanai
+*/
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -35,28 +38,29 @@ class Event extends Model
         'evn_created_at' => 'datetime',
         'evn_deleted_at' => 'datetime',
     ];
+    //เชื่อมกับตาราง employee
     public function employees()
     {
         // pivot: ems_connect (con_event_id, con_employee_id)
         return $this->belongsToMany(Employee::class, 'ems_connect', 'con_event_id', 'con_employee_id')
                     ->withPivot(['con_answer','con_reason','con_delete_status']);
     }
-
+    //เชื่อมกับตาราง category
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'event_category_id');
     }
-
+    //เชื่อมกับตาราง employee
     public function creator(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'evn_create_by');
     }
-
+    //เชื่อมกับตาราง employee
     public function deletedBy(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'evn_deleted_by');
     }
-
+    //เชื่อมกับตาราง connect
     public function connects(): HasMany
     {
         return $this->hasMany(Connect::class, 'con_event_id');
