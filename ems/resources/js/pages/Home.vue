@@ -35,13 +35,21 @@
         <span>Filter</span>
       </button>
 
-      <!-- ปุ่ม Sort (ตอนนี้ยัง UI เฉยๆ) -->
-      <button type="button" class="text-btn" @click="toggleSort">
-        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 6h18M6 12h12M10 18h8" stroke-linecap="round"/>
-        </svg>
-        <span>Sort</span>
-      </button>
+      <!-- ปุ่ม Sort พร้อม dropdown สำหรับ employee table -->
+      <div style="position:relative;">
+        <button type="button" class="text-btn" @click="showEmpSort = !showEmpSort">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M6 12h12M10 18h8" stroke-linecap="round"/>
+          </svg>
+          <span>Sort</span>
+        </button>
+        <div v-if="showEmpSort" class="sort-dropdown">
+          <div class="sort-title">Sort</div>
+          <button v-for="opt in empSortOptions" :key="opt.value" :class="['sort-item', empSort.value===opt.value ? 'active' : '']" @click="setEmpSort(opt.value)">
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
 
       <!-- สรุปรายการ + ปุ่มเพิ่ม (เรียงแบบในภาพ) -->
       <span class="summary">ทั้งหมด {{ filtered.length }} รายการ</span>
@@ -211,6 +219,20 @@ export default {
       employees: [],
       empPage: 1,
       empPageSize: 10,
+      showEmpSort: false,
+      empSort: { value: 'name_az' },
+      empSortOptions: [
+        { value: 'name_az', label: 'ชื่อพนักงาน A–Z' },
+        { value: 'name_za', label: 'ชื่อพนักงาน Z–A' },
+        { value: 'department_az', label: 'ชื่อแผนก A–Z' },
+        { value: 'department_za', label: 'ชื่อแผนก Z–A' },
+        { value: 'team_az', label: 'ชื่อทีม A–Z' },
+        { value: 'team_za', label: 'ชื่อทีม Z–A' },
+        { value: 'position_az', label: 'ชื่อตำแหน่ง A–Z' },
+        { value: 'position_za', label: 'ชื่อตำแหน่ง Z–A' },
+        { value: 'id_asc', label: 'รหัสพนักงาน น้อย–มาก' },
+        { value: 'id_desc', label: 'รหัสพนักงาน มาก–น้อย' },
+      ],
     };
   },
   async created() {
@@ -288,8 +310,31 @@ export default {
       return items;
     },
     empPaged() {
+      let arr = [...this.employees];
+      switch (this.empSort.value) {
+        case 'name_az':
+          arr.sort((a,b) => a.emp_firstname.localeCompare(b.emp_firstname)); break;
+        case 'name_za':
+          arr.sort((a,b) => b.emp_firstname.localeCompare(a.emp_firstname)); break;
+        case 'department_az':
+          arr.sort((a,b) => (a.department||'').localeCompare(b.department||'')); break;
+        case 'department_za':
+          arr.sort((a,b) => (b.department||'').localeCompare(a.department||'')); break;
+        case 'team_az':
+          arr.sort((a,b) => (a.team||'').localeCompare(b.team||'')); break;
+        case 'team_za':
+          arr.sort((a,b) => (b.team||'').localeCompare(a.team||'')); break;
+        case 'position_az':
+          arr.sort((a,b) => (a.position||'').localeCompare(b.position||'')); break;
+        case 'position_za':
+          arr.sort((a,b) => (b.position||'').localeCompare(a.position||'')); break;
+        case 'id_asc':
+          arr.sort((a,b) => (a.emp_id||'').localeCompare(b.emp_id||'')); break;
+        case 'id_desc':
+          arr.sort((a,b) => (b.emp_id||'').localeCompare(a.emp_id||'')); break;
+      }
       const start = (this.empPage - 1) * this.empPageSize;
-      return this.employees.slice(start, start + this.empPageSize);
+      return arr.slice(start, start + this.empPageSize);
     },
     empTotalPages() {
       return Math.ceil(this.employees.length / this.empPageSize);
@@ -298,36 +343,71 @@ export default {
   methods: {
     async fetchEmployees() {
       try {
-        const res = await axios.get("/get-employees");
-        this.employees = (res.data || []).map(e => ({
-          id: e.id,
-          emp_id: e.emp_id,
-          emp_prefix: e.emp_prefix,
-          emp_firstname: e.emp_firstname,
-          emp_lastname: e.emp_lastname,
-          emp_nickname: e.emp_nickname,
-          emp_email: e.emp_email,
-          emp_phone: e.emp_phone,
-          position: e.position_name,
-          department: e.department_name,
-          team: e.team_name,
-          emp_delete_status: e.emp_delete_status,
-        }));
+        const res = await axios.get("/get-employees", {
+          params: {
+            page: this.empPage,
+            per_page: this.empPageSize
+          }
+        });
+        if (res.data && res.data.data) {
+          this.employees = res.data.data.map(e => ({
+            id: e.id,
+            emp_id: e.emp_id,
+            emp_prefix: e.emp_prefix,
+            emp_firstname: e.emp_firstname,
+            emp_lastname: e.emp_lastname,
+            emp_nickname: e.emp_nickname,
+            emp_email: e.emp_email,
+            emp_phone: e.emp_phone,
+            position: e.position_name,
+            department: e.department_name,
+            team: e.team_name,
+            emp_delete_status: e.emp_delete_status,
+          }));
+          this.empTotal = res.data.total || this.employees.length;
+        } else {
+          this.employees = (res.data || []).map(e => ({
+            id: e.id,
+            emp_id: e.emp_id,
+            emp_prefix: e.emp_prefix,
+            emp_firstname: e.emp_firstname,
+            emp_lastname: e.emp_lastname,
+            emp_nickname: e.emp_nickname,
+            emp_email: e.emp_email,
+            emp_phone: e.emp_phone,
+            position: e.position_name,
+            department: e.department_name,
+            team: e.team_name,
+            emp_delete_status: e.emp_delete_status,
+          }));
+          this.empTotal = this.employees.length;
+        }
       } catch (err) {
         console.error("fetchEmployees error", err);
         this.employees = [];
+        this.empTotal = 0;
       }
     },
     async fetchEvent() {
       try {
-        const res = await axios.get("/get-event");
+        const res = await axios.get("/get-event", {
+          params: {
+            page: this.page,
+            per_page: this.pageSize,
+            search: this.search
+          }
+        });
         let allEvents = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-        // filter เฉพาะสถานะ upcoming หรือ done
         this.event = allEvents.filter(ev => {
           const status = String(ev.evn_status || ev.status || '').toLowerCase();
           return status === 'upcoming' || status === 'done';
         });
-      } catch (err) { console.error("fetchEvent error", err); this.event = []; }
+        this.eventTotal = res.data.total || this.event.length;
+      } catch (err) { 
+        console.error("fetchEvent error", err); 
+        this.event = []; 
+        this.eventTotal = 0;
+      }
     },
     async fetchCategories() {
       try {
@@ -358,7 +438,8 @@ export default {
         try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
         catch (err) { console.error("Error deleting event", err); }
       }
-    },
+    }
+    ,
     formatDate(val) {
       if (!val) return 'N/A';
       const d = new Date(val); if (isNaN(d)) return val;
@@ -371,6 +452,13 @@ export default {
       if (p < 1) p = 1;
       if (p > this.empTotalPages) p = this.empTotalPages || 1;
       this.empPage = p;
+    },
+    setEmpSort(value) {
+      this.showEmpSort = false;
+      const order = value.startsWith('-') ? 'desc' : 'asc';
+      const key = value.replace(/^-/, '');
+      this.empSort = { value: key, order };
+      this.empPage = 1;
     },
   }
 };
@@ -679,5 +767,79 @@ tbody tr:hover{ background:#f3f4f6; }
 .employee-table td.col-department,
 .employee-table td.col-team {
   text-align: left;
+}
+
+/* Sort dropdown */
+.sort-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 100;
+  width: 200px;
+  margin-top: 4px;
+}
+.sort-title {
+  font-weight: 600;
+  padding: 10px;
+  font-size: 14px;
+  color: #111;
+  border-bottom: 1px solid #f3f4f6;
+}
+.sort-item {
+  display: block;
+  padding: 10px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sort-item:hover {
+  background: #f3f4f6;
+}
+.sort-item.active {
+  background: #e0f2fe;
+  color: #0c4a6e;
+  font-weight: 500;
+}
+
+/* Sort dropdown for employee table */
+.sort-dropdown {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  min-width: 220px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+  padding: 8px 0;
+  z-index: 10;
+}
+.sort-title {
+  font-weight: 700;
+  color: #b71c1c;
+  padding: 8px 16px 4px 16px;
+  font-size: 15px;
+}
+.sort-item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 15px;
+  color: #222;
+  cursor: pointer;
+}
+.sort-item.active {
+  background: #fee2e2;
+  color: #b71c1c;
+  font-weight: 700;
+}
+.sort-item:hover:not(.active) {
+  background: #f9fafb;
 }
 </style>
