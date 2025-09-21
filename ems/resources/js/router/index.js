@@ -9,7 +9,7 @@ import Employees from '../pages/EmployeePage.vue'
 import History from '../pages/DeletePage.vue'
 import CreateEvent from '../pages/CreateEvent.vue'
 import Category from '../pages/CategoryPage.vue'
-import reply_form from '../pages/ReplyForm.vue'
+import ReplyForm from '../pages/ReplyForm.vue'
 import UploadFile from '../pages/UploadFile.vue'
 import History_Employee from '../pages/HistoryEmployee.vue'
 import History_Event from '../pages/HistoryEvent.vue'
@@ -32,7 +32,7 @@ const routes = [
   { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
   { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
 
-  { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
+  { path: '/reply-form', component: ReplyForm, meta: { blank: true, title: 'Reply Form'}},
   { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees' } },
 
 

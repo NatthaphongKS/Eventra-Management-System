@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import '../css/app.css'
 import axios from 'axios'
 import App from './App.vue'
-import ReplyForm from './pages/Reply_form.vue'
+import ReplyForm from './pages/ReplyForm.vue'
 import router from './router'
 
 
