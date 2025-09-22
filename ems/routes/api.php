@@ -34,7 +34,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     // === Event ===
     Route::get('/event-info', [EventController::class, 'eventInfo']);
     Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
-    Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
+    // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
+    // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
+    // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
+    Route::patch('/event/{id}/deleted',     [EventController::class, 'deleted'])->whereNumber('id');
     Route::post('/event-save', [EventController::class, 'store']);
 
     Route::get('categories', [CategoryController::class, 'index']);
