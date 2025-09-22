@@ -1,14 +1,22 @@
-import { createApp } from 'vue';
-import '../css/app.css';
-import App from './App.vue';
-import router from './router'; // เพิ่มการเชื่อมต่อ Vue Router
-import axios from 'axios';
+import { createApp } from 'vue'
+import '../css/app.css'
+import axios from 'axios'
+import App from './App.vue'
+import ReplyForm from './pages/Reply_form.vue'
+import router from './router'
 
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+axios.defaults.baseURL = window.location.origin
+axios.defaults.headers.common['Accept'] = 'application/json'
+axios.defaults.withCredentials = true
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 axios.defaults.headers.common['X-CSRF-TOKEN'] =
-  document.querySelector('meta[name="csrf-token"]')?.content;
+  document.querySelector('meta[name="csrf-token"]')?.content
+axios.defaults.withCredentials = true
 
-const app = createApp(App);
-app.use(router); // ใช้ Vue Router
-app.mount('#app');
+if (document.getElementById('reply-app')) {
+  createApp(ReplyForm).mount('#reply-app')   // สำหรับหน้า reply
+} else if (document.getElementById('app')) {
+  createApp(App).mount('#app')               // สำหรับหน้าอื่น
+}
+
