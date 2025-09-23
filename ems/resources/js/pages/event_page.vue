@@ -13,11 +13,13 @@
       />
       <button
         type="button"
-        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-full
+         bg-[#b91c1c] text-white hover:bg-[#991b1b]
+         focus:outline-none focus:ring-2 focus:ring-red-300"
         @click="applySearch"
         aria-label="Search"
         title="ค้นหา (คลิกหรือกด Enter)"
-      >
+        >
         <MagnifyingGlassIcon class="h-5 w-5" />
       </button>
     </div>
@@ -48,11 +50,14 @@
     </button>
 
     <!-- Summary + Add -->
-    <span class="ml-4 text-xs text-slate-500">ทั้งหมด {{ filtered.length }} รายการ</span>
+    <span class="ml-4 text-xs text-slate-500 cursor-default select-none">ทั้งหมด {{ filtered.length }} รายการ</span>
     <router-link
       to="/add-event"
-      class="ml-auto inline-flex h-11 items-center rounded-full bg-rose-600 px-4 font-semibold text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
-    >
+      class="ml-auto inline-flex h-11 items-center rounded-full
+         bg-[#b91c1c] px-4 font-semibold text-white
+         hover:bg-[#991b1b] focus:outline-none
+         focus:ring-2 focus:ring-red-300"
+         >
       + Add New
     </router-link>
   </div>
@@ -62,15 +67,15 @@
   <table class="w-full table-auto">
     <thead>
       <tr class="bg-slate-50">
-        <th class="table-head w-12 text-center py-3">#</th>
-        <th class="table-head w-[26%] text-center py-3">Event</th>
-        <th class="table-head w-[14%] text-center py-3">Category</th>
-        <th class="table-head w-[110px] text-center whitespace-nowrap py-3">Date (D/M/Y)</th>
-        <th class="table-head w-[92px] text-center whitespace-nowrap py-3">Time</th>
-        <th class="table-head w-20 text-center py-3">Invited</th>
-        <th class="table-head w-20 text-center py-3">Accepted</th>
-        <th class="table-head w-[110px] text-center py-3">Status</th>
-        <th class="table-head w-28 text-center py-3">Action</th>
+        <th class="table-head cursor-default select-none w-12 text-center py-3">#</th>
+        <th class="table-head cursor-default select-none w-[26%] text-center py-3">Event</th>
+        <th class="table-head cursor-default select-none w-[14%] text-center py-3">Category</th>
+        <th class="table-head cursor-default select-none w-[110px] text-center whitespace-nowrap py-3">Date (D/M/Y)</th>
+        <th class="table-head cursor-default select-none w-[92px] text-center whitespace-nowrap py-3">Time</th>
+        <th class="table-head cursor-default select-none w-20 text-center py-3">Invited</th>
+        <th class="table-head cursor-default select-none w-20 text-center py-3">Accepted</th>
+        <th class="table-head cursor-default select-none w-[110px] text-center py-3">Status</th>
+        <th class="table-head cursor-default select-none w-28 text-center py-3">Action</th>
       </tr>
       </thead>
 
@@ -80,36 +85,36 @@
           :key="ev.id"
           class="odd:bg-white even:bg-slate-50 hover:bg-slate-100"
         >
-          <td class="px-2 py-2 text-center text-sm text-slate-700 border-t border-slate-200">
+          <td class="px-2 py-2 text-center text-sm text-slate-700 cursor-default select-none border-t border-slate-200">
             {{ (page-1)*pageSize + i + 1 }}
           </td>
 
-          <td class="px-3 py-2 text-center border-t border-slate-200">
+          <td class="px-3 py-2 text-center border-t cursor-default select-none border-slate-200">
             <span class="block truncate text-sm text-slate-800">{{ ev.evn_title || 'N/A' }}</span>
           </td>
 
-          <td class="px-3 py-2 text-center border-t border-slate-200">
+          <td class="px-3 py-2 text-center border-t cursor-default select-none border-slate-200">
             <span class="block truncate text-sm text-slate-800">{{ ev.cat_name || 'N/A' }}</span>
           </td>
 
-          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t border-slate-200">
+          <td class="px-3 py-2 text-center text-sm text-slate-700 cursor-default select-none border-t border-slate-200">
             {{ formatDate(ev.evn_date) }}
           </td>
 
-          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t border-slate-200 whitespace-nowrap">
+          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t cursor-default select-none border-slate-200 whitespace-nowrap">
             {{ ev.evn_timestart ? ev.evn_timestart.slice(0,5) : '??:??' }} -
             {{ ev.evn_timeend ? ev.evn_timeend.slice(0,5) : '??:??' }}
           </td>
 
-          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t border-slate-200">
+          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t cursor-default select-none border-slate-200">
             {{ ev.evn_num_guest ?? '0' }}
           </td>
 
-          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t border-slate-200">
+          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t cursor-default select-none border-slate-200">
             {{ ev.evn_sum_accept ?? 'N/A' }}
           </td>
 
-          <td class="px-3 py-2 text-center border-t border-slate-200">
+          <td class="px-3 py-2 text-center border-t cursor-default select-none border-slate-200">
             <span :class="badgeClass(ev.evn_status)">
               {{ ev.evn_status || 'N/A' }}
             </span>
