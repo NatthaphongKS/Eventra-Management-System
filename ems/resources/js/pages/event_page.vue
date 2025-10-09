@@ -9,13 +9,13 @@
         v-model.trim="searchInput"
         placeholder="Search"
         @keyup.enter="applySearch"
-        class="h-11 w-full rounded-full border border-slate-200 bg-white px-4 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200"
+        class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200"
       />
       <button
         type="button"
         class="inline-flex h-11 w-11 items-center justify-center rounded-full
          bg-[#b91c1c] text-white hover:bg-[#991b1b]
-         focus:outline-none focus:ring-2 focus:ring-red-300"
+         focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default cursor-default select-none."
         @click="applySearch"
         aria-label="Search"
         title="ค้นหา (คลิกหรือกด Enter)"
@@ -27,7 +27,7 @@
     <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
     <button
       type="button"
-      class="inline-flex h-11 items-center gap-2 px-2 text-slate-700 font-medium hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md"
+      class="inline-flex h-11 items-center gap-2 px-2 text-slate-700 font-medium hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md cursor-default select-none"
       @click="toggleFilter"
     >
       <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -40,10 +40,10 @@
 
     <button
       type="button"
-      class="inline-flex h-11 items-center gap-2 px-2 text-slate-700 font-medium hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md"
+      class="inline-flex h-11 items-center gap-2 px-2 text-slate-700 font-medium hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md cursor-default select-none "
       @click="toggleSort"
     >
-      <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"  >
         <path d="M3 6h18M6 12h12M10 18h8" stroke-linecap="round"/>
       </svg>
       <span>Sort</span>
@@ -53,17 +53,89 @@
     <span class="ml-4 text-xs text-slate-500 cursor-default select-none">ทั้งหมด {{ filtered.length }} รายการ</span>
     <router-link
       to="/add-event"
-      class="ml-auto inline-flex h-11 items-center rounded-full
+      class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
          bg-[#b91c1c] px-4 font-semibold text-white
          hover:bg-[#991b1b] focus:outline-none
          focus:ring-2 focus:ring-red-300"
          >
       + Add New
     </router-link>
+    <!-- ==== Filter Panel ==== -->
+<div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+  <div class="grid gap-3 sm:grid-cols-3">
+    <!-- Category -->
+    <label class="text-sm">
+      <span class="mb-1 block text-slate-600">Category</span>
+      <select v-model="flt.category" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+        <option value="all">All</option>
+        <option v-for="c in categories" :key="c.id" :value="String(c.id)">
+          {{ c.cat_name }}
+        </option>
+      </select>
+    </label>
+
+    <!-- Status -->
+    <label class="text-sm">
+      <span class="mb-1 block text-slate-600">Status</span>
+      <select v-model="flt.status" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+        <option value="upcoming">Upcoming</option>
+        <option value="done">Done</option>
+      </select>
+    </label>
+
+    <!-- Date range -->
+     <!--
+    <div class="grid grid-cols-2 gap-2 text-sm">
+      <label>
+        <span class="mb-1 block text-slate-600">From</span>
+        <input v-model="flt.dateFrom" type="date"
+               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+      </label>
+      <label>
+        <span class="mb-1 block text-slate-600">To</span>
+        <input v-model="flt.dateTo" type="date"
+               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+      </label>
+    </div>
+    -->
+  </div>
+
+  <!-- Actions / chips -->
+  <div class="mt-3 flex flex-wrap items-center gap-2">
+    <button type="button"
+            class="rounded-full bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#991b1b]"
+            @click="applyFilters">
+      Apply
+    </button>
+    <button type="button"
+            class="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-white"
+            @click="clearFilters">
+      Clear
+    </button>
+
+    <!-- แสดง chips ของ filter ที่ใช้งาน -->
+    <template v-if="hasActiveFilters">
+      <span class="ml-2 text-xs text-slate-500">Active:</span>
+      <span v-if="flt.category!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+        Category: {{ catMap[flt.category] || flt.category }}
+      </span>
+      <span v-if="flt.status!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+        Status: {{ flt.status }}
+      </span>
+      <!-- Date range -->
+       <!--
+      <span v-if="flt.dateFrom || flt.dateTo" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+        Date: {{ flt.dateFrom || '...' }} → {{ flt.dateTo || '...' }}
+      </span>
+      -->
+    </template>
+  </div>
+</div>
+    <!-- ==== Sort Panel ==== -->
   </div>
 
   <!-- ===== Table ===== -->
-<div class="overflow-hidden rounded-2xl border border-slate-200 mb-8">
+<div class="overflow-hidden rounded-2xl cursor-default select-none border border-slate-200 mb-8">
   <table class="w-full table-auto">
     <thead>
       <tr class="bg-slate-50">
@@ -232,6 +304,14 @@ export default {
 
       page: 1,
       pageSize: 10,
+
+    flt: {
+      category: 'all',   // String(id) หรือ 'all'
+      status: 'all',     // 'all' | 'upcoming' | 'done'
+      dateFrom: '',      // 'YYYY-MM-DD'
+      dateTo: ''         // 'YYYY-MM-DD'
+    },
+    _appliedFlt: null,
     };
   },
   async created() {
@@ -243,8 +323,12 @@ export default {
     event()    { this.page = 1; },
   },
   computed: {
-    normalized() {
-      return this.event.map(e => ({
+    hasActiveFilters() {
+    const f = this._appliedFlt || this.flt;
+    return f.category!=='all' || f.status!=='all' || !!(f.dateFrom || f.dateTo);
+},
+  normalized() {
+    return this.event.map(e => ({
         ...e,
         evn_title: e.evn_title ?? e.evn_name ?? "",
         evn_cat_id: e.evn_cat_id ?? e.evn_category_id ?? "",
