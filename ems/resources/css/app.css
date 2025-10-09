@@ -116,4 +116,20 @@
   outline-offset: 2px;
 }
 
+/* Polygon 2 */
+/*
+box-sizing: border-box;
+
+position: absolute;
+height: 39px;
+left: 87.81%;
+right: 0.62%;
+top: calc(50% - 39px/2 + 2px);
+
+background: #BA0C16;
+border: 1px solid #E9E9E9;
+border-radius: 5px;
+transform: matrix(0, -1, -1, 0, 0, 0);
+*/
+
 }
