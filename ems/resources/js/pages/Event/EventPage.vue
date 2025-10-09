@@ -1,29 +1,37 @@
 <!-- pages/event_page.vue -->
 <template>
-  <!-- ===== Toolbar (แบบในภาพ) ===== -->
-  <div class="toolbar toolbar--pill">
-    <!-- กลุ่ม search + ปุ่มค้นหาแดง -->
-    <div class="search-group">
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+            <div class="font-[Poppins]"> -->
+  <!-- ===== Toolbar (pill) ===== -->
+<div class="mt-3 mb-1 flex items-center gap-4">
+    <!-- search + ปุ่มค้นหาแดง -->
+    <div class="flex items-center gap-3 flex-1">
       <input
         v-model.trim="searchInput"
         placeholder="Search"
         @keyup.enter="applySearch"
-        class="pill-input"
+        class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200"
       />
       <button
         type="button"
-        class="icon-btn icon-btn--solid"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-full
+         bg-[#b91c1c] text-white hover:bg-[#991b1b]
+         focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default cursor-default select-none."
         @click="applySearch"
         aria-label="Search"
         title="ค้นหา (คลิกหรือกด Enter)"
-      >
-        <MagnifyingGlassIcon class="icon" />
+        >
+        <MagnifyingGlassIcon class="h-5 w-5" />
       </button>
     </div>
 
-    <!-- ปุ่ม Filter (ตอนนี้ยัง UI เฉยๆ) -->
-    <button type="button" class="text-btn" @click="toggleFilter">
-      <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
+    <button
+      type="button"
+      class="inline-flex h-11 items-center gap-2 px-2 text-slate-700 font-medium hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md cursor-default select-none"
+      @click="toggleFilter"
+    >
+      <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="4" y1="7" x2="20" y2="7" />
         <line x1="6" y1="12" x2="16" y2="12" />
         <line x1="8" y1="17" x2="12" y2="17" />
@@ -31,90 +39,255 @@
       <span>Filter</span>
     </button>
 
-       <!-- ปุ่ม Sort (ตอนนี้ยัง UI เฉยๆ) -->
-    <button type="button" class="text-btn" @click="toggleSort">
-      <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <button
+      type="button"
+      class="inline-flex h-11 items-center gap-2 px-2 text-slate-700 font-medium hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md cursor-default select-none "
+      @click="toggleSort"
+    >
+      <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"  >
         <path d="M3 6h18M6 12h12M10 18h8" stroke-linecap="round"/>
       </svg>
       <span>Sort</span>
     </button>
 
-    <!-- สรุปรายการ + ปุ่มเพิ่ม (เรียงแบบในภาพ) -->
-    <span class="summary">ทั้งหมด {{ filtered.length }} รายการ</span>
-    <router-link to="/add-event" class="pill-add">+ Add New</router-link>
+    <!-- Summary + Add -->
+    <span class="ml-4 text-xs text-slate-500 cursor-default select-none">ทั้งหมด {{ filtered.length }} รายการ</span>
+    <router-link
+      to="/add-event"
+      class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
+         bg-[#b91c1c] px-4 font-semibold text-white
+         hover:bg-[#991b1b] focus:outline-none
+         focus:ring-2 focus:ring-red-300"
+         >
+      + Add New
+    </router-link>
+    <!-- ==== Filter Panel ==== -->
+<div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+  <div class="grid gap-3 sm:grid-cols-3">
+    <!-- Category -->
+    <label class="text-sm">
+      <span class="mb-1 block text-slate-600">Category</span>
+      <select v-model="flt.category" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+        <option value="all">All</option>
+        <option v-for="c in categories" :key="c.id" :value="String(c.id)">
+          {{ c.cat_name }}
+        </option>
+      </select>
+    </label>
+
+    <!-- Status -->
+    <label class="text-sm">
+      <span class="mb-1 block text-slate-600">Status</span>
+      <select v-model="flt.status" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+        <option value="upcoming">Upcoming</option>
+        <option value="done">Done</option>
+      </select>
+    </label>
+
+    <!-- Date range -->
+     <!--
+    <div class="grid grid-cols-2 gap-2 text-sm">
+      <label>
+        <span class="mb-1 block text-slate-600">From</span>
+        <input v-model="flt.dateFrom" type="date"
+               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+      </label>
+      <label>
+        <span class="mb-1 block text-slate-600">To</span>
+        <input v-model="flt.dateTo" type="date"
+               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
+      </label>
+    </div>
+    -->
   </div>
-  <!-- ↑↑ ปิดทูลบาร์ตรงนี้ให้เรียบร้อย ↑↑ -->
+
+  <!-- Actions / chips -->
+  <div class="mt-3 flex flex-wrap items-center gap-2">
+    <button type="button"
+            class="rounded-full bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#991b1b]"
+            @click="applyFilters">
+      Apply
+    </button>
+    <button type="button"
+            class="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-white"
+            @click="clearFilters">
+      Clear
+    </button>
+
+    <!-- แสดง chips ของ filter ที่ใช้งาน -->
+    <template v-if="hasActiveFilters">
+      <span class="ml-2 text-xs text-slate-500">Active:</span>
+      <span v-if="flt.category!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+        Category: {{ catMap[flt.category] || flt.category }}
+      </span>
+      <span v-if="flt.status!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+        Status: {{ flt.status }}
+      </span>
+      <!-- Date range -->
+       <!--
+      <span v-if="flt.dateFrom || flt.dateTo" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+        Date: {{ flt.dateFrom || '...' }} → {{ flt.dateTo || '...' }}
+      </span>
+      -->
+    </template>
+  </div>
+</div>
+    <!-- ==== Sort Panel ==== -->
+  </div>
 
   <!-- ===== Table ===== -->
-  <div class="table-wrap">
-    <table class="table compact">
-      <thead>
-        <tr>
-          <th class="th col-idx">#</th>
-          <th class="th col-title">Event</th>
-          <th class="th col-cat">Category</th>
-          <th class="th col-date">Date (D/M/Y)</th>
-          <th class="th col-time">Time</th>
-          <th class="th col-num">Invited</th>
-          <th class="th col-num">Accepted</th>
-          <th class="th col-status">Status</th>
-          <th class="th col-action">Action</th>
-        </tr>
+<div class="overflow-hidden rounded-2xl cursor-default select-none border border-slate-200 mb-8">
+  <table class="w-full table-auto">
+    <thead>
+      <tr class="bg-slate-50">
+        <th class="table-head cursor-default select-none w-12 text-center py-3">#</th>
+        <th class="table-head cursor-default select-none w-[26%] text-center py-3">Event</th>
+        <th class="table-head cursor-default select-none w-[14%] text-center py-3">Category</th>
+        <th class="table-head cursor-default select-none w-[110px] text-center whitespace-nowrap py-3">Date (D/M/Y)</th>
+        <th class="table-head cursor-default select-none w-[92px] text-center whitespace-nowrap py-3">Time</th>
+        <th class="table-head cursor-default select-none w-20 text-center py-3">Invited</th>
+        <th class="table-head cursor-default select-none w-20 text-center py-3">Accepted</th>
+        <th class="table-head cursor-default select-none w-[110px] text-center py-3">Status</th>
+        <th class="table-head cursor-default select-none w-28 text-center py-3">Action</th>
+      </tr>
       </thead>
 
       <tbody>
-        <tr v-for="(ev, i) in paged" :key="ev.id">
-          <td class="col-idx">{{ (page-1)*pageSize + i + 1 }}</td>
-          <td class="col-title"><span class="truncate">{{ ev.evn_title || 'N/A' }}</span></td>
-          <td class="col-cat"><span class="truncate">{{ ev.cat_name || 'N/A' }}</span></td>
-          <td class="col-date">{{ formatDate(ev.evn_date) }}</td>
-          <td class="col-time">
+        <tr
+          v-for="(ev, i) in paged"
+          :key="ev.id"
+          class="odd:bg-white even:bg-slate-50 hover:bg-slate-100"
+        >
+          <td class="px-2 py-2 text-center text-sm text-slate-700 cursor-default select-none border-t border-slate-200">
+            {{ (page-1)*pageSize + i + 1 }}
+          </td>
+
+          <td class="px-3 py-2 text-center border-t cursor-default select-none border-slate-200">
+            <span class="block truncate text-sm text-slate-800">{{ ev.evn_title || 'N/A' }}</span>
+          </td>
+
+          <td class="px-3 py-2 text-center border-t cursor-default select-none border-slate-200">
+            <span class="block truncate text-sm text-slate-800">{{ ev.cat_name || 'N/A' }}</span>
+          </td>
+
+          <td class="px-3 py-2 text-center text-sm text-slate-700 cursor-default select-none border-t border-slate-200">
+            {{ formatDate(ev.evn_date) }}
+          </td>
+
+          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t cursor-default select-none border-slate-200 whitespace-nowrap">
             {{ ev.evn_timestart ? ev.evn_timestart.slice(0,5) : '??:??' }} -
             {{ ev.evn_timeend ? ev.evn_timeend.slice(0,5) : '??:??' }}
           </td>
-          <td class="col-num">{{ ev.evn_num_guest ?? '0' }}</td>
-          <td class="col-num">{{ ev.evn_sum_accept ?? 'N/A' }}</td>
-          <td class="col-status">
-            <span :class="['badge', ev.evn_status]">{{ ev.evn_status || 'N/A' }}</span>
-            </td>
 
-            <td class="col-action">
-            <!-- กันคลิกไม่ให้ไปกระทบทั้งแถว -->
-            <button class="btn-link" @click.stop="editEvent(ev.id)">✏ Edit</button>
-            <button class="btn-link danger" @click.stop="deleteEvent(ev.id)">🗑 Delete</button>
-            </td>
+          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t cursor-default select-none border-slate-200">
+            {{ ev.evn_num_guest ?? '0' }}
+          </td>
+
+          <td class="px-3 py-2 text-center text-sm text-slate-700 border-t cursor-default select-none border-slate-200">
+            {{ ev.evn_sum_accept ?? 'N/A' }}
+          </td>
+
+          <td class="px-3 py-2 text-center border-t cursor-default select-none border-slate-200">
+            <span :class="badgeClass(ev.evn_status)">
+              {{ ev.evn_status || 'N/A' }}
+            </span>
+          </td>
+
+          <!-- ไอคอนล้วน -->
+          <td class="px-3 py-2 text-center border-t border-slate-200">
+            <div class="flex items-center justify-center gap-1.5">
+              <button
+                @click.stop="editEvent(ev.id)"
+                aria-label="Edit"
+                class="rounded-lg p-1.5 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                title="Edit"
+              >
+                <PencilIcon class="h-4 w-4 text-slate-600" />
+              </button>
+
+              <button
+                @click.stop="deleteEvent(ev.id)"
+                aria-label="Delete"
+                class="rounded-lg p-1.5 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                title="Delete"
+              >
+                <TrashIcon class="h-5 w-5 text-slate-600 hover:text-rose-600" />
+              </button>
+            </div>
+          </td>
         </tr>
 
         <tr v-if="paged.length === 0">
-            <td :colspan="9" style="text-align:center">No data found</td>
+          <td :colspan="9" class="px-3 py-6 text-center text-slate-600">
+            No data found
+          </td>
         </tr>
-        </tbody>
+      </tbody>
     </table>
-    </div>
-
-
-  <!-- ===== Pagination ===== -->
-  <div class="pager2">
-    <button class="arrow-btn" :disabled="page===1" @click="goToPage(page-1)">‹</button>
-    <template v-for="(it, idx) in pageItems" :key="idx">
-      <button v-if="it.type==='page'" class="page-btn" :class="{ active: it.value===page }" @click="goToPage(it.value)">
-        {{ it.value }}
-      </button>
-      <span v-else class="dots">…</span>
-    </template>
-    <button class="arrow-btn" :disabled="page===totalPages || totalPages===0" @click="goToPage(page+1)">›</button>
   </div>
+
+   <!-- ===== Pagination ===== -->
+    <div class="mt-4 flex items-center justify-center gap-3">
+     <!-- ปุ่มลูกศรซ้าย -->
+        <button
+        class="pg-arrow"
+        :disabled="page===1"
+        @click="goToPage(page-1)"
+    >
+        <svg viewBox="0 0 24 24">
+        <path d="M6 12 L18 4 L18 20 Z" />
+        </svg>
+    </button>
+
+  <!-- หมายเลขเพจ -->
+  <template v-for="(it, idx) in pageItems" :key="idx">
+    <button
+      v-if="it.type==='page'"
+      class="pg-num"
+      :class="{ 'pg-active': it.value===page }"
+      :aria-current="it.value===page ? 'page' : null"
+      @click="goToPage(it.value)"
+    >
+      {{ it.value }}
+    </button>
+
+    <!-- จุดคั่น -->
+    <span v-else class="pg-ellipsis">
+      <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+    </span>
+  </template>
+
+  <button
+  class="pg-arrow"
+  :disabled="page===totalPages || totalPages===0"
+  @click="goToPage(page+1)"
+>
+  <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
+    <path
+      d="M6 12 L18 4 L18 20 Z" />
+    />
+  </svg>
+</button>
+</div>
+    <!-- </div> ปิด div font Poppins -->
 </template>
 
 <script>
 import axios from "axios";
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import Swal from "sweetalert2";
+import 'sweetalert2/dist/sweetalert2.min.css';
+
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+} from '@heroicons/vue/24/outline';
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
 
 export default {
-  components: { MagnifyingGlassIcon },
+  components: { MagnifyingGlassIcon, PencilIcon, TrashIcon },
   data() {
     return {
       event: [],
@@ -124,7 +297,6 @@ export default {
       searchInput: "",
       search: "",
 
-      // ไว้ให้ปุ่ม Filter/Sort ไม่ error (ยังไม่ทำ logic จริง)
       showFilter: false,
       showSort: false,
 
@@ -133,6 +305,14 @@ export default {
 
       page: 1,
       pageSize: 10,
+
+    flt: {
+      category: 'all',   // String(id) หรือ 'all'
+      status: 'all',     // 'all' | 'upcoming' | 'done'
+      dateFrom: '',      // 'YYYY-MM-DD'
+      dateTo: ''         // 'YYYY-MM-DD'
+    },
+    _appliedFlt: null,
     };
   },
   async created() {
@@ -144,8 +324,12 @@ export default {
     event()    { this.page = 1; },
   },
   computed: {
-    normalized() {
-      return this.event.map(e => ({
+    hasActiveFilters() {
+    const f = this._appliedFlt || this.flt;
+    return f.category!=='all' || f.status!=='all' || !!(f.dateFrom || f.dateTo);
+},
+  normalized() {
+    return this.event.map(e => ({
         ...e,
         evn_title: e.evn_title ?? e.evn_name ?? "",
         evn_cat_id: e.evn_cat_id ?? e.evn_category_id ?? "",
@@ -207,7 +391,10 @@ export default {
       try {
         const res = await axios.get("/get-event");
         this.event = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      } catch (err) { console.error("fetchEvent error", err); this.event = []; }
+      } catch (err) {
+        console.error("fetchEvent error", err);
+        this.event = [];
+      }
     },
     async fetchCategories() {
       try {
@@ -215,16 +402,14 @@ export default {
         const cats = res.data?.categories || [];
         this.categories = cats;
         this.catMap = Object.fromEntries(cats.map(c => [String(c.id), c.cat_name]));
-      } catch (err) { console.error("fetchCategories error", err); this.categories = []; this.catMap = {}; }
+      } catch (err) {
+        console.error("fetchCategories error", err);
+        this.categories = [];
+        this.catMap = {};
+      }
     },
 
     applySearch() { this.search = this.searchInput; this.page = 1; },
-
-    goToPage(p) {
-      if (p < 1) p = 1;
-      if (p > this.totalPages) p = this.totalPages || 1;
-      this.page = p;
-    },
 
     editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
       console.log("Edit event ID:", id);
@@ -233,114 +418,87 @@ export default {
     // ไว้ให้ปุ่มไม่ error (ต่อยอดภายหลังได้)
     toggleFilter() { this.showFilter = !this.showFilter; },
     toggleSort() { this.showSort = !this.showSort; },
-
     goToPage(p) { if (p < 1) p = 1; if (p > this.totalPages) p = this.totalPages || 1; this.page = p; },
+    editEvent(id) { console.log("Edit event", id); },
+
     async deleteEvent(id) {
-      if (confirm("Delete?")) {
-        try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
-        catch (err) { console.error("Error deleting event", err); }
+      const ev = this.normalized.find(e => e.id === id);
+      const title = ev?.evn_title || 'this event';
+
+      const { isConfirmed } = await Swal.fire({
+        title: 'ARE YOU SURE TO DELETE?',
+        html: `This will be deleted permanently.<br>Are you sure?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        confirmButtonColor: '#42BB4C',
+        cancelButtonColor: '#BA0C16',
+        customClass: {
+        confirmButton: 'equal-btn', cancelButton: 'equal-btn' },
+        customClass: {
+        confirmButton: 'w-28 text-center', // ปุ่ม OK
+        cancelButton: 'w-28 text-center',   // ปุ่ม Cancel
+        actions: 'space-x-8', // ช่องว่างระหว่างปุ่ม
+    }
+      });
+      if (!isConfirmed) return;
+
+      try {
+        await axios.patch(`/event/${id}/deleted`);
+        await Swal.fire({
+          title: 'DELETE SUCCESS! ',
+          text: 'We have deleted the new event.',
+          icon: 'success',
+          // timer: 2000, ปิดอัตโนมัติหลัง 2 วินาที
+          // เปิดใช้ปุ่ม OK
+          showConfirmButton: true, // เปลี่ยนเป็น true เพื่อแสดงปุ่ม
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#42BB4C',
+          customClass: {
+          confirmButton: 'w-15 text-center text-lg' // กำหนดขนาดปุ่มเอง
+     }
+        });
+        this.fetchEvent();
+      } catch (err) {
+        console.error("Error deleting event", err);
+        await Swal.fire({
+          title: 'ERROR!',
+          // =========== ใช้ตอนทดสอบ ===========
+          text: err?.response?.data?.message || 'เกิดข้อผิดพลาดในการลบข้อมูล',
+          // =========== ใช้จริง ===========
+          // text: "Sorry, Please try again later.",
+          icon: 'error',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#42BB4C',
+          customClass: {
+          confirmButton: 'w-15 text-center text-lg' // กำหนดขนาดปุ่มเอง
+      }
+    });
       }
     },
+
     formatDate(val) {
       if (!val) return 'N/A';
-      const d = new Date(val); if (isNaN(d)) return val;
+      const d = new Date(val);
+      if (isNaN(d)) return val;
       const dd = String(d.getDate()).padStart(2,'0');
       const mm = String(d.getMonth()+1).padStart(2,'0');
       const yyyy = d.getFullYear();
       return `${dd}/${mm}/${yyyy}`;
     },
+
+    badgeClass(status) {
+      // สร้าง badge แบบยูทิลิตี้ล้วน
+      const base = 'inline-block min-w-[70px] rounded-full px-2.5 py-1 text-xs font-bold capitalize';
+      switch ((status || '').toLowerCase()) {
+        // case 'deleted':  return `${base} bg-rose-100 text-rose-800`; ยกเลิกใช้ แต่เก็บไว้ก่อน
+        case 'done':     return `${base} bg-emerald-100 text-emerald-700`;
+        case 'upcoming': return `${base} bg-amber-200 text-amber-900`;
+        default:         return `${base} bg-slate-200 text-slate-700`;
+      }
+    },
   }
 };
 </script>
-
-<style>
-/* ตัวช่วย layout */
-.toolbar--pill { display:flex; align-items:center; gap:16px; margin-top:12px; }
-.search-group { display:flex; align-items:center; gap:12px; flex:1; }
-
-/* ช่องค้นหาแบบ pill */
-.pill-input {
-  height: 44px;
-  width: 100%;
-  padding: 0 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  outline: none;
-  background: #fff;
-}
-
-/* ปุ่มไอคอน */
-.icon-btn {
-  width: 44px; height: 44px; border-radius: 999px;
-  border: 1px solid #e5e7eb; background: #fff;
-  display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
-}
-.icon-btn:hover { background:#f3f4f6; }
-.icon-btn--solid { background:#e11d48; color:#fff; border:none; }
-.icon-btn--solid:hover { background:#be123c; }
-
-.icon { width:20px; height:20px; display:block; }
-.icon-sm { width:18px; height:18px; }
-
-/* ปุ่มตัวอักษร Filter/Sort */
-.text-btn {
-  height:44px; padding:0 8px; border:none; background:transparent;
-  color:#334155; font-weight:500; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-}
-.text-btn:hover { color:#0f172a; }
-
-/* ปุ่ม + Add New เป็น pill และชิดขวา */
-.pill-add {
-  margin-left:auto; height:44px; padding:0 18px; border-radius:999px;
-  background:#e11d48; color:#fff; text-decoration:none; display:inline-flex; align-items:center; font-weight:600;
-}
-.pill-add:hover { background:#be123c; }
-
-/* Summary */
-.summary { font-size:12px; color:#666; margin-left:16px; }
-
-/* Table */
-.table-wrap { overflow-x:auto; }
-.table { width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; margin-top:10px; }
-thead th { position:sticky; top:0; z-index:1; }
-.th { cursor:default; user-select:none; background:#f9fafb; font-weight:600; border-bottom:1px solid #e5e7eb; }
-th, td { vertical-align:middle; padding:7px 10px; border-top:1px solid #eee; font-size:14px; }
-
-/* Column widths */
-.col-idx{ width:48px; text-align:center; }
-.col-title{ width:26%; text-align:center; }
-.col-cat{ width:14%; text-align:center; }
-.col-date{ width:110px; text-align:center; white-space:nowrap; }
-.col-time{ width:92px; text-align:center; white-space:nowrap; }
-.col-num{ width:80px; text-align:center; }
-.col-status{ width:110px; text-align:center; }
-.col-action{ width:120px; text-align:center; }
-
-/* Rows */
-tbody tr:nth-child(odd){ background:#fff; }
-tbody tr:nth-child(even){ background:#fafafa; }
-tbody tr:hover{ background:#f3f4f6; }
-
-/* Text overflow */
-.truncate{ display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-/* Action buttons */
-.btn-link{ background:transparent; border:none; color:#0ea5e9; font-weight:600; cursor:pointer; padding:2px 4px; font-size:13px; }
-.btn-link:hover{ text-decoration:underline; }
-.btn-link.danger{ color:#ef4444; }
-
-/* Badge */
-.badge { display:inline-block; min-width:70px; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700; text-transform:lowercase; background:#e5e7eb; color:#374151; }
-.badge.deleted{ background:#fee2e2; color:#991b1b; }
-.badge.done{ background:#dcfce7; color:#166534; }
-.badge.upcoming{ background:#f4ce99; color:#714601; }
-
-/* Pager */
-.pager2 { display:flex; gap:.5rem; align-items:center; justify-content:center; margin-top:14px; }
-.page-btn { min-width:36px; height:36px; padding:0 10px; border-radius:10px; border:2px solid #b71c1c; background:transparent; color:#b71c1c; font-weight:700; line-height:1; }
-.page-btn.active { background:#b71c1c; color:#fff; border-color:#b71c1c; }
-.page-btn:hover:not(.active){ background:#fff5f5; }
-.arrow-btn { width:36px; height:36px; border-radius:10px; border:none; background:#b71c1c; color:#fff; font-weight:700; }
-.arrow-btn:disabled{ opacity:.5; cursor:not-allowed; }
-.dots{ padding:0 6px; color:#b71c1c; font-weight:700; }
-</style>
