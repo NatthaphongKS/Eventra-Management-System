@@ -1,22 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 // Pages
-import Home from '../pages/Home.vue'
+import Home from '../pages/Dashboard/Home.vue'
 import Login from '../pages/Login.vue'
-import AddEmployee from '../pages/AddEmployeePage.vue'
-import EventPage from '../pages/EventPage.vue'
-import Employees from '../pages/EmployeePage.vue'
-import History from '../pages/DeletePage.vue'
-import CreateEvent from '../pages/CreateEvent.vue'
-import Category from '../pages/CategoryPage.vue'
+import AddEmployee from '../pages/Employee/AddEmployeePage.vue'
+import EventPage from '../pages/Event/EventPage.vue'
+import Employees from '../pages/Employee/EmployeePage.vue'
+import History from '../pages/History/DeletePage.vue'
+import CreateEvent from '../pages/Event/CreateEvent.vue'
+import Category from '../pages/Category/CategoryPage.vue'
 import reply_form from '../pages/ReplyForm.vue'
-import UploadFile from '../pages/UploadFile.vue'
-import History_Employee from '../pages/HistoryEmployee.vue'
-import History_Event from '../pages/HistoryEvent.vue'
+import UploadFile from '../pages/Employee/UploadFile.vue'
+import History_Employee from '../pages/History/HistoryEmployee.vue'
+import History_Event from '../pages/History/HistoryEvent.vue'
 // [เพิ่ม] หน้าแก้ไข
-import EditEvent from '../pages/EditEvent.vue'
-import EditEmployee from '../pages/EditEmployeePage.vue'
-import EventDetails from '../pages/EventDetail.vue'
+import EditEvent from '../pages/Event/EditEvent.vue'
+import EditEmployee from '../pages/Employee/EditEmployeePage.vue'
+import EventDetails from '../pages/Event/EventDetail.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
