@@ -399,7 +399,7 @@ import SortMenu from "@/components/SortMenu.vue";
 // โมดัลยืนยันลบ
 import ConfirmDelete from "@/components/ConfirmDelete.vue";
 // โมดัลแจ้งลบสำเร็จ
-import DeleteSuccess from "@/components/DeleteSuccess.vue";
+import DeleteSucces from "@/components/EmloyeeDeleteSuccess.vue";
 
 // ตั้งค่า base URL ของ axios
 axios.defaults.baseURL = "/api";
@@ -425,7 +425,7 @@ export default {
         SelectField,
         SortMenu,
         ConfirmDelete,
-        DeleteSuccess,
+        DeleteSucces,
     },
 
     // สถานะภายในคอมโพเนนต์

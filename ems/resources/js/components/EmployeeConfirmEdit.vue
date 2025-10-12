@@ -9,15 +9,15 @@
         >
           <QuestionMarkCircleIcon class="text-yellow-400 " />
         </div>
-        <h3 class="mt-6 text-3xl font-bold text-neutral-800 text-center">ARE YOU SURE TO DELETE?</h3>
-        <p class="mt-10 text-xl font-semibold leading-6 text-neutral-800">
-          This will be deleted permanently.<br />Are you sure?
+        <h3 class="mt-6 text-3xl font-bold text-neutral-800 text-center">ARE YOU SURE TO EDIT?</h3>
+        <p class="mt-12 text-xl font-semibold leading-6 text-neutral-800">
+          Are you sure to edit  employee information ?
         </p>
-        <div class="mt-12 flex items-center justify-center gap-20 text-xl font-semibold">
+        <div class="mt-16 flex items-center justify-center gap-20 text-xl font-semibold">
           <button type="button" @click="$emit('cancel')" class="w-[168px] h-[58px] rounded-[20px] bg-red-700 border border-neutral-200 text-white hover:bg-red-800">
             Cancel
           </button>
-          <button type="button" @click="$emit('confirm')" class="w-[168px] h-[58px] rounded-[20px] bg-green-600 border border-neutral-200 text-white hover:bg-green-00" autofocus>
+          <button type="button" @click="$emit('confirm')" class="w-[168px] h-[58px] rounded-[20px] bg-green-600 border border-neutral-200 text-white hover:bg-green-800" autofocus>
             OK
           </button>
         </div>
@@ -30,7 +30,7 @@
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/solid';
 
 export default {
-  name: 'ConfirmDelete',
+  name: 'EmployeeConfirmEdit',
   components: { QuestionMarkCircleIcon },
   props: { open: { type: Boolean, default: false } },
   emits: ['confirm', 'cancel'],
