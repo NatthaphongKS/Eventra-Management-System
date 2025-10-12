@@ -1,10 +1,6 @@
-<!-- pages/event_page.vue -->
 <template>
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-            <div class="font-[Poppins]"> -->
-  <!-- ===== Toolbar (pill) ===== -->
-<div class="mt-3 mb-1 flex items-center gap-4">
-    <!-- search + ปุ่มค้นหาแดง -->
+  <!-- Toolbar and table (unchanged) -->
+  <div class="mt-3 mb-1 flex items-center gap-4">
     <div class="flex items-center gap-3 flex-1">
       <input
         v-model.trim="searchInput"
@@ -20,12 +16,11 @@
         @click="applySearch"
         aria-label="Search"
         title="ค้นหา (คลิกหรือกด Enter)"
-        >
+      >
         <MagnifyingGlassIcon class="h-5 w-5" />
       </button>
     </div>
 
-    <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
     <button
       type="button"
       class="inline-flex h-11 items-center gap-2 px-2 text-slate-700 font-medium hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md cursor-default select-none"
@@ -50,7 +45,6 @@
       <span>Sort</span>
     </button>
 
-    <!-- Summary + Add -->
     <span class="ml-4 text-xs text-slate-500 cursor-default select-none">ทั้งหมด {{ filtered.length }} รายการ</span>
     <router-link
       to="/add-event"
@@ -61,95 +55,68 @@
          >
       + Add New
     </router-link>
-    <!-- ==== Filter Panel ==== -->
-<div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-  <div class="grid gap-3 sm:grid-cols-3">
-    <!-- Category -->
-    <label class="text-sm">
-      <span class="mb-1 block text-slate-600">Category</span>
-      <select v-model="flt.category" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
-        <option value="all">All</option>
-        <option v-for="c in categories" :key="c.id" :value="String(c.id)">
-          {{ c.cat_name }}
-        </option>
-      </select>
-    </label>
 
-    <!-- Status -->
-    <label class="text-sm">
-      <span class="mb-1 block text-slate-600">Status</span>
-      <select v-model="flt.status" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
-        <option value="upcoming">Upcoming</option>
-        <option value="done">Done</option>
-      </select>
-    </label>
+    <div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div class="grid gap-3 sm:grid-cols-3">
+        <label class="text-sm">
+          <span class="mb-1 block text-slate-600">Category</span>
+          <select v-model="flt.category" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+            <option value="all">All</option>
+            <option v-for="c in categories" :key="c.id" :value="String(c.id)">
+              {{ c.cat_name }}
+            </option>
+          </select>
+        </label>
 
-    <!-- Date range -->
-     <!--
-    <div class="grid grid-cols-2 gap-2 text-sm">
-      <label>
-        <span class="mb-1 block text-slate-600">From</span>
-        <input v-model="flt.dateFrom" type="date"
-               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
-      </label>
-      <label>
-        <span class="mb-1 block text-slate-600">To</span>
-        <input v-model="flt.dateTo" type="date"
-               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
-      </label>
+        <label class="text-sm">
+          <span class="mb-1 block text-slate-600">Status</span>
+          <select v-model="flt.status" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+            <option value="upcoming">Upcoming</option>
+            <option value="done">Done</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button type="button"
+                class="rounded-full bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#991b1b]"
+                @click="applyFilters">
+          Apply
+        </button>
+        <button type="button"
+                class="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-white"
+                @click="clearFilters">
+          Clear
+        </button>
+
+        <template v-if="hasActiveFilters">
+          <span class="ml-2 text-xs text-slate-500">Active:</span>
+          <span v-if="flt.category!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+            Category: {{ catMap[flt.category] || flt.category }}
+          </span>
+          <span v-if="flt.status!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
+            Status: {{ flt.status }}
+          </span>
+        </template>
+      </div>
     </div>
-    -->
   </div>
 
-  <!-- Actions / chips -->
-  <div class="mt-3 flex flex-wrap items-center gap-2">
-    <button type="button"
-            class="rounded-full bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#991b1b]"
-            @click="applyFilters">
-      Apply
-    </button>
-    <button type="button"
-            class="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-white"
-            @click="clearFilters">
-      Clear
-    </button>
-
-    <!-- แสดง chips ของ filter ที่ใช้งาน -->
-    <template v-if="hasActiveFilters">
-      <span class="ml-2 text-xs text-slate-500">Active:</span>
-      <span v-if="flt.category!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
-        Category: {{ catMap[flt.category] || flt.category }}
-      </span>
-      <span v-if="flt.status!=='all'" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
-        Status: {{ flt.status }}
-      </span>
-      <!-- Date range -->
-       <!--
-      <span v-if="flt.dateFrom || flt.dateTo" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
-        Date: {{ flt.dateFrom || '...' }} → {{ flt.dateTo || '...' }}
-      </span>
-      -->
-    </template>
-  </div>
-</div>
-    <!-- ==== Sort Panel ==== -->
-  </div>
-
-  <!-- ===== Table ===== -->
-<div class="overflow-hidden rounded-2xl cursor-default select-none border border-slate-200 mb-8">
-  <table class="w-full table-auto">
-    <thead>
-      <tr class="bg-slate-50">
-        <th class="table-head cursor-default select-none w-12 text-center py-3">#</th>
-        <th class="table-head cursor-default select-none w-[26%] text-center py-3">Event</th>
-        <th class="table-head cursor-default select-none w-[14%] text-center py-3">Category</th>
-        <th class="table-head cursor-default select-none w-[110px] text-center whitespace-nowrap py-3">Date (D/M/Y)</th>
-        <th class="table-head cursor-default select-none w-[92px] text-center whitespace-nowrap py-3">Time</th>
-        <th class="table-head cursor-default select-none w-20 text-center py-3">Invited</th>
-        <th class="table-head cursor-default select-none w-20 text-center py-3">Accepted</th>
-        <th class="table-head cursor-default select-none w-[110px] text-center py-3">Status</th>
-        <th class="table-head cursor-default select-none w-28 text-center py-3">Action</th>
-      </tr>
+  <!-- Table -->
+  <div class="overflow-hidden rounded-2xl cursor-default select-none border border-slate-200 mb-8">
+    <table class="w-full table-auto">
+      <thead>
+        <tr class="bg-slate-50">
+          <th class="table-head cursor-default select-none w-12 text-center py-3">#</th>
+          <th class="table-head cursor-default select-none w-[26%] text-center py-3">Event</th>
+          <th class="table-head cursor-default select-none w-[14%] text-center py-3">Category</th>
+          <th class="table-head cursor-default select-none w-[110px] text-center whitespace-nowrap py-3">Date (D/M/Y)</th>
+          <th class="table-head cursor-default select-none w-[92px] text-center whitespace-nowrap py-3">Time</th>
+          <th class="table-head cursor-default select-none w-20 text-center py-3">Invited</th>
+          <th class="table-head cursor-default select-none w-20 text-center py-3">Accepted</th>
+          <th class="table-head cursor-default select-none w-[110px] text-center py-3">Status</th>
+          <th class="table-head cursor-default select-none w-28 text-center py-3">Action</th>
+        </tr>
       </thead>
 
       <tbody>
@@ -193,7 +160,7 @@
             </span>
           </td>
 
-          <!-- ไอคอนล้วน -->
+          <!-- Actions -->
           <td class="px-3 py-2 text-center border-t border-slate-200">
             <div class="flex items-center justify-center gap-1.5">
               <button
@@ -226,56 +193,61 @@
     </table>
   </div>
 
-   <!-- ===== Pagination ===== -->
-    <div class="mt-4 flex items-center justify-center gap-3">
-     <!-- ปุ่มลูกศรซ้าย -->
-        <button
-        class="pg-arrow"
-        :disabled="page===1"
-        @click="goToPage(page-1)"
-    >
-        <svg viewBox="0 0 24 24">
-        <path d="M6 12 L18 4 L18 20 Z" />
-        </svg>
-    </button>
-
-  <!-- หมายเลขเพจ -->
-  <template v-for="(it, idx) in pageItems" :key="idx">
+  <!-- Pagination -->
+  <div class="mt-4 flex items-center justify-center gap-3">
     <button
-      v-if="it.type==='page'"
-      class="pg-num"
-      :class="{ 'pg-active': it.value===page }"
-      :aria-current="it.value===page ? 'page' : null"
-      @click="goToPage(it.value)"
+      class="pg-arrow"
+      :disabled="page===1"
+      @click="goToPage(page-1)"
     >
-      {{ it.value }}
+      <svg viewBox="0 0 24 24">
+        <path d="M6 12 L18 4 L18 20 Z" />
+      </svg>
     </button>
 
-    <!-- จุดคั่น -->
-    <span v-else class="pg-ellipsis">
-      <i class="dot"></i><i class="dot"></i><i class="dot"></i>
-    </span>
-  </template>
+    <template v-for="(it, idx) in pageItems" :key="idx">
+      <button
+        v-if="it.type==='page'"
+        class="pg-num"
+        :class="{ 'pg-active': it.value===page }"
+        :aria-current="it.value===page ? 'page' : null"
+        @click="goToPage(it.value)"
+      >
+        {{ it.value }}
+      </button>
 
-  <button
-  class="pg-arrow"
-  :disabled="page===totalPages || totalPages===0"
-  @click="goToPage(page+1)"
->
-  <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
-    <path
-      d="M6 12 L18 4 L18 20 Z" />
-    />
-  </svg>
-</button>
-</div>
-    <!-- </div> ปิด div font Poppins -->
+      <span v-else class="pg-ellipsis">
+        <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+      </span>
+    </template>
+
+    <button
+      class="pg-arrow"
+      :disabled="page===totalPages || totalPages===0"
+      @click="goToPage(page+1)"
+    >
+      <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
+        <path d="M6 12 L18 4 L18 20 Z" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ConfirmDelete component (teleported to body) -->
+  <ConfirmDelete
+    :open="confirmOpen"
+    :title="confirmTitle"
+    @confirm="onConfirmDelete"
+    @cancel="onCancelDelete"
+  />
 </template>
 
 <script>
 import axios from "axios";
 import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
+
+// components
+import ConfirmDelete from '@/components/ConfirmDelete.vue';
 
 import {
   MagnifyingGlassIcon,
@@ -287,7 +259,7 @@ axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
 
 export default {
-  components: { MagnifyingGlassIcon, PencilIcon, TrashIcon },
+  components: { MagnifyingGlassIcon, PencilIcon, TrashIcon, ConfirmDelete },
   data() {
     return {
       event: [],
@@ -306,13 +278,18 @@ export default {
       page: 1,
       pageSize: 10,
 
-    flt: {
-      category: 'all',   // String(id) หรือ 'all'
-      status: 'all',     // 'all' | 'upcoming' | 'done'
-      dateFrom: '',      // 'YYYY-MM-DD'
-      dateTo: ''         // 'YYYY-MM-DD'
-    },
-    _appliedFlt: null,
+      flt: {
+        category: 'all',
+        status: 'all',
+        dateFrom: '',
+        dateTo: ''
+      },
+      _appliedFlt: null,
+
+      /* confirmation modal state */
+      confirmOpen: false,
+      confirmId: null,
+      confirmTitle: '',
     };
   },
   async created() {
@@ -325,11 +302,11 @@ export default {
   },
   computed: {
     hasActiveFilters() {
-    const f = this._appliedFlt || this.flt;
-    return f.category!=='all' || f.status!=='all' || !!(f.dateFrom || f.dateTo);
-},
-  normalized() {
-    return this.event.map(e => ({
+      const f = this._appliedFlt || this.flt;
+      return f.category!=='all' || f.status!=='all' || !!(f.dateFrom || f.dateTo);
+    },
+    normalized() {
+      return this.event.map(e => ({
         ...e,
         evn_title: e.evn_title ?? e.evn_name ?? "",
         evn_cat_id: e.evn_cat_id ?? e.evn_category_id ?? "",
@@ -411,71 +388,56 @@ export default {
 
     applySearch() { this.search = this.searchInput; this.page = 1; },
 
-    editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
-      console.log("Edit event ID:", id);
-      this.$router.push(`/edit-event/${id}`)
+    editEvent(id) {
+      // ส่วนส่ง id ไปให้หน้า edit_event
+      this.$router.push(`/edit-event/${id}`);
     },
-    // ไว้ให้ปุ่มไม่ error (ต่อยอดภายหลังได้)
+
     toggleFilter() { this.showFilter = !this.showFilter; },
     toggleSort() { this.showSort = !this.showSort; },
     goToPage(p) { if (p < 1) p = 1; if (p > this.totalPages) p = this.totalPages || 1; this.page = p; },
-    editEvent(id) { console.log("Edit event", id); },
 
-    async deleteEvent(id) {
+    /* open confirm modal (แทนการเรียก Swal ตรงนี้) */
+    deleteEvent(id) {
       const ev = this.normalized.find(e => e.id === id);
-      const title = ev?.evn_title || 'this event';
+      this.confirmId = id;
+      this.confirmTitle = ev?.evn_title || 'this event';
+      this.confirmOpen = true;
+    },
 
-      const { isConfirmed } = await Swal.fire({
-        title: 'ARE YOU SURE TO DELETE?',
-        html: `This will be deleted permanently.<br>Are you sure?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
-        reverseButtons: true,
-        confirmButtonColor: '#42BB4C',
-        cancelButtonColor: '#BA0C16',
-        customClass: {
-        confirmButton: 'equal-btn', cancelButton: 'equal-btn' },
-        customClass: {
-        confirmButton: 'w-28 text-center', // ปุ่ม OK
-        cancelButton: 'w-28 text-center',   // ปุ่ม Cancel
-        actions: 'space-x-8', // ช่องว่างระหว่างปุ่ม
-    }
-      });
-      if (!isConfirmed) return;
+    /* cancel from modal */
+    onCancelDelete() {
+      this.confirmOpen = false;
+      this.confirmId = null;
+      this.confirmTitle = '';
+    },
+
+    /* confirmed: call API to delete */
+    async onConfirmDelete() {
+      const id = this.confirmId;
+      this.confirmOpen = false;
+      this.confirmId = null;
+      this.confirmTitle = '';
 
       try {
         await axios.patch(`/event/${id}/deleted`);
         await Swal.fire({
-          title: 'DELETE SUCCESS! ',
-          text: 'We have deleted the new event.',
+          title: 'DELETE SUCCESS!',
+          text: 'We have deleted the event.',
           icon: 'success',
-          // timer: 2000, ปิดอัตโนมัติหลัง 2 วินาที
-          // เปิดใช้ปุ่ม OK
-          showConfirmButton: true, // เปลี่ยนเป็น true เพื่อแสดงปุ่ม
           confirmButtonText: 'OK',
-          confirmButtonColor: '#42BB4C',
-          customClass: {
-          confirmButton: 'w-15 text-center text-lg' // กำหนดขนาดปุ่มเอง
-     }
+          confirmButtonColor: '#42BB4C'
         });
         this.fetchEvent();
       } catch (err) {
         console.error("Error deleting event", err);
         await Swal.fire({
           title: 'ERROR!',
-          // =========== ใช้ตอนทดสอบ ===========
           text: err?.response?.data?.message || 'เกิดข้อผิดพลาดในการลบข้อมูล',
-          // =========== ใช้จริง ===========
-          // text: "Sorry, Please try again later.",
           icon: 'error',
           confirmButtonText: 'OK',
-          confirmButtonColor: '#42BB4C',
-          customClass: {
-          confirmButton: 'w-15 text-center text-lg' // กำหนดขนาดปุ่มเอง
-      }
-    });
+          confirmButtonColor: '#42BB4C'
+        });
       }
     },
 
@@ -493,7 +455,6 @@ export default {
       // สร้าง badge แบบยูทิลิตี้ล้วน
       const base = 'inline-block min-w-[70px] rounded-full px-2.5 py-1 text-xs font-bold capitalize';
       switch ((status || '').toLowerCase()) {
-        // case 'deleted':  return `${base} bg-rose-100 text-rose-800`; ยกเลิกใช้ แต่เก็บไว้ก่อน
         case 'done':     return `${base} bg-emerald-100 text-emerald-700`;
         case 'upcoming': return `${base} bg-amber-200 text-amber-900`;
         default:         return `${base} bg-slate-200 text-slate-700`;
