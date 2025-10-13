@@ -5,9 +5,9 @@
             <link rel="stylesheet"
                 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         </head>
+
         <section class="max-w-6xl mx-auto p-6">
             <div class="bg-white rounded-2xl shadow-sm border">
-
                 <!-- Card header -->
                 <div class="px-6 pt-6">
                     <h2 class="text-lg md:text-xl font-semibold text-gray-900">
@@ -28,92 +28,33 @@
 
                 <!-- Card body -->
                 <div class="px-6 pb-6">
-
                     <!-- Upload block -->
                     <div class="mt-4">
                         <p class="text-sm font-semibold text-gray-800">Upload file Excel</p>
-                        <p class="text-xs text-gray-400 mt-1">Drag and drop document to your support task</p>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Drag and drop document to your support task
+                        </p>
 
-                        <!-- ▼ Drop zone: ลดขนาดกรอบเมื่อมีไฟล์ -->
-                        <div
-                            class="mt-2 rounded-2xl border-2 border-rose-300 border-dashed bg-rose-50 relative transition-all">
-                            <label for="file-input" class="block">
-                                <div class="relative cursor-pointer rounded-2xl transition-all" :class="[
-                                    dragOver ? 'ring-2 ring-rose-300' : '',
-                                    file ? 'min-h-[60px] p-2' : 'min-h-[300px] pt-20 pb-6 px-4'
-                                ]" @dragover.stop.prevent="onDragOver" @dragleave.prevent="dragOver = false"
-                                    @drop.stop.prevent="onDrop">
-                                    <!-- แสดงชื่อไฟล์ -->
-                                    <template v-if="file">
-                                        <div class="px-2">
-                                            <div
-                                                class="flex items-center justify-between rounded-xl bg-white border border-gray-200 px-4 py-3 shadow-sm">
-                                                <div class="flex items-center gap-3 min-w-0">
-                                                    <div
-                                                        class="flex items-center justify-center h-8 w-8 rounded-md bg-red-600">
-                                                        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24"
-                                                            fill="currentColor">
-                                                            <path
-                                                                d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9.5L13.5 2H6Z" />
-                                                            <path d="M14 2v6h6" fill="#fff" />
-                                                        </svg>
-                                                    </div>
-                                                    <span class="text-sm text-gray-700 truncate">{{ file.name }}</span>
-                                                </div>
-                                                <button type="button"
-                                                    class="inline-flex items-center justify-center w-7 h-7 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                                                    @click.stop="clearFile" aria-label="Remove file" title="Remove">
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </template>
+                        <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="msg => (error = msg)"
+                            @picked="() => (error = '')" @cleared="() => (error = '')" />
 
-                                    <!-- เนื้อหาเมื่อยังไม่มีไฟล์ -->
-                                    <template v-else>
-                                        <div class="flex flex-col items-center justify-center text-center">
-                                            <svg class="w-18 h-16 mb-3" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path class="text-rose-400" fill="currentColor"
-                                                    d="M6 19h12a5 5 0 0 0 1.02-9.9A7 7 0 0 0 6.06 9.6 4 4 0 0 0 6 19Z" />
-                                                <path fill="#ffffff" d="M12 8l-3.5 3.5h2.5V17h2v-5.5H15.5L12 8Z" />
-                                            </svg>
-                                            <p class="text-gray-600">Choose a file or drag &amp; drop it here</p>
-                                            <p class="text-xs text-gray-400 mt-1">Excel/CSV (.xls, .xlsx, .csv) · Up to
-                                                50MB</p>
-                                            <button type="button"
-                                                class="mt-4 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
-                                                @click="openPicker">
-                                                Browse files
-                                            </button>
-                                        </div>
-                                    </template>
-
-                                    <!-- input file -->
-                                    <input id="file-input" ref="fileInput" type="file"
-                                        accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
-                                        class="hidden" @change="onPick" />
-                                </div>
-                            </label>
-
-                            <!-- ปุ่ม Upload -->
-                            <div class="absolute right-4 -bottom-5 translate-y-full">
-                                <button type="button" :disabled="!file || !!error || uploading" @click="upload"
-                                    class="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
-                                    <span
-                                        class="material-symbols-outlined text-[18px] leading-none align-[-2px]">upload</span>
-                                    Upload
-                                </button>
-                            </div>
+                        <!-- ปุ่ม Upload -->
+                        <div class="mt-3 flex justify-end">
+                            <button type="button" :disabled="!file || !!error || uploading" @click="upload"
+                                class="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                                <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
+                                    upload
+                                </span>
+                                Upload
+                            </button>
                         </div>
 
                         <!-- Error -->
                         <p v-if="error" class="text-sm text-red-500 mt-2">{{ error }}</p>
                     </div>
 
-
                     <!-- Divider -->
                     <div class="mt-20 border-t"></div>
-
 
                     <!-- table -->
                     <div class="mt-4 overflow-x-auto bg-white border rounded-2xl shadow-sm">
@@ -165,15 +106,13 @@
 
                     <!-- toolbar -->
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4">
-                        <!-- ซ้าย: แสดง [select] และช่วง -->
                         <div class="flex items-center gap-2 text-sm text-gray-700">
                             <span>แสดง</span>
 
-                            <!-- pill select สีแดง + ลูกศร -->
+                            <!-- pill select -->
                             <div class="relative">
-                                <select v-model.number="pageSize" class="appearance-none rounded-full border px-3 py-1.5 pr-8
-               border-[#B70E15] text-[#B70E15] bg-white
-               hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">
+                                <select v-model.number="pageSize"
+                                    class="appearance-none rounded-full border px-3 py-1.5 pr-8 border-[#B70E15] text-[#B70E15] bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">
                                     <option v-for="s in [10, 25, 50, 100]" :key="s" :value="s">{{ s }}</option>
                                 </select>
                                 <span
@@ -183,11 +122,10 @@
                                     </svg>
                                 </span>
                             </div>
-                            <!-- ข้อความช่วง -->
+
                             <span>{{ visibleCountText }}</span>
                         </div>
                     </div>
-
 
                     <!-- pagination -->
                     <div class="mt-8 flex items-center justify-center gap-4 text-[#B70E15] select-none">
@@ -235,7 +173,6 @@
                         Cancel
                     </button>
 
-
                     <button type="button" :disabled="!displayRows.length" @click="onCreate"
                         class="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50">
                         <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
@@ -253,24 +190,15 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
+import Upload from '@/components/Upload.vue'
 
 const emit = defineEmits(['cancel', 'uploaded', 'fileSelected'])
 
 /* ---------- Upload state ---------- */
 const router = useRouter()
-const fileInput = ref(null)
 const file = ref(null)
 const error = ref('')
-const dragOver = ref(false)
 const uploading = ref(false)
-
-const MAX_SIZE = 50 * 1024 * 1024
-const ACCEPT_EXT = ['xls', 'xlsx', 'csv']
-const ACCEPT_MIME = [
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/csv'
-]
 
 /* ---------- Table state ---------- */
 const displayRows = ref([])
@@ -298,40 +226,7 @@ watch([filtered, pageSize], () => {
     if (page.value > last) page.value = last
 })
 
-/* ---------- UI handlers ---------- */
-function openPicker() { fileInput.value?.click() }
-function onPick(e) { const f = e.target.files?.[0]; handlePicked(f); e.target.value = '' }
-function onDrop(e) {
-    dragOver.value = false
-    const f = e.dataTransfer?.items?.length
-        ? Array.from(e.dataTransfer.items).find(i => i.kind === 'file')?.getAsFile()
-        : e.dataTransfer?.files?.[0]
-    handlePicked(f)
-}
-function onDragOver(e) { dragOver.value = true; if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy' }
-function clearFile() { file.value = null; error.value = ''; emit('fileSelected', null) }
-
 /* ---------- Read & parse ---------- */
-function handlePicked(f) {
-    error.value = ''
-    if (!f) return
-    const ext = f.name.split('.').pop()?.toLowerCase()
-    if (!ext || !ACCEPT_EXT.includes(ext)) {
-        error.value = 'Please select Excel/CSV file (.xls / .xlsx / .csv)'
-        file.value = null
-        emit('fileSelected', null)
-        return
-    }
-    if (f.size > MAX_SIZE) {
-        error.value = 'File is too large (max 50MB)'
-        file.value = null
-        emit('fileSelected', null)
-        return
-    }
-    file.value = f
-    emit('fileSelected', f)
-}
-
 async function upload() {
     if (!file.value || error.value) return
     uploading.value = true
@@ -343,7 +238,7 @@ async function upload() {
         const wb = XLSX.read(data, { type: ext === 'csv' ? 'string' : 'array', cellDates: true })
         const ws = wb.Sheets[wb.SheetNames[0]]
 
-        // หา header แท้จาก 30 แถวแรก (รองรับไฟล์เทมเพลตที่ให้มา)
+        // หา header แท้จาก 30 แถวแรก
         const rowsAoA = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
         const headerRowIdx = detectHeaderRow(rowsAoA)
         if (headerRowIdx === -1) throw new Error('ไม่พบหัวตาราง')
@@ -351,17 +246,12 @@ async function upload() {
         const headers = rowsAoA[headerRowIdx].map(h => String(h).trim())
         const dataAoA = rowsAoA.slice(headerRowIdx + 1)
 
-        // แปลงเป็น array-of-objects และ map ให้เป็น schema ของตาราง
         const json = arraysToObjects(headers, dataAoA)
         displayRows.value = mapRows(json)
         page.value = 1
         emit('uploaded', file.value)
 
-        if (!displayRows.value.length) {
-            error.value = 'ไฟล์อ่านได้ แต่ไม่พบแถวข้อมูลหลังหัวตาราง'
-        } else {
-            error.value = ''
-        }
+        error.value = displayRows.value.length ? '' : 'ไฟล์อ่านได้ แต่ไม่พบแถวข้อมูลหลังหัวตาราง'
     } catch (e) {
         console.error(e)
         error.value = 'ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบข้อมูล'
@@ -372,7 +262,6 @@ async function upload() {
 
 /* ---------- Helpers ---------- */
 function detectHeaderRow(rowsAoA) {
-    // คีย์เวิร์ดหัวตารางที่ไฟล์เทมเพลตใช้ (ไทย/อังกฤษ)
     const candidates = [
         'employee id', 'employeeid', 'id',
         'ชื่อเล่น', 'nickname',
@@ -388,8 +277,7 @@ function detectHeaderRow(rowsAoA) {
 
     const maxScan = Math.min(rowsAoA.length, 30)
     for (let i = 0; i < maxScan; i++) {
-        const row = (rowsAoA[i] || [])
-            .map(x => String(x || '').toLowerCase().replace(/\s+/g, ''))
+        const row = (rowsAoA[i] || []).map(x => String(x || '').toLowerCase().replace(/\s+/g, ''))
         let score = 0
         for (const cell of row) if (candidates.includes(cell)) score++
         if (score >= 2) return i
@@ -425,7 +313,7 @@ function normalizePhone(p) {
     if (p == null) return ''
     if (typeof p === 'number') return String(Math.trunc(p)).padStart(10, '0')
     const s = String(p).replace(/[^\d]/g, '')
-    return s // ไม่บังคับ 10 หลัก เผื่อเบอร์ภายใน
+    return s
 }
 function toDMY(d) {
     const dd = String(d.getDate()).padStart(2, '0')
@@ -434,47 +322,33 @@ function toDMY(d) {
     return `${dd}/${mm}/${yy}`
 }
 
-// map แถวจากไฟล์ → schema ของตารางที่แสดง
 function mapRows(rows) {
-    // เคร่งกับหัวตารางที่มักพบในไฟล์เทมเพลต
     const keyAlias = {
         company: 'company',
-
-        // รหัสพนักงาน
-        'employeeid': 'employeeId', 'employee id': 'employeeId',
-        'รหัสพนักงาน': 'employeeId', 'idพนักงาน': 'employeeId', 'พนักงานid': 'employeeId',
-
-        // ชื่อ-สกุล
+        'employeeid': 'employeeId', 'employee id': 'employeeId', 'รหัสพนักงาน': 'employeeId', 'idพนักงาน': 'employeeId', 'พนักงานid': 'employeeId',
         'คำนำหน้า': 'prefix', 'คำนำหน้าชื่อ': 'prefix', 'prefix': 'prefix',
         'ชื่อ': 'firstName', 'firstname': 'firstName',
         'นามสกุล': 'lastName', 'lastname': 'lastName',
         'ชื่อเล่น': 'nickname', 'nickname': 'nickname',
-
-        // องค์กร/ตำแหน่ง
         'position': 'position', 'ตำแหน่ง': 'position',
         'department': 'department', 'แผนก': 'department', 'ฝ่าย': 'department',
         'team': 'team', 'ทีม': 'team',
-
-        // อื่น ๆ
         'phone': 'phone', 'โทรศัพท์': 'phone', 'เบอร์': 'phone',
         'email': 'email',
         'date add': 'dateAdd', 'date': 'dateAdd', 'วันที่': 'dateAdd'
     }
 
     return rows.map(r => {
-        // ทำ key ให้เรียบ + แมปชื่อในระบบ
         const norm = {}
         for (const [k, v] of Object.entries(r)) {
-            const nk = normalizeKey(k);
-            let mapped = keyAlias[nk];
-            if (!mapped && nk.startsWith('dateadd')) mapped = 'dateAdd';
-            norm[mapped || k] = v ?? '';
+            const nk = normalizeKey(k)
+            let mapped = keyAlias[nk]
+            if (!mapped && nk.startsWith('dateadd')) mapped = 'dateAdd'
+            norm[mapped || k] = v ?? ''
         }
 
-        // name = prefix + firstName + lastName
         const name = [norm.prefix, norm.firstName, norm.lastName].filter(Boolean).join(' ').trim()
 
-        // Date Add → d/m/Y (รองรับ text, Date, และ serial number ของ Excel)
         let dateAdd = ''
         if (norm.dateAdd) {
             if (norm.dateAdd instanceof Date) {
@@ -496,7 +370,7 @@ function mapRows(rows) {
             team: (norm.team || '').toString().trim(),
             position: (norm.position || '').toString().trim(),
             email: (norm.email || '').toString().trim(),
-            dateAdd: (norm.dateAdd || '').toString().trim(),
+            dateAdd: (norm.dateAdd || '').toString().trim()
         }
     })
 }
@@ -519,7 +393,7 @@ function onCancel() {
     else emit('cancel')
 }
 
-/* ---------- Pager numbers (สไตล์รูปที่ 2) ---------- */
+/* ---------- Pager numbers ---------- */
 const pagerItems = computed(() => {
     const pages = totalPages.value
     const cur = page.value
@@ -534,5 +408,4 @@ const pagerItems = computed(() => {
     out.push(pages)
     return out
 })
-
 </script>
