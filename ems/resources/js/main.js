@@ -1,7 +1,9 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+// ไฟล์นี้ไม่ใช้แล้ว เพราะย้ายไปใช้ app.js แทน
+// import { createApp } from 'vue'
+// import App from './App.vue'
+// import router from './router'
 
-createApp(App).use(router).mount('#app')
+// createApp(App).use(router).mount('#app')
 
-import axios from 'axios'
-axios.defaults.withCredentials = true // ถ้าใช้ cookie-based auth
+// import axios from 'axios'
+// axios.defaults.withCredentials = true // ถ้าใช้ cookie-based auth

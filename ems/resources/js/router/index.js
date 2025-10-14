@@ -28,6 +28,7 @@ const routes = [
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
+  { path: '/history-category', component: Category, meta: { title: 'History Category' } },
   { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
   { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
 
