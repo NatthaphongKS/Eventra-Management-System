@@ -20,7 +20,7 @@
           <button type="submit" class="w-2/4 bg-red-700 text-white rounded-3xl p-3 mt-4 font-semibold">Login</button>
         </div>
       </form>
-      <p v-if="error">{{ error }}</p>
+      <p v-if="message">{{ message }}</p>
     </div>
     </div>
   </div>

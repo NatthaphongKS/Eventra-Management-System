@@ -102,7 +102,7 @@
         </tr>
 
         <tr v-if="paged.length === 0">
-            <td :colspan="9" style="text-align:center">No data found</td>
+            <td :colspan="8" style="text-align:center">No data found</td>
         </tr>
         </tbody>
     </table>
@@ -119,7 +119,7 @@
     </div>
   </div>
 
-  <!-- Summary/Graph Section -->
+  <!-- Summary/Graph Section --> <!-- Invicible -->
   <div class="card summary-card">
     <div class="summary-grid">
       <div class="summary-item">
@@ -145,7 +145,7 @@
     </div>
   </div>
 
-  <!-- Employee Table Section -->
+  <!-- Employee Table Section --> <!-- Invicible -->
   <div class="card employee-card">
     <h2 class="table-title employee-title">Employee</h2>
     <div class="table-wrap">
@@ -459,6 +459,14 @@ export default {
       const key = value.replace(/^-/, '');
       this.empSort = { value: key, order };
       this.empPage = 1;
+    },
+    onViewReport() {
+      // ฟังก์ชันสำหรับดูรายงาน
+      console.log('View Report clicked');
+    },
+    onExport() {
+      // ฟังก์ชันสำหรับ export ข้อมูล
+      console.log('Export clicked');
     },
   }
 };

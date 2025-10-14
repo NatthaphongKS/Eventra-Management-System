@@ -17,6 +17,6 @@ axios.defaults.withCredentials = true
 if (document.getElementById('reply-app')) {
   createApp(ReplyForm).mount('#reply-app')   // สำหรับหน้า reply
 } else if (document.getElementById('app')) {
-  createApp(App).mount('#app')               // สำหรับหน้าอื่น
+  createApp(App).use(router).mount('#app')   // สำหรับหน้าอื่น พร้อม router
 }
 
