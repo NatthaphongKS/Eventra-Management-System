@@ -1,21 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 // Pages
-import Home from '../pages/Home.vue'
+import Home from '../pages/Dashboard/Home.vue'
 import Login from '../pages/Login.vue'
-import AddEmployee from '../pages/add_employee.vue'
-import EventPage from '../pages/event_page.vue'
-import Employees from '../pages/employees_page.vue'
-import History from '../pages/delete_page.vue'
-import CreateEvent from '../pages/create_event.vue'
-import Category from '../pages/category_page.vue'
-import reply_form from '../pages/Reply_form.vue'
-import UploadFile from '../pages/upload_file.vue'
-import History_Employee from '../pages/history_employees.vue'
-import History_Event from '../pages/History_Event.vue'
-import EditEvent from '../pages/edit_event.vue'
-import EditEmployee from '../pages/edit_employee.vue'
-import EventDetails from '../pages/event_details.vue'
+import AddEmployee from '../pages/Employee/AddEmployeePage.vue'
+import EventPage from '../pages/Event/EventPage.vue'
+import Employees from '../pages/Employee/EmployeePage.vue'
+import History from '../pages/History/DeletePage.vue'
+import CreateEvent from '../pages/Event/CreateEvent.vue'
+import Category from '../pages/Category/CategoryPage.vue'
+import reply_form from '../pages/ReplyForm.vue'
+import UploadFile from '../pages/Employee/UploadFile.vue'
+import History_Employee from '../pages/History/HistoryEmployee.vue'
+import History_Event from '../pages/History/HistoryEvent.vue'
+// [เพิ่ม] หน้าแก้ไข
+import EditEvent from '../pages/Event/EditEvent.vue'
+import EditEmployee from '../pages/Employee/EditEmployeePage.vue'
+import EventDetails from '../pages/Event/EventDetail.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { title: 'Dashboard' } },

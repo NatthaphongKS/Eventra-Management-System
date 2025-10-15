@@ -240,7 +240,7 @@
 
 <script>
 import axios from 'axios';
-import ButtonSuccess from '../components/ButtonSuccess.vue';
+import ButtonSuccess from '../../components/ButtonSuccess.vue';
 export default {
     data() { // เก็บ state ของฟอร์มไว้ใน component
         return {

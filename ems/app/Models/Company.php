@@ -1,5 +1,8 @@
 <?php
-
+/*
+Model : Company
+Edit by : Chitdanai
+*/
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
