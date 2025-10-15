@@ -125,9 +125,9 @@ import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
 // components
-import FormField from '../components/FormField.vue'
-import InputPill from '../components/InputPill.vue'
-import DropdownPill from '../components/DropdownPill.vue'
+import FormField from '../../components/FormField.vue'
+import InputPill from '../../components/InputPill.vue'
+import DropdownPill from '../../components/DropdownPill.vue'
 
 const router = useRouter()
 const goImport = () => router.push({ name: 'upload-file' })
