@@ -190,7 +190,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
-import Upload from '@/components/Upload.vue'
+import Upload from '@/components/Input/Upload.vue'
 
 const emit = defineEmits(['cancel', 'uploaded', 'fileSelected'])
 
