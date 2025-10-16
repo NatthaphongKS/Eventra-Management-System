@@ -1,4 +1,63 @@
+<!-- src/components/Button/CancelButton.vue -->
 <template>
+  <header class="max-w-6xl mx-auto px-6 pt-6">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+  </header>
+
+  <button
+    type="button"
+    @click="$emit('click')"
+    class="inline-flex items-center gap-2.5 rounded-[17px] border border-neutral-200 bg-neutral-400 text-white
+           font-bold leading-none shadow-sm transition
+           hover:border-black/20 hover:shadow-md
+           active:translate-y-px active:shadow-inner
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35"
+    :class="[
+      size === 'sm' ? 'px-3.5 py-2 text-[13px]' :
+      size === 'lg' ? 'px-5 py-3 text-[15px]' :
+                       'px-7 py-2.5 text-[15px]',       // default md
+      block ? 'w-full justify-center' : ''
+    ]"
+  >
+    <span class="inline-flex" aria-hidden="true">
+      <!-- ใช้ Material Symbols ตามที่ให้มา -->
+      <span class="material-symbols-outlined text-[18px] leading-none">arrow_back</span>
+    </span>
+
+    <span class="inline-block">
+      <slot>Back</slot>
+    </span>
+  </button>
+</template>
+
+<script setup lang="ts">
+defineEmits<{ (e: 'click'): void }>()
+
+withDefaults(defineProps<{
+  size?: 'sm' | 'md' | 'lg'
+  block?: boolean
+}>(), {
+  size: 'md',
+  block: false
+})
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <template>
      <header class="max-w-6xl mx-auto px-6 pt-6">
 <link rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -9,7 +68,10 @@
     <span class="material-symbols-outlined">arrow_back</span>
     </span>
     <span class="btn-capsule__label"><slot>Back</slot></span>
+
   </button>
+  <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Default</button>
+
 </template>
 
 <style scoped>
@@ -39,4 +101,4 @@
 .btn-capsule.is-lg{ padding:12px 20px; font-size:15px; }
 .btn-capsule.is-block{ display:flex; width:100%; justify-content:center; }
 
-</style>
+</style> -->
