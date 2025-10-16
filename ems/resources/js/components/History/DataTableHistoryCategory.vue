@@ -4,7 +4,7 @@
             <thead>
                 <tr class="bg-neutral-200">
                     <th class="w-[6%] py-3 text-center">#</th>
-                    <th class="w-[40%] py-3 text-left">Category Name</th>
+                    <th class="w-[40%] py-3 text-left">Category</th>
                     <th class="w-[14%] py-3 text-center">Created By</th>
                     <th class="w-[14%] py-3 text-center">Created Date</th>
                     <th class="w-[13%] py-3 text-center">Deleted By</th>
