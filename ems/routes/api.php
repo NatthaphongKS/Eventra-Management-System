@@ -7,7 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HistoryEmployeeController;
 use App\Http\Controllers\HistoryEventController;
 use App\Http\Controllers\ReplyController;
-
+use App\Http\Controllers\FilterController;
 
 // API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
@@ -19,12 +19,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     // === Employee ===
     Route::get('/meta', [EmployeeController::class, 'meta']); //ข้อมูลที่ใช้สร้าง employee
     Route::get('/get-employees', [EmployeeController::class, 'index']); // ข้อมูล employee
-    Route::get('/employees',     [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
+    Route::get('/employees', [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']); // soft delete employee
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
     Route::get('/event-info', [EventController::class, 'index']); // ข้อมูล event
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
-    Route::get('/event/{id}',   [EventController::class, 'show']);
+    Route::get('/event/{id}', [EventController::class, 'show']);
     Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
 
 
@@ -39,13 +39,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
     // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
-    Route::patch('/event/{id}/deleted',     [EventController::class, 'deleted'])->whereNumber('id');
+    Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
     Route::post('/event-save', [EventController::class, 'store']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
 
     Route::post('/edit-event', [EventController::class, 'Update']); // บันทึกการแก้ไขอีเว้น
     Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']); // ข้อมูลอีเว้นนั้นๆ อ้างอิงจาก id
 
+    Route::get('/events', [EventController::class, 'index']);
 
 
     Route::post('categories', [CategoryController::class, 'store']);
