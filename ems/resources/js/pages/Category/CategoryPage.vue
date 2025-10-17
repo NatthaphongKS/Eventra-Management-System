@@ -148,9 +148,9 @@ import { ref, computed, onMounted } from "vue";
 import Swal from "sweetalert2";
 import axios from "axios";
 
-import CategorySort from "@/components/CategorySort.vue";
-import CategoryCreate from "@/components/CategoryCreate.vue";
-import CategoryEdit from "@/components/CategoryEdit.vue";
+import CategorySort from "@/components/Category/CategorySort.vue";
+import CategoryCreate from "@/components/Category/CategoryCreate.vue";
+import CategoryEdit from "@/components/Category/CategoryEdit.vue";
 
 /* Axios Config */
 axios.defaults.baseURL = "/api";
