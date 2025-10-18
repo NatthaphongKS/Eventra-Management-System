@@ -1,67 +1,101 @@
 <template>
-  <table class="min-w-full divide-y divide-gray-100">
-    <colgroup>
-      <col class="w-14" />
-      <col class="w-[48%]" />
-      <col class="w-[22%]" />
-      <col class="w-[22%]" />
-      <col class="w-16" />
-    </colgroup>
+  <!-- กล่องตาราง -->
+  <div class="overflow-hidden rounded-2xl border border-gray-200/60 bg-white">
+    <table class="min-w-full divide-y divide-gray-100">
+      <!-- สัดส่วนคอลัมน์ให้ใกล้เคียงภาพ -->
+      <colgroup>
+        <col class="w-14" />         <!-- # -->
+        <col class="w-[48%]" />      <!-- Category -->
+        <col class="w-[20%]" />      <!-- Created by -->
+        <col class="w-[20%]" />      <!-- Created date -->
+        <!-- <col class="w-16" />         Actions -->
+      </colgroup>
 
-    <thead class="bg-gray-50 text-gray-600">
-      <tr class="text-left text-sm">
-        <th class="w-14 px-6 py-3 font-semibold">#</th>
-        <th class="px-6 py-3 font-semibold">Category</th>
-        <th class="px-6 py-3 font-semibold">Created by</th>
-        <th class="px-6 py-3 font-semibold">Created date (D/M/Y)</th>
-        <th class="w-16 px-6 py-3"></th>
-      </tr>
-    </thead>
+      <!-- หัวตาราง -->
+      <thead class="bg-gray-50 text-gray-600">
+        <tr class="text-left text-sm">
+          <th class="px-6 py-3 font-semibold">#</th>
+          <th class="px-6 py-3 font-semibold">Category</th>
+          <th class="px-6 py-3 font-semibold text-center sm:text-left">Created by</th>
+          <th class="px-6 py-3 font-semibold text-center sm:text-left">Created date (D/M/Y)</th>
+          <th class="px-6 py-3 font-semibold text-center"></th>
+        </tr>
+      </thead>
 
-    <tbody class="divide-y divide-gray-100">
-      <tr
-        v-for="(row, idx) in pagedRows"
-        :key="row.id"
-        class="text-sm text-gray-700 hover:bg-gray-50"
-      >
-        <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
-        <td class="px-6 py-3 max-w-xs relative">
-          <div class="truncate-text" :title="row.name">{{ row.name }}</div>
-        </td>
-        <td class="px-6 py-3">{{ row.createdBy }}</td>
-        <td class="px-6 py-3">{{ formatDate(row.createdAt) }}</td>
-        <td class="px-6 py-3">
-          <button
-            class="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
-            @click="$emit('delete', row.id)"
-            aria-label="delete"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 3a1 1 0 00-1 1v1H5a1 1 0 100 2h.278l.84 12.255A2 2 0 008.114 22h7.772a2 2 0 001.996-2.745L18.722 7H19a1 1 0 100-2h-3V4a1 1 0 00-1-1H9zm2 4a1 1 0 112 0v10a1 1 0 11-2 0V7z"/>
-            </svg>
-          </button>
-        </td>
-      </tr>
+      <!-- เนื้อหา -->
+      <tbody class="divide-y divide-gray-100">
+        <tr
+          v-for="(row, idx) in pagedRows"
+          :key="row.id"
+          class="text-sm text-gray-800 hover:bg-gray-50"
+        >
+          <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
 
-      <tr v-if="pagedRows.length === 0">
-        <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
-          ไม่พบข้อมูลที่ค้นหา
-        </td>
-      </tr>
-    </tbody>
-  </table>
+          <td class="px-6 py-3">
+            <div class="truncate-text" :title="row.name">{{ row.name }}</div>
+          </td>
+
+          <td class="px-6 py-3 text-center sm:text-left">
+            {{ row.createdBy || '-' }}
+          </td>
+
+          <td class="px-6 py-3 text-center sm:text-left">
+            {{ formatDate(row.createdAt) }}
+          </td>
+
+          <!-- Action (ขวาสุด) -->
+          <td class="px-3 py-2">
+            <div class="flex items-center justify-center gap-2">
+              <!-- Edit -->
+              <button
+                class="grid h-8 w-8 place-items-center rounded-full text-gray-500 hover:bg-emerald-50 hover:text-emerald-600"
+                @click="$emit('edit', row)"
+                title="Edit"
+                aria-label="edit"
+              >
+                <span class="material-symbols-outlined text-[20px]">edit</span>
+              </button>
+
+              <!-- Delete -->
+              <button
+                class="grid h-8 w-8 place-items-center rounded-full text-gray-500 hover:bg-red-50 hover:text-red-600"
+                @click="$emit('delete', row.id)"
+                title="Delete"
+                aria-label="delete"
+              >
+                <span class="material-symbols-outlined text-[20px]">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- ว่าง -->
+        <tr v-if="pagedRows.length === 0">
+          <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+            ไม่พบข้อมูลที่ค้นหา
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <!-- Footer -->
-  <div class="mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-    <div class="flex items-center gap-2 text-sm text-gray-600">
+  <div class="mt-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+    <div class="flex items-center gap-2 text-sm text-gray-700">
       <span>แสดง</span>
-      <select
-        :value="pageSize"
-        @change="$emit('update:pageSize', Number(($event.target as HTMLSelectElement).value))"
-        class="rounded-xl border border-gray-200 px-2.5 py-1.5 outline-none"
-      >
-        <option v-for="n in [5,10,20,50]" :key="n" :value="n">{{ n }}</option>
-      </select>
+
+      <!-- select สไตล์พิลขอบแดง -->
+      <div class="relative">
+        <select
+          :value="pageSize"
+          @change="$emit('update:pageSize', Number(($event.target as HTMLSelectElement).value))"
+          class="appearance-none rounded-full border border-[#C91818]/70 bg-white px-3 pr-8 py-1.5 outline-none focus:ring-2 focus:ring-rose-200"
+        >
+          <option v-for="n in [5,10,20,50]" :key="n" :value="n">{{ n }}</option>
+        </select>
+        <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#C91818]">▾</span>
+      </div>
+
       <span>{{ visibleCountText }}</span>
     </div>
 
@@ -88,6 +122,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+/** ===== Types ===== */
 type Row = {
   id: number;
   name: string;
@@ -95,11 +130,12 @@ type Row = {
   createdAt: string | null;
 };
 
+/** ===== Props / Emits ===== */
 const props = defineProps<{
-  rows: Row[];                // รับรายการที่ "จัดเรียง + กรอง" แล้วจากหน้าแม่
+  rows: Row[];                // ข้อมูลที่ถูกกรอง/เรียงแล้วจากหน้าแม่
   page: number;
   pageSize: number;
-  startIndex: number;         // เอามาคำนวณเลขลำดับให้ต่อเนื่อง
+  startIndex: number;         // ใช้ทำ running number
   formatDate: (iso?: string | null) => string;
 }>();
 
@@ -107,8 +143,10 @@ defineEmits<{
   (e:"update:page", v:number): void;
   (e:"update:pageSize", v:number): void;
   (e:"delete", id:number): void;
+  (e:"edit", row: Row): void;
 }>();
 
+/** ===== Derived ===== */
 const total = computed(() => props.rows.length);
 const totalPages = computed(() => Math.ceil(total.value / props.pageSize));
 const endIndex = computed(() => Math.min(props.startIndex + props.pageSize, total.value));
@@ -123,11 +161,10 @@ const visibleCountText = computed(() =>
 </script>
 
 <style scoped>
-.truncate-text {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  max-width: 600px;
-  cursor: pointer;
+.truncate-text{
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  max-width: 680px; /* ให้ฟีลเหมือนภาพ */
 }
 </style>
