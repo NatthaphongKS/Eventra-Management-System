@@ -397,9 +397,9 @@ import SelectField from "@/components/SelectField.vue";
 // คอมโพเนนต์เมนูเรียงลำดับ
 import SortMenu from "@/components/SortMenu.vue";
 // โมดัลยืนยันลบ
-import ConfirmDelete from "@/components/ConfirmDelete.vue";
+import ConfirmDelete from "@/components/Alert/ConfirmDelete.vue";
 // โมดัลแจ้งลบสำเร็จ
-import DeleteSucces from "@/components/EmloyeeDeleteSuccess.vue";
+import DeleteSucces from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
 
 // ตั้งค่า base URL ของ axios
 axios.defaults.baseURL = "/api";
