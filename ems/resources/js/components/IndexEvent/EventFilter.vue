@@ -8,10 +8,10 @@
             </svg>
             <span class="text-base font-medium">Filter</span>
             <!-- badge นับจำนวนเงื่อนไขที่เลือก -->
-            <span v-if="badgeCount"
+            <!-- <span v-if="badgeCount"
                 class="ml-1 min-w-5 text-center rounded-full bg-slate-900 text-white text-xs px-1.5 py-0.5">
                 {{ badgeCount }}
-            </span>
+            </span> -->
         </button>
 
         <!-- กล่อง Dropdown -->
