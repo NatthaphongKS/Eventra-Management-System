@@ -29,6 +29,7 @@
         </div>
 
         <!-- แสดงข้อมูลประกอบ (อ่านอย่างเดียว) -->
+         <!--
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <span class="block text-gray-500">Created by</span>
@@ -39,7 +40,9 @@
             <span class="font-medium text-gray-800">{{ formatDate(createdAt) }}</span>
           </div>
         </div>
+        -->
       </div>
+
 
       <div class="mt-6 flex justify-between">
         <button
