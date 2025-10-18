@@ -24,13 +24,12 @@
         <EventSort v-model="selectedSort" :options="sortOptions" @change="onSortChange" />
 
         <!-- Summary + Add -->
-        <span class="ml-4 text-xs text-slate-500 cursor-default select-none">ทั้งหมด {{ filtered.length }}
-            รายการ</span>
+
         <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
          bg-[#b91c1c] px-4 font-semibold text-white
          hover:bg-[#991b1b] focus:outline-none
          focus:ring-2 focus:ring-red-300">
-            + Add New
+            + Add
         </router-link>
         <!-- ==== Filter Panel ==== -->
         <div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
