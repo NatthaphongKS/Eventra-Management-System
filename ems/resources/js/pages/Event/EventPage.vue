@@ -18,7 +18,6 @@
 
         <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
         <!-- Toolbar -->
-         <button class="bg-sky-600 disabled:bg-black hover:opacity-0 hover:animate-spin duration-[2000ms] hover:ring transition-all hover:cursor-not-allowed " :disabled="false">hello475</button>
         <EventFilter v-model="filters" :categories="categories" @apply="page = 1" />
 
         <EventSort v-model="selectedSort" :options="sortOptions" @change="onSortChange" />
