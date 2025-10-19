@@ -17,12 +17,16 @@ import History_Event from '../pages/History/HistoryEvent.vue'
 import EditEvent from '../pages/Event/EditEvent.vue'
 import EditEmployee from '../pages/Employee/EditEmployeePage.vue'
 import EventDetails from '../pages/Event/EventDetail.vue'
+import EventCheckIn from '../pages/Event/EventCheckIn.vue'
+
 
 const routes = [
+
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
-  { path: '/edit-event/:id', component: EditEvent, meta: { title: 'editEvent' } },
+  { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'EditEvent' } },
+  { path: '/EventCheckIn/:id', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
   { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event' } },
@@ -42,6 +46,8 @@ const routes = [
   { path: '/events/:id', name: 'event.details', component: EventDetails, props: true, meta: { title: 'Event Details' } },
   // ✅ เพิ่ม redirect กันพลาด (ถ้าใครไป /event/2 จะถูกส่งมาที่ /events/2)
   { path: '/event/:id', redirect: to => ({ name: 'event.details', params: { id: to.params.id } }) },
+
+
 ]
 
 export default createRouter({
