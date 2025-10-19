@@ -1,17 +1,20 @@
 <template>
-    <div class="overflow-hidden rounded-2xl border border-slate-200">
-        <table class="w-full table-auto">
+    <div class="overflow-hidden rounded-2xl border border-neutral-200 stroke-neutral-200">
+        <table class="w-full table-auto  ">
             <thead>
-                <tr class="bg-slate-50">
-                    <th class="w-12 py-3 text-center">#</th>
-                    <th class="w-[26%] py-3 text-center">Event</th>
-                    <th class="w-[14%] py-3 text-center">Category</th>
-                    <th class="w-[110px] py-3 text-center whitespace-nowrap">Date (D/M/Y)</th>
-                    <th class="w-[92px] py-3 text-center whitespace-nowrap">Time</th>
-                    <th class="w-20 py-3 text-center">Invited</th>
-                    <th class="w-20 py-3 text-center">Accepted</th>
-                    <th class="w-[110px] py-3 text-center">Status</th>
-                    <th class="w-28 py-3 text-center">Action</th>
+                <tr class="bg-neutral-100">
+                    <th class="w-12 py-3 text-center text-neutral-800 font-semibold font-poppins">#</th>
+                    <th class="w-[26%] py-3 text-center text-neutral-800 font-semibold font-poppins">Event</th>
+                    <th class="w-[14%] py-3 text-center text-neutral-800 font-semibold">Category</th>
+                    <th
+                        class="w-[110px] py-3 text-center whitespace-nowrap text-neutral-800 font-semibold font-poppins">
+                        Date (D/M/Y)</th>
+                    <th class="w-[92px] py-3 text-center whitespace-nowrap text-neutral-800 font-semibold font-poppins">
+                        Time</th>
+                    <th class="w-20 py-3 text-center text-neutral-800 font-semibold font-poppins">Invited</th>
+                    <th class="w-20 py-3 text-center text-neutral-800 font-semibold font-poppins">Accepted</th>
+                    <th class="w-[110px] py-3 text-center text-neutral-800 font-semibold font-poppins">Status</th>
+                    <th class="w-28 py-3 text-center text-neutral-800 font-semibold font-poppins">Action</th>
                 </tr>
             </thead>
 
@@ -19,53 +22,54 @@
                 <tr v-for="(eventItem, eventIndex) in pagedRows" :key="eventItem.id ?? eventIndex"
                     class="odd:bg-white hover:bg-slate-100">
                     <!-- ลำดับ -->
-                    <td class="px-2 py-2 text-center text-sm text-slate-700 border-t">
+                    <td class="px-2 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
                         {{ rowStartIndex + eventIndex + 1 }}
                     </td>
 
                     <!-- ชื่ออีเวนต์ -->
-                    <td class="px-3 py-2 text-center border-t">
-                        <span class="block truncate text-sm text-slate-800">
+                    <td class="px-3 py-2 text-center border-t font-medium font-poppins">
+                        <span class="block truncate  text-slate-800">
                             {{ eventItem.evn_title || 'N/A' }}
                         </span>
                     </td>
 
                     <!-- หมวดหมู่ -->
-                    <td class="px-3 py-2 text-center border-t">
-                        <span class="block truncate text-sm text-slate-800">
+                    <td class="px-3 py-2 text-center border-t font-medium font-poppins">
+                        <span class="block truncate  text-slate-800">
                             {{ eventItem.cat_name || 'N/A' }}
                         </span>
                     </td>
 
                     <!-- วันที่ -->
-                    <td class="px-3 py-2 text-center text-sm text-slate-700 border-t">
+                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
                         {{ formatDate(eventItem.evn_date) }}
                     </td>
 
                     <!-- เวลา -->
-                    <td class="px-3 py-2 text-center text-sm text-slate-700 border-t whitespace-nowrap">
+                    <td
+                        class="px-3 py-2 text-center text-neutral-800 border-t whitespace-nowrap font-medium font-poppins">
                         {{ timeText(eventItem.evn_timestart, eventItem.evn_timeend) }}
                     </td>
 
                     <!-- จำนวนเชิญ -->
-                    <td class="px-3 py-2 text-center text-sm text-slate-700 border-t">
+                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
                         {{ eventItem.evn_num_guest ?? '0' }}
                     </td>
 
                     <!-- จำนวนตอบรับ -->
-                    <td class="px-3 py-2 text-center text-sm text-slate-700 border-t">
+                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
                         {{ eventItem.evn_sum_accept ?? 'N/A' }}
                     </td>
 
                     <!-- สถานะ -->
-                    <td class="px-3 py-2 text-center border-t">
+                    <td class="px-3 py-2 text-center border-t font-medium font-poppins">
                         <span :class="badgeClass(eventItem.evn_status)">
                             {{ eventItem.evn_status || 'N/A' }}
                         </span>
                     </td>
 
                     <!-- Action -->
-                    <td class="px-3 py-2 text-center border-t">
+                    <td class="px-3 py-2 text-center  border-t">
                         <div class="flex items-center justify-center gap-1.5">
                             <button @click="$emit('edit', eventItem.id)"
                                 class="rounded-lg p-1.5 hover:bg-slate-100 focus:outline-none  " title="Edit">
@@ -109,23 +113,35 @@
         </table>
     </div>
     <!-- Footer (limit/page + pagination + ช่วงข้อมูล) -->
-    <div class="flex flex-col gap-3 border-t bg-white px-3 py-3">
+    <div class="flex flex-col gap-3 bg-white px-3 py-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <!-- ซ้าย: limit/page -->
-            <div class="flex items-center gap-2 text-sm text-slate-700">
+            <div class="flex items-center gap-2 font-regular font-poppins">
                 <span>แสดง</span>
-                <select class="rounded-lg border px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-rose-200"
-                    :value="innerPageSize" @change="onChangePageSize">
-                    <option v-for="opt in pageSizeOptions" :key="opt" :value="opt">{{ opt }}</option>
-                </select>
-                <span>{{ rowStartIndex + 1  }}- {{pagedRows.length +rowStartIndex }} รายการ</span>
-                <div class="text-xs text-slate-500">
+
+                <!-- ⬇️ กล่อง select + ลูกศรแดง -->
+                <div class="relative inline-block">
+                    <select class="appearance-none rounded-[20px] border border-red-700 bg-white px-2 py-1 pr-8
+                 focus:outline-none focus:ring-2 focus:ring-rose-200 outline-red-700" :value="innerPageSize"
+                        @change="onChangePageSize">
+                        <option v-for="opt in pageSizeOptions" :key="opt" :value="opt" class="px-2 py-1 pr-8">{{ opt }}</option>
+                    </select>
+                    <!-- ลูกศรลงสีแดง -->
+                    <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
+                </div>
+
+                <span>{{ rowStartIndex + 1 }}-{{ pagedRows.length + rowStartIndex }} </span>
+                <div class="font-regular font-poppins">
                     {{ displayFrom }}{{ displayTo }} จาก {{ totalItems }} รายการ
                 </div>
             </div>
-
         </div>
     </div>
+
 
     <!-- ===== Pagination ===== -->
     <div class="mt-4 flex items-center justify-center gap-3">
@@ -267,7 +283,7 @@ function badgeClass(status) {
         case 'done': return `${base} bg-emerald-100 text-emerald-700`
         case 'upcoming': return `${base} bg-amber-200 text-amber-900`
         case 'ongoing': return `${base} bg-sky-200 text-sky-800`
-        default: return `${base} bg-slate-200 text-slate-700`
+        default: return `${base} bg-slate-200 text-neutral-800`
     }
 }
 </script>

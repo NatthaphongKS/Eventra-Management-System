@@ -3,8 +3,8 @@
   <div ref="root" class="relative inline-block">
     <button
       type="button"
-      class="inline-flex h-11 items-center gap-2 px-3 text-slate-700 font-medium
-             hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-200 rounded-md"
+      class="inline-flex h-11 items-center gap-2 px-3 text-neutral-800 font-medium font-poppins
+             hover:text-slate-900 focus:outline-none  rounded-md "
       @click="open = !open"
     >
       <!-- ใช้สีตามตัวอักษร เพื่อมองเห็นชัดขึ้น -->

@@ -2,7 +2,8 @@
     <div class="relative inline-block text-left" ref="root">
         <!-- ปุ่ม Filter -->
         <button @click="isOpen = !isOpen"
-            class="inline-flex items-center gap-2 px-2 py-1 text-slate-700 hover:text-slate-900 focus:outline-none rounded-md">
+            class="inline-flex items-center gap-2 px-2 py-1 text-neutral-800 hover:text-slate-900 focus:outline-none rounded-md
+            font-medium font-poppins">
             <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="#434343">
                 <path d="M400-240v-80h160v80H400ZM240-440v-80h480v80H240ZM120-640v-80h720v80H120Z" />
             </svg>
@@ -18,32 +19,32 @@
         <div v-show="isOpen"
             class="absolute left-0 mt-2 w-60 rounded-xl border border-slate-200 bg-white shadow-lg z-20 p-3">
             <!-- Filter All -->
-            <label class="flex items-center gap-2 mb-2">
+            <label class="flex items-center gap-2 mb-2 ">
                 <input type="checkbox" class="accent-[#b91c1c] h-4 w-4 rounded" :checked="isAllSelected"
                     @change="toggleAll" />
-                <span>Filter All</span>
+                <span class="font-regular font-poppins uppercase text-neutral-800">Filter All</span>
             </label>
 
             <!-- Category -->
             <div class="mb-3">
-                <div class="font-semibold text-xs uppercase text-slate-500 mb-1">Category</div>
+                <div class="font-regular font-poppins text-neutral-800 uppercase mb-1">Category</div>
                 <div class="flex flex-col gap-1">
                     <label v-for="c in categories" :key="c.id" class="flex items-center gap-2">
                         <input type="checkbox" class="accent-[#b91c1c] h-4 w-4 rounded"
                             :checked="local.category.has(String(c.id))" @change="toggle('category', String(c.id))" />
-                        <span>{{ c.cat_name }}</span>
+                        <span class="font-regular font-poppins text-neutral-800">{{ c.cat_name }}</span>
                     </label>
                 </div>
             </div>
 
             <!-- Status -->
             <div>
-                <div class="font-semibold text-xs uppercase text-slate-500 mb-1">Status</div>
+                <div class="font-regular font-poppins uppercase text-neutral-800 mb-1">Status</div>
                 <div class="flex flex-col gap-1">
                     <label v-for="s in statusOptions" :key="s.value" class="flex items-center gap-2">
                         <input type="checkbox" class="accent-[#b91c1c] h-4 w-4 rounded"
                             :checked="local.status.has(s.value)" @change="toggle('status', s.value)" />
-                        <span>{{ s.label }}</span>
+                        <span class="font-regular font-poppins text-neutral-800">{{ s.label }}</span>
                     </label>
                 </div>
             </div>

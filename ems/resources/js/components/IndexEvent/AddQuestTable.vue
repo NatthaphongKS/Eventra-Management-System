@@ -1,8 +1,8 @@
 <template>
-  <div class="overflow-hidden rounded-2xl border border-slate-200">
+  <div class="overflow-hidden rounded-2xl border border-neutral-200 stroke-neutral-200">
     <table class="w-full table-auto">
       <thead>
-        <tr class="bg-slate-50 text-slate-700">
+        <tr class="bg-slate-50 text-neutral-800">
           <th class="w-10 py-3 text-center">
             <!-- Select all -->
             <input
@@ -12,13 +12,13 @@
               @change="toggleAll($event)"
             />
           </th>
-          <th class="w-12 py-3 text-center">#</th>
-          <th class="w-28 py-3 text-left pl-3">ID</th>
-          <th class="py-3 text-left">Name</th>
-          <th class="w-28 py-3 text-left">Nickname</th>
-          <th class="w-40 py-3 text-left">Department</th>
-          <th class="w-40 py-3 text-left">Team</th>
-          <th class="w-44 py-3 text-left">Position</th>
+          <th class="w-12 py-3 text-center text-neutral-800 font-semibold font-poppins">#</th>
+          <th class="w-28 py-3 text-left pl-3 text-neutral-800 font-semibold font-poppins">ID</th>
+          <th class="py-3 text-left text-neutral-800 font-semibold font-poppins">Name</th>
+          <th class="w-28 py-3 text-left text-neutral-800 font-semibold font-poppins">Nickname</th>
+          <th class="w-40 py-3 text-left text-neutral-800 font-semibold font-poppins">Department</th>
+          <th class="w-40 py-3 text-left text-neutral-800 font-semibold font-poppins">Team</th>
+          <th class="w-44 py-3 text-left text-neutral-800 font-semibold font-poppins">Position</th>
         </tr>
       </thead>
 
@@ -28,7 +28,7 @@
           :key="employee.id ?? employeeIndex"
           :class="[
             'border-t',
-            isSelected(employee.id) ? 'bg-rose-50' : (employeeIndex % 2 ? 'bg-slate-50' : 'bg-white'),
+            isSelected(employee.id) ? 'bg-red-100' :'bg-white',
             'hover:bg-slate-100'
           ]"
         >
@@ -44,36 +44,36 @@
           </td>
 
           <!-- running number -->
-          <td class="px-2 py-2 text-center text-sm text-slate-700">
+          <td class="px-2 py-2 text-center text-sm text-neutral-800 font-medium font-poppins">
             {{ rowStartIndex + employeeIndex + 1 }}
           </td>
 
           <!-- columns -->
-          <td class="px-3 py-2 text-sm text-slate-800">{{ employee.emp_id || '-' }}</td>
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">{{ employee.emp_id || '-' }}</td>
 
-          <td class="px-3 py-2 text-sm text-slate-800">
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">
             {{ employee.full_name || '-' }}
           </td>
 
-          <td class="px-3 py-2 text-sm text-slate-800">
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">
             {{ employee.emp_nickname || '-' }}
           </td>
 
-          <td class="px-3 py-2 text-sm text-slate-800">
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">
             {{ employee.department_name || '-' }}
           </td>
 
-          <td class="px-3 py-2 text-sm text-slate-800">
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">
             {{ employee.team_name || '-' }}
           </td>
 
-          <td class="px-3 py-2 text-sm text-slate-800">
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">
             {{ employee.position_name || '-' }}
           </td>
         </tr>
 
         <tr v-if="normalizedRows.length === 0">
-          <td :colspan="8" class="px-3 py-6 text-center text-slate-600">
+          <td :colspan="8" class="px-3 py-6 text-center text-neutral-800 font-medium font-poppins">
             No data found
           </td>
         </tr>
