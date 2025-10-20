@@ -52,7 +52,7 @@
         </table>
     </div>
     <!-- Footer (limit/page + pagination + ช่วงข้อมูล) -->
-    <div class="flex flex-col gap-3 border-t bg-white px-3 py-3">
+    <div class="flex flex-col gap-3 bg-white px-3 py-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <!-- ซ้าย: limit/page -->
             <div class="flex items-center gap-2 text-sm text-slate-700">
