@@ -5,14 +5,14 @@
                 <tr class="bg-neutral-200">
                     <th class="w-[4%] py-3 text-center">#</th>
                     <th class="w-[8%] py-3 text-center">ID</th>
-                    <th class="w-[16%] py-3 text-left">Name</th>
+                    <th class="w-[14%] py-3 text-left">Name</th>
                     <th class="w-[9%] py-3 text-center">Nickname</th>
                     <th class="w-[9%] py-3 text-left">Department</th>
                     <th class="w-[9%] py-3 text-left">Team</th>
                     <th class="w-[9%] py-3 text-left">Position</th>
                     <th class="w-[10%] py-3 text-center">Created By</th>
                     <th class="w-[10%] py-3 text-center">Created Date</th>
-                    <th class="w-[6%] py-3 text-center">Deleted By</th>
+                    <th class="w-[8%] py-3 text-center">Deleted By</th>
                     <th class="w-[10%] py-3 text-center">Deleted Date</th>
                 </tr>
             </thead>
@@ -27,7 +27,7 @@
                             {{ emp.employeeID || 'N/A' }}
                         </span>
                     </td>
-                    <td class="w-[16%] py-2 text-left border-t">
+                    <td class="w-[14%] py-2 text-left border-t">
                         <span class="block truncate text-sm text-slate-800">
                             {{ emp.employeeName || 'N/A' }}
                         </span>
@@ -62,7 +62,7 @@
                             {{ formatDate(emp.employeeCreatedDate) || 'N/A' }}
                         </span>
                     </td>
-                    <td class="w-[6%] py-2 text-center border-t">
+                    <td class="w-[8%] py-2 text-center border-t">
                         <span class="block truncate text-sm text-slate-800">
                             {{ emp.employeeDeletedPerson || 'N/A' }}
                         </span>
