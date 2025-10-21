@@ -4,7 +4,6 @@
 <div class="dashboard-grid">
   <!-- Event Table Section -->
   <div class="card event-card">
-    <h2 class="table-title event-title">Event</h2>
     <div class="toolbar toolbar--pill">
       <!-- กลุ่ม search + ปุ่มค้นหาแดง -->
       <div class="search-group">
@@ -63,7 +62,7 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
           <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
         </svg>
-        <span>Export</span>
+        <span>Show Data</span>
       </button>
     </div>
     <div class="table-wrap">
@@ -84,7 +83,8 @@
         </thead>
 
         <tbody>
-          <tr v-for="(ev, i) in paged" :key="ev.id">
+          <tr v-for="(ev, i) in paged" :key="ev.id" 
+              :class="{ 'selected-row': selectedEventId === (ev.id || ev.evn_id) }">
             <td class="col-idx">
               <input 
                 type="radio" 
@@ -93,7 +93,6 @@
                 @change="onEventSelect(ev)"
                 name="selectedEvent"
               />
-              <br><small style="color: #999; font-size: 10px;">ID: {{ ev.id || ev.evn_id }}</small>
             </td>
             <td class="col-title"><span class="truncate">{{ ev.evn_title || 'N/A' }}</span></td>
             <td class="col-cat"><span class="truncate">{{ ev.cat_name || 'N/A' }}</span></td>
@@ -164,41 +163,32 @@
       <!-- Status Cards Row -->
       <div class="status-cards-row">
         <AttendingCard 
-          :eventId="selectedEventId" 
-          :value="chartData.attending || 0" 
+          :attending="chartData.attending || 0" 
           :total="(chartData.attending + chartData.notAttending + chartData.pending) || 0"
-          @show-employees="showEmployeesByStatus"
+          :loading="isLoading"
+          :isClickable="true"
+          @showAttendingEmployees="showEmployeesByStatus('attending')"
         />
         <NotAttendingCard 
-          :eventId="selectedEventId" 
-          :value="chartData.notAttending || 0" 
+          :notAttending="chartData.notAttending || 0" 
           :total="(chartData.attending + chartData.notAttending + chartData.pending) || 0"
-          @show-employees="showEmployeesByStatus"
+          :loading="isLoading"
+          :isClickable="true"
+          @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
         />
         <PendingCard 
-          :eventId="selectedEventId" 
-          :value="chartData.pending || 0" 
+          :pending="chartData.pending || 0" 
           :total="(chartData.attending + chartData.notAttending + chartData.pending) || 0"
-          @show-employees="showEmployeesByStatus"
+          :loading="isLoading"
+          :isClickable="true"
+          @showPendingEmployees="showEmployeesByStatus('pending')"
         />
       </div> <!-- Close status-cards-row -->
     </div>
   </div>
 
-  <!-- ข้อความแจ้งเมื่อยังไม่ได้เลือกกิจกรรม -->
-  <div v-if="!selectedEventId" class="card no-event-selected">
-    <div class="text-center">
-      <div class="icon-placeholder">📈</div>
-      <h3>กรุณาเลือกกิจกรรมเพื่อดูกราฟและข้อมูลสถิติ</h3>
-      <p class="text-muted">เลือกจากตารางกิจกรรมด้านบนเพื่อแสดงข้อมูลรายละเอียด</p>
-    </div>
-  </div>
-
   <!-- Employee Table Section - แสดงเมื่อกดการ์ด -->
   <div v-if="showEmployeeTable && selectedEventId" class="simple-table-container">
-    <div class="employee-table-header">
-      <button @click="hideEmployeeTable" class="close-table-btn" title="ปิดตาราง">✕</button>
-    </div>
     <div class="table-wrap">
       <table class="table compact">
         <thead>
@@ -451,11 +441,6 @@ export default {
       const end = start + this.itemsPerPage;
       return this.filteredEmployeesForTable.slice(start, end);
     },
-    paginationText() {
-      const start = this.totalEmployees > 0 ? (this.currentPage - 1) * this.itemsPerPage + 1 : 0;
-      const end = Math.min(this.currentPage * this.itemsPerPage, this.totalEmployees);
-      return `${start}-${end} จาก ${this.totalEmployees} รายการ`;
-    },
     employeePaginationText() {
       const start = this.totalEmployees > 0 ? (this.currentPage - 1) * this.itemsPerPage + 1 : 0;
       const end = Math.min(this.currentPage * this.itemsPerPage, this.totalEmployees);
@@ -520,9 +505,6 @@ export default {
       }
       const start = (this.empPage - 1) * this.empPageSize;
       return arr.slice(start, start + this.empPageSize);
-    },
-    empTotalPages() {
-      return Math.ceil(this.employees.length / this.empPageSize);
     },
 
     // Get selected event data
@@ -652,14 +634,12 @@ export default {
     },
 
     editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
-      console.log("Edit event ID:", id);
       this.$router.push(`/edit-event/${id}`)
     },
     // ไว้ให้ปุ่มไม่ error (ต่อยอดภายหลังได้)
     toggleFilter() { this.showFilter = !this.showFilter; },
     toggleSort() { this.showSort = !this.showSort; },
 
-    goToPage(p) { if (p < 1) p = 1; if (p > this.totalPages) p = this.totalPages || 1; this.page = p; },
     async deleteEvent(id) {
       if (confirm("Delete?")) {
         try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
@@ -689,11 +669,9 @@ export default {
     },
     onViewReport() {
       // ฟังก์ชันสำหรับดูรายงาน
-      console.log('View Report clicked');
     },
     onExport() {
       // ฟังก์ชันสำหรับ export ข้อมูล
-      console.log('Export clicked');
     },
 
     // Event selection methods
@@ -703,7 +681,6 @@ export default {
       
       // ลองหา ID field ที่ถูกต้อง - ใช้ id แทน evn_id
       const eventId = event.id || event.evn_id;
-      console.log('Event ID found:', eventId);
       
       if (!eventId) {
         console.error('No event ID found in:', event);
@@ -711,13 +688,11 @@ export default {
       }
       
       this.selectedEventId = eventId;
-      console.log('selectedEventId set to:', this.selectedEventId);
       this.loadEventStatistics(eventId);
     },
 
     async loadEventStatistics(eventId) {
       try {
-        console.log('Loading stats for event ID:', eventId);
         // Fetch event participants data 
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const response = await axios.get(`/event/${eventId}/participants`, {
@@ -817,26 +792,6 @@ export default {
       }
     },
 
-    hideEmployeeTable() {
-      this.showEmployeeTable = false;
-      this.employeeTableType = null;
-      this.filteredEmployeesForTable = [];
-    },
-
-    formatDate(dateString) {
-      if (!dateString) return 'ไม่ระบุวันที่';
-      
-      const date = new Date(dateString);
-      const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        locale: 'th-TH'
-      };
-      
-      return date.toLocaleDateString('th-TH', options);
-    },
-
     mapStatusForAPI(status) {
       const statusMap = {
         'attending': 'accept',
@@ -861,14 +816,14 @@ export default {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(34,197,94,0.06);
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 
 .employee-table .badge {
   min-width: 70px;
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
   text-transform: lowercase;
@@ -889,6 +844,9 @@ export default {
   flex-direction: column;
   gap: 2.5rem;
   width: 100%;
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 1rem;
 }
 /* Card สำหรับ Event */
 .event-card {
@@ -896,6 +854,7 @@ export default {
   border-radius: 18px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   padding: 2rem 2rem 1.5rem 2rem;
+  border: 1px solid #f1f5f9;
 }
 /* Card สำหรับ Summary/Graph */
 .summary-card {
@@ -920,7 +879,7 @@ export default {
 .donut-svg {
   width: 100%;
   height: 100%;
-  transform: rotate(-90deg);
+  transform: rotate(0deg);
 }
 
 .donut-ring {
@@ -1183,29 +1142,6 @@ export default {
   box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
-/* Empty state styles */
-.no-event-selected {
-  padding: 60px 40px;
-  text-align: center;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 2px dashed #dee2e6;
-  border-radius: 16px;
-  margin: 20px 0;
-}
-
-.icon-placeholder {
-  font-size: 4rem;
-  margin-bottom: 20px;
-  opacity: 0.6;
-}
-
-.no-event-selected h3 {
-  color: #6c757d;
-  margin-bottom: 12px;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
 .text-muted {
   color: #adb5bd !important;
   font-size: 1rem;
@@ -1217,49 +1153,45 @@ export default {
 
 
 
-.employee-table-header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #e5e7eb;
+/* Input styling */
+input[type="radio"],
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
   position: relative;
+  transition: all 0.2s ease;
 }
 
-.employee-table-header::after {
+input[type="radio"]:checked,
+input[type="checkbox"]:checked {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+input[type="radio"]:checked::after,
+input[type="checkbox"]:checked::after {
   content: '';
   position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 60px;
-  height: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 1px;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
-.close-table-btn {
-  background: #f3f4f6;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: #6b7280;
-  transition: all 0.2s;
-}
-
-.close-table-btn:hover {
-  background: #e5e7eb;
-  color: #374151;
-}
-
-input[type="radio"] {
-  accent-color: #e91e63;
+input[type="radio"]:hover,
+input[type="checkbox"]:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.1);
 }
 .employee-card {
   background: #fff;
@@ -1425,6 +1357,15 @@ tbody tr:nth-child(odd){ background:#fff; }
 tbody tr:nth-child(even){ background:#fafafa; }
 tbody tr:hover{ background:#f3f4f6; }
 
+/* Selected row highlighting */
+tbody tr.selected-row { 
+  background: #fee2e2 !important; 
+  border-left: 4px solid #dc2626;
+}
+tbody tr.selected-row:hover { 
+  background: #fecaca !important; 
+}
+
 /* Text overflow */
 .truncate{ display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
@@ -1434,19 +1375,19 @@ tbody tr:hover{ background:#f3f4f6; }
 .btn-link.danger{ color:#ef4444; }
 
 /* Badge */
-.badge { display:inline-block; min-width:70px; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700; text-transform:lowercase; background:#e5e7eb; color:#374151; }
+.badge { display:inline-block; min-width:70px; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:700; text-transform:lowercase; background:#e5e7eb; color:#374151; }
 .badge.deleted{ background:#fee2e2; color:#991b1b; }
 .badge.done{ background:#dcfce7; color:#166534; }
 .badge.upcoming{ background:#f4ce99; color:#714601; }
 
 /* Pager */
 .pager2 { display:flex; gap:.5rem; align-items:center; justify-content:center; margin-top:14px; }
-.page-btn { min-width:36px; height:36px; padding:0 10px; border-radius:10px; border:2px solid #b71c1c; background:transparent; color:#b71c1c; font-weight:700; line-height:1; }
-.page-btn.active { background:#b71c1c; color:#fff; border-color:#b71c1c; }
-.page-btn:hover:not(.active){ background:#fff5f5; }
-.arrow-btn { width:36px; height:36px; border-radius:10px; border:none; background:#b71c1c; color:#fff; font-weight:700; }
+.page-btn { min-width:36px; height:36px; padding:0 10px; border-radius:10px; border:2px solid #dc2626; background:transparent; color:#dc2626; font-weight:700; line-height:1; }
+.page-btn.active { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-btn:hover:not(.active){ background:#fee2e2; }
+.arrow-btn { width:36px; height:36px; border-radius:10px; border:none; background:#dc2626; color:#fff; font-weight:700; }
 .arrow-btn:disabled{ opacity:.5; cursor:not-allowed; }
-.dots{ padding:0 6px; color:#b71c1c; font-weight:700; }
+.dots{ padding:0 6px; color:#dc2626; font-weight:700; }
 
 .employee-table th.col-idx,
 .employee-table th.col-id,
@@ -1530,7 +1471,7 @@ tbody tr:hover{ background:#f3f4f6; }
 }
 .sort-title {
   font-weight: 700;
-  color: #b71c1c;
+  color: #dc2626;
   padding: 8px 16px 4px 16px;
   font-size: 15px;
 }
@@ -1546,7 +1487,7 @@ tbody tr:hover{ background:#f3f4f6; }
 }
 .sort-item.active {
   background: #fee2e2;
-  color: #b71c1c;
+  color: #dc2626;
   font-weight: 700;
 }
 .sort-item:hover:not(.active) {
@@ -1583,8 +1524,8 @@ tbody tr:hover{ background:#f3f4f6; }
 
 .page-size-select:focus {
   outline: none;
-  border-color: #b71c1c;
-  box-shadow: 0 0 0 2px rgba(183, 28, 28, 0.1);
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
 }
 
 /* Event table footer with centered pagination */
@@ -1710,7 +1651,7 @@ tbody tr:hover{ background:#f3f4f6; }
 .progress-svg {
   width: 80px;
   height: 80px;
-  transform: rotate(-90deg);
+  transform: rotate(0deg);
 }
 
 .progress-bg {
