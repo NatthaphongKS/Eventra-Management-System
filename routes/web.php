@@ -11,8 +11,6 @@ Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
 // หน้า login ของ Vue (ไม่ครอบ auth)
 Route::get('/login', fn() => view('spa'))->name('login');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
 // ทำ login (ไม่ครอบ auth)
 Route::post('/logined', [LoginController::class, 'login'])->name('logined');
 
