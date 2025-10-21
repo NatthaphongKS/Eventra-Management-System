@@ -45,6 +45,13 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::post('/edit-event', [EventController::class, 'Update']); // บันทึกการแก้ไขอีเว้น
     Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']); // ข้อมูลอีเว้นนั้นๆ อ้างอิงจาก id
+    
+    // Event participants for dashboard
+    Route::get('/event/{id}/participants', [EventController::class, 'getEventParticipants']); // ข้อมูล participants ของ event
+    Route::get('/event/{id}/participation-by-department', [EventController::class, 'getEventParticipationByDepartment']); // ข้อมูลการเข้าร่วมแยกตามแผนก
+    
+    // Attendance data for dashboard
+    Route::get('/attendance/{eventId}', [EventController::class, 'getAttendanceData']); // ข้อมูลการเข้าร่วมจริง
 
 
 
