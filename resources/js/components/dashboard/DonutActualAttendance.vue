@@ -33,7 +33,7 @@
             stroke-linecap="round"
             :stroke-dasharray="circumference"
             :stroke-dashoffset="strokeDashoffset"
-            transform="rotate(-90 80 80)"
+            transform="rotate(0 80 80)"
             class="progress-circle"
           />
           
@@ -89,7 +89,7 @@ export default {
   },
   computed: {
     circumference() {
-      return 2 * Math.PI * 45;
+      return 2 * Math.PI * 65; // Updated radius to 65
     },
     attendancePercentage() {
       if (!this.displayTotal || this.displayTotal === 0) return 0;
@@ -181,19 +181,21 @@ export default {
 
 <style scoped>
 .actual-attendance-card {
-  background: white;
-  border-radius: 12px;
+  background: #ffffff;
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: none;
   width: 100%;
-  max-width: 340px;
+  max-width: 420px;
   margin: 0 auto;
   transition: all 0.3s ease;
+  font-family: 'Inter', 'Poppins', sans-serif;
 }
 
 .actual-attendance-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .card-title {
