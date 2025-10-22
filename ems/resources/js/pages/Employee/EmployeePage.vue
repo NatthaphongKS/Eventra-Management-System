@@ -376,7 +376,7 @@
         />
 
         <!-- โมดัลแจ้งลบสำเร็จ -->
-        <DeleteSuccess :open="successOpen" @close="closeSuccess" />
+        
     </section>
 </template>
 
@@ -399,7 +399,7 @@ import SortMenu from "@/components/SortMenu.vue";
 // โมดัลยืนยันลบ
 import ConfirmDelete from "@/components/Alert/ConfirmDelete.vue";
 // โมดัลแจ้งลบสำเร็จ
-import DeleteSucces from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
+
 
 // ตั้งค่า base URL ของ axios
 axios.defaults.baseURL = "/api";
