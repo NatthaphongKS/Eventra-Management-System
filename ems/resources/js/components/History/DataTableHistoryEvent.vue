@@ -50,7 +50,7 @@
                             {{ formatDate(eventItem.deletedTime) || 'N/A' }}
                         </span>
                     </td>
-                    
+
                 </tr>
 
                 <tr v-if="pagedRows.length === 0">
@@ -104,11 +104,10 @@
         <button class="pg-arrow" :disabled="page === totalPages || totalPages === 0" @click="goToPage(page + 1)">
             <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
                 <path d="M6 12 L18 4 L18 20 Z" />
-                />
+
             </svg>
         </button>
     </div>
-    <
 </template>
 
 <script>
@@ -117,85 +116,85 @@ export default {
 
     props: {
         /** ส่งเข้ามาเฉพาะ rows ที่ filter/sort แล้ว */
-        rows: { type: Array, default: () => [ 
-            { 
+        rows: { type: Array, default: () => [
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
                 deletedPerson: 'โอม',
                 deletedTime: '2025-10-15 14:30:01'
             },
-            { 
+            {
                 title:'งานต่อยมวยมอสกับโอม',
                 createdPerson: 'มอส',
                 createdTime: '2025-10-15 14:30:00',
