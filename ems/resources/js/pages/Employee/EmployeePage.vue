@@ -369,14 +369,14 @@
         ></div>
 
         <!-- โมดัลยืนยันลบ -->
-        <ConfirmDelete
+        <!-- <ConfirmDelete
             :open="confirmOpen"
             @cancel="cancelDelete"
             @confirm="confirmDelete"
-        />
+        /> -->
 
         <!-- โมดัลแจ้งลบสำเร็จ -->
-        <DeleteSuccess :open="successOpen" @close="closeSuccess" />
+        <!-- <DeleteSuccess :open="successOpen" @close="closeSuccess" /> -->
     </section>
 </template>
 
@@ -397,9 +397,9 @@ import SelectField from "@/components/SelectField.vue";
 // คอมโพเนนต์เมนูเรียงลำดับ
 import SortMenu from "@/components/SortMenu.vue";
 // โมดัลยืนยันลบ
-import ConfirmDelete from "@/components/Alert/ConfirmDelete.vue";
+// import ConfirmDelete from "@/components/ConfirmDelete.vue";
 // โมดัลแจ้งลบสำเร็จ
-import DeleteSucces from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
+// import DeleteSucces from "@/components/EmloyeeDeleteSuccess.vue";
 
 // ตั้งค่า base URL ของ axios
 axios.defaults.baseURL = "/api";
@@ -424,8 +424,8 @@ export default {
         TrashIcon,
         SelectField,
         SortMenu,
-        ConfirmDelete,
-        DeleteSucces,
+        // ConfirmDelete,
+        // DeleteSucces,
     },
 
     // สถานะภายในคอมโพเนนต์
@@ -880,23 +880,23 @@ export default {
             this.setLayoutBlur(false);
         },
         // ยืนยันลบ -> เรียก API ลบ แล้วรีโหลดข้อมูล
-        async confirmDelete() {
-            if (!this.deleting) return;
-            try {
-                await axios.delete(`/employees/${this.deleting.id}`);
-                await this.fetchEmployees();
-                this.confirmOpen = false;
-                this.successOpen = true;
-                this.setLayoutBlur(true);
-            } catch (e) {
-                console.error("Error deleting employee", e);
-                // ปิดทุกอย่างเมื่อ error
-                this.cancelDelete();
-            } finally {
-                // เคลียร์สถานะ
-                this.deleting = null;
-            }
-        },
+        // async confirmDelete() {
+        //     if (!this.deleting) return;
+        //     try {
+        //         await axios.delete(`/employees/${this.deleting.id}`);
+        //         await this.fetchEmployees();
+        //         this.confirmOpen = false;
+        //         this.successOpen = true;
+        //         this.setLayoutBlur(true);
+        //     } catch (e) {
+        //         console.error("Error deleting employee", e);
+        //         // ปิดทุกอย่างเมื่อ error
+        //         this.cancelDelete();
+        //     } finally {
+        //         // เคลียร์สถานะ
+        //         this.deleting = null;
+        //     }
+        // },
         // ปิดโมดัลสำเร็จ และเอาเบลอออก
         closeSuccess() {
             this.successOpen = false;
