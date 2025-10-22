@@ -52,40 +52,40 @@
 
       <!-- สรุปรายการ + ปุ่มเพิ่ม (เรียงแบบในภาพ) -->
       <span class="summary">ทั้งหมด {{ filtered.length }} รายการ</span>
-      <button type="button" class="custom-btn report-btn" @click="onViewReport">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-          <path d="M3 6h18M6 12h12M10 18h8" stroke-linecap="round"/>
+      <button type="button" class="custom-btn export-btn-white" @click="onViewReport">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7,10 12,15 17,10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        <span>View Report</span>
+        <span>Export</span>
       </button>
-      <button type="button" class="custom-btn export-btn" @click="onExport">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-          <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
-        </svg>
+      <button type="button" class="custom-btn show-data-btn" @click="onExport">
         <span>Show Data</span>
       </button>
     </div>
-    <div class="table-wrap">
-      <table class="table compact">
+    <div class="event-table-wrap">
+      <table class="event-table">
         <thead>
           <tr>
-            <th class="th col-idx">
+            <th class="event-th evt-col-idx">
               <input type="checkbox" @change="selectAllEvents" v-model="selectAll" />
             </th>
-            <th class="th col-title">Event</th>
-            <th class="th col-cat">Category</th>
-            <th class="th col-date">Date (D/M/Y)</th>
-            <th class="th col-time">Time</th>
-            <th class="th col-num">Invited</th>
-            <th class="th col-num">Accepted</th>
-            <th class="th col-status">Status</th>
+            <th class="event-th evt-col-id">Event ID</th>
+            <th class="event-th evt-col-title">Event</th>
+            <th class="event-th evt-col-cat">Category</th>
+            <th class="event-th evt-col-date">Date (D/M/Y)</th>
+            <th class="event-th evt-col-time">Time</th>
+            <th class="event-th evt-col-num">Invited</th>
+            <th class="event-th evt-col-num">Accepted</th>
+            <th class="event-th evt-col-status">Status</th>
           </tr>
         </thead>
 
         <tbody>
           <tr v-for="(ev, i) in paged" :key="ev.id" 
-              :class="{ 'selected-row': selectedEventId === (ev.id || ev.evn_id) }">
-            <td class="col-idx">
+              :class="['event-row', { 'selected-row': selectedEventId === (ev.id || ev.evn_id) }]">
+            <td class="event-td evt-col-idx">
               <input 
                 type="radio" 
                 :value="ev.id || ev.evn_id" 
@@ -94,23 +94,24 @@
                 name="selectedEvent"
               />
             </td>
-            <td class="col-title"><span class="truncate">{{ ev.evn_title || 'N/A' }}</span></td>
-            <td class="col-cat"><span class="truncate">{{ ev.cat_name || 'N/A' }}</span></td>
-          <td class="col-date">{{ formatDate(ev.evn_date) }}</td>
-          <td class="col-time">
-            {{ ev.evn_timestart ? ev.evn_timestart.slice(0,5) : '??:??' }} -
-            {{ ev.evn_timeend ? ev.evn_timeend.slice(0,5) : '??:??' }}
-          </td>
-          <td class="col-num">{{ ev.evn_num_guest ?? '0' }}</td>
-          <td class="col-num">{{ ev.evn_sum_accept ?? 'N/A' }}</td>
-          <td class="col-status">
-            <span :class="['badge', ev.evn_status]">{{ ev.evn_status || 'N/A' }}</span>
+            <td class="event-td evt-col-id">{{ ev.id || ev.evn_id || 'N/A' }}</td>
+            <td class="event-td evt-col-title">{{ ev.evn_title || 'N/A' }}</td>
+            <td class="event-td evt-col-cat">{{ ev.cat_name || 'N/A' }}</td>
+            <td class="event-td evt-col-date">{{ formatDate(ev.evn_date) }}</td>
+            <td class="event-td evt-col-time">
+              {{ ev.evn_timestart ? ev.evn_timestart.slice(0,5) : '??:??' }} -
+              {{ ev.evn_timeend ? ev.evn_timeend.slice(0,5) : '??:??' }}
             </td>
-        </tr>
+            <td class="event-td evt-col-num">{{ ev.evn_num_guest ?? '0' }}</td>
+            <td class="event-td evt-col-num">{{ ev.evn_sum_accept ?? 'N/A' }}</td>
+            <td class="event-td evt-col-status">
+              <span :class="['badge', ev.evn_status]">{{ ev.evn_status || 'N/A' }}</span>
+            </td>
+          </tr>
 
-        <tr v-if="paged.length === 0">
-            <td :colspan="8" style="text-align:center">No data found</td>
-        </tr>
+          <tr v-if="paged.length === 0">
+            <td colspan="9" class="event-td no-data">No data found</td>
+          </tr>
         </tbody>
     </table>
     </div>
@@ -188,38 +189,36 @@
   </div>
 
   <!-- Employee Table Section - แสดงเมื่อกดการ์ด -->
-  <div v-if="showEmployeeTable && selectedEventId" class="simple-table-container">
-    <div class="table-wrap">
-      <table class="table compact">
+  <div v-if="showEmployeeTable && selectedEventId" class="employee-table-container">
+    <div class="employee-table-wrap">
+      <table class="employee-table">
         <thead>
           <tr>
-            <th class="th col-idx">#</th>
-            <th class="th col-id">ID</th>
-            <th class="th col-name">Name</th>
-            <th class="th col-last">Lastname</th>
-            <th class="th col-nickname">Nickname</th>
-            <th class="th col-phone">Phone</th>
-            <th class="th col-position">Position</th>
-            <th class="th col-department">Department</th>
-            <th class="th col-team">Team</th>
-            <th class="th col-event">Event</th>
+            <th class="employee-th emp-col-idx">#</th>
+            <th class="employee-th emp-col-id">ID</th>
+            <th class="employee-th emp-col-name">Name</th>
+            <th class="employee-th emp-col-nickname">Nickname</th>
+            <th class="employee-th emp-col-phone">Phone</th>
+            <th class="employee-th emp-col-department">Department</th>
+            <th class="employee-th emp-col-team">Team</th>
+            <th class="employee-th emp-col-position">Position</th>
+            <th class="employee-th emp-col-event">Event</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(emp, i) in paginatedEmployees" :key="emp.id">
-            <td class="col-idx">{{ ((currentPage - 1) * itemsPerPage) + i + 1 }}</td>
-            <td class="col-id">{{ emp.emp_id }}</td>
-            <td class="col-name">{{ emp.emp_firstname }}</td>
-            <td class="col-last">{{ emp.emp_lastname }}</td>
-            <td class="col-nickname">{{ emp.emp_nickname }}</td>
-            <td class="col-phone">{{ emp.emp_phone }}</td>
-            <td class="col-position"><span class="truncate">{{ emp.position }}</span></td>
-            <td class="col-department"><span class="truncate">{{ emp.department }}</span></td>
-            <td class="col-team"><span class="truncate">{{ emp.team }}</span></td>
-            <td class="col-event">{{ selectedEventData?.evn_title || 'N/A' }}</td>
+          <tr v-for="(emp, i) in paginatedEmployees" :key="emp.id" class="employee-row">
+            <td class="employee-td emp-col-idx">{{ ((currentPage - 1) * itemsPerPage) + i + 1 }}</td>
+            <td class="employee-td emp-col-id">{{ emp.emp_id }}</td>
+            <td class="employee-td emp-col-name">{{ emp.emp_firstname }}</td>
+            <td class="employee-td emp-col-nickname">{{ emp.emp_nickname }}</td>
+            <td class="employee-td emp-col-phone">{{ emp.emp_phone }}</td>
+            <td class="employee-td emp-col-department">{{ emp.department }}</td>
+            <td class="employee-td emp-col-team">{{ emp.team || 'N/A' }}</td>
+            <td class="employee-td emp-col-position">{{ emp.position }}</td>
+            <td class="employee-td emp-col-event">{{ selectedEventData?.evn_title || 'N/A' }}</td>
           </tr>
           <tr v-if="paginatedEmployees.length === 0">
-            <td :colspan="10" style="text-align:center">No data found</td>
+            <td colspan="9" class="employee-td no-data">No data found</td>
           </tr>
         </tbody>
       </table>
@@ -227,9 +226,9 @@
     
     <!-- Employee table info and pagination -->
     <div class="employee-table-footer">
-      <div class="table-info">
+      <div class="employee-table-info">
         แสดง 
-        <select v-model="itemsPerPage" class="page-size-select">
+        <select v-model="itemsPerPage" class="employee-page-size-select">
           <option value="10">10</option>
           <option value="25">25</option>
           <option value="50">50</option>
@@ -810,13 +809,383 @@ export default {
 </script>
 
 <style>
-/* Simple table container */
-.simple-table-container {
-  background: #fff;
-  border-radius: 12px;
+/* Event Table Styling - Similar to Employee Table */
+.event-table-wrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(34,197,94,0.06);
-  margin-top: 1rem;
+  margin-top: 10px;
+}
+
+.event-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: #ffffff;
+}
+
+/* Event Table Header */
+.event-th {
+  background: #f8fafc;
+  color: #374151;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e5e7eb;
+  border-right: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Event Table Data */
+.event-td {
+  padding: 14px 12px;
+  text-align: center;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: none;
+  font-size: 14px;
+  color: #374151;
+  vertical-align: middle;
+}
+
+/* Event Table Rows */
+.event-row:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.event-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.event-row:hover {
+  background-color: #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+/* Selected Row Styling */
+.event-row.selected-row {
+  background-color: #fee2e2 !important;
+  border-left: 4px solid #dc2626;
+}
+
+.event-row.selected-row:hover {
+  background-color: #fecaca !important;
+}
+
+/* No Data Row for Event Table */
+.event-td.no-data {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 24px;
+  background-color: #f9fafb;
+}
+
+/* Event Table Column Widths */
+.evt-col-idx {
+  width: 60px;
+  min-width: 60px;
+}
+
+.evt-col-id {
+  width: 80px;
+  min-width: 80px;
+}
+
+.evt-col-title {
+  width: 200px;
+  min-width: 200px;
+}
+
+.evt-col-cat {
+  width: 140px;
+  min-width: 140px;
+}
+
+.evt-col-date {
+  width: 120px;
+  min-width: 120px;
+}
+
+.evt-col-time {
+  width: 140px;
+  min-width: 140px;
+}
+
+.evt-col-num {
+  width: 80px;
+  min-width: 80px;
+}
+
+.evt-col-status {
+  width: 110px;
+  min-width: 110px;
+}
+
+/* Employee Table Styling */
+.employee-table-container {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-top: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.employee-table-wrap {
+  overflow-x: auto;
+}
+
+.employee-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: #ffffff;
+}
+
+/* Employee Table Header */
+.employee-th {
+  background: #f8fafc;
+  color: #374151;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e5e7eb;
+  border-right: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Employee Table Data */
+.employee-td {
+  padding: 14px 12px;
+  text-align: center;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: none;
+  font-size: 14px;
+  color: #374151;
+  vertical-align: middle;
+}
+
+/* Employee Table Rows */
+.employee-row:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.employee-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.employee-row:hover {
+  background-color: #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+/* No Data Row */
+.employee-td.no-data {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 24px;
+  background-color: #f9fafb;
+}
+
+/* Column Specific Styling */
+.emp-col-idx {
+  width: 60px;
+  min-width: 60px;
+}
+
+.emp-col-id {
+  width: 80px;
+  min-width: 80px;
+}
+
+.emp-col-name {
+  width: 150px;
+  min-width: 150px;
+}
+
+.emp-col-nickname {
+  width: 100px;
+  min-width: 100px;
+}
+
+.emp-col-phone {
+  width: 120px;
+  min-width: 120px;
+}
+
+.emp-col-department,
+.emp-col-team {
+  width: 160px;
+  min-width: 160px;
+}
+
+.emp-col-position {
+  width: 180px;
+  min-width: 180px;
+}
+
+.emp-col-event {
+  width: 200px;
+  min-width: 200px;
+}
+
+/* Responsive Design for Event Table */
+@media (max-width: 1024px) {
+  .event-table-wrap {
+    margin: 10px -1rem 0 -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .event-th,
+  .event-td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  
+  .evt-col-title {
+    width: 160px;
+    min-width: 160px;
+  }
+  
+  .evt-col-cat,
+  .evt-col-time {
+    width: 120px;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .event-th,
+  .event-td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .evt-col-title {
+    width: 140px;
+    min-width: 140px;
+  }
+  
+  .evt-col-cat,
+  .evt-col-time {
+    width: 100px;
+    min-width: 100px;
+  }
+  
+  .evt-col-date {
+    width: 90px;
+    min-width: 90px;
+  }
+}
+
+/* Text Overflow Protection for Event Table */
+.event-td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hover Effects for Event Table */
+.event-table {
+  transition: all 0.3s ease;
+}
+
+.event-row {
+  transition: all 0.2s ease;
+}
+
+/* Responsive Design for Employee Table */
+@media (max-width: 1024px) {
+  .employee-table-container {
+    margin: 1rem -1rem 0 -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .employee-th,
+  .employee-td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  
+  .emp-col-position,
+  .emp-col-department,
+  .emp-col-team,
+  .emp-col-event {
+    width: 120px;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .employee-th,
+  .employee-td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .emp-col-name {
+    width: 120px;
+    min-width: 120px;
+  }
+  
+  .emp-col-department,
+  .emp-col-team {
+    width: 110px;
+    min-width: 110px;
+  }
+  
+  .emp-col-position {
+    width: 140px;
+    min-width: 140px;
+  }
+  
+  .emp-col-event {
+    width: 150px;
+    min-width: 150px;
+  }
+  
+  .employee-table-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .employee-table-info {
+    justify-content: center;
+  }
+}
+
+/* Text Overflow Protection */
+.employee-td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hover Effects */
+.employee-table {
+  transition: all 0.3s ease;
+}
+
+.employee-row {
+  transition: all 0.2s ease;
+}
+
+/* Focus States */
+.employee-table:focus-within {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 
@@ -844,7 +1213,7 @@ export default {
   flex-direction: column;
   gap: 2.5rem;
   width: 100%;
-  background: #f8fafc;
+  background: #f5f5f5; /* neutral-100 ตาม Color Palette */
   min-height: 100vh;
   padding: 1rem;
 }
@@ -1270,6 +1639,33 @@ input[type="checkbox"]:hover {
   box-shadow: 0 4px 16px rgba(244,63,94,0.12);
   transform: translateY(-2px) scale(1.03);
 }
+/* Export button - white/neutral style */
+.export-btn-white {
+  background: #ffffff; /* สีขาว neutral-100 */
+  color: #525252; /* neutral-600 */
+  border: 1px solid #d4d4d4; /* neutral-300 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.export-btn-white:hover {
+  background: #f5f5f5; /* neutral-100 */
+  border-color: #737373; /* neutral-500 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Show Data button - red-700 style */
+.show-data-btn {
+  background: #b91c1c; /* red-700 ตามภาพ */
+  color: #fff;
+  border: none;
+}
+.show-data-btn:hover {
+  background: #991b1b; /* red-800 เข้มขึ้น */
+  box-shadow: 0 4px 16px rgba(185, 28, 28, 0.12);
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Legacy export-btn (keeping for compatibility) */
 .export-btn {
   background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%);
   color: #fff;
@@ -1333,8 +1729,9 @@ th, td { vertical-align:middle; padding:7px 10px; border-top:1px solid #eee; fon
 
 /* Column widths */
 .col-idx{ width:48px; text-align:center; }
-.col-title{ width:26%; text-align:center; }
-.col-cat{ width:14%; text-align:center; }
+.col-id{ width:80px; text-align:center; }
+.col-title{ width:24%; text-align:center; }
+.col-cat{ width:12%; text-align:center; }
 .col-date{ width:110px; text-align:center; white-space:nowrap; }
 .col-time{ width:92px; text-align:center; white-space:nowrap; }
 .col-num{ width:80px; text-align:center; }
@@ -1374,20 +1771,67 @@ tbody tr.selected-row:hover {
 .btn-link:hover{ text-decoration:underline; }
 .btn-link.danger{ color:#ef4444; }
 
-/* Badge */
-.badge { display:inline-block; min-width:70px; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:700; text-transform:lowercase; background:#e5e7eb; color:#374151; }
-.badge.deleted{ background:#fee2e2; color:#991b1b; }
-.badge.done{ background:#dcfce7; color:#166534; }
-.badge.upcoming{ background:#f4ce99; color:#714601; }
+/* Badge - ใช้สีตาม Color Palette */
+.badge { 
+  display:inline-block; 
+  min-width:70px; 
+  padding:3px 8px; 
+  border-radius:4px; 
+  font-size:12px; 
+  font-weight:700; 
+  text-transform:lowercase; 
+  background:#f5f5f5; /* neutral-100 */
+  color:#525252; /* neutral-600 */
+}
+.badge.deleted{ 
+  background:#fecaca; /* red-100 */
+  color:#991b1b; /* red-800 */
+}
+.badge.done{ 
+  background:#bbf7d0; /* green-200 */
+  color:#059669; /* green-600 */
+}
+.badge.upcoming{ 
+  background:#fef3c7; /* yellow-200 */
+  color:#d97706; /* yellow-400 */
+}
 
-/* Pager */
+/* Pager - ใช้สี red-700 ตาม Color Palette */
 .pager2 { display:flex; gap:.5rem; align-items:center; justify-content:center; margin-top:14px; }
-.page-btn { min-width:36px; height:36px; padding:0 10px; border-radius:10px; border:2px solid #dc2626; background:transparent; color:#dc2626; font-weight:700; line-height:1; }
-.page-btn.active { background:#dc2626; color:#fff; border-color:#dc2626; }
-.page-btn:hover:not(.active){ background:#fee2e2; }
-.arrow-btn { width:36px; height:36px; border-radius:10px; border:none; background:#dc2626; color:#fff; font-weight:700; }
+.page-btn { 
+  min-width:36px; 
+  height:36px; 
+  padding:0 10px; 
+  border-radius:10px; 
+  border:2px solid #b91c1c; /* red-700 */
+  background:transparent; 
+  color:#b91c1c; /* red-700 */
+  font-weight:700; 
+  line-height:1; 
+}
+.page-btn.active { 
+  background:#b91c1c; /* red-700 */
+  color:#fff; 
+  border-color:#b91c1c; /* red-700 */
+}
+.page-btn:hover:not(.active){ 
+  background:#fecaca; /* red-100 */
+}
+.arrow-btn { 
+  width:36px; 
+  height:36px; 
+  border-radius:10px; 
+  border:none; 
+  background:#b91c1c; /* red-700 */
+  color:#fff; 
+  font-weight:700; 
+}
 .arrow-btn:disabled{ opacity:.5; cursor:not-allowed; }
-.dots{ padding:0 6px; color:#dc2626; font-weight:700; }
+.dots{ 
+  padding:0 6px; 
+  color:#b91c1c; /* red-700 */
+  font-weight:700; 
+}
 
 .employee-table th.col-idx,
 .employee-table th.col-id,
@@ -1494,13 +1938,46 @@ tbody tr.selected-row:hover {
   background: #f9fafb;
 }
 
-/* Employee table footer */
+/* Employee Table Footer */
 .employee-table-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 1rem 0;
-  margin-top: 1rem;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  border-radius: 0 0 16px 16px;
+}
+
+.employee-table-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.employee-page-size-select {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  min-width: 60px;
+  transition: all 0.2s ease;
+}
+
+.employee-page-size-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.employee-page-size-select:hover {
+  border-color: #9ca3af;
 }
 
 .table-info {
