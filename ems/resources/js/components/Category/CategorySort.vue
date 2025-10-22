@@ -1,15 +1,12 @@
 <template>
   <div class="relative" @keydown.escape="open=false">
     <button
-      class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+      class="inline-flex items-center gap-2 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-gray-50"
       @click="open = !open"
       :title="modelValue === 'desc' ? 'วันที่ล่าสุด' : 'วันที่เก่าสุด'"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M6 2a1 1 0 011 1v14.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4A1 1 0 013.707 15.293L6 17.586V3a1 1 0 011-1zM14 22a1 1 0 01-1-1V6.414l-2.293 2.293a1 1 0 11-1.414-1.414l4-4a1 1 0 011.414 0l4 4A1 1 0 0117.293 8.707L15 6.414V21a1 1 0 01-1 1z"/>
-      </svg>
-      <span>Sort</span>
-      <span class="text-gray-400">({{ modelValue === 'desc' ? 'วันที่ล่าสุด' : 'วันที่เก่าสุด' }})</span>
+      <Icon icon="lucide:sort-desc" width="30" height="20" />
+      <p>Sort</p>
     </button>
 
     <div
@@ -28,6 +25,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { Icon } from '@iconify/vue'
 
 type Dir = "asc" | "desc";
 const props = defineProps<{ modelValue: Dir }>();
