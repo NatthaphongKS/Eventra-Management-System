@@ -3,13 +3,15 @@
     <!-- Toolbar -->
     <div class="flex items-center gap-3 mb-4 overflow-visible">
       
-      <SearchBar 
-      v-model:dir="searchInput" 
-      placeholder="Serch Category / Created by / Deleted by"
-       />
+      <!-- Search bar -->
+      <SearchBar
+      v-model="searchInput"
+      placeholder="Search Category / Created by"
+      @search="onSearch"
+      />
 
-
-      <CategorySort v-model:dir="sortDir" />
+      <!-- Sort -->
+      <CategorySort v-model="sortDir" />
 
       <button
         class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-red-700 text-white hover:bg-rose-700 whitespace-nowrap z-0"
@@ -130,10 +132,15 @@ export default {
   },
   computed: {
     filtered() {
-      const q = this.search.trim().toLowerCase();
-      if (!q) return this.rows.slice();
-      return this.rows.filter((r) => `${r.name} ${r.createdBy}`.toLowerCase().includes(q));
+    const q = this.search.trim().toLowerCase();
+    if (!q) return this.rows.slice();
+    return this.rows.filter(
+      (r) =>
+        (r.name && r.name.toLowerCase().includes(q)) ||
+        (r.createdBy && r.createdBy.toLowerCase().includes(q))
+    );
     },
+
     sorted() {
       const dir = this.sortDir === "asc" ? 1 : -1;
       return this.filtered.slice().sort((a, b) => {
@@ -188,10 +195,9 @@ export default {
         console.error(e);
         this.rows = [];
       }
-    },
-    applySearch() {
-      this.search = this.searchInput.trim();
-      this.page = 1;
+    },onSearch(value) {
+    this.search = value.trim();
+    this.page = 1;
     },
     openAdd() {
       this.newName = "";
