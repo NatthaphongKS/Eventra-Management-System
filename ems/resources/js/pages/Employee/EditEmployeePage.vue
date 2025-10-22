@@ -173,9 +173,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
-import FormField from "../../components/FormField.vue";
-import InputPill from "../../components/InputPill.vue";
-import DropdownPill from "../../components/DropdownPill.vue";
+import FormField from "../../components/Input/FormField.vue";
+import InputPill from "../../components/Input/InputPill.vue";
+import DropdownPill from "../../components/Input/DropdownPill.vue";
 
 const props = defineProps({ id: { type: String, required: true } });
 
