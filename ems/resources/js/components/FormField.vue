@@ -1,5 +1,5 @@
 <template>
-    <div class="grid grid-cols-1 sm:grid-cols-[100px,1fr] items-center gap-1 sm:gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-[184px,1fr] items-center gap-1 sm:gap-3">
         <label class="text-sm font-medium text-gray-700">
             {{ label }}<span v-if="required" class="text-red-500"> *</span>
         </label>
