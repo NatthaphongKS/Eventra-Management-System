@@ -124,11 +124,11 @@
         <button class="pg-arrow" :disabled="page === totalPages || totalPages === 0" @click="goToPage(page + 1)">
             <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
                 <path d="M6 12 L18 4 L18 20 Z" />
-                />
+
             </svg>
         </button>
     </div>
-    <
+    
 </template>
 
 <script>
