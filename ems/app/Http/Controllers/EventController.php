@@ -240,8 +240,6 @@ class EventController extends Controller
     }
 
 
-
-
     function eventInfo()
     {
         $employees = Employee::with([
