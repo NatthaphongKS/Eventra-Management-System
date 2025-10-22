@@ -2,67 +2,69 @@
     <div class="overflow-hidden rounded-2xl border border-neutral-200 stroke-neutral-200">
         <table class="w-full table-auto  ">
             <thead>
+                <!-- หัวตาราง -->
                 <tr class="bg-neutral-100">
-                    <th class="w-12 py-3 text-center text-neutral-800 font-semibold font-poppins">#</th>
-                    <th class="w-[26%] py-3 text-center text-neutral-800 font-semibold font-poppins">Event</th>
+                    <th class="w-12 py-3 text-center text-neutral-800 font-semibold font-[Poppins] text-[16px]">#</th>
+                    <th class="w-[26%] py-3 text-center text-neutral-800 font-semibold font-[Poppins] text-[16px]">Event</th>
                     <th class="w-[14%] py-3 text-center text-neutral-800 font-semibold">Category</th>
                     <th
-                        class="w-[110px] py-3 text-center whitespace-nowrap text-neutral-800 font-semibold font-poppins">
+                        class="w-[110px] py-3 text-center whitespace-nowrap text-neutral-800 font-semibold font-[Poppins] text-[16px]">
                         Date (D/M/Y)</th>
-                    <th class="w-[92px] py-3 text-center whitespace-nowrap text-neutral-800 font-semibold font-poppins">
+                    <th class="w-[92px] py-3 text-center whitespace-nowrap text-neutral-800 font-semibold font-[Poppins] text-[16px]">
                         Time</th>
-                    <th class="w-20 py-3 text-center text-neutral-800 font-semibold font-poppins">Invited</th>
-                    <th class="w-20 py-3 text-center text-neutral-800 font-semibold font-poppins">Accepted</th>
-                    <th class="w-[110px] py-3 text-center text-neutral-800 font-semibold font-poppins">Status</th>
-                    <th class="w-28 py-3 text-center text-neutral-800 font-semibold font-poppins">Action</th>
+                    <th class="w-20 py-3 text-center text-neutral-800 font-semibold font-[Poppins] text-[16px]">Invited</th>
+                    <th class="w-20 py-3 text-center text-neutral-800 font-semibold font-[Poppins] text-[16px]">Accepted</th>
+                    <th class="w-[110px] py-3 text-center text-neutral-800 font-semibold font-[Poppins] text-[16px]">Status</th>
+                    <th class="w-28 py-3 text-center text-neutral-800 font-semibold font-[Poppins] text-[16px]">Action</th>
                 </tr>
             </thead>
 
+            <!-- เนื้อหาตาราง -->
             <tbody>
                 <tr v-for="(eventItem, eventIndex) in pagedRows" :key="eventItem.id ?? eventIndex"
                     class="odd:bg-white hover:bg-slate-100">
                     <!-- ลำดับ -->
-                    <td class="px-2 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
+                    <td class="px-2 py-2 text-center text-neutral-800 border-t font-medium font-[Poppins] text-[15px]">
                         {{ rowStartIndex + eventIndex + 1 }}
                     </td>
 
                     <!-- ชื่ออีเวนต์ -->
-                    <td class="px-3 py-2 text-center border-t font-medium font-poppins">
+                    <td class="px-3 py-2 text-center border-t font-medium font-[Poppins] text-[15px]">
                         <span class="block truncate  text-slate-800">
                             {{ eventItem.evn_title || 'N/A' }}
                         </span>
                     </td>
 
                     <!-- หมวดหมู่ -->
-                    <td class="px-3 py-2 text-center border-t font-medium font-poppins">
+                    <td class="px-3 py-2 text-center border-t font-medium font-[Poppins] text-[15px]">
                         <span class="block truncate  text-slate-800">
                             {{ eventItem.cat_name || 'N/A' }}
                         </span>
                     </td>
 
                     <!-- วันที่ -->
-                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
+                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-[Poppins] text-[15px]">
                         {{ formatDate(eventItem.evn_date) }}
                     </td>
 
                     <!-- เวลา -->
                     <td
-                        class="px-3 py-2 text-center text-neutral-800 border-t whitespace-nowrap font-medium font-poppins">
+                        class="px-3 py-2 text-center text-neutral-800 border-t whitespace-nowrap font-medium font-[Poppins] text-[15px]">
                         {{ timeText(eventItem.evn_timestart, eventItem.evn_timeend) }}
                     </td>
 
                     <!-- จำนวนเชิญ -->
-                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
+                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-[Poppins] text-[15px]">
                         {{ eventItem.evn_num_guest ?? '0' }}
                     </td>
 
                     <!-- จำนวนตอบรับ -->
-                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-poppins">
+                    <td class="px-3 py-2 text-center text-neutral-800 border-t font-medium font-[Poppins] text-[15px]">
                         {{ eventItem.evn_sum_accept ?? 'N/A' }}
                     </td>
 
                     <!-- สถานะ -->
-                    <td class="px-3 py-2 text-center border-t font-medium font-poppins">
+                    <td class="px-3 py-2 text-center border-t font-medium font-[Poppins] text-[15px]">
                         <span :class="badgeClass(eventItem.evn_status)">
                             {{ eventItem.evn_status || 'N/A' }}
                         </span>
@@ -116,7 +118,7 @@
     <div class="flex flex-col gap-3 bg-white px-3 py-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <!-- ซ้าย: limit/page -->
-            <div class="flex items-center gap-2 font-regular font-poppins">
+            <div class="flex items-center gap-2 font-regular font-[Poppins]">
                 <span>แสดง</span>
 
                 <!-- ⬇️ กล่อง select + ลูกศรแดง -->
@@ -135,7 +137,7 @@
                 </div>
 
                 <span>{{ rowStartIndex + 1 }}-{{ pagedRows.length + rowStartIndex }} </span>
-                <div class="font-regular font-poppins">
+                <div class="font-regular font-[Poppins]">
                     {{ displayFrom }}{{ displayTo }} จาก {{ totalItems }} รายการ
                 </div>
             </div>
@@ -178,7 +180,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 
-/** ส่งเข้ามาเฉพาะ rows ที่ filter/sort แล้ว */
+
+/** ส่งเข้ามาเฉพาะ rows ที่ filter/sort แล้ว
+props เป็นส่วนรับข้อมมูลจาก parent component*/
 const props = defineProps({
     rows: { type: Array, default: () => [] },
 
@@ -186,7 +190,7 @@ const props = defineProps({
     page: { type: Number, default: undefined },
     pageSize: { type: Number, default: undefined },
 
-    /** options */
+    /** limitpage */
     pageSizeOptions: { type: Array, default: () => [10, 20, 50, 100] },
 })
 

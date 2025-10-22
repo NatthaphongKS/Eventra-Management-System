@@ -1,106 +1,123 @@
 <!-- pages/edit_event.vue -->
 <template>
-    <div>
+    <div class="text-neutral-800 font-semibold font-[Poppins] text-3xl mb-4">
         Edit Event
     </div>
+    <div class="grid grid-cols-12 h-full gap-0">
+        <div class="col-span-8">
 
-    <!-- ช่องกรอกชื่ออีเวนต์ -->
-
-    <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
+            <!-- ช่องกรอกชื่ออีเวนต์ -->
+            <div class="grid grid-cols-3">
+                <div class="mt-6 md:grid md:grid-cols-[1fr_520px] md:gap-8 items-stretch">
+                    <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
          trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
-    <label>Event Title</label><br />
-    <input type="text" style="border: 1px solid black;" v-model.trim="eventTitle" /><br />
+                    <div >
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4"
+                            for="eventTitle">Event
+                            Title</label><br />
+                        <input class="border border-[#A1A1A1] rounded-[20px] px-[20px]  disabled:bg-[#F5F5F5]"
+                            type="text" v-model.trim="eventTitle" id="eventTitle" disabled />
+                        <!-- <InputText :label="'Event Title'" :value="eventTitle" /> -->
+                    </div>
 
+                    <div>
+                        <!-- เลือก Category -->
+                        <label>Event Category</label><br />
+                        <select class="border border-neutral-200 rounded-[20px] px-[20px]" v-model="eventCategoryId">
+                            <!-- v-model ตรงนี้จะผูกค่ากับ evn_category_id โหลดครั้งแรกจะได้ค่าเก่า + ถ้าเลืกใหม่จะได้ค่าใหม่ เวลาส่งไป save ก็จะส่งเป็น id -->
 
-    <!-- เลือก Category -->
-    <label>Event Category</label><br />
-    <select style="border: 1px solid black;" v-model="eventCategoryId">
-        <!-- v-model ตรงนี้จะผูกค่ากับ evn_category_id โหลดครั้งแรกจะได้ค่าเก่า + ถ้าเลืกใหม่จะได้ค่าใหม่ เวลาส่งไป save ก็จะส่งเป็น id -->
+                            <!-- ถ้าหมวดเดิมเป็น inactive แต่อยากแสดงไว้ -->
+                            <option :value="eventCategoryId" hidden> <!-- เก็บ id ค่าเดิมไว้ -->
+                                {{ eventCategoryName
+                                }}<!-- แสดงตัวเลือกจากตัวแปร evn_category_name ที่ดึงมาจาก controller -->
+                            </option>
 
-        <!-- ถ้าหมวดเดิมเป็น inactive แต่อยากแสดงไว้ -->
-        <option :value="eventCategoryId" hidden> <!-- เก็บ id ค่าเดิมไว้ -->
-            {{ vnentCategoryName }}<!-- แสดงตัวเลือกจากตัวแปร evn_category_name ที่ดึงมาจาก controller -->
-        </option>
-
-        <option v-for="cat in selectCategory" :value="cat.id">
-            {{ cat.cat_name }}
-            <!-- cat เก็บข้อมูลในช่อง array ของ select_category ทุกรอบที่วน {id= 1 name=ประชุม ...}
+                            <option v-for="cat in selectCategory" :value="cat.id">
+                                {{ cat.cat_name }}
+                                <!-- cat เก็บข้อมูลในช่อง array ของ select_category ทุกรอบที่วน {id= 1 name=ประชุม ...}
         cat.id เอา cat ที่เก็บข้อมูลในช่อง array แล้วดึงค่ามาแค่ name เพื่อเอาไว้แสดงค่าที่ให้เลือก -->
-        </option>
-    </select><br />
+                            </option>
+                        </select><br />
+                    </div>
+                </div>
+            </div>
+            <div>
+                <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
+                <!-- v-model.trim="evn_description" = ผูกค่ากับตัวแปร evn_description อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม-->
+                <label>Event Description</label><br />
+                <textarea style="border: 2px solid black;" v-model.trim="eventDescription"></textarea><br>
+            </div>
 
+            <div class="grid grid-cols-3">
+                <div>
+                    <!-- วันที่ -->
+                    <label>Date</label><br>
+                    <input type="date" v-model="eventDate">
+                </div>
 
+                <div>
+                    <label>Time</label>
 
-    <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
-    <!-- v-model.trim="evn_description" = ผูกค่ากับตัวแปร evn_description อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม-->
-    <label>Event Description</label><br />
-    <textarea style="border: 2px solid black;" v-model.trim="eventDescription"></textarea><br>
-
-    <!-- วันที่ -->
-    <label>Date</label><br>
-    <input type="date" v-model="eventDate">
-
-    <label>Time</label>
-    <div>
-        <input type="time" v-model="eventTimeStart"></input>
-        <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData
+                    <input type="time" v-model="eventTimeStart"></input>
+                    <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData
         2 ตอนเลือกค่า ใน Input ค่าก็จะเปลี่ยนไปตามที่เราเลือกแล้วส่งไปคำนวณ-->
 
-        <label> : </label>
-        <input type="time" v-model="eventTimeEnd"></input>
-    </div>
-
-    <!-- ส่วนแสดงช่วงเวลา -->
-    <label>duration</label><br>
-    <input disabled v-model="eventDuration"></input><br>
-    <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
-
-    <!-- ส่วนแสดงสถานที่ -->
-    <label>Location</label><br>
-    <input type="text" v-model="eventLocation"></input>
-
-    <!-- Upload attachments -->
-    <div style="margin: 20px">
-        <label>Upload attachments</label>
-
-        <!-- ไฟล์เดิม -->
-        <div v-if="filesExisting.length > 0" style="margin-bottom:8px">
-            <!-- จะโชว์ก็ต่อเมื่อ length > 0 กันไม่มีข้อมูล-->
-            <p style="margin:4px 0 8px; opacity:.8">ไฟล์เดิม</p>
-            <ul style="list-style:none; padding:0; margin:0">
-                <!-- v for ตรงนี้ร้างตัวแปร oldFile ขึ้นมาเพื่อวนเก็บขอมูลใน array ของ filesExisting ในแต่ละรอบวน -->
-                <li v-for="oldFile in filesExisting" :key="oldFile.id"
-                    style="display:flex; gap:10px; align-items:center; padding:6px 0;">
-                    <a :href="oldFile.url" target="_blank" rel="noopener">{{ oldFile.file_name }}</a>
-                    <!-- ส่วนใส่ชื่อไฟล์ แล้วทำเป็นเหมือนลิ้งค์ให้กดดู โดย href จะเอา link ที่ถูกเพิ่มโดย .map ใน controller แล้วส่งมาที่หน้าบ้าน -->
-
-                    <span style="opacity:.7; font-size:12px">({{ prettySize(oldFile.file_size) }})</span>
-                    <!-- เรียกใช้ prettysize ใน script จะแปลงจาก byte -> kbถ้า ≥ 1kB → MB ถ้า ≥ 1MB -->
-
-                    <!-- ส่วนเอาออกจาก UI click แล้วจะเรียก removeExisting แล้วส่ง(oldFile.id) ไปด้วย-->
-                    <button type="button" @click="removeExisting(oldFile.id)"
-                        style="border:0; background:#eee; border-radius:6px; padding:4px 8px; cursor:pointer">
-                        ✕
-                    </button>
-                </li>
-            </ul>
+                    <label> : </label>
+                    <input type="time" v-model="eventTimeEnd"></input>
+                </div>
+                <div>
+                    <!-- ส่วนแสดงช่วงเวลา -->
+                    <label>duration</label><br>
+                    <input disabled v-model="eventDuration"></input><br>
+                    <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
+                </div>
+            </div>
+            <!-- ส่วนแสดงสถานที่ -->
+            <label>Location</label><br>
+            <input type="text" v-model="eventLocation"></input>
         </div>
+        <!-- Upload attachments -->
+        <div class="col-span-4" style="margin: 20px" >
+            <label>Upload attachments</label>
 
-        <!-- โซนอัปโหลดไฟล์ใหม่ -->
-        <div class="dropzone" @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false"
-            @drop.prevent="onDrop" :class="{ dragging }"
-            style="border:1px dashed #bbb; padding:12px; border-radius:8px;">
-            <!-- มีการเรียก ondrop เมื่อมีไฟล์ลากมาวางในช่อง -->
-            <!-- @dragover.prevent="dragging = true" → เวลา ลากไฟล์มาทับ บล็อกนี้ → ตั้งค่า dragging = true (ตัวแปรที่สร้างไว้ใน script) + prevent กัน event ค่า default ของเบราว์เซอร์ -->
-            <!-- @dragleave.prevent="dragging = false" → เวลา ลากไฟล์ออกจากบล็อกนี้ → ตั้งค่า dragging = false -->
-            <!-- :class="{ dragging }" → ถ้า dragging = true จะเพิ่ม class CSS dragging ให้อัตโนมัติ (เช่นเปลี่ยนพื้นหลัง, border ฯลฯ) -->
-            <p>Choose a file or drag & drop it here</p>
-            <p class="muted">pdf, txt, docx, jpeg, xlsx – Up to 50MB</p>
-            <button type="button" @click="pickFiles">Browse files</button>
-            <!-- ส่วนนี้จะเป็นปุ่มเพิ่มไฟล์ ถ้ากด click เพิ่มไฟล์จะไปเรียก method  pickFiles -->
-            <input ref="fileInput" type="file" multiple class="hidden-file"
-                accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" style="display:none" />
-            <!-- ref="fileInput" → ให้ Vue อ้างถึง element นี้จากโค้ด JS ส่วน pickFiles (this.$refs.fileInput)
+            <!-- ไฟล์เดิม -->
+            <div v-if="filesExisting.length > 0" style="margin-bottom:8px">
+                <!-- จะโชว์ก็ต่อเมื่อ length > 0 กันไม่มีข้อมูล-->
+                <p style="margin:4px 0 8px; opacity:.8">ไฟล์เดิม</p>
+                <ul style="list-style:none; padding:0; margin:0">
+                    <!-- v for ตรงนี้ร้างตัวแปร oldFile ขึ้นมาเพื่อวนเก็บขอมูลใน array ของ filesExisting ในแต่ละรอบวน -->
+                    <li v-for="oldFile in filesExisting" :key="oldFile.id"
+                        style="display:flex; gap:10px; align-items:center; padding:6px 0;">
+                        <a :href="oldFile.url" target="_blank" rel="noopener">{{ oldFile.file_name }}</a>
+                        <!-- ส่วนใส่ชื่อไฟล์ แล้วทำเป็นเหมือนลิ้งค์ให้กดดู โดย href จะเอา link ที่ถูกเพิ่มโดย .map ใน controller แล้วส่งมาที่หน้าบ้าน -->
+
+                        <span style="opacity:.7; font-size:12px">({{ prettySize(oldFile.file_size) }})</span>
+                        <!-- เรียกใช้ prettysize ใน script จะแปลงจาก byte -> kbถ้า ≥ 1kB → MB ถ้า ≥ 1MB -->
+
+                        <!-- ส่วนเอาออกจาก UI click แล้วจะเรียก removeExisting แล้วส่ง(oldFile.id) ไปด้วย-->
+                        <button type="button" @click="removeExisting(oldFile.id)"
+                            style="border:0; background:#eee; border-radius:6px; padding:4px 8px; cursor:pointer">
+                            ✕
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- โซนอัปโหลดไฟล์ใหม่ -->
+            <div class="dropzone" @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false"
+                @drop.prevent="onDrop" :class="{ dragging }"
+                style="border:1px dashed #bbb; padding:12px; border-radius:8px;">
+                <!-- มีการเรียก ondrop เมื่อมีไฟล์ลากมาวางในช่อง -->
+                <!-- @dragover.prevent="dragging = true" → เวลา ลากไฟล์มาทับ บล็อกนี้ → ตั้งค่า dragging = true (ตัวแปรที่สร้างไว้ใน script) + prevent กัน event ค่า default ของเบราว์เซอร์ -->
+                <!-- @dragleave.prevent="dragging = false" → เวลา ลากไฟล์ออกจากบล็อกนี้ → ตั้งค่า dragging = false -->
+                <!-- :class="{ dragging }" → ถ้า dragging = true จะเพิ่ม class CSS dragging ให้อัตโนมัติ (เช่นเปลี่ยนพื้นหลัง, border ฯลฯ) -->
+                <p>Choose a file or drag & drop it here</p>
+                <p class="muted">pdf, txt, docx, jpeg, xlsx – Up to 50MB</p>
+                <button type="button" @click="pickFiles">Browse files</button>
+                <!-- ส่วนนี้จะเป็นปุ่มเพิ่มไฟล์ ถ้ากด click เพิ่มไฟล์จะไปเรียก method  pickFiles -->
+                <input ref="fileInput" type="file" multiple class="hidden-file"
+                    accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" style="display:none" />
+                <!-- ref="fileInput" → ให้ Vue อ้างถึง element นี้จากโค้ด JS ส่วน pickFiles (this.$refs.fileInput)
 
             type="file" → ช่องเลือกสำหรับไฟล์
 
@@ -112,54 +129,55 @@
 
             style="display:none" → ซ่อน input นี้ไม่ให้ผู้ใช้เห็น (กดปุ่ม Browse files ข้างบนแทน) -->
 
-        </div>
+            </div>
 
-        <!-- รายการไฟล์ใหม่ -->
-        <ul v-if="filesNew.length > 0" class="file-list">
-            <!-- ไม่ render อะไรเลยถ้า  filesNew ไม่มีข้อมูลด้านใน -->
+            <!-- รายการไฟล์ใหม่ -->
+            <ul v-if="filesNew.length > 0" class="file-list">
+                <!-- ไม่ render อะไรเลยถ้า  filesNew ไม่มีข้อมูลด้านใน -->
 
-            <li v-for="(newFile, index) in filesNew" :key="index">
-                <!-- วนลูปใน array filesNew
+                <li v-for="(newFile, index) in filesNew" :key="index">
+                    <!-- วนลูปใน array filesNew
                 รอบแรก newFile = ไฟล์ที่ index 0, รอบสอง = ไฟล์ที่ index 1 …
                 index = ตำแหน่งไฟล์ใน array -->
 
-                {{ newFile.name }} ({{ prettySize(newFile.size) }})
-                <button type="button" @click="removeFile(index)">✕</button>
-            </li>
-        </ul>
-    </div>
+                    {{ newFile.name }} ({{ prettySize(newFile.size) }})
+                    <button type="button" @click="removeFile(index)">✕</button>
+                </li>
+            </ul>
+        </div>
+</div>
+        <!-- ===== Add Guest (table) ===== -->
+        <h3 style="margin-top: 24px">Add Guest</h3>
 
-    <!-- ===== Add Guest (table) ===== -->
-    <h3 style="margin-top: 24px">Add Guest</h3>
+        <div class="guest-toolbar" style="display:flex;gap:10px;align-items:center;margin:14px 0;">
 
-    <div class="guest-toolbar" style="display:flex;gap:10px;align-items:center;margin:14px 0;">
+            <!-- ช่อง serach -->
+            <input v-model.trim="searchDraft" placeholder="Search..."
+                style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:999px;" />
 
-        <!-- ช่อง serach -->
-        <input v-model.trim="searchDraft" placeholder="Search..."
-            style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:999px;" />
+            <!-- ช่อง dropdown โชว์ข้อมูล department-->
+            <select v-model="filtersDraft.department">
+                <option value="">Department</option>
+                <option v-for="department in departments" :key="department" :value="department">{{ department }}
+                </option>
+            </select>
 
-        <!-- ช่อง dropdown โชว์ข้อมูล department-->
-        <select v-model="filtersDraft.department">
-            <option value="">Department</option>
-            <option v-for="department in departments" :key="department" :value="department">{{ department }}</option>
-        </select>
+            <!-- ช่อง dropdown โชว์ข้อมูล Team-->
+            <select v-model="filtersDraft.team">
+                <option value="">Team</option>
+                <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
+            </select>
 
-        <!-- ช่อง dropdown โชว์ข้อมูล Team-->
-        <select v-model="filtersDraft.team">
-            <option value="">Team</option>
-            <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
-        </select>
-
-        <!-- ช่อง dropdown โชว์ข้อมูล Position-->
-        <select v-model="filtersDraft.position">
-            <option value="">Position</option>
-            <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
-        </select>
-        <button type="button" @click="applySearch">Search</button>
-        <!-- ปุ่ม search เรียก Method applySearch -->
-        <button type="button" @click="resetSearch">Clear</button>
-        <!-- ปุ่ม clear search เรียก Method resetSearch -->
-    </div>
+            <!-- ช่อง dropdown โชว์ข้อมูล Position-->
+            <select v-model="filtersDraft.position">
+                <option value="">Position</option>
+                <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
+            </select>
+            <button type="button" @click="applySearch">Search</button>
+            <!-- ปุ่ม search เรียก Method applySearch -->
+            <button type="button" @click="resetSearch">Clear</button>
+            <!-- ปุ่ม clear search เรียก Method resetSearch -->
+        </div>
 
     <!-- ช่อง table โชว์ข้อมูล พนักงาน-->
     <div class="table-wrap" style="border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff;">
@@ -240,12 +258,14 @@
 
 <script>
 import axios from 'axios';
-import ButtonSuccess from '../../components/ButtonSuccess.vue';
+
+import { Component } from 'react';
 export default {
     data() { // เก็บ state ของฟอร์มไว้ใน component
         return {
+
             eventTitle: '',        // ตัวแปรสำหรับ input "Event Title" เอาไว้เก็บค่าตอน controller ส่งค่ามา
-            evnentCategoryName: '', // ตัวแปรสำหรับ select "Event Category" ที่ส่งมาจาก table อื่น
+            eventCategoryName: '', // ตัวแปรสำหรับ select "Event Category" ที่ส่งมาจาก table อื่น
             eventCategoryId: '',     // <-- ใช้ค่านี้ส่งไป backend ตอนกด save
             selectCategory: [], //เก็บข้อมูล catagory ที่มีทั้งหมด เลยเก็บเป็น array
             eventDescription: '',
@@ -302,7 +322,7 @@ export default {
                 // เอาข้อมูลที่ได้มา map ลงในตัวแปรที่ bind กับ input/textarea
                 this.eventTitle = data?.evn_title ?? '' // ถ้า data หรือ data.evn_title เป็น undefined ให้ใช้ '' แทน
                 this.eventDescription = data?.evn_description ?? ''
-                this.vnentCategoryName = data?.cat_name ?? ''
+                this.eventCategoryName = data?.cat_name ?? ''
                 this.eventDate = data.evn_date.split("T")[0]; //เอาข้อมูลวันมาที่ได้มาแปลง format เป็น "yyyy-MM-dd".ก่อนส่งไปแสดงในช่องกรอก
                 //spit(T) คือแยกข้อมูลเป็น array 2 ช่อง จะได้ ["2023-08-01", "00:00:00.000000Z"] จากแบบ "2023-08-01T00:00:00.000000Z".split("T")
 
