@@ -5,7 +5,8 @@
 /* ===== ฟอนต์พื้นฐาน ===== */
 @layer base {
   :root {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* ใช้ Poppins */
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
   html {
     font-family: var(--font-sans);
