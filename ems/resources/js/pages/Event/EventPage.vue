@@ -112,39 +112,6 @@
         @edit="editEvent" @delete="deleteEvent" />
 
 
-  <!-- หมายเลขเพจ -->
-  <template v-for="(it, idx) in pageItems" :key="idx">
-    <button
-      v-if="it.type==='page'"
-      class="pg-num"
-      :class="{ 'pg-active': it.value===page }"
-      :aria-current="it.value===page ? 'page' : null"
-      @click="goToPage(it.value)"
-    >
-      {{ it.value }}
-    </button>
-
-    <!-- จุดคั่น -->
-    <span v-else class="pg-ellipsis">
-      <i class="dot"></i><i class="dot"></i><i class="dot"></i>
-    </span>
-  </template>
-
-  <button
-  class="pg-arrow"
-  :disabled="page===totalPages || totalPages===0"
-  @click="goToPage(page+1)"
->
-  <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
-    <path
-      d="M6 12 L18 4 L18 20 Z" />
-    />
-  </svg>
-</button>
-
-
-
-    <!-- </div> ปิด div font Poppins -->
 </template>
 
 <script>
@@ -152,8 +119,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 import EventTable from '@/components/IndexEvent/EventTable.vue'   // ← คอมโพเนนต์ตารางใหม่
-import EventFilter from "../../components/IndexEvent/EventFilter.vue";
-import EventSort from "../../components/IndexEvent/EventSort.vue";
+import EventFilter from "@/components/IndexEvent/EventFilter.vue";
+import EventSort from "@/components/IndexEvent/EventSort.vue";
 // components
 
 
