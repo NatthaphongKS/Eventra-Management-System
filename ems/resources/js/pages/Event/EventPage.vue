@@ -10,7 +10,7 @@
                 class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200" />
             <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full
          bg-[#b91c1c] text-white hover:bg-[#991b1b]
-         focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default cursor-default select-none."
+         focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default select-none."
                 @click="applySearch" aria-label="Search" title="ค้นหา (คลิกหรือกด Enter)">
                 <MagnifyingGlassIcon class="h-5 w-5" />
             </button>
