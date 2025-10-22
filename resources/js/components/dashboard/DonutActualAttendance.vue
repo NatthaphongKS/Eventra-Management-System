@@ -1,6 +1,6 @@
 <template>
-  <div class="actual-attendance-card">
-    <h3 class="card-title">Actual Attendance</h3>
+  <div class="donut-content">
+    <h3 class="chart-title">Actual Attendance</h3>
     
     <!-- Loading state -->
     <div v-if="isLoading" class="loading-state">
@@ -180,42 +180,39 @@ export default {
 </script>
 
 <style scoped>
-.actual-attendance-card {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: none;
+.donut-content {
   width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   font-family: 'Inter', 'Poppins', sans-serif;
+  padding: 12px;
 }
 
-.actual-attendance-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.card-title {
+.chart-title {
   font-size: 18px;
   font-weight: 600;
   color: #1f2937;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .donut-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 24px;
+  align-items: center;
+  flex: 1;
+  margin-bottom: 12px;
 }
 
 .donut-chart-wrapper {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 100%;
+  height: 100%;
+  max-width: 240px;
+  max-height: 240px;
+  aspect-ratio: 1;
 }
 
 .donut-svg {
@@ -236,15 +233,15 @@ export default {
 }
 
 .main-number {
-  font-size: 36px;
+  font-size: 48px;
   font-weight: 700;
   color: #1f2937;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .sub-label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: #6b7280;
   text-transform: uppercase;
@@ -276,24 +273,60 @@ export default {
   line-height: 1.4;
 }
 
+.attendance-info {
+  text-align: center;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+.attendance-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.attendance-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.attendance-text {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.3;
+  word-wrap: break-word;
+}
+
 @media (max-width: 768px) {
-  .actual-attendance-card {
-    padding: 20px;
-    max-width: 100%;
+  .donut-content {
+    padding: 8px;
   }
   
   .donut-chart-wrapper {
-    width: 140px;
-    height: 140px;
+    max-width: 180px;
+    max-height: 180px;
   }
   
   .main-number {
-    font-size: 32px;
+    font-size: 36px;
   }
   
-  .card-title {
+  .sub-label {
+    font-size: 14px;
+  }
+  
+  .chart-title {
     font-size: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+  }
+  
+  .attendance-text {
+    font-size: 12px;
   }
 }
 
@@ -303,7 +336,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  flex: 1;
   color: #6b7280;
 }
 
