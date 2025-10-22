@@ -424,8 +424,8 @@ export default {
         TrashIcon,
         SelectField,
         SortMenu,
-        ConfirmDelete,
-        DeleteSucces,
+        ConfirmDelete
+        //DeleteSucces
     },
 
     // สถานะภายในคอมโพเนนต์
