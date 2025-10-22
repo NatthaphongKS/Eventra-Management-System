@@ -7,19 +7,19 @@
         <div class="col-span-8">
 
             <!-- ช่องกรอกชื่ออีเวนต์ -->
-            <div class="grid grid-cols-3">
+            <div class="grid grid-cols-2">
                 <div class="mt-6 md:grid md:grid-cols-[1fr_520px] md:gap-8 items-stretch">
                     <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
          trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
-                    <div >
+                    <div>
                         <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4"
-                            for="eventTitle">Event
+                            >Event
                             Title</label><br />
-                        <input class="border border-[#A1A1A1] rounded-[20px] px-[20px]  disabled:bg-[#F5F5F5]"
-                            type="text" v-model.trim="eventTitle" id="eventTitle" disabled />
+                        <!-- <input class="border border-[#A1A1A1] rounded-[20px] px-[20px]  disabled:bg-[#F5F5F5]"
+                            type="text" v-model.trim="eventTitle" id="eventTitle" disabled /> -->
+                            <InputPill v-model.trim:modelValue ="eventTitle" class="block w-full" />
                         <!-- <InputText :label="'Event Title'" :value="eventTitle" /> -->
                     </div>
-
                     <div>
                         <!-- เลือก Category -->
                         <label>Event Category</label><br />
@@ -258,9 +258,10 @@
 
 <script>
 import axios from 'axios';
+import InputPill from '@/components/Input/InputPill.vue';
 
-import { Component } from 'react';
 export default {
+    components: { InputPill },
     data() { // เก็บ state ของฟอร์มไว้ใน component
         return {
 
