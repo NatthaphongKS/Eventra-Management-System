@@ -20,7 +20,7 @@
         <!-- Toolbar -->
         <EventFilter v-model="filters" :categories="categories" @apply="page = 1" />
 
-        <EventSort v-model="selectedSort" :options="sortOptions" @change="onSortChange" />
+        <EventSort v-model="selectedSort" :options="sortOptions" />
 
         <!-- Summary + Add -->
 
