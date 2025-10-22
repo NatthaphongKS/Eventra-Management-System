@@ -6,20 +6,20 @@
       <!-- หัวตาราง -->
       <thead class="bg-neutral-100 text-neural-800 font-semibold">
         <tr class="text-left text-base">
-          <th class="w-[93px] h-[60px] px-5 py-5">#</th>
-          <th class="w-[850px] h-[60px] px-5 py-5">Category</th>
-          <th class="w-[130px] h-[60px] px-5 py-5 text-center">Created by</th>
-          <th class="w-[250px] h-[6px] px-5 py-5 text-center">Created date (D/M/Y)</th>
-          <th class="w-[100px] h-[60px] px-5 py-5 text-center"></th>
+          <th class="w-[93px] h-[65px] px-5 py-5">#</th>
+          <th class="w-[850px] h-[65px] px-5 py-5">Category</th>
+          <th class="w-[130px] h-[65px] px-5 py-5 text-center">Created by</th>
+          <th class="w-[250px] h-[65x] px-5 py-5 text-center">Created date (D/M/Y)</th>
+          <th class="w-[100px] h-[65px] px-5 py-5 text-center"></th>
         </tr>
       </thead>
 
       <!-- เนื้อหา -->
-      <tbody class="divide-y divide-neutral-200">
+      <tbody class=" divide-y divide-neutral-200">
         <tr
           v-for="(row, idx) in pagedRows"
           :key="row.id"
-          class="text-base text-neutral-600 hover:bg-neutral-50"
+          class="w-[100px] h-[65px] text-base text-neutral-600 hover:bg-neutral-50"
         >
           <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
 
