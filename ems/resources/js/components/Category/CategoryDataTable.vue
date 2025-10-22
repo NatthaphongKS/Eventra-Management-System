@@ -1,33 +1,25 @@
 <template>
   <!-- กล่องตาราง -->
-  <div class="overflow-hidden rounded-2xl border border-gray-200/60 bg-white">
-    <table class="min-w-full divide-y divide-gray-100">
-      <!-- สัดส่วนคอลัมน์ให้ใกล้เคียงภาพ -->
-      <colgroup>
-        <col class="w-14" />         <!-- # -->
-        <col class="w-[48%]" />      <!-- Category -->
-        <col class="w-[20%]" />      <!-- Created by -->
-        <col class="w-[20%]" />      <!-- Created date -->
-        <!-- <col class="w-16" />         Actions -->
-      </colgroup>
+  <div class="overflow-hidden rounded-2xl border border-neutal-200 bg-white">
+    <table class="min-w-full divide-y divide-neutral-200">
 
       <!-- หัวตาราง -->
-      <thead class="bg-gray-50 text-gray-600">
-        <tr class="text-left text-sm">
-          <th class="px-6 py-3 font-semibold">#</th>
-          <th class="px-6 py-3 font-semibold">Category</th>
-          <th class="px-6 py-3 font-semibold text-center sm:text-left">Created by</th>
-          <th class="px-6 py-3 font-semibold text-center sm:text-left">Created date (D/M/Y)</th>
-          <th class="px-6 py-3 font-semibold text-center"></th>
+      <thead class="bg-neutral-100 text-neural-800 font-semibold">
+        <tr class="text-left text-base">
+          <th class="w-[93px] h-[60px] px-5 py-5">#</th>
+          <th class="w-[850px] h-[60px] px-5 py-5">Category</th>
+          <th class="w-[130px] h-[60px] px-5 py-5 text-center">Created by</th>
+          <th class="w-[250px] h-[6px] px-5 py-5 text-center">Created date (D/M/Y)</th>
+          <th class="w-[100px] h-[60px] px-5 py-5 text-center"></th>
         </tr>
       </thead>
 
       <!-- เนื้อหา -->
-      <tbody class="divide-y divide-gray-100">
+      <tbody class="divide-y divide-neutral-200">
         <tr
           v-for="(row, idx) in pagedRows"
           :key="row.id"
-          class="text-sm text-gray-800 hover:bg-gray-50"
+          class="text-base text-neutral-600 hover:bg-neutral-50"
         >
           <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
 
@@ -35,11 +27,11 @@
             <div class="truncate-text" :title="row.name">{{ row.name }}</div>
           </td>
 
-          <td class="px-6 py-3 text-center sm:text-left">
+          <td class="px-6 py-3 text-center">
             {{ row.createdBy || '-' }}
           </td>
 
-          <td class="px-6 py-3 text-center sm:text-left">
+          <td class="px-6 py-3 text-center">
             {{ formatDate(row.createdAt) }}
           </td>
 
@@ -48,22 +40,22 @@
             <div class="flex items-center justify-center gap-2">
               <!-- Edit -->
               <button
-                class="grid h-8 w-8 place-items-center rounded-full text-gray-500 hover:bg-emerald-50 hover:text-emerald-600"
+                class="grid h-8 w-8 place-items-center rounded-full text-neutal-800 hover:text-emerald-600"
                 @click="$emit('edit', row)"
                 title="Edit"
                 aria-label="edit"
               >
-                <span class="material-symbols-outlined text-[20px]">edit</span>
+                <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
               </button>
 
               <!-- Delete -->
               <button
-                class="grid h-8 w-8 place-items-center rounded-full text-gray-500 hover:bg-red-50 hover:text-red-600"
+                class="grid h-8 w-8 place-items-center rounded-full text-neutal-00 hover:text-red-600"
                 @click="$emit('delete', row.id)"
                 title="Delete"
                 aria-label="delete"
               >
-                <span class="material-symbols-outlined text-[20px]">delete</span>
+                <Icon icon="fluent:delete-12-filled" width="20" height="20" />
               </button>
             </div>
           </td>
@@ -117,10 +109,12 @@
       </button>
     </div>
   </div>
+
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { Icon } from '@iconify/vue'
 
 /** ===== Types ===== */
 type Row = {
@@ -159,12 +153,3 @@ const visibleCountText = computed(() =>
   total.value === 0 ? "0 จาก 0 รายการ" : `${endIndex.value} จาก ${total.value} รายการ`
 );
 </script>
-
-<style scoped>
-.truncate-text{
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
-  max-width: 680px; /* ให้ฟีลเหมือนภาพ */
-}
-</style>
