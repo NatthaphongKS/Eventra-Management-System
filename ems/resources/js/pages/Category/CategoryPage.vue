@@ -2,7 +2,7 @@
   <section class="p-0">
     <!-- Toolbar -->
     <div class="flex items-center gap-3 mb-4 overflow-visible">
-      
+
       <!-- Search bar -->
       <SearchBar
       v-model="searchInput"
@@ -32,7 +32,6 @@
       @delete="requestDelete"
       @update:page="page = $event"
       @update:pageSize="onChangePageSize"
-      class="mt-4"
     />
 
     <!-- Mobile Card View -->
@@ -64,14 +63,13 @@
     <!-- ConfirmDelete Component -->
     <ConfirmDelete
       v-model:open="confirmOpen"
-      :category="deleting"
       @cancel="cancelDelete"
       @confirm="confirmDelete"
     />
 
     <!-- DeleteSuccess Component -->
-    <DeleteSucces 
-      v-model:open="successOpen" 
+    <DeleteSucces
+      v-model:open="successOpen"
       @close="successOpen = false"  />
 
     <!-- Create / Edit modals -->
@@ -97,7 +95,7 @@ import DeleteSucces from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
 import SearchBar from "../../components/SearchBar.vue";
 
 
-axios.defaults.baseURL = "/api";
+axios.defaults.baseURL = 'http://127.0.0.1:8000/api'
 axios.defaults.headers.common["Accept"] = "application/json";
 axios.defaults.withCredentials = true;
 

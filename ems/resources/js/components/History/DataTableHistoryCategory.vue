@@ -63,7 +63,7 @@
                 </select>
                 <span>{{ rowStartIndex + 1  }}- {{pagedRows.length +rowStartIndex }} รายการ</span>
                 <div class="text-xs text-slate-500">
-                    {{ displayFrom }}{{ displayTo }} จาก {{ totalItems }} รายการ
+                     จาก {{ totalItems }} รายการ
                 </div>
             </div>
 
@@ -94,7 +94,7 @@
         <button class="pg-arrow" :disabled="page === totalPages || totalPages === 0" @click="goToPage(page + 1)">
             <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
                 <path d="M6 12 L18 4 L18 20 Z" />
-                
+
             </svg>
         </button>
     </div>
