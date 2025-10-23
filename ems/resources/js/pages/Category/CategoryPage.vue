@@ -143,142 +143,190 @@
   />
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import Swal from "sweetalert2";
+<script>
 import axios from "axios";
-
 import CategorySort from "@/components/Category/CategorySort.vue";
+import CategoryDataTable from "@/components/Category/CategoryDataTable.vue";
 import CategoryCreate from "@/components/Category/CategoryCreate.vue";
 import CategoryEdit from "@/components/Category/CategoryEdit.vue";
+import ConfirmDelete from "@/components/Alert/ConfirmDelete.vue";
+import DeleteSucces from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
+import SearchBar from "../../components/SearchBar.vue";
 
-/* Axios Config */
+
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
 axios.defaults.withCredentials = true;
 
-async function ensureCsrf() {
-  try { await axios.get("/sanctum/csrf-cookie"); } catch(e){ console.error(e); }
-}
+export default {
+  name: "CategoryPage",
+  components: {
+    SearchBar,
+    CategorySort,
+    CategoryDataTable,
+    CategoryCreate,
+    CategoryEdit,
+    ConfirmDelete,
+    DeleteSucces,
+  },
+  data() {
+    return {
+      rows: [],
+      searchInput: "",
+      search: "",
+      page: 1,
+      pageSize: 10,
+      sortDir: "desc",
+      addOpen: false,
+      editOpen: false,
+      editing: null,
+      newName: "",
+      userName: "Admin",
+      confirmOpen: false,
+      successOpen: false,
+      deleting: null,
+    };
+  },
+  computed: {
+    filtered() {
+    const q = this.search.trim().toLowerCase();
+    if (!q) return this.rows.slice();
+    return this.rows.filter(
+      (r) =>
+        (r.name && r.name.toLowerCase().includes(q)) ||
+        (r.createdBy && r.createdBy.toLowerCase().includes(q))
+    );
+    },
 
-type Row = { id: number; name: string; createdBy: string; createdAt: string | null; };
-
-const rows = ref<Row[]>([]);
-const searchInput = ref("");
-const appliedQuery = ref("");
-const page = ref(1);
-const pageSize = ref(10);
-const sortDir = ref<"asc" | "desc">("desc");
-const addOpen = ref(false);
-const editOpen = ref(false);
-const editing = ref<Row | null>(null);
-const newName = ref("");
-const userName = ref("Admin");
-
-/* Helpers */
-function norm(s: unknown){ return String(s ?? "").trim().toLowerCase(); }
-function toTime(iso?: string | null){ const t = iso ? new Date(iso).getTime() : NaN; return Number.isFinite(t) ? t : 0; }
-function formatDate(iso?: string | null){
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "-";
-  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
-}
-
-/* Load Data */
-async function loadCategories(){
-  try {
-    const res = await axios.get("/categories");
-    const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
-    rows.value = data.map((c:any)=>({
-      id: c.id,
-      name: c.cat_name ?? c.emc_name ?? "",
-      createdBy: c.created_by_name ?? c.created_by ?? "-",
-      createdAt: c.cat_created_at ?? c.cat_create_at ?? c.created_at ?? null,
-    }));
-  } catch (e:any) {
-    Swal.fire({ title:"โหลดข้อมูลไม่สำเร็จ", text:e?.message, icon:"error" });
-  }
-}
-onMounted(loadCategories);
-
-/* Derived */
-const filtered = computed(()=> {
-  const q = norm(appliedQuery.value);
-  return !q ? rows.value.slice() : rows.value.filter(r=>norm(r.name).includes(q)||norm(r.createdBy).includes(q));
-});
-const sorted = computed(()=> {
-  const dir = sortDir.value==="asc"?1:-1;
-  return filtered.value.slice().sort((a,b)=>(toTime(a.createdAt)-toTime(b.createdAt))*dir);
-});
-const total = computed(()=>sorted.value.length);
-const totalPages = computed(()=>Math.ceil(total.value/pageSize.value));
-const startIndex = computed(()=> (page.value-1)*pageSize.value);
-const endIndex = computed(()=> Math.min(startIndex.value+pageSize.value,total.value));
-const pagedRows = computed(()=> sorted.value.slice(startIndex.value,endIndex.value));
-const visibleCountText = computed(()=> total.value===0? "0 จาก 0 รายการ": `${endIndex.value} จาก ${total.value} รายการ`);
-
-/* Search */
-function onSearch(){ appliedQuery.value = searchInput.value.trim(); page.value=1; }
-
-/* Add */
-function openAdd(){ newName.value=""; addOpen.value=true; }
-const isDuplicate = computed(()=> rows.value.some(r=>norm(r.name)===norm(newName.value)));
-async function createCategory(nameFromModal:string){
-  const name = nameFromModal.trim(); if(!name) return;
-  if(rows.value.some(r=>norm(r.name)===norm(name))) return Swal.fire({title:"มีชื่อนี้อยู่แล้ว",icon:"warning"});
-  await ensureCsrf();
-  const res = await axios.post("/categories",{cat_name:name});
-  const created = res.data?.data??res.data;
-  rows.value.unshift({
-    id:created.id,
-    name:created.cat_name??name,
-    createdBy:userName.value,
-    createdAt:created.cat_created_at??created.created_at??null,
-  });
-  addOpen.value=false; Swal.fire({title:"เพิ่มสำเร็จ!",icon:"success"});
-}
-
-/* Edit */
-function openEdit(row:Row){ editing.value={...row}; editOpen.value=true; }
-function isDupForEdit(name:string,id?:number){ const n=norm(name); return rows.value.some(r=>norm(r.name)===n && r.id!==id); }
-async function updateCategory(payload:{id:number; name:string;}){
-  await ensureCsrf(); await axios.patch(`/categories/${payload.id}`,{cat_name:payload.name});
-  const i=rows.value.findIndex(r=>r.id===payload.id); if(i!==-1) rows.value[i].name=payload.name;
-  editOpen.value=false; Swal.fire({title:"บันทึกสำเร็จ!",icon:"success"});
-}
-
-/* Delete */
-function remove(id:number){
-  Swal.fire({title:"ลบหมวดหมู่?",icon:"warning",showCancelButton:true}).then(async(res)=>{
-    if(!res.isConfirmed) return;
-    const backup=[...rows.value]; rows.value=rows.value.filter(r=>r.id!==id);
-    try{ await ensureCsrf(); await axios.delete(`/categories/${id}`); Swal.fire({title:"ลบสำเร็จ",icon:"success"});}
-    catch{ rows.value=backup; Swal.fire({title:"ลบไม่สำเร็จ",icon:"error"}); }
-  });
-}
+    sorted() {
+      const dir = this.sortDir === "asc" ? 1 : -1;
+      return this.filtered.slice().sort((a, b) => {
+        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return (ta - tb) * dir;
+      });
+    },
+    total() {
+      return this.sorted.length;
+    },
+    startIndex() {
+      return (this.page - 1) * this.pageSize;
+    },
+    mobilePaged() {
+      return this.sorted.slice(this.startIndex, this.startIndex + this.pageSize);
+    },
+    isDuplicate() {
+      return this.rows.some((r) => (r.name || "").trim().toLowerCase() === (this.newName || "").trim().toLowerCase());
+    },
+    isDupForEdit() {
+      return (name, id) => this.rows.some((r) => r.id !== id && (r.name || "").trim().toLowerCase() === (name || "").trim().toLowerCase());
+    },
+  },
+  async created() {
+    await this.loadCategories();
+  },
+  methods: {
+    formatDate(iso) {
+      if (!iso) return "-";
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "-";
+      return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+    },
+    async loadCategories() {
+      try {
+        const res = await axios.get("/categories");
+        const data = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.data)
+          ? res.data.data
+          : Array.isArray(res.data?.categories)
+          ? res.data.categories
+          : [];
+        this.rows = data.map((c) => ({
+          id: c.id,
+          name: c.cat_name ?? c.name ?? "",
+          createdBy: c.created_by_name ?? c.created_by ?? "-",
+          createdAt: c.cat_created_at ?? c.created_at ?? null,
+        }));
+      } catch (e) {
+        console.error(e);
+        this.rows = [];
+      }
+    },onSearch(value) {
+    this.search = value.trim();
+    this.page = 1;
+    },
+    openAdd() {
+      this.newName = "";
+      this.addOpen = true;
+    },
+    async createCategory(nameFromModal) {
+      const name = (nameFromModal || "").trim();
+      if (!name) return;
+      if (this.rows.some((r) => (r.name || "").trim().toLowerCase() === name.toLowerCase())) return;
+      try {
+        await axios.get("/sanctum/csrf-cookie").catch(() => {});
+        const res = await axios.post("/categories", { cat_name: name });
+        const created = res.data?.data ?? res.data;
+        this.rows.unshift({
+          id: created.id,
+          name: created.cat_name ?? name,
+          createdBy: this.userName,
+          createdAt: created.cat_created_at ?? created.created_at ?? null,
+        });
+        this.addOpen = false;
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    openEdit(row) {
+      this.editing = { ...row };
+      this.editOpen = true;
+    },
+    async updateCategory(payload) {
+      try {
+        await axios.get("/sanctum/csrf-cookie").catch(() => {});
+        await axios.patch(`/categories/${payload.id}`, { cat_name: payload.name });
+        const i = this.rows.findIndex((r) => r.id === payload.id);
+        if (i !== -1) this.rows[i].name = payload.name;
+        this.editOpen = false;
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    requestDelete(arg) {
+      this.deleting = typeof arg === "number" ? this.rows.find((r) => r.id === arg) : arg;
+      this.confirmOpen = true;
+    },
+    cancelDelete() {
+      this.deleting = null;
+      this.confirmOpen = false;
+    },
+    async confirmDelete() {
+      if (!this.deleting) return;
+      const id = this.deleting.id;
+      const backup = [...this.rows];
+      this.rows = this.rows.filter((r) => r.id !== id);
+      this.confirmOpen = false;
+      try {
+        await axios.get("/sanctum/csrf-cookie").catch(() => {});
+        await axios.delete(`/categories/${id}`);
+        this.successOpen = true; // เปิด DeleteSuccess modal
+      } catch (e) {
+        console.error(e);
+        this.rows = backup;
+      } finally {
+        this.deleting = null;
+      }
+    },
+    onChangePageSize(newSize) {
+      this.pageSize = Number(newSize) || 10;
+      this.page = 1;
+    }
+  },
+};
 </script>
 
-<style>
-/* ✅ Material Symbols Styling */
-.material-symbols-outlined {
-  font-family: "Material Symbols Outlined";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  display: inline-block;
-  white-space: nowrap;
-  direction: ltr;
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
-}
-.truncate {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+<style scoped>
+/* เพิ่มสไตล์ถ้าต้องการ */
 </style>
