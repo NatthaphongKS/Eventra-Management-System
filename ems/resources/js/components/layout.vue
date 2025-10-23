@@ -18,7 +18,7 @@
                         <!-- มี children = เมนูหลักแบบพับได้ -->
                         <div v-if="item.children" class="flex flex-col ">
                             <button type="button" @click="toggle(item.to)"
-                                class="group inline-flex items-center justify-between rounded-2xl px-3 py-2.5 text-lg font-medium transition"
+                                class="group inline-flex items-center justify-between rounded-2xl px-3 py-2.5 text-lg font-semibold transition"
                                 :class="(isActive(item.to) || expanded[item.to])
                                     ? 'bg-rose-100 text-red-700'
                                     : 'text-gray-700 hover:bg-slate-50'">
@@ -53,7 +53,7 @@
 
                         <!-- ไม่มี children = ลิงก์ปกติ -->
                         <RouterLink v-else :to="item.to"
-                            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-lg font-medium transition"
+                            class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2.5 text-lg transition font-semibold"
                             :class="isActive(item.to)
                                 ? 'bg-rose-100 text-red-700'
                                 : 'text-slate-700 hover:bg-slate-50'">

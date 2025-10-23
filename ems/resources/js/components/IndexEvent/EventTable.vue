@@ -137,8 +137,8 @@
                 </div>
 
                 <span>{{ rowStartIndex + 1 }}-{{ pagedRows.length + rowStartIndex }} </span>
-                <div class="font-regular font-[Poppins]">
-                    {{ displayFrom }}{{ displayTo }} จาก {{ totalItems }} รายการ
+                <div class="font-regular font-poppins">
+                    จาก {{ totalItems }} รายการ
                 </div>
             </div>
         </div>

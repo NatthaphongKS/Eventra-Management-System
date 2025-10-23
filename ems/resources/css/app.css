@@ -5,8 +5,8 @@
 /* ===== ฟอนต์พื้นฐาน ===== */
 @layer base {
   :root {
-    /* ใช้ Poppins (EN) + Prompt (TH) เป็น stack หลัก */
-    --font-sans: 'Poppins', 'Prompt', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* ใช้ Poppins */
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
   html {
     font-family: var(--font-sans);
