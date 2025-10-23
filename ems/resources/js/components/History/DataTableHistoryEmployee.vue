@@ -93,7 +93,7 @@
                 </select>
                 <span>{{ rowStartIndex + 1  }}- {{pagedRows.length +rowStartIndex }} รายการ</span>
                 <div class="text-xs text-slate-500">
-                    {{ displayFrom }}{{ displayTo }} จาก {{ totalItems }} รายการ
+                     จาก {{ totalItems }} รายการ
                 </div>
             </div>
 
@@ -128,7 +128,7 @@
             </svg>
         </button>
     </div>
-    
+
 </template>
 
 <script>
