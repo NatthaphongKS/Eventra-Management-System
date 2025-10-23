@@ -7,23 +7,20 @@
         <div class="col-span-8">
 
             <!-- ช่องกรอกชื่ออีเวนต์ -->
-            <div class="grid grid-cols-2">
-                <div class="mt-6 md:grid md:grid-cols-[1fr_520px] md:gap-8 items-stretch">
+            <div class="grid ">
+                <div class="mt-6 md:grid md:grid-cols-[3fr_200px] md:gap-8 items-stretch">
                     <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
          trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
                     <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4"
-                            >Event
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Event
                             Title</label><br />
-                        <!-- <input class="border border-[#A1A1A1] rounded-[20px] px-[20px]  disabled:bg-[#F5F5F5]"
-                            type="text" v-model.trim="eventTitle" id="eventTitle" disabled /> -->
-                            <InputPill v-model.trim:modelValue ="eventTitle" class="block w-full" />
-                        <!-- <InputText :label="'Event Title'" :value="eventTitle" /> -->
+                        <InputPill v-model="eventTitle" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
+             border border-neutral-200 rounded-[20px] px-5" />
                     </div>
                     <div>
                         <!-- เลือก Category -->
                         <label>Event Category</label><br />
-                        <select class="border border-neutral-200 rounded-[20px] px-[20px]" v-model="eventCategoryId">
+                        <select class="border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px]" v-model="eventCategoryId">
                             <!-- v-model ตรงนี้จะผูกค่ากับ evn_category_id โหลดครั้งแรกจะได้ค่าเก่า + ถ้าเลืกใหม่จะได้ค่าใหม่ เวลาส่งไป save ก็จะส่งเป็น id -->
 
                             <!-- ถ้าหมวดเดิมเป็น inactive แต่อยากแสดงไว้ -->
@@ -41,12 +38,14 @@
                     </div>
                 </div>
             </div>
-            <div>
-                <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
+
+            <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
+            <div >
                 <!-- v-model.trim="evn_description" = ผูกค่ากับตัวแปร evn_description อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม-->
                 <label>Event Description</label><br />
-                <textarea style="border: 2px solid black;" v-model.trim="eventDescription"></textarea><br>
+                <textarea class="border border-neutral-200 w-full h-[165px] rounded-2xl" v-model.trim="eventDescription"></textarea>
             </div>
+
 
             <div class="grid grid-cols-3">
                 <div>
@@ -77,7 +76,7 @@
             <input type="text" v-model="eventLocation"></input>
         </div>
         <!-- Upload attachments -->
-        <div class="col-span-4" style="margin: 20px" >
+        <div class="col-span-4" style="margin: 20px">
             <label>Upload attachments</label>
 
             <!-- ไฟล์เดิม -->
@@ -145,39 +144,39 @@
                 </li>
             </ul>
         </div>
-</div>
-        <!-- ===== Add Guest (table) ===== -->
-        <h3 style="margin-top: 24px">Add Guest</h3>
+    </div>
+    <!-- ===== Add Guest (table) ===== -->
+    <h3 style="margin-top: 24px">Add Guest</h3>
 
-        <div class="guest-toolbar" style="display:flex;gap:10px;align-items:center;margin:14px 0;">
+    <div class="guest-toolbar" style="display:flex;gap:10px;align-items:center;margin:14px 0;">
 
-            <!-- ช่อง serach -->
-            <input v-model.trim="searchDraft" placeholder="Search..."
-                style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:999px;" />
+        <!-- ช่อง serach -->
+        <input v-model.trim="searchDraft" placeholder="Search..."
+            style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:999px;" />
 
-            <!-- ช่อง dropdown โชว์ข้อมูล department-->
-            <select v-model="filtersDraft.department">
-                <option value="">Department</option>
-                <option v-for="department in departments" :key="department" :value="department">{{ department }}
-                </option>
-            </select>
+        <!-- ช่อง dropdown โชว์ข้อมูล department-->
+        <select v-model="filtersDraft.department">
+            <option value="">Department</option>
+            <option v-for="department in departments" :key="department" :value="department">{{ department }}
+            </option>
+        </select>
 
-            <!-- ช่อง dropdown โชว์ข้อมูล Team-->
-            <select v-model="filtersDraft.team">
-                <option value="">Team</option>
-                <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
-            </select>
+        <!-- ช่อง dropdown โชว์ข้อมูล Team-->
+        <select v-model="filtersDraft.team">
+            <option value="">Team</option>
+            <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
+        </select>
 
-            <!-- ช่อง dropdown โชว์ข้อมูล Position-->
-            <select v-model="filtersDraft.position">
-                <option value="">Position</option>
-                <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
-            </select>
-            <button type="button" @click="applySearch">Search</button>
-            <!-- ปุ่ม search เรียก Method applySearch -->
-            <button type="button" @click="resetSearch">Clear</button>
-            <!-- ปุ่ม clear search เรียก Method resetSearch -->
-        </div>
+        <!-- ช่อง dropdown โชว์ข้อมูล Position-->
+        <select v-model="filtersDraft.position">
+            <option value="">Position</option>
+            <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
+        </select>
+        <button type="button" @click="applySearch">Search</button>
+        <!-- ปุ่ม search เรียก Method applySearch -->
+        <button type="button" @click="resetSearch">Clear</button>
+        <!-- ปุ่ม clear search เรียก Method resetSearch -->
+    </div>
 
     <!-- ช่อง table โชว์ข้อมูล พนักงาน-->
     <div class="table-wrap" style="border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff;">
