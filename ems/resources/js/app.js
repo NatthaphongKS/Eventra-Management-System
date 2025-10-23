@@ -13,10 +13,10 @@ axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 axios.defaults.headers.common['X-CSRF-TOKEN'] =
   document.querySelector('meta[name="csrf-token"]')?.content
 axios.defaults.withCredentials = true
-
 if (document.getElementById('reply-app')) {
   createApp(ReplyForm).mount('#reply-app')   // สำหรับหน้า reply
 } else if (document.getElementById('app')) {
-  createApp(App).mount('#app')               // สำหรับหน้าอื่น
+  // (ลบส่วนนี้ออก ให้ main.js จัดการแทน)
+  // createApp(App).mount('#app')
 }
 
