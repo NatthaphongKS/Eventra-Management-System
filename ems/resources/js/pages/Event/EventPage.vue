@@ -132,8 +132,10 @@ import {
 } from '@heroicons/vue/24/outline';
 
 
-axios.defaults.baseURL = "/api";
-axios.defaults.headers.common["Accept"] = "application/json";
+axios.defaults.baseURL = '/api'
+axios.defaults.headers.common['Accept'] = 'application/json'
+axios.defaults.withCredentials = true
+
 
 export default {
     components: { MagnifyingGlassIcon, PencilIcon, TrashIcon, EventTable, EventFilter, EventSort },

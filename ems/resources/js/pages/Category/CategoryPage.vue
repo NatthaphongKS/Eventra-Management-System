@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from '@/plugin/axios'
 import CategorySort from "@/components/Category/CategorySort.vue";
 import CategoryDataTable from "@/components/Category/CategoryDataTable.vue";
 import CategoryCreate from "@/components/Category/CategoryCreate.vue";
@@ -95,9 +95,7 @@ import DeleteSucces from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
 import SearchBar from "../../components/SearchBar.vue";
 
 
-axios.defaults.baseURL = 'http://127.0.0.1:8000/api'
-axios.defaults.headers.common["Accept"] = "application/json";
-axios.defaults.withCredentials = true;
+
 
 export default {
   name: "CategoryPage",
