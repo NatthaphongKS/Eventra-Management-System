@@ -3,7 +3,7 @@
   <div ref="root" class="relative inline-block">
     <button
       type="button"
-      class="inline-flex h-11 items-center gap-2 px-3 text-neutral-800 font-medium font-poppins
+      class="inline-flex h-11 items-center gap-2 px-3 text-neutral-800 font-medium font-[Poppins]
              hover:text-slate-900 focus:outline-none  rounded-md "
       @click="open = !open"
     >
