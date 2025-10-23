@@ -54,41 +54,8 @@
       </thead>
 
       <tbody class="divide-y divide-gray-100">
-        <tr
-          v-for="(row, idx) in pagedRows"
-          :key="row.id"
-          class="text-sm text-gray-700 hover:bg-gray-50"
-        >
-          <td class="px-6 py-3">{{ startIndex + idx + 1 }}</td>
-          <td class="px-6 py-3 truncate">{{ row.name }}</td>
-          <td class="px-6 py-3">{{ row.createdBy }}</td>
-          <td class="px-6 py-3">{{ formatDate(row.createdAt) }}</td>
-          <td class="px-6 py-3 text-center flex justify-center gap-1">
-            <!-- ปุ่ม Edit -->
-            <button
-              class="rounded-full p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"
-              @click="openEdit(row)"
-              title="Edit"
-            >
-              <span class="material-symbols-outlined">edit</span>
-            </button>
 
-            <!-- ปุ่ม Delete -->
-            <button
-              class="rounded-full p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50"
-              @click="remove(row.id)"
-              title="Delete"
-            >
-              <span class="material-symbols-outlined">delete</span>
-            </button>
-          </td>
-        </tr>
 
-        <tr v-if="pagedRows.length === 0">
-          <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
-            ไม่พบข้อมูลที่ค้นหา
-          </td>
-        </tr>
       </tbody>
     </table>
   </div>
