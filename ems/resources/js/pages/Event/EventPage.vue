@@ -10,8 +10,8 @@
                 class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200" />
             <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full
          bg-[#b91c1c] text-white hover:bg-[#991b1b]
-         focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default select-none."
-                @click="applySearch" aria-label="Search" title="ค้นหา (คลิกหรือกด Enter)">
+         focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default select-none." @click="applySearch"
+                aria-label="Search" title="ค้นหา (คลิกหรือกด Enter)">
                 <MagnifyingGlassIcon class="h-5 w-5" />
             </button>
         </div>
@@ -112,35 +112,25 @@
         @edit="editEvent" @delete="deleteEvent" />
 
 
-  <!-- หมายเลขเพจ -->
-  <template v-for="(it, idx) in pageItems" :key="idx">
-    <button
-      v-if="it.type==='page'"
-      class="pg-num"
-      :class="{ 'pg-active': it.value===page }"
-      :aria-current="it.value===page ? 'page' : null"
-      @click="goToPage(it.value)"
-    >
-      {{ it.value }}
+    <!-- หมายเลขเพจ -->
+    <template v-for="(it, idx) in pageItems" :key="idx">
+        <button v-if="it.type === 'page'" class="pg-num" :class="{ 'pg-active': it.value === page }"
+            :aria-current="it.value === page ? 'page' : null" @click="goToPage(it.value)">
+            {{ it.value }}
+        </button>
+
+        <!-- จุดคั่น -->
+        <span v-else class="pg-ellipsis">
+            <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        </span>
+    </template>
+
+    <button class="pg-arrow" :disabled="page === totalPages || totalPages === 0" @click="goToPage(page + 1)">
+        <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
+            <path d="M6 12 L18 4 L18 20 Z" />
+            />
+        </svg>
     </button>
-
-    <!-- จุดคั่น -->
-    <span v-else class="pg-ellipsis">
-      <i class="dot"></i><i class="dot"></i><i class="dot"></i>
-    </span>
-  </template>
-
-  <button
-  class="pg-arrow"
-  :disabled="page===totalPages || totalPages===0"
-  @click="goToPage(page+1)"
->
-  <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
-    <path
-      d="M6 12 L18 4 L18 20 Z" />
-    />
-  </svg>
-</button>
 
 
 
