@@ -18,7 +18,9 @@
 
         <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
         <!-- Toolbar -->
-        <EventFilter v-model="filters" :categories="categories" @apply="page = 1" />
+        <!-- ปุ่ม Filter กลาง (schema-driven) -->
+        <Filter v-model="filters" :filter-fields="filterFields" button-label="Filter" @apply="page = 1" />
+
 
         <EventSort v-model="selectedSort" :options="sortOptions" />
 
@@ -30,80 +32,6 @@
          focus:ring-2 focus:ring-red-300">
             + Add
         </router-link>
-        <!-- ==== Filter Panel ==== -->
-        <div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div class="grid gap-3 sm:grid-cols-3">
-                <!-- Category -->
-                <label class="text-sm">
-                    <span class="mb-1 block text-slate-600">Category</span>
-                    <select v-model="flt.category" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
-                        <option value="all">All</option>
-                        <option v-for="c in categories" :key="c.id" :value="String(c.id)">
-                            {{ c.cat_name }}
-                        </option>
-                    </select>
-                </label>
-
-                <!-- Status -->
-                <label class="text-sm">
-                    <span class="mb-1 block text-slate-600">Status</span>
-                    <select v-model="flt.status" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
-                        <option value="upcoming">Upcoming</option>
-                        <option value="done">Done</option>
-                    </select>
-                </label>
-
-                <!-- Date range -->
-                <!--
-    <div class="grid grid-cols-2 gap-2 text-sm">
-      <label>
-        <span class="mb-1 block text-slate-600">From</span>
-        <input v-model="flt.dateFrom" type="date"
-               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
-      </label>
-      <label>
-        <span class="mb-1 block text-slate-600">To</span>
-        <input v-model="flt.dateTo" type="date"
-               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2" />
-      </label>
-    </div>
-    -->
-
-            </div>
-
-            <!-- Actions / chips -->
-            <div class="mt-3 flex flex-wrap items-center gap-2">
-                <button type="button"
-                    class="rounded-full bg-[#b91c1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#991b1b]"
-                    @click="applyFilters">
-                    Apply
-                </button>
-                <button type="button"
-                    class="rounded-full border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-white"
-                    @click="clearFilters">
-                    Clear
-                </button>
-
-                <!-- แสดง chips ของ filter ที่ใช้งาน -->
-                <template v-if="hasActiveFilters">
-                    <span class="ml-2 text-xs text-slate-500">Active:</span>
-                    <span v-if="flt.category !== 'all'"
-                        class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
-                        Category: {{ catMap[flt.category] || flt.category }}
-                    </span>
-                    <span v-if="flt.status !== 'all'"
-                        class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
-                        Status: {{ flt.status }}
-                    </span>
-                    <!-- Date range -->
-                    <!--
-      <span v-if="flt.dateFrom || flt.dateTo" class="rounded-full bg-white px-2.5 py-1 text-xs ring-1 ring-slate-200">
-        Date: {{ flt.dateFrom || '...' }} → {{ flt.dateTo || '...' }}
-      </span>
-      -->
-                </template>
-            </div>
-        </div>
         <!-- ==== Sort Panel ==== -->
     </div>
 
@@ -119,7 +47,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 import EventTable from '@/components/IndexEvent/EventTable.vue'   // ← คอมโพเนนต์ตารางใหม่
-import EventFilter from "@/components/IndexEvent/EventFilter.vue";
+import Filter from '@/components/Button/Filter.vue'
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 // components
 
@@ -138,7 +66,11 @@ axios.defaults.withCredentials = true
 
 
 export default {
-    components: { MagnifyingGlassIcon, PencilIcon, TrashIcon, EventTable, EventFilter, EventSort },
+    components: {
+        MagnifyingGlassIcon, PencilIcon, TrashIcon,
+        EventTable, Filter, EventSort
+    },
+
     filters: { category: [], status: [] },
     data() {
         return {
@@ -149,7 +81,7 @@ export default {
             searchInput: "",
             search: "",
 
-            showFilter: false,
+
             showSort: false,
 
             sortBy: "evn_date",
@@ -178,13 +110,6 @@ export default {
             // <<< เพิ่มให้มาอยู่ใน data()
             filters: { category: [], status: [] },
 
-            flt: {
-                category: 'all',
-                status: 'all',
-                dateFrom: '',
-                dateTo: ''
-            },
-            _appliedFlt: null,
         }
     },
 
@@ -198,6 +123,37 @@ export default {
         event() { this.page = 1; },
     },
     computed: {
+        filterFields() {
+            // ตัวเลือก Category มาจาก API
+            const categoryOptions = this.categories.map(c => ({
+                label: c.cat_name,
+                value: String(c.id),
+            }))
+
+            // ตัวเลือก Status แบบ checkbox
+            const statusOptions = [
+                { label: 'Done', value: 'done' },
+                { label: 'Ongoing', value: 'ongoing' },
+                { label: 'Upcoming', value: 'upcoming' },
+            ]
+
+            return [
+                {
+                    fieldKey: 'category',
+                    label: 'Category',
+                    fieldType: 'checkbox',
+                    sectionTitle: 'Category',
+                    fieldOptions: categoryOptions,
+                },
+                {
+                    fieldKey: 'status',
+                    label: 'Status',
+                    fieldType: 'checkbox',
+                    sectionTitle: 'Status',
+                    fieldOptions: statusOptions,
+                },
+            ]
+        },
         hasActiveFilters() {
             const f = this._appliedFlt || this.flt
             return f.category !== 'all' || f.status !== 'all' || !!(f.dateFrom || f.dateTo)
@@ -333,7 +289,7 @@ export default {
             this.$router.push(`/EditEvent/${id}`)
         },
         // ไว้ให้ปุ่มไม่ error (ต่อยอดภายหลังได้)
-        toggleFilter() { this.showFilter = !this.showFilter; },
+
         toggleSort() { this.showSort = !this.showSort; },
         goToPage(p) { if (p < 1) p = 1; if (p > this.totalPages) p = this.totalPages || 1; this.page = p; },
         // editEvent(id) { console.log("Edit event", id); },
