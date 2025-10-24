@@ -148,8 +148,7 @@ export default {
         await this.loadCategories();
     },
     methods: {
-        openAlert(cfg = {}) {
-
+        openAlert(AlertConfig = {}) {
             // รีเซ็ต handler เก่า
             this.alert.onConfirm = null
             this.alert.onCancel = null
@@ -161,7 +160,7 @@ export default {
                 showCancel: false,
                 okText: 'OK',
                 cancelText: 'Cancel',
-            }, cfg)
+            }, AlertConfig)
 
 
         },

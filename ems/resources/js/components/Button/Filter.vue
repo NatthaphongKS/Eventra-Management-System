@@ -1,73 +1,78 @@
 <template>
   <div class="relative inline-block text-left" ref="dropdownRoot" @keydown.esc="isOpen = false">
-    <!-- ปุ่ม Filter (หน้าตาเดิม) -->
+    <!-- ปุ่ม Filter -->
     <button
+      type="button"
       @click="isOpen = !isOpen"
-      class="inline-flex items-center gap-2 px-2 py-1 text-neutral-800 hover:text-slate-900 focus:outline-none rounded-md font-medium font-[Poppins]"
+      class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+      :class="{ 'bg-gray-100': isOpen }"
+      aria-label="Filter"
+      :aria-expanded="isOpen"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="#434343">
-        <path d="M400-240v-80h160v80H400ZM240-440v-80h480v80H240ZM120-640v-80h720v80H120Z"/>
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
+        <line x1="4" y1="7" x2="20" y2="7" />
+        <line x1="6" y1="12" x2="16" y2="12" />
+        <line x1="8" y1="17" x2="12" y2="17" />
       </svg>
-      <span class="text-base font-medium">Filter</span>
-      <!-- <span v-if="selectedBadgeCount" class="ml-1 min-w-5 text-center rounded-full bg-slate-900 text-white text-xs px-1.5 py-0.5">{{ selectedBadgeCount }}</span> -->
+      <span class="hidden sm:inline">Filter</span>
     </button>
 
-    <!-- กล่อง Dropdown -->
+    <!-- แผง -->
     <div
       v-show="isOpen"
-      class="absolute left-0 mt-2 w-60 rounded-xl border border-slate-200 bg-white shadow-lg z-20 p-3"
+      class="absolute top-full right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
       @click.stop
     >
-      <!-- Filter All -->
-      <label v-if="hasAnyCheckbox" class="flex items-center gap-2 mb-2">
-        <input
-          type="checkbox"
-          class="accent-[#b91c1c] h-4 w-4 rounded"
-          :checked="isAllSelected"
-          :indeterminate.prop="isIndeterminate"
-          @change="toggleAll"
-        />
-        <span class="font-regular font-[Poppins] uppercase text-neutral-800">Filter All</span>
-      </label>
+      <div class="p-4 space-y-3">
+        <!-- หัวข้อ -->
+        <h3 class="font-semibold text-gray-800">Filter</h3>
 
-      <!-- Sections -->
-      <div v-for="(section, sectionIndex) in groupedSections" :key="sectionIndex" class="mb-3 last:mb-0">
-        <div v-if="section.title" class="font-regular font-[Poppins] text-neutral-800 uppercase mb-1">
-          {{ section.title }}
-        </div>
+        <!-- ✅ Filter All (เฉพาะเมื่อมี checkbox อย่างน้อย 1 ฟิลด์) -->
+        <label v-if="hasAnyCheckbox" class="flex items-center gap-2">
+          <input
+            type="checkbox"
+            class="accent-[#b91c1c] h-4 w-4 rounded"
+            :checked="isAllSelected"
+            :indeterminate.prop="isIndeterminate"
+            @change="toggleAll"
+          />
+          <span class="text-[15px] text-gray-800">Filter All</span>
+        </label>
 
-        <!-- Fields in section -->
-        <div v-for="field in section.fields" :key="field.fieldKey">
-          <!-- Checkbox group -->
-          <div v-if="field.fieldType === 'checkbox'" class="flex flex-col gap-1">
-            <label
-              v-for="option in field.fieldOptions"
-              :key="String(option.value)"
-              class="flex items-center gap-2"
-            >
-              <input
-                type="checkbox"
-                class="accent-[#b91c1c] h-4 w-4 rounded"
-                :checked="hasValue(field.fieldKey, option.value)"
-                @change="toggleValue(field.fieldKey, option.value)"
-              />
-              <span class="font-regular font-[Poppins] text-neutral-800">{{ option.label }}</span>
-            </label>
-          </div>
+        <!-- ฟิลด์ทั้งหมด -->
+        <div v-for="(section, sIdx) in groupedSections" :key="sIdx" class="space-y-2">
+          <!-- ชื่อหัวข้อ (เช่น Category / Status) -->
+          <div v-if="section.title" class="text-gray-800">{{ section.title }}</div>
 
-          <!-- Select -->
-          <div v-else-if="field.fieldType === 'select'">
-            <select
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
-              v-model="selectedSingleByField[field.fieldKey]"
-              @change="syncSelect(field.fieldKey)"
-            >
-              <option :value="field.allValue ?? 'all'">All</option>
-              <option v-for="option in field.fieldOptions" :key="String(option.value)" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
+          <template v-for="field in section.fields" :key="field.fieldKey">
+            <!-- กลุ่ม checkbox -->
+            <div v-if="field.fieldType === 'checkbox'" class="max-h-60 overflow-auto space-y-1 pr-1">
+              <label v-for="opt in field.fieldOptions" :key="String(opt.value)" class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  class="accent-[#b91c1c] h-4 w-4 rounded"
+                  :checked="hasValue(field.fieldKey, opt.value)"
+                  @change="toggleValue(field.fieldKey, opt.value)"
+                />
+                <span class="text-sm text-gray-800">{{ opt.label }}</span>
+              </label>
+            </div>
+
+            <!-- select (สำหรับหน้าแบบดรอปดาวน์) -->
+            <div v-else-if="field.fieldType === 'select'">
+              <!-- <label class="block text-[14px] text-gray-800 mb-1">{{ field.label }}</label> -->
+              <select
+                class="w-full rounded-[14px] border border-rose-400 bg-white px-3 py-2 outline-none"
+                v-model="selectedSingleByField[field.fieldKey]"
+                @change="pushModel()"
+              >
+                <option :value="field.allValue ?? 'all'">all</option>
+                <option v-for="opt in field.fieldOptions" :key="String(opt.value)" :value="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -77,185 +82,116 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue'
 
-/** ===== Types ===== */
+/** Types */
 type OptionItem = { label: string; value: string | number | boolean }
 type FilterField = {
   fieldKey: string
   label: string
-  fieldType: 'checkbox' | 'select'
+  fieldType: 'select' | 'checkbox'
   sectionTitle?: string
   fieldOptions: OptionItem[]
   allValue?: string | number
 }
+type Filters = Record<string, any>
 
-type Filters = { [key: string]: any }
-type Category = { id: string | number; cat_name: string }
-type StatusOpt = { label: string; value: string }
-
-/** ===== Props ===== */
+/** Props */
 const props = withDefaults(defineProps<{
   modelValue: Filters
-  filterFields?: FilterField[]            // schema mode
-  categories?: Category[]                 // legacy mode
-  statusOptions?: StatusOpt[]             // legacy mode
+  filterFields: FilterField[]
 }>(), {
-  modelValue: () => ({ category: [], status: [] }),
-  categories: () => [],
-  statusOptions: () => ([
-    { label: 'Done', value: 'done' },
-    { label: 'Ongoing', value: 'ongoing' },
-    { label: 'Upcoming', value: 'upcoming' },
-  ]),
+  modelValue: () => ({}),
+  filterFields: () => [],
 })
 
 const emit = defineEmits<{
   (e: 'update:modelValue', v: Filters): void
-  (e: 'apply', v: Filters): void
-  (e: 'clear'): void
 }>()
 
-/** ===== UI state ===== */
+/** UI */
 const isOpen = ref(false)
 const dropdownRoot = ref<HTMLElement | null>(null)
 
-/** ===== Resolve fields (schema or legacy) ===== */
-const configuredFields = computed<FilterField[]>(() => {
-  if (props.filterFields && props.filterFields.length) return props.filterFields
-  // map legacy inputs
-  const categoryField: FilterField = {
-    fieldKey: 'category',
-    label: 'Category',
-    fieldType: 'checkbox',
-    sectionTitle: 'Category',
-    fieldOptions: props.categories.map(category => ({ label: category.cat_name, value: String(category.id) })),
-  }
-  const statusField: FilterField = {
-    fieldKey: 'status',
-    label: 'Status',
-    fieldType: 'checkbox',
-    sectionTitle: 'Status',
-    fieldOptions: props.statusOptions.map(status => ({ label: status.label, value: status.value })),
-  }
-  return [categoryField, statusField]
-})
-
-/** ===== Local selections ===== */
+/** Local state */
 const selectedValuesByField = reactive<Record<string, Set<any>>>({})
 const selectedSingleByField = reactive<Record<string, any>>({})
 
 function initializeLocalState() {
-  for (const filterField of configuredFields.value) {
-    if (filterField.fieldType === 'checkbox') {
-      const currentValues = Array.isArray(props.modelValue?.[filterField.fieldKey])
-        ? props.modelValue[filterField.fieldKey]
-        : []
-      selectedValuesByField[filterField.fieldKey] = new Set(currentValues)
+  for (const f of props.filterFields) {
+    if (f.fieldType === 'checkbox') {
+      const arr = Array.isArray(props.modelValue?.[f.fieldKey]) ? props.modelValue[f.fieldKey] : []
+      selectedValuesByField[f.fieldKey] = new Set(arr)
     } else {
-      selectedSingleByField[filterField.fieldKey] =
-        props.modelValue?.[filterField.fieldKey] ?? (filterField.allValue ?? 'all')
+      selectedSingleByField[f.fieldKey] = props.modelValue?.[f.fieldKey] ?? (f.allValue ?? 'all')
     }
   }
 }
 initializeLocalState()
 watch(() => props.modelValue, initializeLocalState, { deep: true })
 
-/** ===== Group sections for header rendering ===== */
+/** Group sections */
 const groupedSections = computed(() => {
-  const sectionsMap: Record<string, FilterField[]> = {}
-  for (const filterField of configuredFields.value) {
-    const sectionTitle = filterField.sectionTitle ?? ''
-    ;(sectionsMap[sectionTitle] ||= []).push(filterField)
+  const map: Record<string, FilterField[]> = {}
+  for (const f of props.filterFields) {
+    const sec = f.sectionTitle ?? f.label ?? ''
+    ;(map[sec] ||= []).push(f)
   }
-  return Object.entries(sectionsMap).map(([title, fields]) => ({ title, fields }))
+  return Object.entries(map).map(([title, fields]) => ({ title, fields }))
 })
 
-/** ===== Utilities ===== */
-function hasValue(fieldKey: string, optionValue: any) {
-  return !!selectedValuesByField[fieldKey]?.has(optionValue)
+/** Helpers */
+function hasValue(key: string, val: any) {
+  return !!selectedValuesByField[key]?.has(val)
 }
-function toggleValue(fieldKey: string, optionValue: any) {
-  const selectedSet = selectedValuesByField[fieldKey] ?? new Set<any>()
-  selectedSet.has(optionValue) ? selectedSet.delete(optionValue) : selectedSet.add(optionValue)
-  selectedValuesByField[fieldKey] = selectedSet
+function toggleValue(key: string, val: any) {
+  const set = selectedValuesByField[key] ?? new Set<any>()
+  set.has(val) ? set.delete(val) : set.add(val)
+  selectedValuesByField[key] = set
   pushModel()
 }
-function syncSelect(fieldKey: string) {
-  pushModel()
-}
-
-/** badge count (optional) */
-const selectedBadgeCount = computed(() => {
-  let count = 0
-  for (const filterField of configuredFields.value) {
-    if (filterField.fieldType === 'checkbox') {
-      count += (selectedValuesByField[filterField.fieldKey]?.size ?? 0)
-    } else if (filterField.fieldType === 'select' && selectedSingleByField[filterField.fieldKey] !== (filterField.allValue ?? 'all')) {
-      count += 1
-    }
+function pushModel() {
+  const out: Filters = {}
+  for (const f of props.filterFields) {
+    out[f.fieldKey] = f.fieldType === 'checkbox'
+      ? Array.from(selectedValuesByField[f.fieldKey] ?? [])
+      : selectedSingleByField[f.fieldKey]
   }
-  return count
-})
+  emit('update:modelValue', out)
+}
 
-/** Filter All indicators */
+/** ✅ Filter All logic (รวมทุก checkbox-field) */
 const totalCheckboxOptionsCount = computed(() =>
-  configuredFields.value
-    .filter(field => field.fieldType === 'checkbox')
-    .reduce((sum, field) => sum + field.fieldOptions.length, 0)
+  props.filterFields.filter(f => f.fieldType === 'checkbox')
+    .reduce((sum, f) => sum + f.fieldOptions.length, 0)
 )
 const totalCheckboxSelectedCount = computed(() =>
-  configuredFields.value
-    .filter(field => field.fieldType === 'checkbox')
-    .reduce((sum, field) => sum + (selectedValuesByField[field.fieldKey]?.size ?? 0), 0)
+  props.filterFields.filter(f => f.fieldType === 'checkbox')
+    .reduce((sum, f) => sum + (selectedValuesByField[f.fieldKey]?.size ?? 0), 0)
 )
 const hasAnyCheckbox = computed(() =>
-  configuredFields.value.some(field => field.fieldType === 'checkbox')
+  props.filterFields.some(f => f.fieldType === 'checkbox')
 )
 const isAllSelected = computed(() =>
-  totalCheckboxSelectedCount.value > 0 && totalCheckboxSelectedCount.value === totalCheckboxOptionsCount.value
+  totalCheckboxSelectedCount.value > 0 &&
+  totalCheckboxSelectedCount.value === totalCheckboxOptionsCount.value
 )
 const isIndeterminate = computed(() =>
-  totalCheckboxSelectedCount.value > 0 && totalCheckboxSelectedCount.value < totalCheckboxOptionsCount.value
+  totalCheckboxSelectedCount.value > 0 &&
+  totalCheckboxSelectedCount.value < totalCheckboxOptionsCount.value
 )
 
-function toggleAll(event: Event) {
-  const checked = (event.target as HTMLInputElement).checked
-  for (const filterField of configuredFields.value.filter(f => f.fieldType === 'checkbox')) {
-    selectedValuesByField[filterField.fieldKey] = new Set(
-      checked ? filterField.fieldOptions.map(option => option.value) : []
-    )
+function toggleAll(ev: Event) {
+  const checked = (ev.target as HTMLInputElement).checked
+  for (const f of props.filterFields.filter(x => x.fieldType === 'checkbox')) {
+    selectedValuesByField[f.fieldKey] = new Set(checked ? f.fieldOptions.map(o => o.value) : [])
   }
   pushModel()
-}
-
-/** v-model */
-function pushModel() {
-  const output: Record<string, any> = {}
-  for (const filterField of configuredFields.value) {
-    output[filterField.fieldKey] =
-      filterField.fieldType === 'checkbox'
-        ? Array.from(selectedValuesByField[filterField.fieldKey] ?? [])
-        : selectedSingleByField[filterField.fieldKey]
-  }
-  emit('update:modelValue', output)
-}
-
-/** Clear (สำหรับเรียกผ่าน ref ได้) */
-function clear() {
-  for (const filterField of configuredFields.value) {
-    if (filterField.fieldType === 'checkbox') selectedValuesByField[filterField.fieldKey] = new Set()
-    else selectedSingleByField[filterField.fieldKey] = filterField.allValue ?? 'all'
-  }
-  pushModel()
-  emit('clear')
 }
 
 /** click-outside */
-function onDocumentClick(event: MouseEvent) {
+function onDocumentClick(e: MouseEvent) {
   if (!dropdownRoot.value) return
-  if (!dropdownRoot.value.contains(event.target as Node)) isOpen.value = false
+  if (!dropdownRoot.value.contains(e.target as Node)) isOpen.value = false
 }
 onMounted(() => document.addEventListener('click', onDocumentClick))
 onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
 </script>
-
-
