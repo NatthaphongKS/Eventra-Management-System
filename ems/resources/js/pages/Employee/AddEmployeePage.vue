@@ -1,96 +1,94 @@
 <template>
     <div>
-        <header class="max-w-6xl mx-auto px-6 pt-6">
+        <header class="mx-auto max-w-[960px] px-4 pt-6">
             <link rel="stylesheet"
                 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         </header>
 
         <!-- Card -->
-        <div class="px-0 py-0">
+        <div class="px-2 py-0">
             <!-- Header -->
-            <div class="px-0 md:px-0 pt-1 pb-10">
+            <div class="px-0 md:px-0 pt-1 pb-7">
                 <div class="flex items-center justify-between gap-3">
                     <div class="translate-x-0 md:translate-x-20">
                         <h2 class="text-xl font-semibold text-gray-800">Add New Employee</h2>
                     </div>
                     <div class="relative md:-translate-x-40">
                         <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
-                        <button type="button"
-                            class="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                            @click="goImport">
-                            <span class="material-symbols-outlined text-[18px] leading-none"
-                                aria-hidden="true">download</span>
-                            <span class="font-semibold">Import</span>
-                        </button>
+                        <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
                     </div>
                 </div>
             </div>
 
-
             <!-- Body -->
-            <div class="md:pl-40 md:pr-40">
+            <div class="max-w-[1160px] px-6 md:px-8 lg:px-20 mr-auto">
                 <form @submit.prevent="handleSubmit">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6
-            gap-x-14 md:gap-x-28 lg:gap-x-40 xl:gap-x-55">
-                        <FormField label="Prefix" required>
-                            <DropdownPill v-model="form.prefix" :options="prefixes" placeholder="Select prefix"
-                                :error="errors.prefix" />
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-[520px_520px] justify-between items-start gap-y-5 gap-x-8">
+                        <FormField label="Prefix" required class="max-w-[220px]">
+                            <DropdownPill class="mt-1 block w-full" v-model="form.prefix" :options="prefixes"
+                                placeholder="Select prefix" :error="errors.prefix" />
                         </FormField>
 
-                        <FormField label="Department" required>
-                            <DropdownPill v-model="form.department" :options="departments"
+                        <FormField label="Department" required class="w-[399px]">
+                            <DropdownPill class="mt-1 block w-full" v-model="form.department" :options="departments"
                                 placeholder="Select Department" :error="errors.department" />
                         </FormField>
 
-                        <FormField label="First Name" required>
-                            <InputPill v-model="form.firstName" placeholder="Ex.Perapat" :error="errors.firstName" />
+                        <FormField label="First Name" required class="w-[399px]">
+                            <InputPill class="mt-1 block w-full" v-model="form.firstName" placeholder="Ex.Perapat"
+                                :error="errors.firstName" />
                         </FormField>
 
-                        <FormField label="Team" required>
-                            <DropdownPill v-model="form.team" :options="teamOptions" placeholder="Select Team"
-                                :error="errors.team" />
+                        <FormField label="Team" required class="w-[399px]">
+                            <DropdownPill class="mt-1 block w-full" v-model="form.team" :options="teamOptions"
+                                placeholder="Select Team" :error="errors.team" />
                         </FormField>
 
-                        <FormField label="Last Name" required>
-                            <InputPill v-model="form.lastName" placeholder="Ex.Saimai" :error="errors.lastName" />
+                        <FormField label="Last Name" required class="w-[399px]">
+                            <InputPill class="mt-1 block w-full" v-model="form.lastName" placeholder="Ex.Saimai"
+                                :error="errors.lastName" />
                         </FormField>
 
-                        <FormField label="Position" required>
-                            <DropdownPill v-model="form.position" :options="positions" placeholder="Select Position"
-                                :error="errors.position" />
+                        <FormField label="Position" required class="w-[399px]">
+                            <DropdownPill class="mt-1 block w-full" v-model="form.position" :options="positions"
+                                placeholder="Select Position" :error="errors.position" />
                         </FormField>
 
-                        <FormField label="Nickname">
-                            <InputPill v-model="form.nickname" placeholder="Ex.beam" :error="errors.nickname" />
+                        <FormField label="Nickname" required class="w-[399px]">
+                            <InputPill class="mt-1 block w-full" v-model="form.nickname" placeholder="Ex.beam"
+                                :error="errors.nickname" />
                         </FormField>
 
-                        <FormField label="Email" required>
-                            <InputPill v-model="form.email" type="email" placeholder="Ex.66160106@go.buu.ac.th"
-                                :error="errors.email" />
+
+                        <FormField label="Email" required class="w-[399px]">
+                            <InputPill class="mt-1 block w-full" v-model="form.email" type="email"
+                                placeholder="Ex.66160106@go.buu.ac.th" :error="errors.email" />
                         </FormField>
 
-                        <FormField label="Phone" required>
-                            <InputPill v-model="form.phone" placeholder="Ex.0988900988" inputmode="numeric"
-                                :error="errors.phone" />
+                        <FormField label="Phone" required class="w-[399px]">
+                            <InputPill class="mt-1 block w-full" v-model="form.phone" placeholder="Ex.0988900988"
+                                inputmode="numeric" :error="errors.phone" />
                         </FormField>
 
-                        <FormField label="Password" required>
-                            <InputPill v-model="form.password" type="password" placeholder="Ex.Ssaw.1234"
-                                :error="errors.password" />
+                        <FormField label="Password" required class="w-[399px]">
+                            <InputPill class="mt-1 block w-full" v-model="form.password" type="password"
+                                placeholder="Ex.Ssaw.1234" :error="errors.password" />
                         </FormField>
 
-                        <FormField label="ID" required>
-                            <InputPill v-model="form.employeeId" placeholder="Ex.CN707008" :error="errors.employeeId" />
+                        <FormField label="Employee ID" required class="w-[399px]">
+                            <InputPill class="mt-1 block w-full" v-model="form.employeeId" placeholder="Ex.CN707008"
+                                :error="errors.employeeId" />
                         </FormField>
 
-                        <FormField label="Permission" required>
-                            <DropdownPill v-model="form.permission" :options="permissions"
+                        <FormField label="Permission" required class="w-[399px]">
+                            <DropdownPill class="mt-1 block w-full" v-model="form.permission" :options="permissions"
                                 placeholder="Select Permission" :error="errors.permission" />
                         </FormField>
                     </div>
 
                     <!-- Footer -->
-                    <div class="px-1 pt-8 pb-6 flex items-center justify-between border-t-0 ">
+                    <div class="pt-8 pb-6 flex items-center justify-between">
                         <button type="button" @click="onCancel"
                             class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-red-700 hover:bg-red-800 active:bg-red-900">
                             <span class="material-symbols-outlined text-[18px] leading-none">close</span>
@@ -123,6 +121,8 @@ import 'sweetalert2/dist/sweetalert2.min.css'
 import FormField from '../../components/Input/FormField.vue'
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
+import ImportButton from '@/components/Button/ImportButton.vue'
+
 
 
 const router = useRouter()
