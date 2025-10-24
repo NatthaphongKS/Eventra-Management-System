@@ -13,7 +13,7 @@
                 </button>
             </div>
 
-            <EventFilter v-model="filters" :categories="categories" @apply="page = 1" />
+            <Filter v-model="filters" :filter-fields="filterFields" button-label="Filter" @apply="page = 1" />
             <EventSort v-model="selectedSort" :options="sortOptions" />
 
             <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
