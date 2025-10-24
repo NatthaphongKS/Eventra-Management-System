@@ -28,18 +28,18 @@
         </div>
 
     <DataTable
-      :rows="paged"                  
-      :columns="eventTableColumns"     
-      :loading="false"                
-      :total-items="sorted.length"     
-      :page-size-options="[10, 20, 50, 100]" 
-      :page="page"                     
-      :pageSize="pageSize"               
-      :sortKey="sortBy"               
-      :sortOrder="sortOrder"           
-      @update:page="page = $event"      
-      @update:pageSize="pageSize = $event; page = 1" 
-      @sort="handleClientSort"       
+      :rows="paged"
+      :columns="eventTableColumns"
+      :loading="false"
+      :total-items="sorted.length"
+      :page-size-options="[10, 20, 50, 100]"
+      :page="page"
+      :pageSize="pageSize"
+      :sortKey="sortBy"
+      :sortOrder="sortOrder"
+      @update:page="page = $event"
+      @update:pageSize="pageSize = $event; page = 1"
+      @sort="handleClientSort"
       row-key="id"
       :show-row-number="true"
       class="mt-4"
@@ -67,7 +67,7 @@
       </template>
 
     </DataTable>
-  </section> 
+  </section>
 </template>
 
 <script>
@@ -84,8 +84,11 @@ import {
     TrashIcon,
 } from '@heroicons/vue/24/outline';
 
-axios.defaults.baseURL = "/api";
-axios.defaults.headers.common["Accept"] = "application/json";
+
+axios.defaults.baseURL = '/api'
+axios.defaults.headers.common['Accept'] = 'application/json'
+axios.defaults.withCredentials = true
+
 
 export default {
     // (เปลี่ยน) ลงทะเบียน DataTable
