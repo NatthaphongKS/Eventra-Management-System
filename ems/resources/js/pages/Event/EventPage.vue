@@ -1,73 +1,74 @@
 <template>
-  <section class="p-0">
+    <section class="p-0">
 
-    <div class="mt-3 mb-1 flex items-center gap-4">
-      <div class="flex items-center gap-3 flex-1">
-          <input v-model.trim="searchInput" placeholder="Search" @keyup.enter="applySearch"
-              class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200" />
-          <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full
+        <div class="mt-3 mb-1 flex items-center gap-4">
+            <div class="flex items-center gap-3 flex-1">
+                <input v-model.trim="searchInput" placeholder="Search" @keyup.enter="applySearch"
+                    class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200" />
+                <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full
        bg-[#b91c1c] text-white hover:bg-[#991b1b]
        focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default select-none." @click="applySearch"
-              aria-label="Search" title="ค้นหา (คลิกหรือกด Enter)">
-              <MagnifyingGlassIcon class="h-5 w-5" />
-          </button>
-      </div>
+                    aria-label="Search" title="ค้นหา (คลิกหรือกด Enter)">
+                    <MagnifyingGlassIcon class="h-5 w-5" />
+                </button>
+            </div>
 
-      <EventFilter v-model="filters" :categories="categories" @apply="page = 1" />
-      <EventSort v-model="selectedSort" :options="sortOptions" />
+            <EventFilter v-model="filters" :categories="categories" @apply="page = 1" />
+            <EventSort v-model="selectedSort" :options="sortOptions" />
 
-      <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
+            <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
        bg-[#b91c1c] px-4 font-semibold text-white
        hover:bg-[#991b1b] focus:outline-none
        focus:ring-2 focus:ring-red-300">
-          + Add
-      </router-link>
-    </div>
-
-    <div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                + Add
+            </router-link>
         </div>
 
-    <DataTable
-      :rows="paged"
-      :columns="eventTableColumns"
-      :loading="false"
-      :total-items="sorted.length"
-      :page-size-options="[10, 20, 50, 100]"
-      :page="page"
-      :pageSize="pageSize"
-      :sortKey="sortBy"
-      :sortOrder="sortOrder"
-      @update:page="page = $event"
-      @update:pageSize="pageSize = $event; page = 1"
-      @sort="handleClientSort"
-      row-key="id"
-      :show-row-number="true"
-      class="mt-4"
-    >
-      <template #cell-evn_status="{ value }">
-        <span :class="badgeClass(value)">
-          {{ value || 'N/A' }}
-        </span>
-      </template>
+        <div v-show="showFilter" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        </div>
 
-      <template #actions="{ row }">
-        <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
-          <PencilIcon class="h-5 w-5 text-neutral-800"/>
-        </button>
-        <button @click="deleteEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
-          <TrashIcon class="h-5 w-5 text-neutral-800"/>
-        </button>
-        <router-link :to="`/EventCheckIn/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100" title="Check-in">
-          <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor" class="h-5 w-5 text-neutral-800"><path d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z"/></svg>
-        </router-link>
-      </template>
+        <DataTable :rows="paged" :columns="eventTableColumns" :loading="false" :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
+            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="pageSize = $event; page = 1"
+            @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
+            <template #cell-evn_status="{ value }">
+                <span :class="badgeClass(value)">
+                    {{ value || 'N/A' }}
+                </span>
+            </template>
+            <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
+            <!-- Toolbar -->
+            <!-- ปุ่ม Filter กลาง (schema-driven) -->
+            <Filter v-model="filters" :filter-fields="filterFields" button-label="Filter" @apply="page = 1" />
 
-      <template #empty>
-        {{ sorted.length === 0 ? 'ไม่พบข้อมูลกิจกรรม' : 'ไม่มีข้อมูลในหน้านี้' }}
-      </template>
 
-    </DataTable>
-  </section>
+            <template #actions="{ row }">
+                <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
+                    <PencilIcon class="h-5 w-5 text-neutral-800" />
+                </button>
+                <button @click="deleteEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
+                    <TrashIcon class="h-5 w-5 text-neutral-800" />
+                </button>
+                <router-link :to="`/EventCheckIn/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                    title="Check-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor" class="h-5 w-5 text-neutral-800">
+                        <path
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
+                    </svg>
+                </router-link>
+            </template>
+
+            <!-- ===== Table ===== -->
+            <EventTable :rows="sorted" v-model:page="page" v-model:pageSize="pageSize"
+                :pageSizeOptions="[10, 20, 50, 100]" @edit="editEvent" @delete="deleteEvent" />
+
+            <template #empty>
+                {{ sorted.length === 0 ? 'ไม่พบข้อมูลกิจกรรม' : 'ไม่มีข้อมูลในหน้านี้' }}
+            </template>
+
+        </DataTable>
+    </section>
 </template>
 
 <script>
@@ -76,7 +77,7 @@ import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 // (เปลี่ยน) Import DataTable แทน EventTable
 import DataTable from '@/components/DataTable.vue';
-import EventFilter from "@/components/IndexEvent/EventFilter.vue";
+import Filter from '@/components/Button/Filter.vue'
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import {
     MagnifyingGlassIcon,
@@ -92,7 +93,11 @@ axios.defaults.withCredentials = true
 
 export default {
     // (เปลี่ยน) ลงทะเบียน DataTable
-    components: { MagnifyingGlassIcon, PencilIcon, TrashIcon, DataTable, EventFilter, EventSort },
+    components: {
+        MagnifyingGlassIcon, PencilIcon, TrashIcon,
+        Filter, EventSort, DataTable
+    },
+
     filters: { category: [], status: [] },
     data() {
         return {
@@ -137,13 +142,13 @@ export default {
 
             // (เพิ่ม) นิยาม Columns สำหรับ DataTable (เพิ่ม sortable)
             eventTableColumns: [
-              { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[500px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
-              { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
-              { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
-              { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap', format: (v, r) => this.timeText(v, r.evn_timeend) },
-              { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
-              { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
-              { key: 'evn_status', label: 'Status', class: '',headerClass:'content-center', sortable: true },
+                { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[500px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
+                { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
+                { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
+                { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap', format: (v, r) => this.timeText(v, r.evn_timeend) },
+                { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
+                { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
+                { key: 'evn_status', label: 'Status', class: '', headerClass: 'content-center', sortable: true },
             ],
         }
     },
@@ -155,6 +160,37 @@ export default {
 
     // (เหมือนเดิม - Client-Side Logic ทั้งหมด)
     computed: {
+        filterFields() {
+            // ตัวเลือก Category มาจาก API
+            const categoryOptions = this.categories.map(c => ({
+                label: c.cat_name,
+                value: String(c.id),
+            }))
+
+            // ตัวเลือก Status แบบ checkbox
+            const statusOptions = [
+                { label: 'Done', value: 'done' },
+                { label: 'Ongoing', value: 'ongoing' },
+                { label: 'Upcoming', value: 'upcoming' },
+            ]
+
+            return [
+                {
+                    fieldKey: 'category',
+                    label: 'Category',
+                    fieldType: 'checkbox',
+                    sectionTitle: 'Category',
+                    fieldOptions: categoryOptions,
+                },
+                {
+                    fieldKey: 'status',
+                    label: 'Status',
+                    fieldType: 'checkbox',
+                    sectionTitle: 'Status',
+                    fieldOptions: statusOptions,
+                },
+            ]
+        },
         hasActiveFilters() {
             const f = this._appliedFlt || this.flt
             return f.category !== 'all' || f.status !== 'all' || !!(f.dateFrom || f.dateTo)
@@ -238,19 +274,19 @@ export default {
             immediate: true, // ยังคง immediate เพื่อให้ค่าเริ่มต้นถูกต้อง
             deep: true,
         },
-         // (เพิ่ม) Watch page และ pageSize เพื่อเช็คขอบเขต
-         page(newPage) {
+        // (เพิ่ม) Watch page และ pageSize เพื่อเช็คขอบเขต
+        page(newPage) {
             const total = this.totalPages;
             if (newPage < 1) this.page = 1;
             else if (newPage > total) this.page = total;
-         },
-         pageSize() {
+        },
+        pageSize() {
             // เมื่อ pageSize เปลี่ยน, computed totalPages จะเปลี่ยน
             // ถ้าหน้าปัจจุบันเกิน ให้กลับไปหน้าสุดท้าย
             if (this.page > this.totalPages) {
                 this.page = this.totalPages;
             }
-         }
+        }
     },
 
     // (เหมือนเดิมส่วนใหญ่)
@@ -274,7 +310,7 @@ export default {
         },
         // (fetchCategories เหมือนเดิม)
         async fetchCategories() {
-             try {
+            try {
                 const res = await axios.get("/event-info");
                 const cats = res.data?.categories || [];
                 this.categories = cats.map(c => ({ id: c.id, name: c.cat_name }));
@@ -323,7 +359,7 @@ export default {
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
                 const yyyy = d.getFullYear();
                 return `${dd}/${mm}/${yyyy}`;
-            } catch(e) { return 'Invalid Date'; }
+            } catch (e) { return 'Invalid Date'; }
         },
         timeText(startTime, endTime) {
             const format = (t) => t ? String(t).slice(0, 5) : '??:??';
