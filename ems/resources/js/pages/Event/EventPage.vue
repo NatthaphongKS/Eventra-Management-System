@@ -142,13 +142,13 @@ export default {
 
             // (เพิ่ม) นิยาม Columns สำหรับ DataTable (เพิ่ม sortable)
             eventTableColumns: [
-                { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[500px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
-                { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
-                { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
-                { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap', format: (v, r) => this.timeText(v, r.evn_timeend) },
-                { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
-                { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
-                { key: 'evn_status', label: 'Status', class: '', headerClass: 'content-center', sortable: true },
+              { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[450px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
+              { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
+              { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
+              { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap justify-center',cellClass:'justify-center', format: (v, r) => this.timeText(v, r.evn_timeend) },
+              { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
+              { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
+              { key: 'evn_status', label: 'Status', class: '',headerClass:'content-center',cellClass:'text-center', sortable: true },
             ],
         }
     },
@@ -253,15 +253,13 @@ export default {
             // (สำคัญ) ต้อง slice จาก sorted
             return this.sorted.slice(start, start + this.pageSize)
         },
-        // (ลบ) pageItems (ย้ายไปใน DataTable แล้ว)
+
     },
 
     // (เหมือนเดิม)
     watch: {
         search() { this.page = 1; },
         pageSize() { this.page = 1; },
-        // (ลบ) event() watch (เพราะ fetchEvent ดึงข้อมูลทั้งหมด ไม่ใช่แค่หน้าเดียว)
-
         // (สำคัญ) Watcher นี้ต้องเปลี่ยน -> ให้เปลี่ยน sortBy/sortOrder แต่ *ไม่* ต้องโหลดใหม่
         selectedSort: {
             handler(v) {
@@ -366,11 +364,11 @@ export default {
             return `${format(startTime)}-${format(endTime)}`;
         },
         badgeClass(status) {
-            const base = 'inline-block min-w-[70px] rounded-full px-2.5 py-1 text-xs font-bold capitalize';
+            const base = 'inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize';
             switch ((status || '').toLowerCase()) {
-                case 'done': return `${base} bg-emerald-100 text-emerald-700`;
-                case 'upcoming': return `${base} bg-amber-100 text-amber-700`; // (แก้สี)
-                case 'ongoing': return `${base} bg-sky-100 text-sky-700`;     // (แก้สี)
+                case 'done': return `${base} bg-[#DCFCE7] text-[#00A73D]`;
+                case 'upcoming': return `${base} bg-[#FFF9C2] text-[#FDC800]`; // (แก้สี)
+                case 'ongoing': return `${base} bg-[#DFF3FE] text-[#0084D1]`;     // (แก้สี)
                 default: return `${base} bg-slate-100 text-slate-700`;      // (แก้สี)
             }
         },

@@ -20,12 +20,12 @@
                         <th v-for="col in columns" :key="col.key" class="py-3 px-3 font-semibold" :class="[
                             col.class,
                             col.headerClass,
-                            { 'cursor-pointer hover:bg-neutral-200': col.sortable },
-                        ]" @click="col.sortable ? handleSort(col.key) : null">
+
+                        ]">
                             <slot :name="`header-${col.key}`" :label="col.label" :column="col">
-                                <div class="flex items-center gap-1">
+
                                     <span>{{ col.label }}</span>
-                                </div>
+
                             </slot>
                         </th>
 
