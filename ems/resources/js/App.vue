@@ -1,15 +1,18 @@
 <template>
+  <div class="font-[Poppins] text-neutral-800">
     <!-- ถ้า route ใดตั้ง meta.blank = true ให้เรนเดอร์หน้าตรง ๆ -->
-    <RouterView v-if="$route.meta?.blank" />
+    <RouterView v-if="$route.meta?.blank" class="font-[Poppins] text-neutral-800"/>
     <!-- นอกนั้นครอบด้วย Layout -->
-    <Layout v-else :pageTitle="$route.meta?.title || 'Dashboard'">
+    <Layout class="font-[Poppins] text-neutral-800" v-else :pageTitle="$route.meta?.title || 'Dashboard' ">
       <RouterView />
     </Layout>
-  </template>
-  <script>
-  import { RouterView } from 'vue-router'
-  import Layout from './components/layout.vue'
-  export default { 
-    components: { Layout, RouterView } 
-  }
-  </script>
+  </div>
+</template>
+
+<script>
+import { RouterView } from 'vue-router'
+import Layout from './components/layout.vue'
+export default { 
+  components: { Layout, RouterView } 
+}
+</script>

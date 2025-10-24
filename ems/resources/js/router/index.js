@@ -13,16 +13,21 @@ import reply_form from '../pages/ReplyForm.vue'
 import UploadFile from '../pages/Employee/UploadFile.vue'
 import History_Employee from '../pages/History/HistoryEmployee.vue'
 import History_Event from '../pages/History/HistoryEvent.vue'
+import HistoryCategory from '../components/History/DataTableHistoryCategory.vue'
 // [เพิ่ม] หน้าแก้ไข
 import EditEvent from '../pages/Event/EditEvent.vue'
 import EditEmployee from '../pages/Employee/EditEmployeePage.vue'
 import EventDetails from '../pages/Event/EventDetail.vue'
+import EventCheckIn from '../pages/Event/EventCheckIn.vue'
+
 
 const routes = [
+
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
-  { path: '/edit-event/:id', component: EditEvent, meta: { title: 'Edit Event' } },
+  { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'EditEvent' } },
+  { path: '/EventCheckIn/:id', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
   { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event' } },
@@ -32,6 +37,7 @@ const routes = [
   { path: '/history-category', component: Category, meta: { title: 'History Category' } },
   { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
   { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
+  { path: '/history-category', component: HistoryCategory, meta: { title: 'History Category'}},
 
   { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'} },
   { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees' } },

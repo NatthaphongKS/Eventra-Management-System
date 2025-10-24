@@ -80,7 +80,7 @@ class CategoryController extends Controller
     $category = Category::create([
         'cat_name'          => $name,
         'cat_delete_status' => 'active',
-        'cat_created_by'   => auth()->id(),
+        'cat_created_by'   => Auth::user()->id,
         'cat_create_at'     => now(),     // ← เก็บเวลาตอนสร้าง
     ]);
 
@@ -94,7 +94,7 @@ public function destroy($id)
         $category = Category::findOrFail($id);
         $category-> cat_delete_status = 'inactive';
         $category-> cat_deleted_at = now();
-        $category-> cat_deleted_by = auth()->id();
+        $category-> cat_deleted_by = Auth::id();
         $category->save();
 
         return response()->json(['message' => 'Deleted successfully']);

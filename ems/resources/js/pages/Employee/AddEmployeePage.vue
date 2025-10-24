@@ -1,121 +1,116 @@
 <template>
-    <div class="min-h-screen">
+    <div>
         <header class="max-w-6xl mx-auto px-6 pt-6">
             <link rel="stylesheet"
                 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         </header>
 
-        <section class="px-6 py-8">
-            <div class="bg-white max-w-3xl mx-auto rounded-2xl border">
-                <div class="px-6 py-5">
-                    <div class="w-full max-w-3xl">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-800">Add New Employee</h2>
-
-                            <div class="relative">
-                                <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
-                                <button type="button"
-                                    class="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 text-[#444444]"
-                                    @click="goImport">
-                                    <span class="material-symbols-outlined text-[16px] leading-none" aria-hidden="true">
-                                        download
-                                    </span>
-                                    <b>Import</b>
-                                </button>
-                            </div>
-                        </div>
+        <!-- Card -->
+        <div class="px-0 py-0">
+            <!-- Header -->
+            <div class="px-0 md:px-0 pt-1 pb-10">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="translate-x-0 md:translate-x-20">
+                        <h2 class="text-xl font-semibold text-gray-800">Add New Employee</h2>
+                    </div>
+                    <div class="relative md:-translate-x-40">
+                        <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
+                        <button type="button"
+                            class="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            @click="goImport">
+                            <span class="material-symbols-outlined text-[18px] leading-none"
+                                aria-hidden="true">download</span>
+                            <span class="font-semibold">Import</span>
+                        </button>
                     </div>
                 </div>
-
-                <!-- Form -->
-                <form class="px-6 pb-6" @submit.prevent="handleSubmit">
-                    <div class="w-full max-w-3xl">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                            <FormField label="Prefix" required>
-                                <DropdownPill v-model="form.prefix" :options="prefixes" placeholder="Select prefix"
-                                    :error="errors.prefix" />
-                            </FormField>
-
-                            <FormField label="Department" required>
-                                <DropdownPill v-model="form.department" :options="departments"
-                                    placeholder="Select Department" :error="errors.department" />
-                            </FormField>
-
-                            <FormField label="First Name" required>
-                                <InputPill v-model="form.firstName" placeholder="Ex.Perapat"
-                                    :error="errors.firstName" />
-                            </FormField>
-
-                            <FormField label="Team" required>
-                                <DropdownPill v-model="form.team" :options="teamOptions" placeholder="Select Team"
-                                    :error="errors.team" />
-                            </FormField>
-
-                            <FormField label="Last Name" required>
-                                <InputPill v-model="form.lastName" placeholder="Ex.Saimai" :error="errors.lastName" />
-                            </FormField>
-
-                            <FormField label="Position" required>
-                                <DropdownPill v-model="form.position" :options="positions" placeholder="Select Position"
-                                    :error="errors.position" />
-                            </FormField>
-
-                            <FormField label="Nickname">
-                                <InputPill v-model="form.nickname" placeholder="Ex.beam" :error="errors.nickname" />
-                            </FormField>
-
-                            <FormField label="Email" required>
-                                <InputPill v-model="form.email" type="email" placeholder="Ex.6610108@ggo.buu.ac.th"
-                                    :error="errors.email" />
-                            </FormField>
-
-                            <FormField label="Phone" required>
-                                <InputPill v-model="form.phone" placeholder="Ex.0988909888" inputmode="numeric"
-                                    :error="errors.phone" />
-                            </FormField>
-
-                            <FormField label="Password" required>
-                                <InputPill v-model="form.password" type="password" placeholder="Ex.Sawa.1234"
-                                    :error="errors.password" />
-                            </FormField>
-
-                            <FormField label="ID" required>
-                                <InputPill v-model="form.employeeId" placeholder="Ex.CN707008"
-                                    :error="errors.employeeId" />
-                            </FormField>
-
-                            <FormField label="Permission" required>
-                                <DropdownPill v-model="form.permission" :options="permissions"
-                                    placeholder="Select Permission" :error="errors.permission" />
-                            </FormField>
-                        </div>
+            </div>
 
 
-                        <div class="flex items-center justify-between pt-8">
-                            <button type="button" @click="onCancel" class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold
-         text-white bg-red-700 border border-transparent
-         hover:bg-red-800 active:bg-red-900
-         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300">
-                                <span class="material-symbols-outlined text-[18px] leading-none">close</span>
-                                Cancel
-                            </button>
+            <!-- Body -->
+            <div class="md:pl-40 md:pr-40">
+                <form @submit.prevent="handleSubmit">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6
+            gap-x-14 md:gap-x-28 lg:gap-x-40 xl:gap-x-55">
+                        <FormField label="Prefix" required>
+                            <DropdownPill v-model="form.prefix" :options="prefixes" placeholder="Select prefix"
+                                :error="errors.prefix" />
+                        </FormField>
 
+                        <FormField label="Department" required>
+                            <DropdownPill v-model="form.department" :options="departments"
+                                placeholder="Select Department" :error="errors.department" />
+                        </FormField>
 
+                        <FormField label="First Name" required>
+                            <InputPill v-model="form.firstName" placeholder="Ex.Perapat" :error="errors.firstName" />
+                        </FormField>
 
-                            <button type="submit" :disabled="submitting"
-                                class="inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                                <span class="material-symbols-outlined text-[18px] leading-none"
-                                    aria-hidden="true">add</span>
-                                Create
-                            </button>
+                        <FormField label="Team" required>
+                            <DropdownPill v-model="form.team" :options="teamOptions" placeholder="Select Team"
+                                :error="errors.team" />
+                        </FormField>
 
-                        </div>
+                        <FormField label="Last Name" required>
+                            <InputPill v-model="form.lastName" placeholder="Ex.Saimai" :error="errors.lastName" />
+                        </FormField>
+
+                        <FormField label="Position" required>
+                            <DropdownPill v-model="form.position" :options="positions" placeholder="Select Position"
+                                :error="errors.position" />
+                        </FormField>
+
+                        <FormField label="Nickname">
+                            <InputPill v-model="form.nickname" placeholder="Ex.beam" :error="errors.nickname" />
+                        </FormField>
+
+                        <FormField label="Email" required>
+                            <InputPill v-model="form.email" type="email" placeholder="Ex.66160106@go.buu.ac.th"
+                                :error="errors.email" />
+                        </FormField>
+
+                        <FormField label="Phone" required>
+                            <InputPill v-model="form.phone" placeholder="Ex.0988900988" inputmode="numeric"
+                                :error="errors.phone" />
+                        </FormField>
+
+                        <FormField label="Password" required>
+                            <InputPill v-model="form.password" type="password" placeholder="Ex.Ssaw.1234"
+                                :error="errors.password" />
+                        </FormField>
+
+                        <FormField label="ID" required>
+                            <InputPill v-model="form.employeeId" placeholder="Ex.CN707008" :error="errors.employeeId" />
+                        </FormField>
+
+                        <FormField label="Permission" required>
+                            <DropdownPill v-model="form.permission" :options="permissions"
+                                placeholder="Select Permission" :error="errors.permission" />
+                        </FormField>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-1 pt-8 pb-6 flex items-center justify-between border-t-0 ">
+                        <button type="button" @click="onCancel"
+                            class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-red-700 hover:bg-red-800 active:bg-red-900">
+                            <span class="material-symbols-outlined text-[18px] leading-none">close</span>
+                            Cancel
+                        </button>
+
+                        <button type="submit" :disabled="submitting"
+                            class="inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
+                            <span class="material-symbols-outlined text-[18px] leading-none"
+                                aria-hidden="true">add</span>
+                            Create
+                        </button>
                     </div>
                 </form>
             </div>
-        </section>
+        </div>
     </div>
 </template>
+
+
 
 <script setup>
 import { reactive, computed, watch, ref, onMounted } from 'vue'
@@ -125,9 +120,10 @@ import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
 // components
-import FormField from '../../components/FormField.vue'
-import InputPill from '../../components/InputPill.vue'
-import DropdownPill from '../../components/DropdownPill.vue'
+import FormField from '../../components/Input/FormField.vue'
+import InputPill from '../../components/Input/InputPill.vue'
+import DropdownPill from '../../components/Input/DropdownPill.vue'
+
 
 const router = useRouter()
 const goImport = () => router.push({ name: 'upload-file' })
@@ -249,8 +245,11 @@ Object.keys(fieldRules).forEach(k => {
     })
 })
 
+
+
 /* ------- submit -> บันทึกลง DB ------- */
 const submitting = ref(false)
+
 
 async function handleSubmit() {
     if (!validate()) return
