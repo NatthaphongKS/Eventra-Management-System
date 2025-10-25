@@ -23,87 +23,94 @@
             <!-- Body -->
             <div class="max-w-[1160px] px-6 md:px-8 lg:px-20 mr-auto">
                 <form @submit.prevent="handleSubmit">
-                    <div
-                        class="grid grid-cols-1 md:grid-cols-[520px_520px] justify-between items-start gap-y-5 gap-x-8">
-                        <FormField label="Prefix" required class="max-w-[220px]">
-                            <DropdownPill class="mt-1 block w-full" v-model="form.prefix" :options="prefixes"
-                                placeholder="Select prefix" :error="errors.prefix" />
-                        </FormField>
+                    <div class="grid grid-cols-1 md:grid-cols-[520px_64px_520px] items-start gap-y-5">
+                        <!-- ซ้าย -->
+                        <div class="flex flex-col gap-5">
+                            <FormField label="Prefix" required class="max-w-[220px]">
+                                <DropdownPill class="mt-1 block w-full" v-model="form.prefix" :options="prefixes"
+                                    placeholder="Select prefix" :error="errors.prefix" />
+                            </FormField>
 
-                        <FormField label="Department" required class="w-[399px]">
-                            <DropdownPill class="mt-1 block w-full" v-model="form.department" :options="departments"
-                                placeholder="Select Department" :error="errors.department" />
-                        </FormField>
+                            <FormField label="First Name" required class="w-[399px]">
+                                <InputPill class="mt-1 block w-full" v-model="form.firstName" placeholder="Ex.Perapat"
+                                    :error="errors.firstName" />
+                            </FormField>
 
-                        <FormField label="First Name" required class="w-[399px]">
-                            <InputPill class="mt-1 block w-full" v-model="form.firstName" placeholder="Ex.Perapat"
-                                :error="errors.firstName" />
-                        </FormField>
+                            <FormField label="Last Name" required class="w-[399px]">
+                                <InputPill class="mt-1 block w-full" v-model="form.lastName" placeholder="Ex.Saimai"
+                                    :error="errors.lastName" />
+                            </FormField>
 
-                        <FormField label="Team" required class="w-[399px]">
-                            <DropdownPill class="mt-1 block w-full" v-model="form.team" :options="teamOptions"
-                                placeholder="Select Team" :error="errors.team" />
-                        </FormField>
+                            <FormField label="Nickname" required class="w-[399px]">
+                                <InputPill class="mt-1 block w-full" v-model="form.nickname" placeholder="Ex.beam"
+                                    :error="errors.nickname" />
+                            </FormField>
 
-                        <FormField label="Last Name" required class="w-[399px]">
-                            <InputPill class="mt-1 block w-full" v-model="form.lastName" placeholder="Ex.Saimai"
-                                :error="errors.lastName" />
-                        </FormField>
+                            <FormField label="Phone" required class="w-[399px]">
+                                <InputPill class="mt-1 block w-full" v-model="form.phone" placeholder="Ex.0988900988"
+                                    inputmode="numeric" :error="errors.phone" />
+                            </FormField>
 
-                        <FormField label="Position" required class="w-[399px]">
-                            <DropdownPill class="mt-1 block w-full" v-model="form.position" :options="positions"
-                                placeholder="Select Position" :error="errors.position" />
-                        </FormField>
+                            <FormField label="Employee ID" required class="w-[399px]">
+                                <InputPill class="mt-1 block w-full" v-model="form.employeeId" placeholder="Ex.CN707008"
+                                    :error="errors.employeeId" />
+                            </FormField>
 
-                        <FormField label="Nickname" required class="w-[399px]">
-                            <InputPill class="mt-1 block w-full" v-model="form.nickname" placeholder="Ex.beam"
-                                :error="errors.nickname" />
-                        </FormField>
+                            <div @click="onCancel">
+                                <CancelButton />
+                            </div>
+                        </div>
 
+                        <!-- ช่องว่างกลาง -->
+                        <div></div>
 
-                        <FormField label="Email" required class="w-[399px]">
-                            <InputPill class="mt-1 block w-full" v-model="form.email" type="email"
-                                placeholder="Ex.66160106@go.buu.ac.th" :error="errors.email" />
-                        </FormField>
+                        <!-- ขวา -->
+                        <div class="flex flex-col gap-5 md:ml-24 lg:ml-32 xl:ml-40 2xl:ml-48">
+                            <FormField label="Department" required class="w-[520px]">
+                                <DropdownPill class="mt-1 block w-full" v-model="form.department" :options="departments"
+                                    placeholder="Select Department" :error="errors.department" />
+                            </FormField>
 
-                        <FormField label="Phone" required class="w-[399px]">
-                            <InputPill class="mt-1 block w-full" v-model="form.phone" placeholder="Ex.0988900988"
-                                inputmode="numeric" :error="errors.phone" />
-                        </FormField>
+                            <FormField label="Team" required class="w-[520px]">
+                                <DropdownPill class="mt-1 block w-full" v-model="form.team" :options="teamOptions"
+                                    placeholder="Select Team" :error="errors.team" />
+                            </FormField>
 
-                        <FormField label="Password" required class="w-[399px]">
-                            <InputPill class="mt-1 block w-full" v-model="form.password" type="password"
-                                placeholder="Ex.Ssaw.1234" :error="errors.password" />
-                        </FormField>
+                            <FormField label="Position" required class="w-[520px]">
+                                <DropdownPill class="mt-1 block w-full" v-model="form.position" :options="positions"
+                                    placeholder="Select Position" :error="errors.position" />
+                            </FormField>
 
-                        <FormField label="Employee ID" required class="w-[399px]">
-                            <InputPill class="mt-1 block w-full" v-model="form.employeeId" placeholder="Ex.CN707008"
-                                :error="errors.employeeId" />
-                        </FormField>
+                            <FormField label="Email" required class="w-[520px]">
+                                <InputPill class="mt-1 block w-full" v-model="form.email" type="email"
+                                    placeholder="Ex.66160106@go.buu.ac.th" :error="errors.email" />
+                            </FormField>
 
-                        <FormField label="Permission" required class="w-[399px]">
-                            <DropdownPill class="mt-1 block w-full" v-model="form.permission" :options="permissions"
-                                placeholder="Select Permission" :error="errors.permission" />
-                        </FormField>
+                            <FormField label="Password" required class="w-[520px]">
+                                <InputPill class="mt-1 block w-full" v-model="form.password" type="password"
+                                    placeholder="Ex.Ssaw.1234" :error="errors.password" />
+                            </FormField>
+
+                            <FormField label="Permission" required class="w-[520px]">
+                                <DropdownPill class="mt-1 block w-full" v-model="form.permission" :options="permissions"
+                                    placeholder="Select Permission" :error="errors.permission" />
+                            </FormField>
+
+                            <!-- ปุ่ม Create -->
+                            <div class="-mt-2 ml-96">
+                                <button type="submit" :disabled="submitting"
+                                    class="bg-transparent border-0 p-0 disabled:opacity-50"
+                                    style="all: unset; display: inline-block;">
+                                    <CreateButton :disabled="submitting" />
+                                </button>
+                            </div>
+
+                        </div>
                     </div>
 
-                    <!-- Footer -->
-                    <div class="pt-8 pb-6 flex items-center justify-between">
-                        <button type="button" @click="onCancel"
-                            class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-red-700 hover:bg-red-800 active:bg-red-900">
-                            <span class="material-symbols-outlined text-[18px] leading-none">close</span>
-                            Cancel
-                        </button>
-
-                        <button type="submit" :disabled="submitting"
-                            class="inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                            <span class="material-symbols-outlined text-[18px] leading-none"
-                                aria-hidden="true">add</span>
-                            Create
-                        </button>
-                    </div>
                 </form>
             </div>
+
         </div>
     </div>
 </template>
@@ -122,7 +129,8 @@ import FormField from '../../components/Input/FormField.vue'
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
 import ImportButton from '@/components/Button/ImportButton.vue'
-
+import CreateButton from '@/components/Button/CreateButton.vue'
+import CancelButton from '@/components/Button/CancelButton.vue'
 
 
 const router = useRouter()
@@ -309,35 +317,83 @@ async function handleSubmit() {
     } catch (err) {
         if (err.response?.status === 422) {
             const e = err.response.data.errors || {}
-            errors.employeeId = e.emp_id?.[0] || ''
+
+            // ฟังก์ชันปรับข้อความ error จาก backend ให้เป็นข้อความสวย ๆ ที่เราต้องการ
+            function normalizeMsg(fieldMsg, fieldName) {
+                if (!fieldMsg) return ''
+
+                // ตรวจจับเคสซ้ำ / ใช้ไปแล้ว / duplicate
+                if (
+                    /already been taken/i.test(fieldMsg) ||
+                    /already exists/i.test(fieldMsg) ||
+                    /duplicate/i.test(fieldMsg) ||
+                    /ซ้ำ/.test(fieldMsg) ||
+                    /มีอยู่แล้ว/.test(fieldMsg)
+                ) {
+                    switch (fieldName) {
+                        case 'emp_email':
+                            return 'This email is already in use.'
+                        case 'emp_id':
+                            return 'This employee ID is already in use.'
+                        case 'emp_phone':
+                            return 'This phone number is already in use.'
+                        default:
+                            return 'Already in use.'
+                    }
+                }
+
+                // ถ้าไม่ใช่เคสซ้ำ ก็ส่งข้อความเดิมจาก backend
+                return fieldMsg
+            }
+
+            // เซ็ต error ของแต่ละฟิลด์ โดยผ่าน normalizeMsg:
+            errors.employeeId = normalizeMsg(e.emp_id?.[0], 'emp_id') || ''
             errors.prefix = e.emp_prefix?.[0] || ''
             errors.firstName = e.emp_firstname?.[0] || ''
             errors.lastName = e.emp_lastname?.[0] || ''
-            errors.email = e.emp_email?.[0] || ''
-            errors.phone = e.emp_phone?.[0] || ''
+            errors.email = normalizeMsg(e.emp_email?.[0], 'emp_email') || ''
+            errors.phone = normalizeMsg(e.emp_phone?.[0], 'emp_phone') || ''
             errors.position = e.emp_position_id?.[0] || ''
             errors.department = e.emp_department_id?.[0] || ''
             errors.team = e.emp_team_id?.[0] || ''
             errors.password = e.emp_password?.[0] || ''
             errors.permission = e.emp_status?.[0] || ''
 
-            // แจ้งเตือน validate ผิด
-            const msg = Object.values(e).flat().join('<br>')
-            await Swal.fire({
-                icon: 'warning',
-                title: 'Invalid data',
-                html: msg || 'Please check your input.',
-                confirmButtonText: 'OK',
-                buttonsStyling: false,
-                customClass: {
-                    popup: 'rounded-2xl',
-                    confirmButton:
-                        'rounded-full px-5 py-2.5 bg-rose-600 text-white font-semibold hover:bg-rose-700'
-                }
-            })
+            // ดึงข้อความดิบทั้งหมดจาก backend (ก่อน normalize) เพื่อเช็ค popup
+            const flatMsgsRaw = Object.values(e).flat().filter(Boolean)
+
+            // ถ้าเป็น duplicate เราจะไม่เปิด Swal เตือนซ้ำ
+            const isDuplicate = flatMsgsRaw.some(msg =>
+                /already\s+exists/i.test(msg) ||
+                /already been taken/i.test(msg) ||
+                /duplicate/i.test(msg) ||
+                /ซ้ำ/.test(msg) ||
+                /มีอยู่แล้ว/.test(msg)
+            )
+
+            if (!isDuplicate) {
+                const msgHtml = flatMsgsRaw.join('<br>') || 'Please check your input.'
+                await Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid data',
+                    html: msgHtml,
+                    confirmButtonText: 'OK',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        confirmButton:
+                            'rounded-full px-5 py-2.5 bg-rose-600 text-white font-semibold hover:bg-rose-700'
+                    }
+                })
+            }
+
         } else {
-            // แจ้ง server error
-            const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Server error'
+            // error อื่น ๆ (500, network, etc.) → ยังแจ้งเตือนตามปกติ
+            const msg = err.response?.data?.message
+                || err.response?.data?.error
+                || err.message
+                || 'Server error'
+
             await Swal.fire({
                 icon: 'error',
                 title: 'Create failed',
