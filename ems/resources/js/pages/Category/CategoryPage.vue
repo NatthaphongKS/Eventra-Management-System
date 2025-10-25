@@ -2,11 +2,12 @@
 <template>
   <section class="p-0">
     <!-- Toolbar -->
-    <div class="flex items-center gap-3 mb-4 overflow-visible">
+    <div class="flex items-center gap-3">
       <SearchBar v-model="searchInput" placeholder="Search Category / Created by" @search="onSearch" />
-      <SortMenu :is-open="sortMenuOpen" :options="sortOptions" />
+      <SortMenu
+       :is-open="sortMenuOpen" :options="sortOptions"/>
       <button
-        class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-red-700 text-white hover:bg-rose-700 whitespace-nowrap z-0"
+        class="inline-flex items-center h-10 px-4 rounded-full bg-red-700 text-white hover:bg-rose-700 whitespace-nowrap z-0"
         @click="openAdd">
         + Add New
       </button>
