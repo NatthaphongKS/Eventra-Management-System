@@ -254,7 +254,19 @@ class EventController extends Controller
                 ')
                 ->first();
 
-    function eventInfo()
+            return response()->json([
+                'statistics' => $statistics
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error retrieving event participants',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function eventInfo()
     {
         $employees = Employee::with([
                 'position:id,pst_name',
