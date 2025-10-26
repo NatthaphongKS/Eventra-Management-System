@@ -6,170 +6,170 @@
                 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         </head>
 
-        <section class="max-w-6xl mx-auto p-6">
-            <div class="bg-white rounded-2xl shadow-sm border">
-                <!-- Card header -->
-                <div class="px-6 pt-6">
-                    <h2 class="text-lg md:text-xl font-semibold text-gray-900">
-                        Upload file information
-                    </h2>
+        <!-- เดิมคือ <section class="p-6 max-w-[1400px] ml-12"> -->
+        <div class="p-6 max-w-[1400px] ml-12">
+            <!-- Header -->
+            <div class="pt-6">
+                <h2 class="text-lg md:text-xl font-semibold text-gray-900">
+                    Upload file information
+                </h2>
 
-                    <div class="mt-2 flex items-center justify-center gap-3 flex-wrap">
-                        <p class="text-xs text-gray-400 italic text-center">
-                            *Click the button to download excel file*
-                        </p>
-                        <button type="button"
-                            class="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 text-[#444444]"
-                            @click="downloadTemplate">
-                            <b>Download</b>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Card body -->
-                <div class="px-6 pb-6">
-                    <!-- Upload block -->
-                    <div class="mt-4">
-                        <p class="text-sm font-semibold text-gray-800">Upload file Excel</p>
-                        <p class="text-xs text-gray-400 mt-1">
-                            Drag and drop document to your support task
-                        </p>
-
-                        <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="msg => (error = msg)"
-                            @picked="() => (error = '')" @cleared="() => (error = '')" />
-
-                        <!-- ปุ่ม Upload -->
-                        <div class="mt-3 flex justify-end">
-                            <button type="button" :disabled="!file || !!error || uploading" @click="upload"
-                                class="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
-                                <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
-                                    upload
-                                </span>
-                                Upload
-                            </button>
-                        </div>
-
-                        <!-- Error -->
-                        <p v-if="error" class="text-sm text-red-500 mt-2">{{ error }}</p>
-                    </div>
-
-                    <!-- Divider -->
-                    <div class="mt-20 border-t"></div>
-
-                    <!-- table -->
-                    <div class="mt-4 overflow-x-auto bg-white border rounded-2xl shadow-sm">
-                        <table class="min-w-full text-sm">
-                            <colgroup>
-                                <col style="width:72px" />
-                                <col style="width:140px" />
-                                <col style="width:280px" />
-                                <col style="width:140px" />
-                                <col style="width:160px" />
-                                <col style="width:240px" />
-                                <col style="width:180px" />
-                                <col style="width:220px" />
-                                <col style="width:240px" />
-                            </colgroup>
-                            <thead class="bg-[#F6F6F6] text-gray-700">
-                                <tr>
-                                    <th class="px-4 py-3 text-left">#</th>
-                                    <th class="px-4 py-3 text-left">ID</th>
-                                    <th class="px-4 py-3 text-left whitespace-nowrap">Name</th>
-                                    <th class="px-4 py-3 text-left">Nickname</th>
-                                    <th class="px-4 py-3 text-left">Phone</th>
-                                    <th class="px-4 py-3 text-left whitespace-nowrap">Department</th>
-                                    <th class="px-4 py-3 text-left whitespace-nowrap">Team</th>
-                                    <th class="px-4 py-3 text-left whitespace-nowrap">Position</th>
-                                    <th class="px-4 py-3 text-left whitespace-nowrap">Date Add (d/m/Y)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(r, idx) in paged" :key="idx" class="border-t">
-                                    <td class="px-4 py-3">{{ (page - 1) * pageSize + idx + 1 }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">{{ r.employeeId }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">{{ r.name }}</td>
-                                    <td class="px-4 py-3">{{ r.nickname }}</td>
-                                    <td class="px-4 py-3">{{ r.phone }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">{{ r.department }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">{{ r.team }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">{{ r.position }}</td>
-                                    <td class="px-4 py-3">{{ r.dateAdd }}</td>
-                                </tr>
-                                <tr v-if="!paged.length">
-                                    <td colspan="10" class="px-4 py-6 text-center text-gray-500">
-                                        ไม่พบข้อมูลที่ตรงกับคำค้นหา
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- toolbar -->
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4">
-                        <div class="flex items-center gap-2 text-sm text-gray-700">
-                            <span>แสดง</span>
-
-                            <!-- pill select -->
-                            <div class="relative">
-                                <select v-model.number="pageSize"
-                                    class="appearance-none rounded-full border px-3 py-1.5 pr-8 border-[#B70E15] text-[#B70E15] bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">
-                                    <option v-for="s in [10, 25, 50, 100]" :key="s" :value="s">{{ s }}</option>
-                                </select>
-                                <span
-                                    class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#B70E15]">
-                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M7 10l5 5 5-5z" />
-                                    </svg>
-                                </span>
-                            </div>
-
-                            <span>{{ visibleCountText }}</span>
-                        </div>
-                    </div>
-
-                    <!-- pagination -->
-                    <div class="mt-8 flex items-center justify-center gap-4 text-[#B70E15] select-none">
-                        <!-- Prev -->
-                        <button class="grid h-14 w-14 place-items-center rounded-full disabled:opacity-40"
-                            :disabled="page === 1" @click="page > 1 && (page--)" aria-label="Previous" title="Previous">
-                            <svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor">
-                                <path d="M15.5 6.5 9 12l6.5 5.5V6.5z" />
-                            </svg>
-                        </button>
-
-                        <!-- Numbers + dots -->
-                        <div v-for="(it, idx) in pagerItems" :key="`pg-${idx}-${it}`" class="contents">
-                            <div v-if="it === 'dots'" class="flex items-center gap-1 px-1">
-                                <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
-                                <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
-                                <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
-                            </div>
-                            <button v-else @click="page = it"
-                                class="min-w-[36px] rounded-xl px-3 py-1.5 text-sm font-semibold transition"
-                                :class="page === it ? 'bg-[#B70E15] text-white' : 'border border-[#B70E15] text-[#B70E15] hover:bg-red-50'">
-                                {{ it }}
-                            </button>
-                        </div>
-
-                        <!-- Next -->
-                        <button class="grid h-14 w-14 place-items-center rounded-full disabled:opacity-40"
-                            :disabled="page === totalPages" @click="page < totalPages && (page++)" aria-label="Next"
-                            title="Next">
-                            <svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor">
-                                <path d="M8.5 6.5 15 12l-6.5 5.5V6.5z" />
-                            </svg>
-                        </button>
-                    </div>
+                <div class="mt-2 flex justify-center">
+                    <button type="button" @click="downloadTemplate"
+                        class="rounded-full border border-[#1d9bf0] px-4 py-2 text-xs font-medium italic text-[#1d9bf0] bg-white hover:bg-blue-50 transition">
+                        *Click to download template excel file*
+                    </button>
                 </div>
             </div>
 
-            <!-- Card footer (Cancel / Create) -->
-            <div class="px-6 pb-8">
+            <!-- Body -->
+            <div class="p-6 max-w-[1400px] mx-auto ml-0 md:ml-10 lg:ml-20 xl:ml-28 2xl:ml-40">
+                <!-- Upload block -->
+                <div class="mt-4">
+                    <p class="text-sm font-semibold text-gray-800">Upload file Excel</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        Drag and drop document to your support task
+                    </p>
+
+                    <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="msg => (error = msg)"
+                        @picked="() => (error = '')" @cleared="() => (error = '')" />
+
+                    <!-- ปุ่ม Upload -->
+                    <div class="mt-3 flex justify-end">
+                        <button type="button" :disabled="!file || !!error || uploading" @click="upload"
+                            class="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                            <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
+                                upload
+                            </span>
+                            Generate Data
+                        </button>
+                    </div>
+
+                    <!-- Error -->
+                    <p v-if="error" class="text-sm text-red-500 mt-2">{{ error }}</p>
+                </div>
+
+                <!-- Divider -->
+                <div class="mt-20 border-t"></div>
+
+                <!-- table -->
+                <div class="mt-4 overflow-x-auto bg-white border rounded-2xl shadow-sm max-w-full">
+                    <table class="min-w-full text-sm">
+                        <colgroup>
+                            <col style="width:72px" />
+                            <col style="width:140px" />
+                            <col style="width:280px" />
+                            <col style="width:140px" />
+                            <col style="width:160px" />
+                            <col style="width:240px" />
+                            <col style="width:180px" />
+                            <col style="width:220px" />
+                            <col style="width:240px" />
+                        </colgroup>
+                        <thead class="bg-[#F6F6F6] text-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 text-left">#</th>
+                                <th class="px-4 py-3 text-left">ID</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Name</th>
+                                <th class="px-4 py-3 text-left">Nickname</th>
+                                <th class="px-4 py-3 text-left">Phone</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Department</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Team</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Position</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Date Add (d/m/Y)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(r, idx) in paged" :key="idx" class="border-t">
+                                <td class="px-4 py-3">{{ (page - 1) * pageSize + idx + 1 }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">{{ r.employeeId }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">{{ r.name }}</td>
+                                <td class="px-4 py-3">{{ r.nickname }}</td>
+                                <td class="px-4 py-3">{{ r.phone }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">{{ r.department }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">{{ r.team }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">{{ r.position }}</td>
+                                <td class="px-4 py-3">{{ r.dateAdd }}</td>
+                            </tr>
+                            <tr v-if="!paged.length">
+                                <td colspan="10" class="px-4 py-6 text-center text-gray-500">
+                                    ไม่พบข้อมูลที่ตรงกับคำค้นหา
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- toolbar -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4">
+                    <div class="flex items-center gap-2 text-sm text-gray-700">
+                        <span>แสดง</span>
+
+                        <!-- pill select -->
+                        <div class="relative">
+                            <select v-model.number="pageSize"
+                                class="appearance-none rounded-full border px-3 py-1.5 pr-8 border-[#B70E15] text-[#B70E15] bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">
+                                <option v-for="s in [10, 25, 50, 100]" :key="s" :value="s">
+                                    {{ s }}
+                                </option>
+                            </select>
+                            <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#B70E15]">
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7 10l5 5 5-5z" />
+                                </svg>
+                            </span>
+                        </div>
+
+                        <span>{{ visibleCountText }}</span>
+                    </div>
+                </div>
+
+                <!-- pagination -->
+                <div class="mt-8 flex items-center justify-center gap-4 text-[#B70E15] select-none">
+                    <!-- Prev -->
+                    <button class="grid h-14 w-14 place-items-center rounded-full disabled:opacity-40"
+                        :disabled="page === 1" @click="page > 1 && (page--)" aria-label="Previous" title="Previous">
+                        <svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor">
+                            <path d="M15.5 6.5 9 12l6.5 5.5V6.5z" />
+                        </svg>
+                    </button>
+
+                    <!-- Numbers + dots -->
+                    <div v-for="(it, idx) in pagerItems" :key="`pg-${idx}-${it}`" class="contents">
+                        <div v-if="it === 'dots'" class="flex items-center gap-1 px-1">
+                            <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
+                            <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
+                            <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
+                        </div>
+                        <button v-else @click="page = it"
+                            class="min-w-[36px] rounded-xl px-3 py-1.5 text-sm font-semibold transition" :class="page === it
+                                ? 'bg-[#B70E15] text-white'
+                                : 'border border-[#B70E15] text-[#B70E15] hover:bg-red-50'
+                                ">
+                            {{ it }}
+                        </button>
+                    </div>
+
+                    <!-- Next -->
+                    <button class="grid h-14 w-14 place-items-center rounded-full disabled:opacity-40"
+                        :disabled="page === totalPages" @click="page < totalPages && (page++)" aria-label="Next"
+                        title="Next">
+                        <svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor">
+                            <path d="M8.5 6.5 15 12l-6.5 5.5V6.5z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="pb-8">
                 <div class="mt-4 flex items-center justify-between">
                     <button type="button" @click="onCancel"
                         class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white border border-transparent hover:opacity-95 active:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
                         style="background:#B70E15">
-                        <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">close</span>
+                        <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
+                            close
+                        </span>
                         Cancel
                     </button>
 
@@ -182,9 +182,12 @@
                     </button>
                 </div>
             </div>
-        </section>
+        </div>
     </div>
 </template>
+
+
+
 
 <script setup>
 import { ref, computed, watch } from 'vue'
