@@ -8,7 +8,11 @@
         placeholder="Search Category / Created by"
         @search="onSearch"
       />
-      <SortMenu :is-open="sortMenuOpen" :options="sortOptions" />
+      <SortMenu
+        :is-open="sortMenuOpen"
+        :options="sortOptions"
+        @select="onSortSelect"
+      />
       <AddButton @click="openAdd" />
     </div>
 
@@ -101,11 +105,15 @@ export default {
       search: '',
       page: 1,
       pageSize: 10,
-      sortDir: 'desc',
+
+      /* ✅ สถานะซอร์ท */
       sortMenuOpen: false,
+      sortBy: { key: 'cat_created_at', order: 'desc' }, // เริ่มที่ วันที่ล่าสุด
       sortOptions: [
-        { key: 'cat_created_at', order: 'asc', label: 'Created date (Oldest)' },
+        { key: 'cat_name',       order: 'asc',  label: 'A → Z' },
+        { key: 'cat_name',       order: 'desc', label: 'Z → A' },
         { key: 'cat_created_at', order: 'desc', label: 'Created date (Newest)' },
+        { key: 'cat_created_at', order: 'asc',  label: 'Created date (Oldest)' },
       ],
 
       alert: { open: false, type: '', title: '', message: '', showCancel: false, okText: 'OK', cancelText: 'Cancel' },
@@ -134,14 +142,29 @@ export default {
           (r.created_by_name && r.created_by_name.toLowerCase().includes(q)),
       )
     },
+
+    /* ✅ เรียงตาม sortBy.key + sortBy.order */
     sorted() {
-      const dir = this.sortDir === 'asc' ? 1 : -1
+      const { key, order } = this.sortBy
+      const dir = order === 'asc' ? 1 : -1
+
       return this.filtered.slice().sort((a, b) => {
-        const ta = new Date(a.cat_created_at).getTime() || 0
-        const tb = new Date(b.cat_created_at).getTime() || 0
-        return (ta - tb) * dir
+        if (key === 'cat_name') {
+          const an = (a.cat_name || '').toLowerCase()
+          const bn = (b.cat_name || '').toLowerCase()
+          return an.localeCompare(bn) * dir
+        }
+
+        if (key === 'cat_created_at') {
+          const ta = new Date(a.cat_created_at).getTime() || 0
+          const tb = new Date(b.cat_created_at).getTime() || 0
+          return (ta - tb) * dir
+        }
+
+        return 0
       })
     },
+
     paged() {
       const start = (this.page - 1) * this.pageSize
       return this.sorted.slice(start, start + this.pageSize)
@@ -149,9 +172,6 @@ export default {
   },
 
   async created() {
-    // ถ้าใช้ sanctum ให้เปิดสองบรรทัดนี้
-    // axios.defaults.withCredentials = true
-    // await axios.get('/sanctum/csrf-cookie').catch(()=>{})
     await this.loadCategories()
   },
 
@@ -197,13 +217,10 @@ export default {
       try {
         const n = (name || '').trim()
         if (!n) throw new Error('Name is empty.')
-
         if (this.isDuplicate(n)) {
           this.alert = { open: true, type: 'error', title: 'Duplicate', message: 'มีชื่อนี้อยู่แล้วในรายการ' }
           return
         }
-
-        // ตรงกับ route: POST /categories
         const res = await axios.post('/categories', { cat_name: n })
         const created = res?.data?.data || res?.data || {}
         this.rows.unshift({
@@ -212,7 +229,6 @@ export default {
           created_by_name: created.created_by_name || this.userName,
           cat_created_at: created.cat_created_at || new Date().toISOString(),
         })
-
         this.addOpen = false
         this.alert = { open: true, type: 'success', title: 'Created', message: 'Category created successfully.' }
       } catch (err) {
@@ -249,9 +265,7 @@ export default {
       }
 
       try {
-        // ตรงกับ route: PUT /categories/:id
         await axios.put(`/categories/${id}`, { cat_name: n })
-
         this.rows = this.rows.map(r => (r.id === id ? { ...r, cat_name: n } : r))
         this.editOpen = false
         this.alert = { open: true, type: 'success', title: 'Updated', message: 'Category updated successfully.' }
@@ -278,7 +292,6 @@ export default {
     },
     async confirmDelete(id) {
       try {
-        // ตรงกับ route: DELETE /categories/:id
         await axios.delete(`/categories/${id}`)
         this.rows = this.rows.filter(r => r.id !== id)
         this.alert = { open: true, type: 'success', title: 'Deleted', message: 'Category deleted successfully.' }
@@ -287,6 +300,14 @@ export default {
         const msg = err?.response?.data?.message || 'Cannot delete this category.'
         this.alert = { open: true, type: 'error', title: 'Failed', message: msg }
       }
+    },
+
+    /* ✅ handler สำหรับ SortMenu */
+    onSortSelect(option) {
+      // คาดว่า SortMenu ยิง payload เป็นอ็อบเจ็กต์ { key, order, label }
+      if (!option || !option.key || !option.order) return
+      this.sortBy = { key: option.key, order: option.order }
+      this.page = 1
     },
 
     /* --------------- utils --------------- */

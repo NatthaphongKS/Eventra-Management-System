@@ -2,7 +2,7 @@
   <!-- รับ class/style จากภายนอก -->
   <div class="flex items-end gap-3 w-full" v-bind="$attrs">
     <div class="flex-1 min-w-0">
-      <p class="text-neutral-700 font-medium text-2xl">Search</p>
+      <p class="text-neutral-800 font-medium text-2xl">Search</p>
       <input
         v-model.trim="searchInput"
         type="text"
