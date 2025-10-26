@@ -254,12 +254,42 @@ class EventController extends Controller
                 ')
                 ->first();
 
+            // ดึงข้อมูลรายละเอียดผู้เข้าร่วม
+            $participants = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
+                ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
+                ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+                ->where('ems_connect.con_event_id', $eventId)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->where('ems_employees.emp_delete_status', 'active')
+                ->select(
+                    'ems_connect.id',
+                    'ems_employees.id as emp_id',
+                    'ems_employees.emp_firstname as empl_fname',
+                    'ems_employees.emp_lastname as empl_lname',
+                    'ems_employees.emp_nickname as empl_nickname',
+                    'ems_employees.emp_phone as empl_phone',
+                    'ems_employees.emp_delete_status as empl_delete_status',
+                    'ems_position.pst_name as pos_name',
+                    'ems_department.dpm_name as dept_name',
+                    'ems_team.tm_name as team_name',
+                    'ems_connect.con_answer'
+                )
+                ->get();
+
             return response()->json([
-                'statistics' => $statistics
+                'success' => true,
+                'data' => [
+                    'event_id' => $eventId,
+                    'statistics' => $statistics,
+                    'participants' => $participants
+                ]
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Error retrieving event participants',
                 'error' => $e->getMessage()
             ], 500);
