@@ -6,13 +6,13 @@
             @click="$emit('toggle')"
             aria-label="Sort"
             :aria-expanded="isOpen"
-            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800"
             :class="{ 'bg-gray-100': isOpen }"
         >
             <!-- ไอคอน Sort (inline SVG) -->
             <svg
-                width="16"
-                height="16"
+                width="24"
+                height="24"
                 viewBox="0 0 28 28"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +20,7 @@
                 <path
                     d="M5 20L9.5 25L14 20M9.5 25V5M17 7H26M17 13H26M17 19H26"
                     stroke="#444444"
-                    stroke-width="1.5"
+                    stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                 />
