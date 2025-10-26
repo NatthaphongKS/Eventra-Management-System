@@ -12,8 +12,14 @@
                 <MagnifyingGlassIcon class="w-5 h-5" />
             </button>
 
-            <!-- 🔁 ใช้ Filter.vue -->
-            <Filter v-model="filters" :filter-fields="employeeFilterFields" />
+            <!-- 🔁 ใช้ EmployeeFilter.vue -->
+            <EmployeeFilter 
+                v-model="filters" 
+                :filter-fields="employeeFilterFields" 
+                :show="showFilter"
+                @toggle="toggleFilter"
+                @filter="handleFilter"
+            />
 
 
             <!-- เมนูเรียงข้อมูล: เปิด/ปิด และเลือกตัวเลือก -->
@@ -259,7 +265,7 @@ import {
 // คอมโพเนนต์เมนูเรียงลำดับ
 import SortMenu from "@/components/SortMenu.vue";
 // คอมโพเนนต์ปุ่มฟิลเตอร์
-import Filter from "@/components/Button/Filter.vue";
+import EmployeeFilter from "@/components/IndexEmployee/EmployeeFilter.vue";
 // โมดัลยืนยันลบ
 // import ConfirmDelete from "@/components/ConfirmDelete.vue";
 // โมดัลแจ้งลบสำเร็จ
@@ -287,7 +293,7 @@ export default {
         PencilIcon,
         TrashIcon,
         SortMenu,
-        Filter,
+        EmployeeFilter,
         // ConfirmDelete,
         // DeleteSucces,
     },
@@ -302,6 +308,8 @@ export default {
             searchInput: "",
             // ค่าค้นหาที่ apply แล้ว
             search: "",
+            // แสดง/ซ่อน filter panel
+            showFilter: false,
             // ลำดับฟิลเตอร์
             filterFields: ["id", "department", "team", "position"],
             // ค่าฟิลเตอร์ในแผง (ยังไม่ apply)
@@ -625,6 +633,21 @@ export default {
                 this.showFilter = false;
                 this.openSelect = null;
             }
+        },
+        
+        // เปิด/ปิด filter panel
+        toggleFilter() {
+            this.showFilter = !this.showFilter;
+            if (this.showFilter) {
+                // เปิด filter ให้ปิด sort
+                this.showSort = false;
+            }
+        },
+        
+        // รับค่า filter จาก EmployeeFilter component
+        handleFilter(newFilters) {
+            this.filters = { ...newFilters };
+            this.filtersStage = { ...newFilters };
         },
         // เลือกตัวเลือก sort (กดซ้ำเพื่อยกเลิก)
         toggleSortOption(opt) {

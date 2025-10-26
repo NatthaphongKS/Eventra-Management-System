@@ -13,7 +13,7 @@
                 </button>
             </div>
 
-            <Filter v-model="filters" :filter-fields="filterFields" button-label="Filter" @apply="page = 1" />
+            <EventFilter v-model="filters" :categories="categories" @update:modelValue="handleFilter" />
             <EventSort v-model="selectedSort" :options="sortOptions" />
 
             <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
@@ -77,7 +77,7 @@ import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 // (เปลี่ยน) Import DataTable แทน EventTable
 import DataTable from '@/components/DataTable.vue';
-import Filter from '@/components/Button/Filter.vue'
+import EventFilter from '@/components/IndexEvent/EventFilter.vue'
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import {
     MagnifyingGlassIcon,
@@ -95,10 +95,13 @@ export default {
     // (เปลี่ยน) ลงทะเบียน DataTable
     components: {
         MagnifyingGlassIcon, PencilIcon, TrashIcon,
-        Filter, EventSort, DataTable
+        EventFilter, EventSort, DataTable
     },
 
-    filters: { category: [], status: [] },
+    filters: { 
+        category: new Set(), 
+        status: new Set() 
+    },
     data() {
         return {
             event: [],
@@ -380,6 +383,15 @@ export default {
             this.page = 1; // กลับไปหน้า 1 เมื่อ sort
             // (อัพเดท selectedSort ด้วย เพื่อให้ UI ของ EventSort ตรงกัน)
             this.selectedSort = this.sortOptions.find(opt => opt.key === key && opt.order === order) || this.selectedSort;
+        },
+        
+        // (เพิ่ม) Method รับ Event @filter จาก EventFilter component
+        handleFilter(newFilters) {
+            this.filters = {
+                category: new Set(newFilters.category || []),
+                status: new Set(newFilters.status || [])
+            };
+            this.page = 1; // กลับไปหน้า 1 เมื่อ filter
         },
     }
 };

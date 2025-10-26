@@ -2,67 +2,113 @@
 <template>
 
 <div class="dashboard-grid">
+  
   <!-- Event Table Section -->
   <div class="card event-card">
+     <!--created toolbar pill-->
+
     <div class="toolbar toolbar--pill">
-      <!-- กลุ่ม search + ปุ่มค้นหาแดง -->
-      <div class="search-group">
-        <input
-          v-model.trim="search"
-          placeholder="Search"
-          class="pill-input"
-        />
-        <button
-          type="button"
-          class="icon-btn icon-btn--solid"
-          aria-label="Search"
-          title="ค้นหา"
-          disabled
-          style="opacity:0.5;pointer-events:none;"
+      <!-- SearchBar Component -->
+      <SearchBar 
+        v-model="search" 
+        placeholder="Search events..." 
+        @search="handleSearch"
+        class="flex-1"
+      />
+
+      <!-- EventFilter Component -->
+      <EventFilter 
+        v-model="filterValue"
+        :categories="categories"
+        @update:modelValue="handleFilter"
+      />
+
+      <!-- EventSort Component -->
+      <EventSort 
+        v-model="sortValue"
+        @update:modelValue="handleSort"
+      />
+
+      <Button 
+        variant="light" 
+        icon="download" 
+        shape="pill"
+        class="h-10 min-w-[120px] flex items-center justify-center"
+        @click="onViewReport"
+      >
+        Export
+      </Button>
+      <Button 
+        variant="danger" 
+        shape="pill"
+        class="h-10 min-w-[120px] flex items-center justify-center ml-2"
+        @click="onExport"
+      >
+        Show Data
+      </Button>
+      
+    </div>
+
+    <!-- Button Testing Section - UI Design Matching -->
+    <div class="ui-button-showcase">
+      <div class="showcase-title">Button Showcase - Design Matching</div>
+      
+      <!-- Top Row Buttons -->
+      <div class="ui-button-row top-row">
+        <Button 
+          variant="ok"
         >
-          <MagnifyingGlassIcon class="icon" />
-        </button>
+          OK
+        </Button>
+        
+        <Button 
+          variant="cancel"
+        >
+          Cancel
+        </Button>
+        
+        <Button 
+          variant="confirm"
+        >
+          Confirm
+        </Button>
+        
+        <Button 
+          variant="create"
+        >
+          Create
+        </Button>
+        
+        <Button 
+          variant="back"
+        >
+          Back
+        </Button>
       </div>
 
-      <!-- ปุ่ม Filter (ตอนนี้ยัง UI เฉยๆ) -->
-      <button type="button" class="text-btn" @click="toggleFilter">
-        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="4" y1="7" x2="20" y2="7" />
-          <line x1="6" y1="12" x2="16" y2="12" />
-          <line x1="8" y1="17" x2="12" y2="17" />
-        </svg>
-        <span>Filter</span>
-      </button>
-
-      <!-- ปุ่ม Sort พร้อม dropdown สำหรับ employee table -->
-      <div style="position:relative;">
-        <button type="button" class="text-btn" @click="showEmpSort = !showEmpSort">
-          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 6h18M6 12h12M10 18h8" stroke-linecap="round"/>
-          </svg>
-          <span>Sort</span>
-        </button>
-        <div v-if="showEmpSort" class="sort-dropdown">
-          <div class="sort-title">Sort</div>
-          <button v-for="opt in empSortOptions" :key="opt.value" :class="['sort-item', empSort.value===opt.value ? 'active' : '']" @click="setEmpSort(opt.value)">
-            {{ opt.label }}
-          </button>
-        </div>
+      <!-- Bottom Row Buttons -->
+      <div class="ui-button-row bottom-row">
+        <Button 
+          variant="add"
+        >
+          Add
+        </Button>
+        
+        <Button 
+          variant="export"
+        >
+          Export
+        </Button>
+        
+        <Button 
+          variant="show-data"
+        >
+          Show Data
+        </Button>
       </div>
-
-      <!-- สรุปรายการ + ปุ่มเพิ่ม (เรียงแบบในภาพ) -->
-      <span class="summary">ทั้งหมด {{ filtered.length }} รายการ</span>
-      <button type="button" class="custom-btn export-btn-white" @click="onViewReport">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7,10 12,15 17,10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        <span>Export</span>
-      </button>
-      <button type="button" class="custom-btn show-data-btn" @click="onExport">
-        <span>Show Data</span>
-      </button>
+      
+      <!-- Export Button Label -->
+      <div class="export-label">Export Button</div>
     </div>
     <div class="event-table-wrap">
       <table class="event-table">
@@ -271,6 +317,10 @@ import NotAttendingCard from '../../components/dashboard/NotAttendingCard.vue';
 import PendingCard from '../../components/dashboard/PendingCard.vue';
 import DonutActualAttendance from '../../components/dashboard/DonutActualAttendance.vue';
 import GraphEventParticipation from '../../components/dashboard/GraphEventParticipation.vue';
+import Button from "../../components/Button.vue";
+import SearchBar from "../../components/SearchBar.vue";
+import EventFilter from "../../components/IndexEvent/EventFilter.vue";
+import EventSort from "../../components/IndexEvent/EventSort.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -282,7 +332,11 @@ export default {
     NotAttendingCard,
     PendingCard,
     DonutActualAttendance,
-    GraphEventParticipation
+    GraphEventParticipation,
+    Button,
+    SearchBar,
+    EventFilter,
+    EventSort
   },
   data() {
     return {
@@ -290,16 +344,25 @@ export default {
       categories: [],
       catMap: {},
       search: "",
-      showFilter: false,
-      showSort: false,
       sortBy: "evn_date",
       sortOrder: "asc",
       page: 1,
       pageSize: 10,
+      
+      // Filter และ Sort values สำหรับ components ใหม่
+      filterValue: {
+        category: new Set(),
+        status: new Set()
+      },
+      sortValue: {
+        id: 'date_desc',
+        key: 'evn_date',
+        order: 'desc',
+        type: 'date'
+      },
       employees: [],
       empPage: 1,
       empPageSize: 10,
-      showEmpSort: false,
       empSort: { value: 'name_az' },
       empSortOptions: [
         { value: 'name_az', label: 'ชื่อพนักงาน A–Z' },
@@ -338,6 +401,8 @@ export default {
           { name: 'UI/UX Designer', attending: 35, notAttending: 40, pending: 90 }
         ]
       },
+      // Button testing data
+      loadingTest: false,
       // Participation data for GraphEventParticipation component
       participationData: {
         departments: [
@@ -378,19 +443,30 @@ export default {
       }));
     },
     filtered() {
-  const q = this.search.toLowerCase().trim();
-  return this.normalized.filter(e => {
-    const status = String(e.evn_status || '').toLowerCase();
-    const matchStatus = status === 'upcoming' || status === 'done';
-    // ค้นหาจากหลายฟิลด์
-    const match =
-      e.evn_title.toLowerCase().includes(q) ||
-      (e.evn_name && e.evn_name.toLowerCase().includes(q)) ||
-      (e.cat_name && e.cat_name.toLowerCase().includes(q)) ||
-      (e.evn_date && e.evn_date.toLowerCase().includes(q));
-    return matchStatus && (!q || match);
-  });
-},
+      const q = this.search.toLowerCase().trim();
+      return this.normalized.filter(e => {
+        // Status filter
+        const status = String(e.evn_status || '').toLowerCase();
+        const matchStatus = status === 'upcoming' || status === 'done';
+        
+        // Category filter
+        const categoryFilter = this.filterValue.category;
+        const matchCategory = categoryFilter.size === 0 || categoryFilter.has(String(e.evn_cat_id));
+        
+        // Status filter from component
+        const statusFilter = this.filterValue.status;
+        const matchStatusFilter = statusFilter.size === 0 || statusFilter.has(status);
+        
+        // Search text filter
+        const matchSearch = !q || 
+          e.evn_title.toLowerCase().includes(q) ||
+          (e.evn_name && e.evn_name.toLowerCase().includes(q)) ||
+          (e.cat_name && e.cat_name.toLowerCase().includes(q)) ||
+          (e.evn_date && e.evn_date.toLowerCase().includes(q));
+        
+        return matchStatus && matchCategory && matchStatusFilter && matchSearch;
+      });
+    },
     sorted() {
       const key = this.sortBy;
       const order = this.sortOrder;
@@ -513,6 +589,27 @@ export default {
     },
   },
   methods: {
+    // Search handling
+    handleSearch(searchValue) {
+      this.search = searchValue;
+      // Additional search logic if needed
+    },
+
+    // Filter handling
+    handleFilter(filterData) {
+      this.filterValue = filterData;
+      this.page = 1; // Reset to first page when filtering
+      // Additional filter logic if needed
+    },
+
+    // Sort handling  
+    handleSort(sortData) {
+      this.sortValue = sortData;
+      this.sortBy = sortData.key;
+      this.sortOrder = sortData.order;
+      this.page = 1; // Reset to first page when sorting
+    },
+
     // Chart calculation methods (moved from computed)
     getAttendingProgress() {
       if (this.chartData.totalParticipation === 0) return 0;
@@ -635,9 +732,6 @@ export default {
     editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
       this.$router.push(`/edit-event/${id}`)
     },
-    // ไว้ให้ปุ่มไม่ error (ต่อยอดภายหลังได้)
-    toggleFilter() { this.showFilter = !this.showFilter; },
-    toggleSort() { this.showSort = !this.showSort; },
 
     async deleteEvent(id) {
       if (confirm("Delete?")) {
@@ -660,7 +754,6 @@ export default {
       this.empPage = p;
     },
     setEmpSort(value) {
-      this.showEmpSort = false;
       const order = value.startsWith('-') ? 'desc' : 'asc';
       const key = value.replace(/^-/, '');
       this.empSort = { value: key, order };
@@ -671,6 +764,11 @@ export default {
     },
     onExport() {
       // ฟังก์ชันสำหรับ export ข้อมูล
+    },
+    onAddEvent() {
+      // ฟังก์ชันสำหรับเพิ่ม event ใหม่
+      console.log('Add Event clicked!');
+      alert('Add Event button clicked! 🎉');
     },
 
     // Event selection methods
@@ -810,6 +908,20 @@ export default {
     selectAllEvents() {
       // Implementation for select all checkbox if needed
       console.log('Select all events');
+    },
+
+    // Button testing methods
+    testClick(buttonType) {
+      console.log(`Button clicked: ${buttonType}`);
+      alert(`🎯 ${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
+    },
+
+    testLoading() {
+      this.loadingTest = true;
+      setTimeout(() => {
+        this.loadingTest = false;
+        alert('✅ Loading test completed!');
+      }, 2000);
     }
   }
 };
@@ -1195,6 +1307,18 @@ export default {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
+
+
+
+
+.export-label {
+  text-align: center;
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+  opacity: 0.8;
+}
 
 .employee-table .badge {
   min-width: 70px;
@@ -1646,31 +1770,6 @@ input[type="checkbox"]:hover {
   box-shadow: 0 4px 16px rgba(244,63,94,0.12);
   transform: translateY(-2px) scale(1.03);
 }
-/* Export button - white/neutral style */
-.export-btn-white {
-  background: #ffffff; /* สีขาว neutral-100 */
-  color: #525252; /* neutral-600 */
-  border: 1px solid #d4d4d4; /* neutral-300 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-.export-btn-white:hover {
-  background: #f5f5f5; /* neutral-100 */
-  border-color: #737373; /* neutral-500 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
-}
-
-/* Show Data button - red-700 style */
-.show-data-btn {
-  background: #b91c1c; /* red-700 ตามภาพ */
-  color: #fff;
-  border: none;
-}
-.show-data-btn:hover {
-  background: #991b1b; /* red-800 เข้มขึ้น */
-  box-shadow: 0 4px 16px rgba(185, 28, 28, 0.12);
-  transform: translateY(-2px) scale(1.03);
-}
 
 /* Legacy export-btn (keeping for compatibility) */
 .export-btn {
@@ -1684,38 +1783,6 @@ input[type="checkbox"]:hover {
 }
 /* ตัวช่วย layout */
 .toolbar--pill { display:flex; align-items:center; gap:16px; margin-top:12px; }
-.search-group { display:flex; align-items:center; gap:12px; flex:1; }
-
-/* ช่องค้นหาแบบ pill */
-.pill-input {
-  height: 44px;
-  width: 100%;
-  padding: 0 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  outline: none;
-  background: #fff;
-}
-
-/* ปุ่มไอคอน */
-.icon-btn {
-  width: 44px; height: 44px; border-radius: 999px;
-  border: 1px solid #e5e7eb; background: #fff;
-  display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
-}
-.icon-btn:hover { background:#f3f4f6; }
-.icon-btn--solid { background:#e11d48; color:#fff; border:none; }
-.icon-btn--solid:hover { background:#be123c; }
-
-.icon { width:20px; height:20px; display:block; }
-.icon-sm { width:18px; height:18px; }
-
-/* ปุ่มตัวอักษร Filter/Sort */
-.text-btn {
-  height:44px; padding:0 8px; border:none; background:transparent;
-  color:#334155; font-weight:500; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-}
-.text-btn:hover { color:#0f172a; }
 
 /* ปุ่ม + Add New เป็น pill และชิดขวา */
 .pill-add {
@@ -1869,80 +1936,6 @@ tbody tr.selected-row:hover {
 .employee-table td.col-department,
 .employee-table td.col-team {
   text-align: left;
-}
-
-/* Sort dropdown */
-.sort-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  z-index: 100;
-  width: 200px;
-  margin-top: 4px;
-}
-.sort-title {
-  font-weight: 600;
-  padding: 10px;
-  font-size: 14px;
-  color: #111;
-  border-bottom: 1px solid #f3f4f6;
-}
-.sort-item {
-  display: block;
-  padding: 10px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.sort-item:hover {
-  background: #f3f4f6;
-}
-.sort-item.active {
-  background: #e0f2fe;
-  color: #0c4a6e;
-  font-weight: 500;
-}
-
-/* Sort dropdown for employee table */
-.sort-dropdown {
-  position: absolute;
-  top: 44px;
-  left: 0;
-  min-width: 220px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
-  padding: 8px 0;
-  z-index: 10;
-}
-.sort-title {
-  font-weight: 700;
-  color: #dc2626;
-  padding: 8px 16px 4px 16px;
-  font-size: 15px;
-}
-.sort-item {
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 8px 16px;
-  font-size: 15px;
-  color: #222;
-  cursor: pointer;
-}
-.sort-item.active {
-  background: #fee2e2;
-  color: #dc2626;
-  font-weight: 700;
-}
-.sort-item:hover:not(.active) {
-  background: #f9fafb;
 }
 
 /* Employee Table Footer */
