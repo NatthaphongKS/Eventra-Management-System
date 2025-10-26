@@ -28,7 +28,7 @@
       <!-- ช่องปุ่ม action -->
       <template #actions="{ row }">
         <button
-            class="grid h-8 w-8 place-items-center rounded-full text-neutal-800 hover:text-emerald-600"
+            class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-emerald-600"
             @click="openEdit(row)"
             title="Edit"
             aria-label="edit"
@@ -37,7 +37,7 @@
         </button>
 
         <button
-            class="grid h-8 w-8 place-items-center rounded-full text-neutal-00 hover:text-red-600"
+            class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-red-600"
             @click="requestDelete(row)"
             title="Delete"
             aria-label="delete"
