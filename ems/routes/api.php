@@ -64,11 +64,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
     Route::get('/event', [EventController::class, 'index']);
 
-    // === Category ===
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
-    Route::post('categories', [CategoryController::class, 'store']);
-    Route::match(['put','patch'], 'categories/{id}', [CategoryController::class, 'update']);
+    // Category
+    Route::get   ('/categories',        [CategoryController::class, 'index']);
+    Route::post  ('/categories',        [CategoryController::class, 'store']);
+    Route::put   ('/categories/{id}',   [CategoryController::class, 'update']); // หรือ Route::patch(...)
+    Route::delete('/categories/{id}',   [CategoryController::class, 'destroy']);
+
 });
 
 
