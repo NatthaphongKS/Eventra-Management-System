@@ -20,7 +20,9 @@
                     <div>
                         <!-- เลือก Category -->
                         <label>Event Category</label><br />
-                        <select class="border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px]" v-model="eventCategoryId">
+                        <select
+                            class="border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition "
+                            v-model="eventCategoryId">
                             <!-- v-model ตรงนี้จะผูกค่ากับ evn_category_id โหลดครั้งแรกจะได้ค่าเก่า + ถ้าเลืกใหม่จะได้ค่าใหม่ เวลาส่งไป save ก็จะส่งเป็น id -->
 
                             <!-- ถ้าหมวดเดิมเป็น inactive แต่อยากแสดงไว้ -->
@@ -40,109 +42,160 @@
             </div>
 
             <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
-            <div >
+            <div>
                 <!-- v-model.trim="evn_description" = ผูกค่ากับตัวแปร evn_description อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม-->
                 <label>Event Description</label><br />
-                <textarea class="border border-neutral-200 w-full h-[165px] rounded-2xl" v-model.trim="eventDescription"></textarea>
+                <textarea
+                    class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                    v-model.trim="eventDescription"></textarea>
             </div>
 
-
             <div class="grid grid-cols-3">
-                <div>
+                <div class="pr-[10px]">
                     <!-- วันที่ -->
                     <label>Date</label><br>
-                    <input type="date" v-model="eventDate">
+                    <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
+                        focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition
+                        px-[20px]" type="date" v-model="eventDate">
                 </div>
-
-                <div>
+                <!-- เวลา -->
+                <div class="mx-[10px] ">
                     <label>Time</label>
+                    <div class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 shadow-sm">
+                        <input type="time" v-model="eventTimeStart" step="300"
+                            class="time-input ml-[20px] w-[105px] bg-transparent text-[15px] font-medium text-neutral-800 outline-none" />
+                        <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData 2 ตอนเลือกค่า ใน Input
+                             ค่าก็จะเปลี่ยนไปตามที่เราเลือกแล้วส่งไปคำนวณ-->
+                        <!-- ตัวคั่น : -->
+                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
 
-                    <input type="time" v-model="eventTimeStart"></input>
-                    <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData
-        2 ตอนเลือกค่า ใน Input ค่าก็จะเปลี่ยนไปตามที่เราเลือกแล้วส่งไปคำนวณ-->
+                        <!-- เวลาสิ้นสุด -->
+                        <input type="time" v-model="eventTimeEnd" step="300"
+                            class="time-input w-[105px] bg-transparent text-[15px] font-medium text-neutral-800 outline-none" />
+                        <Icon icon="iconamoon:clock-light" class="w-10 h-10  text-rose-400" />
 
-                    <label> : </label>
-                    <input type="time" v-model="eventTimeEnd"></input>
+                    </div>
+
                 </div>
-                <div>
-                    <!-- ส่วนแสดงช่วงเวลา -->
-                    <label>duration</label><br>
-                    <input disabled v-model="eventDuration"></input><br>
-                    <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
+
+                <div><label>duration</label>
+                    <div
+                        class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
+                        <!-- ส่วนแสดงช่วงเวลา -->
+
+                        <input class=" w-full h-[52px] bg-transparent" disabled v-model="eventDuration"></input>
+                        <ClockIcon class="h-5 w-5 text-gray-500" />
+                        <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
+                    </div>
                 </div>
             </div>
             <!-- ส่วนแสดงสถานที่ -->
             <label>Location</label><br>
-            <input type="text" v-model="eventLocation"></input>
+            <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
+             border border-neutral-200 rounded-[20px] px-5" />
         </div>
         <!-- Upload attachments -->
-        <div class="col-span-4" style="margin: 20px">
-            <label>Upload attachments</label>
+        <div class="col-span-4 m-5">
+            <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
+            <p class="text-sm text-neutral-500 mb-2">Drag and drop document to your support task</p>
+
+            <!-- ▼ Drop zone -->
+            <div class="group relative rounded-2xl border-2 border-dashed border-rose-300 bg-rose-50 p-6 transition-all hover:border-rose-400"
+                :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
+                @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
+                <!-- รายการไฟล์ (เดิม + ใหม่) เต็มความกว้าง เรียงลงมา -->
+                <div v-if="hasAnyFiles" class="mb-4 space-y-2">
+                    <div v-for="item in uploadItems" :key="item.key"
+                        class="w-full flex items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 shadow-sm">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-red-600">
+                                <Icon icon="mdi:file" class="h-5 w-5 text-white" />
+                            </div>
+
+                            <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
+                            <template v-if="item.kind === 'existing'">
+                                <a :href="item.url" target="_blank" rel="noopener"
+                                    class="truncate text-[15px] text-rose-700 hover:underline">
+                                    {{ item.name }}
+                                </a>
+                                <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span>
+                            </template>
+                            <template v-else>
+                                <span class="truncate text-[15px] text-neutral-800">{{ item.name }}</span>
+                                <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span>
+                            </template>
+                        </div>
+
+                        <button type="button"
+                            class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100"
+                            @click="item.kind === 'existing' ? removeExisting(item.id) : removeFile(item.index)"
+                            aria-label="Remove file" title="Remove">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <!-- เมฆ + ข้อความ: โชว์เฉพาะตอน “ยังไม่มีไฟล์เลย” -->
+                <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
+                    <Icon icon="entypo:upload-to-cloud" class="w-16 h-16 mb-3 text-rose-400" />
+                    <p class="text-[15px] font-medium text-neutral-800">Choose a file or drag &amp; drop it here</p>
+                    <p class="mt-1 text-sm text-neutral-600">pdf, txt, docx, jpeg, xlsx</p>
+                </div>
+
+                <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
+                <div class="flex justify-center mt-6">
+                    <button type="button"
+                        class="inline-flex items-center rounded-[12px] border border-rose-500 px-4 py-1.5 text-sm text-rose-700 hover:bg-rose-50 active:bg-rose-100"
+                        @click="pickFiles">
+                        Browse files
+                    </button>
+                </div>
+
+                <!-- error (ถ้ามี) -->
+                <p v-if="uploadError" class="mt-2 text-xs text-red-600 text-center">{{ uploadError }}</p>
+
+                <!-- input file (ซ่อน) -->
+                <input ref="fileInput" type="file" multiple class="hidden"
+                    accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
+            </div>
+
+
+
 
             <!-- ไฟล์เดิม -->
-            <div v-if="filesExisting.length > 0" style="margin-bottom:8px">
-                <!-- จะโชว์ก็ต่อเมื่อ length > 0 กันไม่มีข้อมูล-->
-                <p style="margin:4px 0 8px; opacity:.8">ไฟล์เดิม</p>
-                <ul style="list-style:none; padding:0; margin:0">
-                    <!-- v for ตรงนี้ร้างตัวแปร oldFile ขึ้นมาเพื่อวนเก็บขอมูลใน array ของ filesExisting ในแต่ละรอบวน -->
+            <!-- <div v-if="filesExisting.length > 0" class="mt-4">
+                <p class="text-sm text-neutral-600 mb-2">ไฟล์เดิม</p>
+                <ul class="space-y-2">
                     <li v-for="oldFile in filesExisting" :key="oldFile.id"
-                        style="display:flex; gap:10px; align-items:center; padding:6px 0;">
-                        <a :href="oldFile.url" target="_blank" rel="noopener">{{ oldFile.file_name }}</a>
-                        <!-- ส่วนใส่ชื่อไฟล์ แล้วทำเป็นเหมือนลิ้งค์ให้กดดู โดย href จะเอา link ที่ถูกเพิ่มโดย .map ใน controller แล้วส่งมาที่หน้าบ้าน -->
-
-                        <span style="opacity:.7; font-size:12px">({{ prettySize(oldFile.file_size) }})</span>
-                        <!-- เรียกใช้ prettysize ใน script จะแปลงจาก byte -> kbถ้า ≥ 1kB → MB ถ้า ≥ 1MB -->
-
-                        <!-- ส่วนเอาออกจาก UI click แล้วจะเรียก removeExisting แล้วส่ง(oldFile.id) ไปด้วย-->
-                        <button type="button" @click="removeExisting(oldFile.id)"
-                            style="border:0; background:#eee; border-radius:6px; padding:4px 8px; cursor:pointer">
+                        class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                        <a :href="oldFile.url" target="_blank" rel="noopener"
+                            class="truncate text-[15px] text-rose-700 hover:underline">
+                            {{ oldFile.file_name }}
+                        </a>
+                        <span class="text-xs text-neutral-500">({{ prettySize(oldFile.file_size) }})</span>
+                        <button type="button"
+                            class="ml-auto rounded-full px-2.5 py-0.5 text-sm text-neutral-600 hover:bg-neutral-100"
+                            @click="removeExisting(oldFile.id)">
                             ✕
                         </button>
                     </li>
                 </ul>
-            </div>
-
-            <!-- โซนอัปโหลดไฟล์ใหม่ -->
-            <div class="dropzone" @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false"
-                @drop.prevent="onDrop" :class="{ dragging }"
-                style="border:1px dashed #bbb; padding:12px; border-radius:8px;">
-                <!-- มีการเรียก ondrop เมื่อมีไฟล์ลากมาวางในช่อง -->
-                <!-- @dragover.prevent="dragging = true" → เวลา ลากไฟล์มาทับ บล็อกนี้ → ตั้งค่า dragging = true (ตัวแปรที่สร้างไว้ใน script) + prevent กัน event ค่า default ของเบราว์เซอร์ -->
-                <!-- @dragleave.prevent="dragging = false" → เวลา ลากไฟล์ออกจากบล็อกนี้ → ตั้งค่า dragging = false -->
-                <!-- :class="{ dragging }" → ถ้า dragging = true จะเพิ่ม class CSS dragging ให้อัตโนมัติ (เช่นเปลี่ยนพื้นหลัง, border ฯลฯ) -->
-                <p>Choose a file or drag & drop it here</p>
-                <p class="muted">pdf, txt, docx, jpeg, xlsx – Up to 50MB</p>
-                <button type="button" @click="pickFiles">Browse files</button>
-                <!-- ส่วนนี้จะเป็นปุ่มเพิ่มไฟล์ ถ้ากด click เพิ่มไฟล์จะไปเรียก method  pickFiles -->
-                <input ref="fileInput" type="file" multiple class="hidden-file"
-                    accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" style="display:none" />
-                <!-- ref="fileInput" → ให้ Vue อ้างถึง element นี้จากโค้ด JS ส่วน pickFiles (this.$refs.fileInput)
-
-            type="file" → ช่องเลือกสำหรับไฟล์
-
-            multiple → เลือกได้หลายไฟล์ในครั้งเดียว ได้ข้อมูลมาเป็น !!! filelist เหมือน array แต่ไม่ใช่ เลยต้องไปแปลงเป็น array ใน method addfile
-
-            accept="..." → จำกัดชนิดไฟล์ที่เลือกได้
-
-            @change="onPick" → เวลาเลือกไฟล์ → เรียก method onPick เพื่อเก็บไฟล์เข้า state (filesNew)
-
-            style="display:none" → ซ่อน input นี้ไม่ให้ผู้ใช้เห็น (กดปุ่ม Browse files ข้างบนแทน) -->
-
-            </div>
+            </div> -->
 
             <!-- รายการไฟล์ใหม่ -->
-            <ul v-if="filesNew.length > 0" class="file-list">
-                <!-- ไม่ render อะไรเลยถ้า  filesNew ไม่มีข้อมูลด้านใน -->
-
-                <li v-for="(newFile, index) in filesNew" :key="index">
-                    <!-- วนลูปใน array filesNew
-                รอบแรก newFile = ไฟล์ที่ index 0, รอบสอง = ไฟล์ที่ index 1 …
-                index = ตำแหน่งไฟล์ใน array -->
-
-                    {{ newFile.name }} ({{ prettySize(newFile.size) }})
-                    <button type="button" @click="removeFile(index)">✕</button>
+            <!-- <ul v-if="filesNew.length > 0" class="mt-4 space-y-2">
+                <li v-for="(newFile, index) in filesNew" :key="index"
+                    class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                    <span class="truncate text-[15px] text-neutral-800">{{ newFile.name }}</span>
+                    <span class="text-xs text-neutral-500">({{ prettySize(newFile.size) }})</span>
+                    <button type="button"
+                        class="ml-auto rounded-full px-2.5 py-0.5 text-sm text-neutral-600 hover:bg-neutral-100"
+                        @click="removeFile(index)">✕
+                    </button>
                 </li>
-            </ul>
+            </ul> -->
         </div>
     </div>
     <!-- ===== Add Guest (table) ===== -->
@@ -258,9 +311,10 @@
 <script>
 import axios from 'axios';
 import InputPill from '@/components/Input/InputPill.vue';
+import { Icon } from '@iconify/vue'
 
 export default {
-    components: { InputPill },
+    components: { InputPill, Icon },
     data() { // เก็บ state ของฟอร์มไว้ใน component
         return {
 
@@ -420,7 +474,7 @@ export default {
         removeFile(index) { this.filesNew.splice(index, 1) },
 
         removeExisting(id) { //รับ id ของไฟล์ที่จะลบมา แล้ว  filter(file => file.id === id) คือ วนลูป หา id ในข้อมูลarray ของfilesExisting
-            this.filesExisting = this.filesExisting.filter(file => file.id === id)
+            this.filesExisting = this.filesExisting.filter(file => file.id !== id)
             this.filesDeleted.push(id) //เจอแล้วก็เพิ่มข้อมูล Id ใส่ตัวแปร fileDeleted
         },
         //ส่วนแปลง ขนาดไฟล์
@@ -535,10 +589,39 @@ export default {
             // ส่วนโชว์ ใน input :
             const hour = Math.floor(diff / 60), //hour เก็บชม ที่แปลง นาที จากdiff เศษปัดลง
                 min = diff % 60;  //min เก็บนาที เอาเศษ
-            this.eventDuration = `${hour}h${min}m`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
+            this.eventDuration = `${hour} Hour ${min} Min`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
+            // เช็คว่า ถ้าไม่มีนาที หรือ ชั่วโมง ให้แสดงแค่ค่าเดียว
+            if (min === 0) {
+                this.eventDuration = `${hour} Hour`;
+            } else if (hour === 0) {
+                this.eventDuration = `${min} Min`;
+            }
         },
     },
     computed: {
+        hasAnyFiles() {
+            return (this.filesExisting?.length || 0) + (this.filesNew?.length || 0) > 0
+        },
+        uploadItems() {
+            const existing = (this.filesExisting || []).map(f => ({
+                key: `old-${f.id}`,
+                kind: 'existing',
+                id: f.id,
+                name: f.file_name,
+                url: f.url,
+                size: f.file_size ?? 0,
+            }))
+            const news = (this.filesNew || []).map((f, i) => ({
+                key: `new-${i}`,
+                kind: 'new',
+                index: i,
+                name: f.name,
+                size: f.size ?? 0,
+            }))
+            // ให้ไฟล์เดิมขึ้นก่อน แล้วต่อด้วยไฟล์ใหม่
+            return [...existing, ...news]
+        },
+
         filteredEmployees() {
             const searchData = (this.search || '').toLowerCase() //ถ้า this.search ไม่มีค่า → ใช้ '' (สตริงว่าง) แทน + เปลี่ยนให้เป็นตัวพิมพ์เล็กทั้งหมด
             return this.employees.filter(employee => {
@@ -606,3 +689,11 @@ export default {
 
 }
 </script>
+<style scoped>
+/* ทำให้ input type="time" ดู “เรียบ” และกลืนกับกล่องพิล */
+.time-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+}
+
+/* ซ่อนปุ่มปฏิทินเดิมของ Chrome/Safari */
+</style>
