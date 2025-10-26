@@ -6,7 +6,6 @@
                 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         </head>
 
-        <!-- เดิมคือ <section class="p-6 max-w-[1400px] ml-12"> -->
         <div class="p-6 max-w-[1400px] ml-12">
             <!-- Header -->
             <div class="pt-6">
@@ -16,7 +15,7 @@
 
                 <div class="mt-2 flex justify-center">
                     <button type="button" @click="downloadTemplate"
-                        class="rounded-full border border-[#1d9bf0] px-4 py-2 text-xs font-medium italic text-[#1d9bf0] bg-white hover:bg-blue-50 transition">
+                        class="rounded-full border border-[neutral-200] px-4 py-2 text-xs font-medium italic text-[#1d9bf0] bg-white hover:bg-blue-50 transition">
                         *Click to download template excel file*
                     </button>
                 </div>
@@ -34,7 +33,7 @@
                     <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="msg => (error = msg)"
                         @picked="() => (error = '')" @cleared="() => (error = '')" />
 
-                    <!-- ปุ่ม Upload -->
+                    <!-- ปุ่ม Generate -->
                     <div class="mt-3 flex justify-end">
                         <button type="button" :disabled="!file || !!error || uploading" @click="upload"
                             class="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
@@ -52,36 +51,40 @@
                 <!-- Divider -->
                 <div class="mt-20 border-t"></div>
 
-                <!-- table -->
+                <!-- Preview table -->
                 <div class="mt-4 overflow-x-auto bg-white border rounded-2xl shadow-sm max-w-full">
                     <table class="min-w-full text-sm">
                         <colgroup>
                             <col style="width:72px" />
                             <col style="width:140px" />
-                            <col style="width:280px" />
-                            <col style="width:140px" />
-                            <col style="width:160px" />
                             <col style="width:240px" />
+                            <col style="width:120px" />
+                            <col style="width:140px" />
+                            <col style="width:180px" />
+                            <col style="width:160px" />
                             <col style="width:180px" />
                             <col style="width:220px" />
-                            <col style="width:240px" />
+                            <col style="width:140px" />
                         </colgroup>
                         <thead class="bg-[#F6F6F6] text-gray-700">
                             <tr>
                                 <th class="px-4 py-3 text-left">#</th>
-                                <th class="px-4 py-3 text-left">ID</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">ID</th>
                                 <th class="px-4 py-3 text-left whitespace-nowrap">Name</th>
                                 <th class="px-4 py-3 text-left">Nickname</th>
                                 <th class="px-4 py-3 text-left">Phone</th>
                                 <th class="px-4 py-3 text-left whitespace-nowrap">Department</th>
                                 <th class="px-4 py-3 text-left whitespace-nowrap">Team</th>
                                 <th class="px-4 py-3 text-left whitespace-nowrap">Position</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">Date Add (d/m/Y)</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Email</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Date Add (D/M/Y)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(r, idx) in paged" :key="idx" class="border-t">
-                                <td class="px-4 py-3">{{ (page - 1) * pageSize + idx + 1 }}</td>
+                                <td class="px-4 py-3">
+                                    {{ (page - 1) * pageSize + idx + 1 }}
+                                </td>
                                 <td class="px-4 py-3 whitespace-nowrap">{{ r.employeeId }}</td>
                                 <td class="px-4 py-3 whitespace-nowrap">{{ r.name }}</td>
                                 <td class="px-4 py-3">{{ r.nickname }}</td>
@@ -89,11 +92,13 @@
                                 <td class="px-4 py-3 whitespace-nowrap">{{ r.department }}</td>
                                 <td class="px-4 py-3 whitespace-nowrap">{{ r.team }}</td>
                                 <td class="px-4 py-3 whitespace-nowrap">{{ r.position }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">{{ r.email }}</td>
                                 <td class="px-4 py-3">{{ r.dateAdd }}</td>
                             </tr>
+
                             <tr v-if="!paged.length">
                                 <td colspan="10" class="px-4 py-6 text-center text-gray-500">
-                                    ไม่พบข้อมูลที่ตรงกับคำค้นหา
+                                    ไม่พบข้อมูลที่ตรงกับไฟล์
                                 </td>
                             </tr>
                         </tbody>
@@ -173,7 +178,7 @@
                         Cancel
                     </button>
 
-                    <button type="button" :disabled="!displayRows.length" @click="onCreate"
+                    <button type="button" :disabled="!displayRows.length || creating" @click="onCreate"
                         class="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50">
                         <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
                             add
@@ -183,53 +188,85 @@
                 </div>
             </div>
         </div>
+
+        <!-- Alert -->
+        <EmployeeCreateSuccess :open="showCreateSuccess" @close="handleSuccessClose" />
+        <EmployeeCannotCreate :open="showCannotCreate" @close="showCannotCreate = false" />
     </div>
 </template>
 
-
-
-
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
+import axios from 'axios'
 import Upload from '@/components/Input/Upload.vue'
+import EmployeeCreateSuccess from '@/components/Alert/Employee/EmployeeCreateSuccess.vue'
+import EmployeeCannotCreate from '@/components/Alert/Employee/EmployeeCannotCreate.vue'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const emit = defineEmits(['cancel', 'uploaded', 'fileSelected'])
 
-/* ---------- Upload state ---------- */
 const router = useRouter()
+
+/* ---------- state: upload / table ---------- */
 const file = ref(null)
 const error = ref('')
 const uploading = ref(false)
+const creating = ref(false)
 
-/* ---------- Table state ---------- */
 const displayRows = ref([])
 const page = ref(1)
 const pageSize = ref(10)
 
-watch(pageSize, () => { page.value = 1 })
+/* ---------- meta cache ---------- */
+const departments = ref([])
+const positions = ref([])
+const teams = ref([])
+
+async function loadMeta() {
+    try {
+        const { data } = await axios.get('/meta')
+        departments.value = data.departments || []
+        positions.value = data.positions || []
+        teams.value = data.teams || []
+    } catch (e) {
+        console.error('Failed to load meta()', e)
+    }
+}
+onMounted(loadMeta)
+
+/* ---------- pagination ---------- */
+watch(pageSize, () => {
+    page.value = 1
+})
+
 const startIndex = computed(() => (page.value - 1) * pageSize.value)
 const filtered = computed(() => displayRows.value)
-const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize.value)))
+const totalPages = computed(() =>
+    Math.max(1, Math.ceil(filtered.value.length / pageSize.value))
+)
 
 const visibleCountText = computed(() => {
     const total = filtered.value.length
     if (total === 0) return '0-0 จาก 0 รายการ'
     const from = startIndex.value + 1
     const to = Math.min(startIndex.value + pageSize.value, total)
-    return `${from}-${to} จาก ${total} รายการ`
+    return `${from}-${to} รายการ`
 })
+
 const paged = computed(() => {
     const start = startIndex.value
     return filtered.value.slice(start, start + pageSize.value)
 })
+
 watch([filtered, pageSize], () => {
     const last = Math.max(1, Math.ceil(filtered.value.length / pageSize.value))
     if (page.value > last) page.value = last
 })
 
-/* ---------- Read & parse ---------- */
+/* ---------- excel read & parse ---------- */
 async function upload() {
     if (!file.value || error.value) return
     uploading.value = true
@@ -237,12 +274,18 @@ async function upload() {
         const ext = file.value.name.split('.').pop()?.toLowerCase()
         const data = await readFile(file.value, ext === 'csv' ? 'text' : 'array')
 
-        // อ่าน workbook + แผ่นแรก
-        const wb = XLSX.read(data, { type: ext === 'csv' ? 'string' : 'array', cellDates: true })
+        const wb = XLSX.read(data, {
+            type: ext === 'csv' ? 'string' : 'array',
+            cellDates: true
+        })
         const ws = wb.Sheets[wb.SheetNames[0]]
 
-        // หา header แท้จาก 30 แถวแรก
-        const rowsAoA = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
+        const rowsAoA = XLSX.utils.sheet_to_json(ws, {
+            header: 1,
+            defval: '',
+            blankrows: false
+        })
+
         const headerRowIdx = detectHeaderRow(rowsAoA)
         if (headerRowIdx === -1) throw new Error('ไม่พบหัวตาราง')
 
@@ -252,9 +295,12 @@ async function upload() {
         const json = arraysToObjects(headers, dataAoA)
         displayRows.value = mapRows(json)
         page.value = 1
+
         emit('uploaded', file.value)
 
-        error.value = displayRows.value.length ? '' : 'ไฟล์อ่านได้ แต่ไม่พบแถวข้อมูลหลังหัวตาราง'
+        error.value = displayRows.value.length
+            ? ''
+            : 'ไฟล์อ่านได้ แต่ไม่พบแถวข้อมูลหลังหัวตาราง'
     } catch (e) {
         console.error(e)
         error.value = 'ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบข้อมูล'
@@ -263,7 +309,7 @@ async function upload() {
     }
 }
 
-/* ---------- Helpers ---------- */
+/* ---------- helper: detect header row ---------- */
 function detectHeaderRow(rowsAoA) {
     const candidates = [
         'employee id', 'employeeid', 'id',
@@ -275,12 +321,15 @@ function detectHeaderRow(rowsAoA) {
         'department', 'แผนก', 'ฝ่าย',
         'team', 'ทีม',
         'phone', 'เบอร์', 'โทรศัพท์',
+        'email', 'อีเมล',
         'date add', 'date', 'วันที่'
     ].map(s => s.replace(/\s+/g, '').toLowerCase())
 
     const maxScan = Math.min(rowsAoA.length, 30)
     for (let i = 0; i < maxScan; i++) {
-        const row = (rowsAoA[i] || []).map(x => String(x || '').toLowerCase().replace(/\s+/g, ''))
+        const row = (rowsAoA[i] || []).map(x =>
+            String(x || '').toLowerCase().replace(/\s+/g, '')
+        )
         let score = 0
         for (const cell of row) if (candidates.includes(cell)) score++
         if (score >= 2) return i
@@ -288,17 +337,21 @@ function detectHeaderRow(rowsAoA) {
     return -1
 }
 
+/* ---------- helper: AoA -> objects ---------- */
 function arraysToObjects(headers, rows) {
     const out = []
     for (const r of rows) {
         if (!r || r.every(v => v === '' || v == null)) continue
         const obj = {}
-        headers.forEach((h, idx) => { obj[h] = r[idx] ?? '' })
+        headers.forEach((h, idx) => {
+            obj[h] = r[idx] ?? ''
+        })
         out.push(obj)
     }
     return out
 }
 
+/* ---------- utils ---------- */
 function readFile(f, mode = 'array') {
     return new Promise((resolve, reject) => {
         const r = new FileReader()
@@ -310,14 +363,20 @@ function readFile(f, mode = 'array') {
 }
 
 function normalizeKey(k) {
-    return String(k).toLowerCase().replace(/\s+/g, '').replace(/[_\-\/\\().]/g, '')
+    return String(k)
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[_\-\/\\().]/g, '')
 }
+
 function normalizePhone(p) {
     if (p == null) return ''
-    if (typeof p === 'number') return String(Math.trunc(p)).padStart(10, '0')
-    const s = String(p).replace(/[^\d]/g, '')
-    return s
+    if (typeof p === 'number') {
+        return String(Math.trunc(p)).padStart(10, '0')
+    }
+    return String(p).replace(/[^\d]/g, '')
 }
+
 function toDMY(d) {
     const dd = String(d.getDate()).padStart(2, '0')
     const mm = String(d.getMonth() + 1).padStart(2, '0')
@@ -325,23 +384,43 @@ function toDMY(d) {
     return `${dd}/${mm}/${yy}`
 }
 
+/* ---------- map rows for preview ---------- */
 function mapRows(rows) {
     const keyAlias = {
         company: 'company',
-        'employeeid': 'employeeId', 'employee id': 'employeeId', 'รหัสพนักงาน': 'employeeId', 'idพนักงาน': 'employeeId', 'พนักงานid': 'employeeId',
-        'คำนำหน้า': 'prefix', 'คำนำหน้าชื่อ': 'prefix', 'prefix': 'prefix',
-        'ชื่อ': 'firstName', 'firstname': 'firstName',
-        'นามสกุล': 'lastName', 'lastname': 'lastName',
-        'ชื่อเล่น': 'nickname', 'nickname': 'nickname',
-        'position': 'position', 'ตำแหน่ง': 'position',
-        'department': 'department', 'แผนก': 'department', 'ฝ่าย': 'department',
-        'team': 'team', 'ทีม': 'team',
-        'phone': 'phone', 'โทรศัพท์': 'phone', 'เบอร์': 'phone',
+        'employeeid': 'employeeId',
+        'employee id': 'employeeId',
+        'รหัสพนักงาน': 'employeeId',
+        'idพนักงาน': 'employeeId',
+        'พนักงานid': 'employeeId',
+        'คำนำหน้า': 'prefix',
+        'คำนำหน้าชื่อ': 'prefix',
+        'prefix': 'prefix',
+        'ชื่อ': 'firstName',
+        'firstname': 'firstName',
+        'นามสกุล': 'lastName',
+        'lastname': 'lastName',
+        'ชื่อเล่น': 'nickname',
+        'nickname': 'nickname',
+        'position': 'position',
+        'ตำแหน่ง': 'position',
+        'department': 'department',
+        'แผนก': 'department',
+        'ฝ่าย': 'department',
+        'team': 'team',
+        'ทีม': 'team',
+        'phone': 'phone',
+        'โทรศัพท์': 'phone',
+        'เบอร์': 'phone',
         'email': 'email',
-        'date add': 'dateAdd', 'date': 'dateAdd', 'วันที่': 'dateAdd'
+        'อีเมล': 'email',
+        'date add': 'dateAdd',
+        'date': 'dateAdd',
+        'วันที่': 'dateAdd'
     }
 
     return rows.map(r => {
+        // normalize header keys
         const norm = {}
         for (const [k, v] of Object.entries(r)) {
             const nk = normalizeKey(k)
@@ -350,8 +429,13 @@ function mapRows(rows) {
             norm[mapped || k] = v ?? ''
         }
 
-        const name = [norm.prefix, norm.firstName, norm.lastName].filter(Boolean).join(' ').trim()
+        // "<prefix> <first> <last>"
+        const fullName = [norm.prefix, norm.firstName, norm.lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim()
 
+        // normalise date
         let dateAdd = ''
         if (norm.dateAdd) {
             if (norm.dateAdd instanceof Date) {
@@ -360,48 +444,252 @@ function mapRows(rows) {
                 dateAdd = toDMY(new Date(norm.dateAdd))
             } else if (!isNaN(Number(norm.dateAdd))) {
                 const d = XLSX.SSF.parse_date_code(Number(norm.dateAdd))
-                if (d) dateAdd = toDMY(new Date(Date.UTC(d.y, d.m - 1, d.d)))
+                if (d) {
+                    dateAdd = toDMY(
+                        new Date(Date.UTC(d.y, d.m - 1, d.d))
+                    )
+                }
             }
         }
 
         return {
             employeeId: (norm.employeeId || '').toString().trim(),
-            name,
+            name: fullName,
             nickname: (norm.nickname || '').toString().trim(),
             phone: normalizePhone(norm.phone),
             department: (norm.department || '').toString().trim(),
             team: (norm.team || '').toString().trim(),
             position: (norm.position || '').toString().trim(),
             email: (norm.email || '').toString().trim(),
-            dateAdd: (norm.dateAdd || '').toString().trim()
+            dateAdd: (dateAdd || norm.dateAdd || '').toString().trim()
         }
     })
 }
 
-/* ---------- Others ---------- */
+/* ---------- ensure masters exist ---------- */
+async function ensureDepartmentId(depName) {
+    if (!depName) return null
+    const found = departments.value.find(d => d.dpm_name === depName)
+    if (found) return found.id
+    try {
+        const resp = await axios.post('/save-department', { dpm_name: depName })
+        const newId = resp.data?.id
+        if (!newId) throw new Error('No id from /save-department')
+        departments.value.push({ id: newId, dpm_name: depName })
+        return newId
+    } catch (err) {
+        console.error('create department failed', err)
+        return null
+    }
+}
+
+async function ensurePositionId(posName) {
+    if (!posName) return null
+    const found = positions.value.find(p => p.pst_name === posName)
+    if (found) return found.id
+    try {
+        const resp = await axios.post('/save-position', { pst_name: posName })
+        const newId = resp.data?.id
+        if (!newId) throw new Error('No id from /save-position')
+        positions.value.push({ id: newId, pst_name: posName })
+        return newId
+    } catch (err) {
+        console.error('create position failed', err)
+        return null
+    }
+}
+
+async function ensureTeamId(teamName) {
+    if (!teamName) return null
+    const found = teams.value.find(t => t.tm_name === teamName)
+    if (found) return found.id
+    try {
+        const resp = await axios.post('/save-team', { tm_name: teamName })
+        const newId = resp.data?.id
+        if (!newId) throw new Error('No id from /save-team')
+        teams.value.push({ id: newId, tm_name: teamName })
+        return newId
+    } catch (err) {
+        console.error('create team failed', err)
+        return null
+    }
+}
+
+/* ---------- success modal state ---------- */
+const showCreateSuccess = ref(false)
+const showCannotCreate = ref(false)
+
+
+/* ---------- bulk create employees ---------- */
+async function onCreate() {
+    if (!displayRows.value.length || creating.value) return
+
+    creating.value = true
+
+    const prefixMap = { 'นาย': 1, 'นาง': 2, 'นางสาว': 3 }
+
+    const successList = []
+    const failList = []
+
+    try {
+        for (const row of displayRows.value) {
+            // --- เตรียมชื่อ ---
+            let emp_prefix = 1
+            let emp_firstname = ''
+            let emp_lastname = ''
+
+            const parts = row.name.trim().split(/\s+/)
+            if (parts.length >= 3) {
+                emp_prefix = prefixMap[parts[0]] ?? 1
+                emp_firstname = parts[1] ?? ''
+                emp_lastname = parts.slice(2).join(' ')
+            } else if (parts.length === 2) {
+                emp_firstname = parts[0]
+                emp_lastname = parts[1]
+            } else if (parts.length === 1) {
+                emp_firstname = parts[0]
+            }
+
+            // --- ensure master data ---
+            const depId = await ensureDepartmentId(row.department || '')
+            const posId = await ensurePositionId(row.position || '')
+            const teamId = await ensureTeamId(row.team || '')
+
+            if (!depId || !posId || !teamId) {
+                failList.push({
+                    emp_id: row.employeeId,
+                    reason: 'Cannot create/find Department / Team / Position',
+                })
+                continue
+            }
+
+            const payload = {
+                emp_id: (row.employeeId || '').trim(),
+                emp_prefix,
+                emp_nickname: row.nickname || null,
+                emp_firstname,
+                emp_lastname,
+                emp_email: row.email || '',
+                emp_phone: row.phone || '',
+                emp_position_id: posId,
+                emp_department_id: depId,
+                emp_team_id: teamId,
+                emp_password: 'Password123',
+                emp_status: 2,
+            }
+
+            try {
+                await axios.post('/save-employee', payload)
+                successList.push(row.employeeId)
+            } catch (empErr) {
+                console.error(
+                    'save-employee failed for',
+                    row.employeeId,
+                    empErr.response?.data || empErr.message
+                )
+                failList.push({
+                    emp_id: row.employeeId,
+                    reason:
+                        empErr.response?.data?.message ||
+                        empErr.response?.data?.error ||
+                        'save-employee failed',
+                })
+            }
+        }
+
+        // ---- หลัง loop: ตัดสินใจเปิด modal ไหน ----
+        if (successList.length > 0) {
+            // อย่างน้อยมีบางแถวสร้างสำเร็จ
+            // เคลียร์ preview + ขึ้น modal success
+            displayRows.value = []
+            file.value = null
+            error.value = ''
+            page.value = 1
+
+            showCreateSuccess.value = true
+            showCannotCreate.value = false
+        } else {
+            // ไม่มีแถวไหนสำเร็จเลย -> เปิด modal fail
+            showCreateSuccess.value = false
+            showCannotCreate.value = true
+        }
+    } finally {
+        creating.value = false
+    }
+}
+
+
+/* ---------- กด OK บน popup success ---------- */
+function handleSuccessClose() {
+    showCreateSuccess.value = false
+    router.push('/employee')
+}
+
+/* ---------- download template ---------- */
 function downloadTemplate() {
-    const header = ['Company', 'Employee ID', 'ชื่อเล่น', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ID', 'Position', 'Department', 'Team', 'Phone', 'Date Add']
-    const sampleRow = ['CN', 'CN0001', 'มด', 'นาย', 'สมปอง', 'แซ่บสุด', '—', 'Software Engineer', 'Engineering', 'CodeCraft', "'0918231678", '20/08/2025']
+    const header = [
+        'Company',
+        'Employee ID',
+        'ชื่อเล่น',
+        'คำนำหน้า',
+        'ชื่อ',
+        'นามสกุล',
+        'ID',
+        'Position',
+        'Department',
+        'Team',
+        'Phone',
+        'Email',
+        'Date Add'
+    ]
+
+    const sampleRow = [
+        'CN',
+        'CN0001',
+        'มด',
+        'นาย',
+        'สมปอง',
+        'แซ่บสุด',
+        '—',
+        'Software Engineer',
+        'Product Development',
+        'Mobile',
+        "'0918231678",
+        'employee@example.com',
+        '20/08/2025'
+    ]
+
     const ws = XLSX.utils.aoa_to_sheet([header, sampleRow])
-    ws['!cols'] = header.map(h => ({ wch: Math.max(12, String(h).length + 2) }))
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+    ws['!cols'] = header.map(h => {
+        if (h === 'Email') return { wch: 28 }
+        return { wch: Math.max(12, String(h).length + 2) }
+    })
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    const url = URL.createObjectURL(blob); const a = document.createElement('a')
-    a.href = url; a.download = 'employee-template.xlsx'; a.click(); URL.revokeObjectURL(url)
+    const blob = new Blob([wbout], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'employee-template.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
 }
 
-function onCancel() {
-    if (window.history.state && window.history.state.back) router.back()
-    else emit('cancel')
-}
-
-/* ---------- Pager numbers ---------- */
+/* ---------- pager buttons list ---------- */
 const pagerItems = computed(() => {
     const pages = totalPages.value
     const cur = page.value
     const out = []
-    if (pages <= 7) { for (let i = 1; i <= pages; i++) out.push(i); return out }
+    if (pages <= 7) {
+        for (let i = 1; i <= pages; i++) out.push(i)
+        return out
+    }
     out.push(1)
     const left = Math.max(2, cur - 1)
     const right = Math.min(pages - 1, cur + 1)
@@ -411,4 +699,13 @@ const pagerItems = computed(() => {
     out.push(pages)
     return out
 })
+
+/* ---------- cancel button ---------- */
+function onCancel() {
+    displayRows.value = []
+    file.value = null
+    error.value = ''
+    page.value = 1
+    router.push('/employee')
+}
 </script>

@@ -28,10 +28,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
 
 
+
     Route::post('/save-employee', [EmployeeController::class, 'store']); //บันทึก employee
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']); // บันทึก แผนก
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);// บันทึก ตำแหน่ง
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']); // บันทึก ทีม
+    Route::post('/import-employees', [EmployeeController::class, 'importBulk']);
 
     // === Event ===
     Route::get('/event-info', [EventController::class, 'eventInfo']);

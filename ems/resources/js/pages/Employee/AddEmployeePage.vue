@@ -69,32 +69,32 @@
 
                             <!-- ขวา -->
                             <div class="flex flex-col gap-5 md:ml-32 lg:ml-48 xl:ml-64 2xl:ml-80">
-                                <FormField label="Department" required class="w-[480px]">
+                                <FormField label="Department" required class="w-[500px]">
                                     <DropdownPill class="mt-1 block w-full" v-model="form.department" :options="departments"
                                         placeholder="Select Department" :error="errors.department" />
                                 </FormField>
 
-                                <FormField label="Team" required class="w-[480px]">
+                                <FormField label="Team" required class="w-[500px]">
                                     <DropdownPill class="mt-1 block w-full" v-model="form.team" :options="teamOptions"
                                         placeholder="Select Team" :error="errors.team" />
                                 </FormField>
 
-                                <FormField label="Position" required class="w-[480px]">
+                                <FormField label="Position" required class="w-[500px]">
                                     <DropdownPill class="mt-1 block w-full" v-model="form.position" :options="positions"
                                         placeholder="Select Position" :error="errors.position" />
                                 </FormField>
 
-                                <FormField label="Email" required class="w-[480px]">
+                                <FormField label="Email" required class="w-[500px]">
                                     <InputPill class="mt-1 block w-full" v-model="form.email" type="email"
                                         placeholder="Ex.66160106@go.buu.ac.th" :error="errors.email" />
                                 </FormField>
 
-                                <FormField label="Password" required class="w-[480px]">
+                                <FormField label="Password" required class="w-[500px]">
                                     <InputPill class="mt-1 block w-full" v-model="form.password" type="password"
                                         placeholder="Ex.Ssaw.1234" :error="errors.password" />
                                 </FormField>
 
-                                <FormField label="Permission" required class="w-[480px]">
+                                <FormField label="Permission" required class="w-[500px]">
                                     <DropdownPill class="mt-1 block w-full" v-model="form.permission" :options="permissions"
                                         placeholder="Select Permission" :error="errors.permission" />
                                 </FormField>
