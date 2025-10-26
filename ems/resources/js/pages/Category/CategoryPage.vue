@@ -9,7 +9,7 @@
         @search="onSearch"
       />
       <SortMenu :is-open="sortMenuOpen" :options="sortOptions" />
-      <AddButton  @click="openAdd"/>
+      <AddButton @click="openAdd" />
     </div>
 
     <!-- DataTable -->
@@ -82,144 +82,143 @@
 <script>
 import axios from '@/plugin/axios'
 import DataTable from '@/components/DataTable.vue'
-import SearchBar from "@/components/SearchBar.vue"
-import CategorySort from "@/components/Category/CategorySort.vue"
-import CategoryCreate from "@/components/Category/CategoryCreate.vue"
-import CategoryEdit from "@/components/Category/CategoryEdit.vue"
-import ModalAlert from "@/components/Alert/ModalAlert.vue"
-import SortMenu from '../../components/SortMenu.vue'
-import { Icon } from '@iconify/vue'
+import SearchBar from '@/components/SearchBar.vue'
+import CategoryCreate from '@/components/Category/CategoryCreate.vue'
+import CategoryEdit from '@/components/Category/CategoryEdit.vue'
+import ModalAlert from '@/components/Alert/ModalAlert.vue'
+import SortMenu from '@/components/SortMenu.vue'
 import AddButton from '@/components/AddButton.vue'
-
+import { Icon } from '@iconify/vue'
 
 export default {
-  name: "CategoryPage",
-  components: { DataTable, SearchBar, SortMenu, CategorySort, CategoryCreate, CategoryEdit, ModalAlert , Icon ,AddButton},
+  name: 'CategoryPage',
+  components: { DataTable, SearchBar, SortMenu, CategoryCreate, CategoryEdit, ModalAlert, AddButton, Icon },
+
   data() {
     return {
       rows: [],
-      searchInput: "",
-      search: "",
+      searchInput: '',
+      search: '',
       page: 1,
       pageSize: 10,
-      sortDir: "desc",
+      sortDir: 'desc',
       sortMenuOpen: false,
       sortOptions: [
         { key: 'cat_created_at', order: 'asc', label: 'Created date (Oldest)' },
-        { key: 'cat_created_at', order: 'desc', label: 'Created date (Newest)' }
+        { key: 'cat_created_at', order: 'desc', label: 'Created date (Newest)' },
       ],
 
-      // state ของ modal แจ้งเตือน
       alert: { open: false, type: '', title: '', message: '', showCancel: false, okText: 'OK', cancelText: 'Cancel' },
 
-      // modal CRUD
       addOpen: false,
       editOpen: false,
       editing: null,
 
-      userName: "Admin",
+      userName: 'Admin',
 
       CategoryTableColumns: [
         { key: 'cat_name', label: 'Category', class: 'text-left w-[867px] h-[60px]', sortable: true },
         { key: 'created_by_name', label: 'Created by', class: 'text-center w-[134px]' },
-        { key: 'cat_created_at', label: 'Created date (D/M/Y)', class: 'text-center w-[202px]', format: v => new Date(v).toLocaleDateString() }
+        { key: 'cat_created_at', label: 'Created date (D/M/Y)', class: 'text-center w-[202px]', format: v => new Date(v).toLocaleDateString() },
       ],
     }
   },
+
   computed: {
     filtered() {
-      const q = this.search.trim().toLowerCase();
-      if (!q) return this.rows;
+      const q = this.search.trim().toLowerCase()
+      if (!q) return this.rows
       return this.rows.filter(
         r =>
           (r.cat_name && r.cat_name.toLowerCase().includes(q)) ||
-          (r.created_by_name && r.created_by_name.toLowerCase().includes(q))
-      );
+          (r.created_by_name && r.created_by_name.toLowerCase().includes(q)),
+      )
     },
     sorted() {
-      const dir = this.sortDir === "asc" ? 1 : -1;
+      const dir = this.sortDir === 'asc' ? 1 : -1
       return this.filtered.slice().sort((a, b) => {
-        const ta = new Date(a.cat_created_at).getTime() || 0;
-        const tb = new Date(b.cat_created_at).getTime() || 0;
-        return (ta - tb) * dir;
-      });
+        const ta = new Date(a.cat_created_at).getTime() || 0
+        const tb = new Date(b.cat_created_at).getTime() || 0
+        return (ta - tb) * dir
+      })
     },
     paged() {
-      const start = (this.page - 1) * this.pageSize;
-      return this.sorted.slice(start, start + this.pageSize);
+      const start = (this.page - 1) * this.pageSize
+      return this.sorted.slice(start, start + this.pageSize)
     },
   },
+
   async created() {
-    await this.loadCategories();
+    // ถ้าใช้ sanctum ให้เปิดสองบรรทัดนี้
+    // axios.defaults.withCredentials = true
+    // await axios.get('/sanctum/csrf-cookie').catch(()=>{})
+    await this.loadCategories()
   },
+
   methods: {
     /* --------- โหลดรายการ --------- */
     async loadCategories() {
       try {
-        const res = await axios.get("/categories");
-        const data = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data?.data)
-            ? res.data.data
-            : [];
+        const res = await axios.get('/categories')
+        const data = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.data) ? res.data.data : []
         this.rows = data.map(c => ({
           id: c.id,
-          cat_name: c.cat_name ?? c.name ?? "-",
-          created_by_name: c.created_by_name ?? c.createdBy ?? "-",
+          cat_name: c.cat_name ?? c.name ?? '-',
+          created_by_name: c.created_by_name ?? c.createdBy ?? '-',
           cat_created_at: c.cat_created_at ?? c.created_at ?? null,
-        }));
+        }))
       } catch (e) {
-        console.error(e);
-        this.rows = [];
-        this.alert = { open: true, type: 'error', title: 'Failed', message: 'Load categories failed.' };
+        console.error(e)
+        this.rows = []
+        this.alert = { open: true, type: 'error', title: 'Failed', message: 'Load categories failed.' }
       }
     },
 
     /* --------- ค้นหา/เปลี่ยนหน้า --------- */
     onSearch(value) {
-      this.search = value.trim();
-      this.page = 1;
+      this.search = value.trim()
+      this.page = 1
     },
     onChangePageSize(size) {
-      this.pageSize = Number(size);
-      this.page = 1;
+      this.pageSize = Number(size)
+      this.page = 1
     },
 
     /* ================== CREATE ================== */
-    openAdd() { this.addOpen = true; },
-
-    isDuplicate(name) {
-      const n = (name || "").trim().toLowerCase();
-      if (!n) return false;
-      return this.rows.some(r => (r.cat_name || "").toLowerCase() === n);
+    openAdd() {
+      this.addOpen = true
     },
-
-    // รับ payload { name } จาก CategoryCreate
+    isDuplicate(name) {
+      const n = (name || '').trim().toLowerCase()
+      if (!n) return false
+      return this.rows.some(r => (r.cat_name || '').toLowerCase() === n)
+    },
     async createCategory({ name }) {
       try {
-        const n = (name || "").trim();
-        if (!n) throw new Error("Name is empty.");
+        const n = (name || '').trim()
+        if (!n) throw new Error('Name is empty.')
 
-        // บางแบ็กเอนด์ใช้ name, บางที่ใช้ cat_name
-        const res = await axios.post("/categories", {
-          cat_name: n,
-          created_by_name: this.userName,
-        }).catch(() => axios.post("/categories", { name: n, created_by_name: this.userName }));
+        if (this.isDuplicate(n)) {
+          this.alert = { open: true, type: 'error', title: 'Duplicate', message: 'มีชื่อนี้อยู่แล้วในรายการ' }
+          return
+        }
 
-        const created = res?.data?.data || res?.data || {};
+        // ตรงกับ route: POST /categories
+        const res = await axios.post('/categories', { cat_name: n })
+        const created = res?.data?.data || res?.data || {}
         this.rows.unshift({
           id: created.id,
-          cat_name: created.cat_name || created.name || n,
-          created_by_name: created.created_by_name || created.createdBy || this.userName,
-          cat_created_at: created.cat_created_at || created.created_at || new Date().toISOString(),
-        });
+          cat_name: created.cat_name || n,
+          created_by_name: created.created_by_name || this.userName,
+          cat_created_at: created.cat_created_at || new Date().toISOString(),
+        })
 
-        this.addOpen = false;
-        this.alert = { open: true, type: 'success', title: 'Created', message: 'Category created successfully.' };
+        this.addOpen = false
+        this.alert = { open: true, type: 'success', title: 'Created', message: 'Category created successfully.' }
       } catch (err) {
-        console.error(err?.response || err);
-        const msg = err?.response?.data?.message || 'Cannot create category.';
-        this.alert = { open: true, type: 'error', title: 'Failed', message: msg };
+        console.error(err?.response || err)
+        const msg = err?.response?.data?.message || 'Cannot create category.'
+        this.alert = { open: true, type: 'error', title: 'Failed', message: msg }
       }
     },
 
@@ -227,60 +226,41 @@ export default {
     openEdit(row) {
       this.editing = {
         id: row.id,
-        name: row.cat_name,            // แปลง cat_name -> name
+        name: row.cat_name,
         createdBy: row.created_by_name,
         createdAt: row.cat_created_at,
       }
       this.editOpen = true
     },
-
-
     isDupForEdit(name, currentId) {
-    const n = (name || "").trim().toLowerCase()
-    if (!n) return false
-    return this.rows.some(r => r.id !== currentId && (r.cat_name || "").toLowerCase() === n)
-  },
-
-
-    // รับ payload { id, name } จาก CategoryEdit
-    // รับ payload { id, name } จาก CategoryEdit
+      const n = (name || '').trim().toLowerCase()
+      if (!n) return false
+      return this.rows.some(r => r.id !== currentId && (r.cat_name || '').toLowerCase() === n)
+    },
     async updateCategory({ id, name }) {
-      const n = (name || "").trim();
+      const n = (name || '').trim()
       if (!n) {
-        this.alert = { open: true, type: "error", title: "Failed", message: "Name is empty." };
-        return;
+        this.alert = { open: true, type: 'error', title: 'Failed', message: 'Name is empty.' }
+        return
+      }
+      if (this.isDupForEdit(n, id)) {
+        this.alert = { open: true, type: 'error', title: 'Duplicate', message: 'มีชื่อนี้อยู่แล้วในรายการ' }
+        return
       }
 
       try {
-        // 1) พยายาม PATCH /categories/:id
-        await axios.patch(`/categories/${id}`, { cat_name: n, name: n });
+        // ตรงกับ route: PUT /categories/:id
+        await axios.put(`/categories/${id}`, { cat_name: n })
 
-      } catch (e1) {
-        try {
-          // 2) Laravel method spoofing: POST + _method=PATCH
-          await axios.post(`/categories/${id}`, { cat_name: n, name: n, _method: "PATCH" });
-        } catch (e2) {
-          try {
-            // 3) เส้นทางแบบ update
-            await axios.post(`/categories/update/${id}`, { cat_name: n, name: n });
-          } catch (e3) {
-            const msg =
-              e3?.response?.data?.message ||
-              e2?.response?.data?.message ||
-              e1?.response?.data?.message ||
-              "Cannot update this category.";
-            this.alert = { open: true, type: "error", title: "Failed", message: msg };
-            return;
-          }
-        }
+        this.rows = this.rows.map(r => (r.id === id ? { ...r, cat_name: n } : r))
+        this.editOpen = false
+        this.alert = { open: true, type: 'success', title: 'Updated', message: 'Category updated successfully.' }
+      } catch (err) {
+        console.error(err?.response || err)
+        const msg = err?.response?.data?.message || 'Cannot update this category.'
+        this.alert = { open: true, type: 'error', title: 'Failed', message: msg }
       }
-
-      // อัปเดตในตาราง และปิดโมดัล
-      this.rows = this.rows.map(r => (r.id === id ? { ...r, cat_name: n } : r));
-      this.editOpen = false;
-      this.alert = { open: true, type: "success", title: "Updated", message: "Category updated successfully." };
     },
-
 
     /* ================== DELETE ================== */
     requestDelete(row) {
@@ -294,33 +274,31 @@ export default {
         cancelText: 'Cancel',
         onConfirm: () => this.confirmDelete(row.id),
         onCancel: () => (this.alert.open = false),
-      };
+      }
     },
-
     async confirmDelete(id) {
       try {
+        // ตรงกับ route: DELETE /categories/:id
         await axios.delete(`/categories/${id}`)
-          .catch(() => axios.post(`/categories/${id}/delete`));
-
-        this.rows = this.rows.filter(r => r.id !== id);
-        this.alert = { open: true, type: 'success', title: 'Deleted', message: 'Category deleted successfully.' };
+        this.rows = this.rows.filter(r => r.id !== id)
+        this.alert = { open: true, type: 'success', title: 'Deleted', message: 'Category deleted successfully.' }
       } catch (err) {
-        console.error(err?.response || err);
-        const msg = err?.response?.data?.message || 'Cannot delete this category.';
-        this.alert = { open: true, type: 'error', title: 'Failed', message: msg };
+        console.error(err?.response || err)
+        const msg = err?.response?.data?.message || 'Cannot delete this category.'
+        this.alert = { open: true, type: 'error', title: 'Failed', message: msg }
       }
     },
 
-    /* --------------- utils สำหรับโมดัล --------------- */
+    /* --------------- utils --------------- */
     formatDate(iso) {
-      if (!iso) return '-';
-      const d = new Date(iso);
-      if (isNaN(d)) return '-';
-      const dd = String(d.getDate()).padStart(2, '0');
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const yyyy = d.getFullYear();
-      return `${dd}/${mm}/${yyyy}`;
+      if (!iso) return '-'
+      const d = new Date(iso)
+      if (isNaN(d)) return '-'
+      const dd = String(d.getDate()).padStart(2, '0')
+      const mm = String(d.getMonth() + 1).padStart(2, '0')
+      const yyyy = d.getFullYear()
+      return `${dd}/${mm}/${yyyy}`
     },
   },
-};
+}
 </script>
