@@ -68,6 +68,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
     Route::post('categories', [CategoryController::class, 'store']);
+    Route::match(['put','patch'], 'categories/{id}', [CategoryController::class, 'update']);
 });
 
 
