@@ -691,44 +691,50 @@ export default {
     },
 
     async loadEventStatistics(eventId) {
+      this.isLoading = true;
       try {
-        // Fetch event participants data 
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const response = await axios.get(`/event/${eventId}/participants`, {
-          headers: {
-            'X-CSRF-TOKEN': token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-        const data = response.data;
+        // Fetch event participants data using correct API endpoint
+        const response = await axios.get(`/api/event/${eventId}/participants`);
         
-        console.log('API Response:', data);
+        console.log('Event statistics response:', response.data);
         
-        // Update chart data with real statistics
-        this.chartData = {
-          attending: data.statistics?.attending || 0,
-          notAttending: data.statistics?.not_attending || 0,
-          pending: data.statistics?.pending || 0,
-          totalParticipation: data.statistics?.total || 0,
-          departments: this.chartData.departments || []
-        };
-        
-        console.log('Updated chart data:', this.chartData);
+        if (response.data.success) {
+          const statistics = response.data.data.statistics;
+          
+          // Update chart data with real statistics
+          this.chartData = {
+            attending: statistics.attending || 0,
+            notAttending: statistics.not_attending || 0,
+            pending: statistics.pending || 0
+          };
+          
+          // Update participation data for chart
+          this.participationData = {
+            labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
+            datasets: [{
+              data: [
+                this.chartData.attending,
+                this.chartData.notAttending,
+                this.chartData.pending
+              ],
+              backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
+            }]
+          };
+          
+          console.log('Updated chart data:', this.chartData);
+        } else {
+          console.error('Failed to load event statistics:', response.data.message);
+        }
       } catch (error) {
         console.error('Error loading event statistics:', error);
-        
-        // แสดงข้อมูล mock สำหรับทดสอบ
-        this.chartData = {
-          attending: 25,
-          notAttending: 8,
-          pending: 12,
-          totalParticipation: 45,
-          departments: this.chartData.departments || []
+        // Reset to default values on error
+        this.chartData = { attending: 0, notAttending: 0, pending: 0 };
+        this.participationData = {
+          labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
+          datasets: [{ data: [0, 0, 0], backgroundColor: ['#4CAF50', '#F44336', '#FF9800'] }]
         };
-        
-        console.log('Using mock data due to API error');
-        console.warn('API Error details:', error.response?.data || error.message);
+      } finally {
+        this.isLoading = false;
       }
     },
 
@@ -745,21 +751,22 @@ export default {
       
       try {
         // Fetch employees for selected event and status from our API
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const response = await axios.get(`/event/${this.selectedEventId}/participants`, {
-          headers: {
-            'X-CSRF-TOKEN': token,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await axios.get(`/api/event/${this.selectedEventId}/participants`);
         
         console.log('API response for participants:', response.data);
         
+        // Check if API call was successful
+        if (!response.data.success) {
+          throw new Error(response.data.message || 'Failed to fetch participants');
+        }
+        
+        // Get participants from API response
+        const participants = response.data.data.participants || [];
+        
         // Filter participants based on status
         let filteredParticipants = [];
-        if (response.data && response.data.participants) {
-          filteredParticipants = response.data.participants.filter(participant => {
+        if (participants.length > 0) {
+          filteredParticipants = participants.filter(participant => {
             const apiStatus = this.mapStatusForAPI(status);
             return participant.con_answer === apiStatus;
           });
