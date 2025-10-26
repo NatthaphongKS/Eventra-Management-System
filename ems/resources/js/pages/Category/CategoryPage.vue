@@ -8,11 +8,17 @@
         placeholder="Search Category / Created by"
         @search="onSearch"
       />
-      <SortMenu
-        :is-open="sortMenuOpen"
-        :options="sortOptions"
-        @select="onSortSelect"
-      />
+      <div class="relative z-[60]" ref="sortWrap">
+  <SortMenu
+    v-model:is-open="sortMenuOpen"
+    :options="sortOptions"
+    :selected="sortBy"
+    @update:is-open="val => (sortMenuOpen = val)"
+    @toggle="sortMenuOpen = !sortMenuOpen"
+    @select="onSortSelect($event)"  
+    @close="sortMenuOpen = false"
+  />
+</div>
       <AddButton @click="openAdd" />
     </div>
 
@@ -108,12 +114,12 @@ export default {
 
       /* ✅ สถานะซอร์ท */
       sortMenuOpen: false,
-      sortBy: { key: 'cat_created_at', order: 'desc' }, // เริ่มที่ วันที่ล่าสุด
+      sortBy: { key: 'cat_created_at', order: 'desc' },
       sortOptions: [
-        { key: 'cat_name',       order: 'asc',  label: 'A → Z' },
-        { key: 'cat_name',       order: 'desc', label: 'Z → A' },
-        { key: 'cat_created_at', order: 'desc', label: 'Created date (Newest)' },
-        { key: 'cat_created_at', order: 'asc',  label: 'Created date (Oldest)' },
+        { key: 'cat_name',       order: 'asc',  label: 'A → Z', value: 'az' },
+        { key: 'cat_name',       order: 'desc', label: 'Z → A', value: 'za' },
+        { key: 'cat_created_at', order: 'desc', label: 'Created date (Newest)', value: 'newest' },
+        { key: 'cat_created_at', order: 'asc',  label: 'Created date (Oldest)', value: 'oldest' },
       ],
 
       alert: { open: false, type: '', title: '', message: '', showCancel: false, okText: 'OK', cancelText: 'Cancel' },
@@ -174,6 +180,13 @@ export default {
   async created() {
     await this.loadCategories()
   },
+  mounted() {
+      // ปิดเมนูเมื่อคลิกรอบนอก
+      document.addEventListener('click', this.onDocClick, true)
+    },
+    beforeUnmount() {
+      document.removeEventListener('click', this.onDocClick, true)
+    },
 
   methods: {
     /* --------- โหลดรายการ --------- */
@@ -302,23 +315,37 @@ export default {
       }
     },
 
-    /* ✅ handler สำหรับ SortMenu */
     onSortSelect(option) {
-      // คาดว่า SortMenu ยิง payload เป็นอ็อบเจ็กต์ { key, order, label }
-      if (!option || !option.key || !option.order) return
-      this.sortBy = { key: option.key, order: option.order }
+      let key, order
+
+      if (option && typeof option === 'object') {
+        // กรณี SortMenu ส่ง { key, order }
+        key = option.key
+        order = option.order
+      } else if (typeof option === 'string') {
+        // กรณีส่ง string ช็อตคัต
+        const map = {
+          az:      { key: 'cat_name',       order: 'asc'  },
+          za:      { key: 'cat_name',       order: 'desc' },
+          newest:  { key: 'cat_created_at', order: 'desc' },
+          oldest:  { key: 'cat_created_at', order: 'asc'  },
+        }
+        ;({ key, order } = map[option] || {})
+      }
+
+      if (!key || !order) return
+      this.sortBy = { key, order }
       this.page = 1
+      this.sortMenuOpen = false
     },
 
-    /* --------------- utils --------------- */
-    formatDate(iso) {
-      if (!iso) return '-'
-      const d = new Date(iso)
-      if (isNaN(d)) return '-'
-      const dd = String(d.getDate()).padStart(2, '0')
-      const mm = String(d.getMonth() + 1).padStart(2, '0')
-      const yyyy = d.getFullYear()
-      return `${dd}/${mm}/${yyyy}`
+    // ✅ ปิดเมนูเมื่อคลิกรอบนอกกล่อง sortWrap
+    onDocClick(e) {
+      if (!this.sortMenuOpen) return
+      const wrap = this.$refs.sortWrap
+      if (wrap && !wrap.contains(e.target)) {
+        this.sortMenuOpen = false
+      }
     },
   },
 }
