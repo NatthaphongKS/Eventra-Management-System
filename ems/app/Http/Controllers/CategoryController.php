@@ -89,6 +89,31 @@ class CategoryController extends Controller
 
 
 }
+// app/Http/Controllers/CategoryController.php
+public function update(Request $request, $id)
+{
+    $data = $request->validate([
+        'cat_name' => 'nullable|string|max:255',
+        'name'     => 'nullable|string|max:255',
+    ]);
+
+    $category = Category::findOrFail($id);
+    $newName = $data['cat_name'] ?? $data['name'] ?? null;
+    if (!$newName) {
+        return response()->json(['message' => 'cat_name or name is required'], 422);
+    }
+
+    $category->cat_name = $newName;
+    $category->save();
+
+    return response()->json([
+        'id'                => $category->id,
+        'cat_name'          => $category->cat_name,
+        'created_by_name'   => $category->created_by_name,
+        'cat_created_at'    => $category->cat_created_at,
+    ]);
+}
+
 
 public function destroy($id)
     {
