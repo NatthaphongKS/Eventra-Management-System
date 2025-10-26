@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <input v-bind="$attrs" :type="type" :inputmode="inputmode" :placeholder="placeholder" :disabled="disabled" class="rounded-full border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition
+    <input v-bind="$attrs" :type="type" :inputmode="inputmode" :placeholder="placeholder" :disabled="disabled" class="rounded-[20px] border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition
              placeholder-[#E1B4B4]" :class="[
               disabled
                 ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
