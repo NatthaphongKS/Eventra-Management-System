@@ -18,7 +18,7 @@
 
             <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
        bg-[#b91c1c] px-4 font-semibold text-white
-       hover:bg-[#991b1b] focus:outline-none
+       hover:bg-[#991b1b] focus:outline-noneFevent
        focus:ring-2 focus:ring-red-300">
                 + Add
             </router-link>
@@ -47,9 +47,10 @@
                     <PencilIcon class="h-5 w-5 text-neutral-800" />
                 </button>
                 <button @click="deleteEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
+                    
                     <TrashIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <router-link :to="`/EventCheckIn/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor" class="h-5 w-5 text-neutral-800">
@@ -58,10 +59,6 @@
                     </svg>
                 </router-link>
             </template>
-
-            <!-- ===== Table ===== -->
-            <EventTable :rows="sorted" v-model:page="page" v-model:pageSize="pageSize"
-                :pageSizeOptions="[10, 20, 50, 100]" @edit="editEvent" @delete="deleteEvent" />
 
             <template #empty>
                 {{ sorted.length === 0 ? 'ไม่พบข้อมูลกิจกรรม' : 'ไม่มีข้อมูลในหน้านี้' }}
