@@ -55,7 +55,7 @@
     <DataTable :rows="pagedRows" :columns="columns" :loading="loading" v-model:page="page" v-model:pageSize="pageSize"
       :totalItems="sortedRows.length" rowKey="empId" selectable v-model="selectedIds" v-model:sortKey="sortKey"
       v-model:sortOrder="sortOrder" @sort="onSort" :showRowNumber="true" :pageSizeOptions="[10, 20, 50, 100]"
-      :rowClass="rowClass" @checkbox-checkin="handleCheckin">
+      :rowClass="rowClass" @checkbox-checkin="handleCheckin" @check-all-page="handleCheckAllOnPage">
       <!-- ✅ Column: Check-in (readonly indicator) -->
       <template #cell-checkinBox="{ row }">
         <input type="checkbox" :checked="!!row.empCheckinStatus" class="h-4 w-4 cursor-default accent-emerald-600"
@@ -97,6 +97,7 @@ import { useRoute, onBeforeRouteUpdate } from 'vue-router'
 import DataTable from '@/components/DataTable.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import EmployeeDropdown from '@/components/EmployeeDropdown.vue'
+import axios from 'axios'
 
 /* ===== Routing / Params ===== */
 const route = useRoute()
@@ -160,7 +161,7 @@ function normalize(list) {
   return list.map((r) => ({
     eveId: r.eveId ?? null,
     eveTitle: r.eveTitle ?? '',
-    empId: r.empId , // ใช้เป็น rowKey หลัก
+    empId: r.empId, // ใช้เป็น rowKey หลัก
     empCompanyId: r.empCompanyId ?? r.empCompamyId ?? '',
     empFullname: r.empFullname ?? '',
     empNickname: r.empNickname ?? '',
@@ -341,9 +342,13 @@ function onSort({ key, order }) {
   sortOrder.value = order
 }
 
-function rowClass(row) {
-  return row?.empCheckinStatus ? 'bg-emerald-50/30' : 'text-left'
+function rowClass(row) {                               // ✅ แก้
+  return Number(row?.empCheckinStatus) === 1
+    ? 'bg-red-100 text-left'                           // แดงค้างเมื่อเช็กแล้ว
+    : 'text-left';
 }
+
+
 
 /* ===== Handlers ===== */
 /**
@@ -361,16 +366,97 @@ async function handleCheckin({ keys, checked }) {
           'Content-Type': 'application/json'
         }
       });
+      const result = await res.json();   // ✅ ต้องใส่วงเล็บ () และ await
+      console.log(result);
 
-      // แปลงผลลัพธ์ที่ได้เป็น JSON
-      const data = await res.json();
-
-      console.log(data);
     } catch (err) {
       console.error('❌ update failed:', err)
     }
   }
 }
+async function updateAttendance(empId, checked) {      // ✅ เพิ่ม
+  const res = await fetch(`/api/updateEmployeeAttendance/empId/${empId}/eveId/${eveId.value}`, {
+    method: 'PUT',                                     // หรือ PATCH ตาม API
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ checked: checked ? 1 : 0 }),
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error(`Update failed (${res.status})`);
+  return res.json().catch(() => ({}));
+}
+
+async function handleCheckAllOnPage({ action, pageKeys, rowsOnPage, rowKey = 'empId', checkinField = 'empCheckinStatus' }) {
+  // ✅ แยก “คนที่เช็กอยู่จริง” และ “คนที่ยังไม่เช็กจริง” บนหน้านี้
+  const alreadyCheckedIds = rowsOnPage
+    .filter(r => Number(r[checkinField]) === 1)
+    .map(r => r[rowKey]);
+
+  const notCheckedIds = rowsOnPage
+    .filter(r => Number(r[checkinField]) !== 1)
+    .map(r => r[rowKey]);
+
+  const prevRows = rows.value;
+
+  if (action === 'check') {
+    // ✅ 1) optimistic: ให้ทุก key บนหน้านี้เป็นเช็ก
+    rows.value = rows.value.map(r =>
+      pageKeys.includes(r[rowKey]) ? { ...r, [checkinField]: 1 } : r
+    );
+    // sync selection
+    const set = new Set(selectedIds.value);
+    pageKeys.forEach(k => set.add(k));
+    selectedIds.value = Array.from(set);
+
+    try {
+      // ✅ 2) ยิง API “เฉพาะคนที่ยังไม่เช็กจริง”
+      if (notCheckedIds.length) {
+        await Promise.all(notCheckedIds.map(id => updateAttendance(id, true)));
+      }
+    } catch (e) {
+      console.error('check-all (check) failed:', e);
+      rows.value = prevRows;                           // (ทางเลือก) rollback
+      return;
+    } finally {
+      silentRefresh();                                 // ✅ 3) ดึงของจริงแบบเงียบ ๆ
+    }
+  } else {
+    // action === 'uncheck'
+    rows.value = rows.value.map(r =>
+      pageKeys.includes(r[rowKey]) ? { ...r, [checkinField]: 0 } : r
+    );
+    // sync selection
+    selectedIds.value = selectedIds.value.filter(id => !pageKeys.includes(id));
+
+    try {
+      // ✅ ยิง API “เฉพาะคนที่เช็กอยู่จริง”
+      if (alreadyCheckedIds.length) {
+        await Promise.all(alreadyCheckedIds.map(id => updateAttendance(id, false)));
+      }
+    } catch (e) {
+      console.error('check-all (uncheck) failed:', e);
+      rows.value = prevRows;
+      return;
+    } finally {
+      silentRefresh();
+    }
+  }
+}
+
+
+async function silentRefresh() {                       // ✅ เพิ่ม
+  try {
+    const data = await fetchEmployeeForCheckin(eveId.value);
+    const list = Array.isArray(data) ? data : (data?.data ?? data?.items ?? []);
+    rows.value = normalize(list);
+    selectedIds.value = rows.value
+      .filter(r => Number(r.empCheckinStatus) === 1)
+      .map(r => r.empId);
+    buildFilterOptions();
+  } catch (e) {
+    console.error('silent refresh failed:', e);
+  }
+}
+
 watch(rows, (list) => {
   selectedIds.value = list
     .filter(r => Number(r.empCheckinStatus) === 1)
