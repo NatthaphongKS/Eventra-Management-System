@@ -372,7 +372,7 @@ function toggleSelectAllOnPage(event) {
 <style>
 /* (Style ของ Pagination สีแดง - เหมือนเดิม) */
 .pg-arrow {
-    @apply grid h-9 w-9 place-items-center rounded-full border border-red-700 bg-white text-red-700 transition hover:bg-rose-50 disabled:opacity-40;
+    @apply grid h-9 w-9 place-items-center rounded-xl border border-red-700 bg-white text-red-700 transition hover:bg-rose-50 disabled:opacity-40;
 }
 
 .pg-arrow svg {
@@ -380,7 +380,7 @@ function toggleSelectAllOnPage(event) {
 }
 
 .pg-num {
-    @apply grid h-9 min-w-[36px] place-items-center rounded-full border border-red-700 bg-white px-2 text-sm font-medium text-red-700 transition hover:bg-rose-50;
+    @apply grid h-9 min-w-[36px] place-items-center rounded-xl border border-red-700 bg-white px-2 text-sm font-medium text-red-700 transition hover:bg-rose-50;
 }
 
 .pg-num.pg-active {
@@ -392,6 +392,6 @@ function toggleSelectAllOnPage(event) {
 }
 
 .pg-ellipsis .dot {
-    @apply h-1 w-1 rounded-full bg-current;
+    @apply h-1 w-1 rounded-xl bg-current;
 }
 </style>

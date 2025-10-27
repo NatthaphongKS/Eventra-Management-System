@@ -72,6 +72,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
     Route::post('categories', [CategoryController::class, 'store']);
+    Route::get('/categoriesDetails', [CategoryController::class, 'details']);
+
 });
 
 
