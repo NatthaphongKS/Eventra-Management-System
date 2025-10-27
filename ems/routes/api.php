@@ -9,6 +9,7 @@ use App\Http\Controllers\HistoryEventController;
 use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\CheckInController;
 
+
 // API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
 Route::middleware(['web', 'auth'])->group(function () {
@@ -74,5 +75,5 @@ Route::middleware(['web', 'auth'])->group(function () {
 Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']); // ดึงข้อมูลพนักงานกับอีเว้น
 Route::post('/store', [ReplyController::class, 'store']);//บันทึกข้อมูลการตอบกลับ
 
-Route::get('/getEmployeeAttendancers/eveId/{eveId}', [CheckInController::class, 'getEmployeeAttendancers']); // ดึงข้อมูลการเช็คอินพนักงาน
-Route::put('/updateEmployeeAttendance/conId/{conId}', [CheckInController::class, 'updateEmployeeAttendance']); // อัปเดตสถานะเช็คอินพนักงาน
+Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']); // ดึงข้อมูลการเช็คอินพนักงาน
+Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendance']);
