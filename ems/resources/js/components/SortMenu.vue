@@ -32,13 +32,10 @@
         <!-- เมนู -->
         <div
             v-if="isOpen"
-            class="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+            class="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-neutral-200 z-50"
             @click.stop
         >
             <div class="p-2">
-                <div class="mb-2 px-2 text-sm font-semibold text-gray-700">
-                    Sort
-                </div>
 
                 <button
                     v-for="option in options"
