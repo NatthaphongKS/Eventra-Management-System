@@ -8,7 +8,7 @@
         <div class=" mt-6 mb-6 flex items-center gap-3 px-1">
             <!-- วางไอคอน/ตัวอักษรตามภาพ -->
             <div class="flex">
-                <img src="/Applications/XAMPP/xamppfiles/htdocs/Eventra-Management-System/ems/public/images/email/clicknext.jpeg" alt="Remote" class="w-10 h-10 object-cover rounded-xl" loading="lazy">
+                <img src="../../../public/images/email/clicknext.jpeg" alt="Remote" class="w-10 h-10 object-cover rounded-xl" loading="lazy">
                 <span class="ml-3 text-3xl font-semibold tracking-wide text-red-700 mb-12">Eventra</span>
             </div>
         </div>
