@@ -10,13 +10,13 @@
               @change="toggleAll($event)"
             />
           </th>
-          <th class="w-12 py-3 text-center text-neutral-800 font-semibold font-poppins">#</th>
-          <th class="w-28 py-3 text-left pl-3 text-neutral-800 font-semibold font-poppins">ID</th>
-          <th class="py-3 text-left text-neutral-800 font-semibold font-poppins" >Name</th>
-          <th class="w-28 py-3 text-left text-neutral-800 font-semibold font-poppins">Nickname</th>
-          <th class="w-40 py-3 text-left text-neutral-800 font-semibold font-poppins">Department</th>
-          <th class="w-40 py-3 text-left text-neutral-800 font-semibold font-poppins">Team</th>
-          <th class="w-44 py-3 text-left text-neutral-800 font-semibold font-poppins">Position</th>
+          <th class="w-12 py-3 text-center text-neutral-800 font-semibold font-[Poppins]">#</th>
+          <th class="w-28 py-3 text-left pl-3 text-neutral-800 font-semibold font-[Poppins]">ID</th>
+          <th class="py-3 text-left text-neutral-800 font-semibold font-[Poppins]" >Name</th>
+          <th class="w-28 py-3 text-left text-neutral-800 font-semibold font-[Poppins]">Nickname</th>
+          <th class="w-40 py-3 text-left text-neutral-800 font-semibold font-[Poppins]">Department</th>
+          <th class="w-40 py-3 text-left text-neutral-800 font-semibold font-[Poppins]">Team</th>
+          <th class="w-44 py-3 text-left text-neutral-800 font-semibold font-[Poppins]">Position</th>
         </tr>
       </thead>
 
@@ -41,20 +41,20 @@
           </td>
 
           <!-- ลำดับที่ -->
-          <td class="px-2 py-2 text-center text-sm text-neutral-800 font-medium font-poppins">
+          <td class="px-2 py-2 text-center text-sm text-neutral-800 font-medium font-[Poppins]">
             {{ rowStartIndex + employeeIndex + 1 }}
           </td>
           <!-- ข้อมูลแต่ละคอลัมน์ -->
-          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">{{ employee.emp_id || '-' }}</td>
-          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">{{ employee.full_name || '-' }}</td>
-          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">{{ employee.emp_nickname || '-' }}</td>
-          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">{{ employee.department_name || '-' }}</td>
-          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">{{ employee.team_name || '-' }}</td>
-          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-poppins">{{ employee.position_name || '-' }}</td>
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-[Poppins]">{{ employee.emp_id || '-' }}</td>
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-[Poppins]">{{ employee.full_name || '-' }}</td>
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-[Poppins]">{{ employee.emp_nickname || '-' }}</td>
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-[Poppins]">{{ employee.department_name || '-' }}</td>
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-[Poppins]">{{ employee.team_name || '-' }}</td>
+          <td class="px-3 py-2 text-sm text-neutral-800 font-medium font-[Poppins]">{{ employee.position_name || '-' }}</td>
         </tr>
 
         <tr v-if="pagedRows.length === 0">
-          <td :colspan="8" class="px-3 py-6 text-center text-neutral-800 font-medium font-poppins">No data found</td>
+          <td :colspan="8" class="px-3 py-6 text-center text-neutral-800 font-medium font-[Poppins]">No data found</td>
         </tr>
       </tbody>
     </table>
@@ -64,7 +64,7 @@
     <div class="flex flex-col gap-3 bg-white px-3 py-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <!-- ซ้าย: limit/page -->
-            <div class="flex items-center gap-2 font-regular font-poppins">
+            <div class="flex items-center gap-2 font-regular font-[Poppins]">
                 <span>แสดง</span>
 
                 <!-- ⬇️ กล่อง select + ลูกศรแดง -->
@@ -83,7 +83,7 @@
                 </div>
 
                 <span>{{ rowStartIndex + 1 }}-{{ pagedRows.length + rowStartIndex }} </span>
-                <div class="font-regular font-poppins">
+                <div class="font-regular font-[Poppins]">
                     {{ displayFrom }} จาก {{ totalItems }} รายการ
                 </div>
             </div>

@@ -1,382 +1,246 @@
 <template>
     <section class="p-0">
 
-            <!-- =================== Toolbar =================== -->
-            <div class="flex items-center gap-3 mb-4 overflow-visible">
-                <!-- ช่องค้นหา: ผูกค่ากับ searchInput กด Enter จะ apply -->
-                <input
-                    v-model.trim="searchInput"
-                    placeholder="Search..."
-                    @keyup.enter="applySearchAndFilters"
-                    class="flex-1 h-10 px-4 rounded-full border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-500"
-                />
-                <button
-                    class="w-10 h-10 rounded-full bg-red-700 text-white flex items-center justify-center hover:bg-rose-700"
-                    @click="applySearchAndFilters"
-                    aria-label="Search"
-                    title="ค้นหา/ใช้ฟิลเตอร์ (คลิกหรือกด Enter)"
-                >
-                    <MagnifyingGlassIcon class="w-5 h-5" />
+        <!-- =================== Toolbar =================== -->
+        <div class="flex items-center gap-3 mb-4 overflow-visible">
+            <!-- ช่องค้นหา: ผูกค่ากับ searchInput กด Enter จะ apply -->
+            <input v-model.trim="searchInput" placeholder="Search..." @keyup.enter="applySearchAndFilters"
+                class="flex-1 h-10 px-4 rounded-full border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-500" />
+            <button
+                class="w-10 h-10 rounded-full bg-red-700 text-white flex items-center justify-center hover:bg-rose-700"
+                @click="applySearchAndFilters" aria-label="Search" title="ค้นหา/ใช้ฟิลเตอร์ (คลิกหรือกด Enter)">
+                <MagnifyingGlassIcon class="w-5 h-5" />
+            </button>
+
+            <!-- 🔁 ใช้ Filter.vue -->
+            <Filter v-model="filters" :filter-fields="employeeFilterFields" />
+
+
+            <!-- เมนูเรียงข้อมูล: เปิด/ปิด และเลือกตัวเลือก -->
+            <SortMenu :isOpen="showSort" :options="sortOptions" :sortBy="sortBy" :sortOrder="sortOrder"
+                @toggle="toggleSort" @choose="toggleSortOption" />
+
+            <!-- ปุ่มลิงก์ไปหน้าเพิ่มพนักงาน -->
+            <router-link to="/add-employee"
+                class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-red-700 text-white hover:bg-rose-700 whitespace-nowrap z-0">
+                + Add New
+            </router-link>
+        </div>
+
+        <!-- =================== Chips =================== -->
+        <!-- แถวแท็กเมื่อเลือก Filter -->
+        <!-- <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 mb-4">
+            <div v-for="k in filterFields" :key="k" v-show="filters[k] !== 'all'"
+                class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full" :class="chipClass(k)">
+                {{ chipText(k) }}
+                <button @click="removeFilter(k)" class="hover:opacity-80">
+                    ✕
                 </button>
-
-                <!-- กล่องควบคุม Filter (เป็น relative เพื่อวางเมนูย่อย) -->
-                <div class="relative z-50">
-                    <!-- ปุ่มเปิด/ปิดแผงฟิลเตอร์ แสดง active เมื่อเปิด -->
-                    <button
-                        type="button"
-                        @click="toggleFilter"
-                        aria-label="Filter"
-                        :aria-expanded="showFilter"
-                        class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
-                        :class="{ 'bg-gray-100': showFilter }"
-                    >
-                        <svg
-                            class="w-5 h-5"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            viewBox="0 0 24 24"
-                        >
-                            <line x1="4" y1="7" x2="20" y2="7" />
-                            <line x1="6" y1="12" x2="16" y2="12" />
-                            <line x1="8" y1="17" x2="12" y2="17" />
-                        </svg>
-                        <span class="hidden sm:inline">Filter</span>
-                        <!-- จุดแจ้งเตือนเมื่อมีฟิลเตอร์ใช้งาน -->
-                        <span
-                            v-if="hasActiveFilters"
-                            class="w-2 h-2 bg-rose-600 rounded-full"
-                        ></span>
-                    </button>
-
-                    <!-- แผงฟิลเตอร์แบบดรอปดาวน์ -->
-                    <div
-                        v-if="showFilter"
-                        class="absolute top-full right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
-                        @click.stop
-                    >
-                        <div class="p-4 space-y-4">
-                            <!-- แถวหัวข้อฟิลเตอร์ -->
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-semibold text-gray-800">
-                                    Filter
-                                </h3>
-                                <button
-                                    @click="clearStageFilters"
-                                    class="text-xs text-rose-600 hover:text-rose-800"
-                                >
-                                    Clear
-                                </button>
-                            </div>
-
-                            <!-- สร้างช่องเลือกตามนิยาม filterDefs -->
-                            <SelectField
-                                v-for="def in filterDefs"
-                                :key="def.field"
-                                :label="def.label"
-                                :field="def.field"
-                                :modelValue="def.modelValue"
-                                :options="def.options"
-                                :isOpen="openSelect === def.field"
-                                @toggle="toggleSelect"
-                                @choose="chooseStage"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- เมนูเรียงข้อมูล: เปิด/ปิด และเลือกตัวเลือก -->
-                <SortMenu
-                    :isOpen="showSort"
-                    :options="sortOptions"
-                    :sortBy="sortBy"
-                    :sortOrder="sortOrder"
-                    @toggle="toggleSort"
-                    @choose="toggleSortOption"
-                />
-
-                <!-- ปุ่มลิงก์ไปหน้าเพิ่มพนักงาน -->
-                <router-link
-                    to="/add-employee"
-                    class="ml-auto inline-flex items-center h-10 px-4 rounded-full bg-red-700 text-white hover:bg-rose-700 whitespace-nowrap z-0"
-                >
-                    + Add New
-                </router-link>
             </div>
+        </div> -->
 
-            <!-- =================== Chips =================== -->
-            <!-- แถวแท็กเมื่อเลือก Filter -->
-            <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 mb-4">
-                <div
-                    v-for="k in filterFields"
-                    :key="k"
-                    v-show="filters[k] !== 'all'"
-                    class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full"
-                    :class="chipClass(k)"
-                >
-                    {{ chipText(k) }}
-                    <button @click="removeFilter(k)" class="hover:opacity-80">
-                        ✕
-                    </button>
-                </div>
-            </div>
-
-            <!-- =================== Table (Desktop) =================== -->
-            <div class="hidden md:block overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <thead class="bg-gray-50">
-                        <tr class="text-left">
-                            <th
-                                class="px-2.5 py-2 font-semibold text-[13px] text-center"
-                            >
-                                #
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                ID
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Name
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Nickname
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Phone
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Department
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Team
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Position
-                            </th>
-                            <th class="px-2.5 py-2 font-semibold text-[13px]">
-                                Date Add (D/M/Y)
-                            </th>
-                            <th
-                                class="px-2.5 py-2 font-semibold text-[13px]"
-                            ></th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-[15px]">
-                        <tr
-                            v-for="(emp, i) in paged"
-                            :key="emp.id ?? emp.emp_id ?? i"
-                            class="border-b border-gray-200 last:border-0 hover:bg-rose-50"
-                        >
-                            <td class="px-2.5 py-2 text-center">
-                                {{ (page - 1) * pageSize + i + 1 }}
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.emp_id || "N/A" }}
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                <span
-                                    class="block truncate"
-                                    :title="`${emp.emp_prefix ?? ''} ${
-                                        emp.emp_firstname ?? ''
-                                    } ${emp.emp_lastname ?? ''}`"
-                                >
-                                    {{
-                                        (emp.emp_prefix
-                                            ? emp.emp_prefix + " "
-                                            : "") +
-                                        (emp.emp_firstname || "") +
-                                        " " +
-                                        (emp.emp_lastname || "")
-                                    }}
-                                </span>
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.emp_nickname || "N/A" }}
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.phone || "N/A" }}
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{ emp.department_name || "N/A" }}
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                <span
-                                    class="block truncate"
-                                    :title="emp.team_name"
-                                >
-                                    {{ emp.team_name || "N/A" }}
-                                </span>
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                <span
-                                    class="block truncate"
-                                    :title="emp.position_name"
-                                >
-                                    {{ emp.position_name || "N/A" }}
-                                </span>
-                            </td>
-                            <td class="px-2.5 py-2 whitespace-nowrap">
-                                {{
-                                    emp.created_at
-                                        ? new Date(
-                                              emp.created_at
-                                          ).toLocaleDateString("en-GB")
-                                        : "N/A"
-                                }}
-                            </td>
-                            <td class="px-2.5 py-2">
-                                <div
-                                    class="flex items-center justify-end gap-1.5"
-                                >
-                                    <button
-                                        @click="editEmployee(emp.id)"
-                                        aria-label="Edit"
-                                        class="p-1.5 rounded-lg hover:bg-rose-100"
-                                        title="Edit"
-                                    >
-                                       <PencilIcon class="w-4 h-4 text-gray-600" />
-                                    </button>
-                                    <button
-                                        @click="requestDelete(emp)"
-                                        aria-label="Delete"
-                                        class="p-1.5 rounded-lg hover:bg-rose-100"
-                                        title="Delete"
-                                    >
-                                        <TrashIcon
-                                            class="w-4 h-4 text-gray-600"
-                                        />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr v-if="paged.length === 0">
-                            <td
-                                :colspan="10"
-                                class="px-3 py-6 text-center text-gray-500"
-                            >
-                                {{
-                                    filtered.length === 0 && hasActiveFilters
-                                        ? "No employees match the selected filters"
-                                        : "No data found"
-                                }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- =================== Card Layout (Mobile ) =================== -->
-            <div class="md:hidden space-y-4">
-                <div
-                    v-for="(emp, i) in paged"
-                    :key="emp.id ?? i"
-                    class="p-4 rounded-xl border border-gray-200 shadow-sm bg-white"
-                >
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="font-semibold text-gray-800">
-                            {{ emp.emp_firstname }} {{ emp.emp_lastname }}
-                        </div>
-                        <span class="text-xs text-gray-500">
-                            #{{ (page - 1) * pageSize + i + 1 }}
-                        </span>
-                    </div>
-                    <div
-                        class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600"
-                    >
-                        <div>
-                            <span class="font-medium">ID:</span>
+        <!-- =================== Table (Desktop) =================== -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-left">
+                        <th class="px-2.5 py-2 font-semibold text-[13px] text-center">
+                            #
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            ID
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            Name
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            Nickname
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            Phone
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            Department
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            Team
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            Position
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]">
+                            Date Add (D/M/Y)
+                        </th>
+                        <th class="px-2.5 py-2 font-semibold text-[13px]"></th>
+                    </tr>
+                </thead>
+                <tbody class="text-[15px]">
+                    <tr v-for="(emp, i) in paged" :key="emp.id ?? emp.emp_id ?? i"
+                        class="border-b border-gray-200 last:border-0 hover:bg-rose-50">
+                        <td class="px-2.5 py-2 text-center">
+                            {{ (page - 1) * pageSize + i + 1 }}
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
                             {{ emp.emp_id || "N/A" }}
-                        </div>
-                        <div>
-                            <span class="font-medium">Nickname:</span>
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
+                            <span class="block truncate" :title="`${emp.emp_prefix ?? ''} ${emp.emp_firstname ?? ''
+                                } ${emp.emp_lastname ?? ''}`">
+                                {{
+                                    (emp.emp_prefix
+                                        ? emp.emp_prefix + " "
+                                        : "") +
+                                    (emp.emp_firstname || "") +
+                                    " " +
+                                    (emp.emp_lastname || "")
+                                }}
+                            </span>
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
                             {{ emp.emp_nickname || "N/A" }}
-                        </div>
-                        <div>
-                            <span class="font-medium">Phone:</span>
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
                             {{ emp.phone || "N/A" }}
-                        </div>
-                        <div>
-                            <span class="font-medium">Department:</span>
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
                             {{ emp.department_name || "N/A" }}
-                        </div>
-                        <div>
-                            <span class="font-medium">Team:</span>
-                            {{ emp.team_name || "N/A" }}
-                        </div>
-                        <div>
-                            <span class="font-medium">Position:</span>
-                            {{ emp.position_name || "N/A" }}
-                        </div>
-                        <div class="col-span-2">
-                            <span class="font-medium">Date:</span>
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
+                            <span class="block truncate" :title="emp.team_name">
+                                {{ emp.team_name || "N/A" }}
+                            </span>
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
+                            <span class="block truncate" :title="emp.position_name">
+                                {{ emp.position_name || "N/A" }}
+                            </span>
+                        </td>
+                        <td class="px-2.5 py-2 whitespace-nowrap">
                             {{
                                 emp.created_at
                                     ? new Date(
-                                          emp.created_at
-                                      ).toLocaleDateString("en-GB")
+                                        emp.created_at
+                                    ).toLocaleDateString("en-GB")
                                     : "N/A"
                             }}
-                        </div>
-                    </div>
-                </div>
+                        </td>
+                        <td class="px-2.5 py-2">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button @click="editEmployee(emp.id)" aria-label="Edit"
+                                    class="p-1.5 rounded-lg hover:bg-rose-100" title="Edit">
+                                    <PencilIcon class="w-4 h-4 text-gray-600" />
+                                </button>
+                                <button @click="requestDelete(emp)" aria-label="Delete"
+                                    class="p-1.5 rounded-lg hover:bg-rose-100" title="Delete">
+                                    <TrashIcon class="w-4 h-4 text-gray-600" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
 
-                <div
-                    v-if="paged.length === 0"
-                    class="p-4 text-center text-gray-500"
-                >
-                    {{
-                        filtered.length === 0 && hasActiveFilters
-                            ? "No employees match the selected filters"
-                            : "No data found"
-                    }}
+                    <tr v-if="paged.length === 0">
+                        <td :colspan="10" class="px-3 py-6 text-center text-gray-500">
+                            {{
+                                filtered.length === 0 && hasActiveFilters
+                                    ? "No employees match the selected filters"
+                                    : "No data found"
+                            }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- =================== Card Layout (Mobile ) =================== -->
+        <div class="md:hidden space-y-4">
+            <div v-for="(emp, i) in paged" :key="emp.id ?? i"
+                class="p-4 rounded-xl border border-gray-200 shadow-sm bg-white">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="font-semibold text-gray-800">
+                        {{ emp.emp_firstname }} {{ emp.emp_lastname }}
+                    </div>
+                    <span class="text-xs text-gray-500">
+                        #{{ (page - 1) * pageSize + i + 1 }}
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
+                    <div>
+                        <span class="font-medium">ID:</span>
+                        {{ emp.emp_id || "N/A" }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Nickname:</span>
+                        {{ emp.emp_nickname || "N/A" }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Phone:</span>
+                        {{ emp.phone || "N/A" }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Department:</span>
+                        {{ emp.department_name || "N/A" }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Team:</span>
+                        {{ emp.team_name || "N/A" }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Position:</span>
+                        {{ emp.position_name || "N/A" }}
+                    </div>
+                    <div class="col-span-2">
+                        <span class="font-medium">Date:</span>
+                        {{
+                            emp.created_at
+                                ? new Date(
+                                    emp.created_at
+                                ).toLocaleDateString("en-GB")
+                                : "N/A"
+                        }}
+                    </div>
                 </div>
             </div>
 
-            <!-- =================== Pagination =================== -->
-            <div class="flex flex-wrap items-center gap-3 pt-3">
-                <!-- ส่วนเลือก Page Size และสถานะ -->
-                <div class="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+            <div v-if="paged.length === 0" class="p-4 text-center text-gray-500">
+                {{
+                    filtered.length === 0 && hasActiveFilters
+                        ? "No employees match the selected filters"
+                        : "No data found"
+                }}
+            </div>
+        </div>
+
+        <!-- =================== Pagination =================== -->
+        <div class="flex flex-wrap items-center gap-3 pt-3">
+            <!-- ส่วนเลือก Page Size และสถานะ -->
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
                 <button
                     class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                    :disabled="page === 1"
-                    @click="page--">
+                    :disabled="page === 1" @click="page--">
                     ก่อนหน้า
                 </button>
                 <span class="text-sm text-gray-600">หน้า {{ page }} / {{ totalPages || 1 }}</span>
                 <button
                     class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                    :disabled="page === totalPages || totalPages === 0"
-                    @click="page++"
-                >
+                    :disabled="page === totalPages || totalPages === 0" @click="page++">
                     ถัดไป
                 </button>
-                </div>
             </div>
-
-        <!-- คลิกนอกเพื่อปิด Filter/Sort -->
-        <div
-            v-if="showFilter || showSort"
-            @click="
-                showFilter = false;
-                showSort = false;
-                openSelect = null;
-            "
-            class="fixed inset-0 z-40"
-        ></div>
+        </div>
 
         <!-- โมดัลยืนยันลบ -->
-        <ConfirmDelete
+        <!-- <ConfirmDelete
             :open="confirmOpen"
             @cancel="cancelDelete"
             @confirm="confirmDelete"
-        />
+        /> -->
 
         <!-- โมดัลแจ้งลบสำเร็จ -->
-        <DeleteSuccess :open="successOpen" @close="closeSuccess" />
+        <!-- <DeleteSuccess :open="successOpen" @close="closeSuccess" /> -->
     </section>
 </template>
 
@@ -391,15 +255,15 @@ import {
     MagnifyingGlassIcon,
     PencilIcon,
     TrashIcon,
-   } from "@heroicons/vue/24/outline";
-// คอมโพเนนต์เลือกฟิลเตอร์
-import SelectField from "@/components/SelectField.vue";
+} from "@heroicons/vue/24/outline";
 // คอมโพเนนต์เมนูเรียงลำดับ
 import SortMenu from "@/components/SortMenu.vue";
+// คอมโพเนนต์ปุ่มฟิลเตอร์
+import Filter from "@/components/Button/Filter.vue";
 // โมดัลยืนยันลบ
-import ConfirmDelete from "@/components/Alert/ConfirmDelete.vue";
+// import ConfirmDelete from "@/components/ConfirmDelete.vue";
 // โมดัลแจ้งลบสำเร็จ
-import DeleteSucces from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
+// import DeleteSucces from "@/components/EmloyeeDeleteSuccess.vue";
 
 // ตั้งค่า base URL ของ axios
 axios.defaults.baseURL = "/api";
@@ -422,10 +286,10 @@ export default {
         MagnifyingGlassIcon,
         PencilIcon,
         TrashIcon,
-        SelectField,
         SortMenu,
-        ConfirmDelete,
-        DeleteSucces,
+        Filter,
+        // ConfirmDelete,
+        // DeleteSucces,
     },
 
     // สถานะภายในคอมโพเนนต์
@@ -462,12 +326,8 @@ export default {
             sortOrder: null,
 
             // UI
-            // เปิด/ปิดแผงฟิลเตอร์
-            showFilter: false,
             // เปิด/ปิดเมนู sort
             showSort: false,
-            // ระบุ select ที่กำลังเปิดอยู่ในแผง
-            openSelect: null,
 
             // Modals
             // เปิด/ปิดโมดัลยืนยันลบ
@@ -496,7 +356,7 @@ export default {
     // ใช้ Composition API บางส่วนเพื่อ inject ฟังก์ชันจาก layout
     setup() {
         // รับฟังก์ชันเบลอพื้นหลัง (เผื่อไม่มีให้ fallback)
-        const setLayoutBlur = inject("setLayoutBlur", () => {});
+        const setLayoutBlur = inject("setLayoutBlur", () => { });
         // ส่งให้ template/methods ใช้งาน
         return { setLayoutBlur };
     },
@@ -571,26 +431,6 @@ export default {
                         .filter((v) => v && v !== "N/A")
                 ),
             ].sort((a, b) => a.localeCompare(b, "th"));
-        },
-
-        // แมปฟิลด์ -> ตัวเลือกที่ไม่ซ้ำ
-        optionsMap() {
-            return {
-                id: this.uniqueIds,
-                department: this.uniqueDepartments,
-                team: this.uniqueTeams,
-                position: this.uniquePositions,
-            };
-        },
-
-        // นิยามรายการ SelectField สำหรับ loop ในแผงฟิลเตอร์
-        filterDefs() {
-            return this.filterFields.map((f) => ({
-                field: f,
-                label: FILTER_LABELS[f],
-                modelValue: this.filtersStage[f],
-                options: this.optionsMap[f] || [],
-            }));
         },
 
         // ตัวเลือกการเรียง (แสดงใน SortMenu)
@@ -675,8 +515,8 @@ export default {
                     B = get(b);
                 return this.sortBy === "id"
                     ? String(A).localeCompare(String(B), "en", {
-                          numeric: true,
-                      })
+                        numeric: true,
+                    })
                     : String(A).localeCompare(String(B), "th");
             };
             // เรียงตามทิศทาง
@@ -717,6 +557,15 @@ export default {
             // ลบซ้ำ
             return pages.filter((v, i) => pages.indexOf(v) === i);
         },
+        employeeFilterFields() {
+            const asOptions = (arr) => arr.map(v => ({ label: String(v), value: String(v) }))
+            return [
+                { fieldKey: 'id', label: 'ID', fieldType: 'select', allValue: 'all', fieldOptions: asOptions(this.uniqueIds) },
+                { fieldKey: 'department', label: 'Department', fieldType: 'select', allValue: 'all', fieldOptions: asOptions(this.uniqueDepartments) },
+                { fieldKey: 'team', label: 'Team', fieldType: 'select', allValue: 'all', fieldOptions: asOptions(this.uniqueTeams) },
+                { fieldKey: 'position', label: 'Position', fieldType: 'select', allValue: 'all', fieldOptions: asOptions(this.uniquePositions) },
+            ]
+        },
     },
 
     // ฟังก์ชันการทำงานต่างๆ
@@ -744,42 +593,6 @@ export default {
             this.filters = { ...this.filtersStage };
             // รีเซ็ตไปหน้าแรก
             this.page = 1;
-            // ปิดแผงฟิลเตอร์
-            this.showFilter = false;
-            // ปิด select ภายใน
-            this.openSelect = null;
-        },
-
-        // เปิด/ปิดแผงฟิลเตอร์
-        toggleFilter() {
-            this.showFilter = !this.showFilter;
-            if (this.showFilter) {
-                // ถ้าเปิดฟิลเตอร์ให้ปิด sort
-                this.showSort = false;
-                // ปิด select
-                this.openSelect = null;
-            }
-        },
-        // เปิด/ปิด select ย่อยตามชื่อฟิลด์
-        toggleSelect(name) {
-            this.openSelect = this.openSelect === name ? null : name;
-        },
-        // เลือกค่าฟิลเตอร์ใน stage
-        chooseStage(field, value) {
-            this.filtersStage[field] = value;
-            // ปิด select หลังเลือก
-            this.openSelect = null;
-        },
-        // ล้างค่าฟิลเตอร์ใน stage
-        clearStageFilters() {
-            this.filtersStage = {
-                id: "all",
-                department: "all",
-                team: "all",
-                position: "all",
-            };
-            // ปิด select
-            this.openSelect = null;
         },
         // กดลบชิป -> เซ็ตฟิลเตอร์นั้นเป็น 'all'
         removeFilter(k) {
@@ -794,10 +607,10 @@ export default {
             return k === "id"
                 ? "bg-gray-100 text-gray-800"
                 : k === "department"
-                ? "bg-rose-100 text-rose-800"
-                : k === "team"
-                ? "bg-blue-100 text-blue-800"
-                : "bg-green-100 text-green-800";
+                    ? "bg-rose-100 text-rose-800"
+                    : k === "team"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-green-100 text-green-800";
         },
         // ข้อความบนชิป (id จะแสดงเป็น 'ID: xxx')
         chipText(k) {
@@ -880,23 +693,23 @@ export default {
             this.setLayoutBlur(false);
         },
         // ยืนยันลบ -> เรียก API ลบ แล้วรีโหลดข้อมูล
-        async confirmDelete() {
-            if (!this.deleting) return;
-            try {
-                await axios.delete(`/employees/${this.deleting.id}`);
-                await this.fetchEmployees();
-                this.confirmOpen = false;
-                this.successOpen = true;
-                this.setLayoutBlur(true);
-            } catch (e) {
-                console.error("Error deleting employee", e);
-                // ปิดทุกอย่างเมื่อ error
-                this.cancelDelete();
-            } finally {
-                // เคลียร์สถานะ
-                this.deleting = null;
-            }
-        },
+        // async confirmDelete() {
+        //     if (!this.deleting) return;
+        //     try {
+        //         await axios.delete(`/employees/${this.deleting.id}`);
+        //         await this.fetchEmployees();
+        //         this.confirmOpen = false;
+        //         this.successOpen = true;
+        //         this.setLayoutBlur(true);
+        //     } catch (e) {
+        //         console.error("Error deleting employee", e);
+        //         // ปิดทุกอย่างเมื่อ error
+        //         this.cancelDelete();
+        //     } finally {
+        //         // เคลียร์สถานะ
+        //         this.deleting = null;
+        //     }
+        // },
         // ปิดโมดัลสำเร็จ และเอาเบลอออก
         closeSuccess() {
             this.successOpen = false;
