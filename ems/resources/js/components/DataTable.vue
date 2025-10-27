@@ -221,7 +221,8 @@ const emit = defineEmits([
     'update:sortKey',
     'update:sortOrder',
     'sort', // Event ใหม่สำหรับ Server-Side Sorting
-    'checkbox-checkin'
+    'checkbox-checkin',
+     'check-all-page'
 ]);
 
 const slots = useSlots(); // (ใช้เช็ค $slots.actions)
@@ -357,6 +358,13 @@ function toggleSelectAllOnPage(event) {
 
   emit('update:modelValue', Array.from(next));
   emit('checkbox-checkin', { keys: Array.from(pageRowKeys.value), checked }); // ✅ ส่งรวมทั้งหมดในหน้า
+  emit('check-all-page', {                           // ✅ เพิ่ม อีเวนต์ให้แม่
+    action: checked ? 'check' : 'uncheck',          //    บอกประเภทการกระทำ
+    pageKeys: Array.from(pageRowKeys.value),        //    คีย์ทั้งหมดบนหน้า
+    rowsOnPage: props.rows,                         //    แถวจริงบนหน้า (มี empCheckinStatus)
+    rowKey: props.rowKey,                           //    ชื่อคีย์ (เช่น 'empId')
+    checkinField: 'empCheckinStatus',               //    ฟิลด์สถานะที่ใช้กรอง
+  });
 }
 
 </script>

@@ -18,7 +18,7 @@
 
             <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
        bg-[#b91c1c] px-4 font-semibold text-white
-       hover:bg-[#991b1b] focus:outline-noneFevent
+       hover:bg-[#991b1b] focus:outline-none
        focus:ring-2 focus:ring-red-300">
                 + Add
             </router-link>
@@ -46,8 +46,8 @@
                 <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
                     <PencilIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <button @click="deleteEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
-                    
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
+
                     <TrashIcon class="h-5 w-5 text-neutral-800" />
                 </button>
                 <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
@@ -60,17 +60,24 @@
                 </router-link>
             </template>
 
-            <template #empty>
-                {{ sorted.length === 0 ? 'ไม่พบข้อมูลกิจกรรม' : 'ไม่มีข้อมูลในหน้านี้' }}
-            </template>
 
         </DataTable>
+        <ModalAlert :open="showModalAsk" type="confirm" title='ARE YOU SURE TO DELETE'
+            message="This wil by deleted permanently /n Are you sure?" :show-cancel="true" okText="OK"
+            cancelText="Calcel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert :open="showModalSuccess" type="success" title='DELETE SUCCESS!'
+            message="We have already deleted event." :show-cancel="false" okText="OK"
+            @confirm="onConfirmSuccess" />
+        <ModalAlert :open="showModalFail" type="error" title='ERROR!'
+            message="Sorry, Please try again later." :show-cancel="false" okText="OK"
+            @confirm="onConfirmFail" />
+            
     </section>
 </template>
 
 <script>
+import ModalAlert from "../../components/Alert/ModalAlert.vue";
 import axios from "axios";
-import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 // (เปลี่ยน) Import DataTable แทน EventTable
 import DataTable from '@/components/DataTable.vue';
@@ -83,6 +90,7 @@ import {
 } from '@heroicons/vue/24/outline';
 
 
+
 axios.defaults.baseURL = '/api'
 axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.withCredentials = true
@@ -92,7 +100,7 @@ export default {
     // (เปลี่ยน) ลงทะเบียน DataTable
     components: {
         MagnifyingGlassIcon, PencilIcon, TrashIcon,
-        Filter, EventSort, DataTable
+        Filter, EventSort, DataTable, ModalAlert
     },
 
     filters: { category: [], status: [] },
@@ -139,14 +147,17 @@ export default {
 
             // (เพิ่ม) นิยาม Columns สำหรับ DataTable (เพิ่ม sortable)
             eventTableColumns: [
-              { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[450px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
-              { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
-              { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
-              { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap justify-center',cellClass:'justify-center', format: (v, r) => this.timeText(v, r.evn_timeend) },
-              { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
-              { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
-              { key: 'evn_status', label: 'Status', class: '',headerClass:'content-center',cellClass:'text-center', sortable: true },
+                { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[450px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
+                { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
+                { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
+                { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap justify-center', cellClass: 'justify-center', format: (v, r) => this.timeText(v, r.evn_timeend) },
+                { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
+                { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
+                { key: 'evn_status', label: 'Status', class: '', headerClass: 'content-center', cellClass: 'text-center', sortable: true },
             ],
+            showModalAsk: false,
+            showModalSuccess: false,
+            showModalFail: false,
         }
     },
 
@@ -282,6 +293,7 @@ export default {
                 this.page = this.totalPages;
             }
         }
+
     },
 
     // (เหมือนเดิมส่วนใหญ่)
@@ -326,24 +338,34 @@ export default {
         toggleSort() { this.showSort = !this.showSort; },
         // (ลบ) goToPage (ให้ DataTable จัดการผ่าน @update:page)
 
-        // (deleteEvent เหมือนเดิม แต่แก้ให้ fetchEvent หลังลบ)
-        async deleteEvent(id) {
-            const ev = this.normalized.find(e => e.id === id); // ใช้ normalized
-            const title = ev?.evn_title || 'this event';
-
-            const { isConfirmed } = await Swal.fire({ /* ... Swal config ... */ });
-            if (!isConfirmed) return;
-
+        // methods:
+        openDelete(id) {
+            this.deleteId = id
+            this.showModalAsk = true
+        },
+        async onConfirmDelete() {
+            const id = this.deleteId
+            this.showModal = false
+            if (!id) return
             try {
-                await axios.patch(`/event/${id}/deleted`);
-                await Swal.fire({ /* ... Swal success ... */ });
-                // (สำคัญ) โหลดข้อมูลทั้งหมดใหม่
-                this.fetchEvent();
-            } catch (err) {
-                console.error("Error deleting event", err);
-                await Swal.fire({ /* ... Swal error ... */ });
+                await axios.patch(`/event/${id}/deleted`)
+                this.showModalSuccess = true
+                this.fetchEvent()
+            } catch {
+                this.showModalFail = true
             }
         },
+        onCancelDelete() {
+            this.showModal = false
+            this.deleteId = null
+        },
+        onConfirmSuccess(){
+            this.showModalSuccess = false
+        },
+        onConfirmFail(){
+            this.showModalFail = false
+        },
+
 
         // (formatDate, timeText, badgeClass เหมือนเดิม)
         formatDate(val) {
