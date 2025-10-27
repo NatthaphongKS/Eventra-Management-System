@@ -1,23 +1,19 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-20 grid place-items-center bg-black/40 p-4" @click.self="close">
-    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-      <h3 class="text-xl font-semibold text-gray-900">Create Category</h3>
+  <div v-if="open" class="fixed inset-0 z-[70] flex items-center justify-center absolute inset-0 bg-black/50">
+    <div class="w-[640px] h-[360px] p-8 rounded-2xl bg-white shadow-xl">
+      <div class="text-3xl font-semibold text-neutral-800">Create Category</div>
 
-      <div class="mt-5">
-        <label class="mb-1 block text-sm font-medium text-gray-700">
-          Type name <span class="text-red-600">*</span>
+      <div class="mt-14">
+        <label class="mb-2 block text-2xl font-semibold text-neutral-800">
+          Type name <span class="text-red-700">*</span>
         </label>
         <input
           v-model.trim="name"
           type="text"
           placeholder="Ex. สัมมนา"
-          class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-200"
+          class="w-full rounded-[20px] border border-neutral-200 px-4 py-3 text-xl focus:border-red-400 focus:ring-1 focus:ring-red-200"
           @keyup.enter="submit"
         />
-        <p class="mt-2 text-xs text-gray-500">
-          ระบบจะบันทึก Created by เป็นชื่อผู้ใช้:
-          <span class="font-medium text-gray-700">{{ userName || '-' }}</span>
-        </p>
         <p v-if="showDup" class="mt-2 text-xs text-red-600">
           มีชื่อนี้อยู่แล้วในรายการ
         </p>
