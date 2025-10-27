@@ -2,22 +2,16 @@
 
 namespace Database\Seeders;
 
-use App\Models\Employee;
-use App\Models\Team;
-use App\Models\Department;
-use App\Models\Position;
-use App\Models\Category;
-use App\Models\Company;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 class DepartmentSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-
-
         $departments = [
             'Product Development',
             'Graphic',
@@ -42,8 +36,4 @@ class DepartmentSeeder extends Seeder
             ]);
         }
     }
-
-
-
-
 }
