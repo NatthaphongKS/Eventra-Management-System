@@ -5,9 +5,7 @@
             <div class="absolute inset-0 bg-black/50" @click="$emit('close')"></div>
 
             <!-- modal card -->
-            <div
-                class="relative bg-white rounded-3xl shadow-xl text-center w-[400px] max-w-[90vw] p-6 flex flex-col items-center">
-
+            <div class="relative bg-white rounded-3xl shadow-xl text-center w-[480px] max-w-[90vw] p-6 flex flex-col items-center"
                 <!-- ไอคอนกากบาทใหญ่ สีแดง ไม่มีวงขาว -->
                 <XCircleIcon class="w-[96px] h-[96px] text-red-600 mt-6" />
 
@@ -20,8 +18,7 @@
 
                     <!-- บรรทัดล่าง -->
                     <div class="mt-6 text-[14px] font-normal text-neutral-800 normal-case whitespace-nowrap">
-                        This data already exists in the system.
-                    </div>
+                        One or more users in this file already exist in the system. </div>
                 </div>
 
                 <!-- ปุ่ม OK -->
