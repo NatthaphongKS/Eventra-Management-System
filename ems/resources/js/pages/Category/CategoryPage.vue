@@ -64,7 +64,7 @@ import CategoryDataTable from "@/components/Category/CategoryDataTable.vue";
 import CategoryCreate from "@/components/Category/CategoryCreate.vue";
 import CategoryEdit from "@/components/Category/CategoryEdit.vue";
 import SearchBar from "../../components/SearchBar.vue";
-import ModalAlert from "@/components/Alert/ModalAlert.vue";
+
 
 
 
@@ -76,7 +76,6 @@ export default {
         CategoryDataTable,
         CategoryCreate,
         CategoryEdit,
-        ModalAlert,
     },
     data() {
         return {

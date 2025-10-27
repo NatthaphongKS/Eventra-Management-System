@@ -1,18 +1,24 @@
+<!-- FormField.vue -->
 <template>
-    <div class="grid grid-cols-1 sm:grid-cols-[184px,1fr] items-center gap-1 sm:gap-3">
-        <label class="text-sm font-medium text-gray-700">
-            {{ label }}<span v-if="required" class="text-red-500"> *</span>
+    <div class="w-full">
+        <label class="block text-sm font-medium text-neutral-800 mb-1">
+            {{ label }}
+            <span v-if="required" class="text-red-500"> *</span>
         </label>
+
+        <!-- ช่องกรอกให้กินความกว้างเต็มและอยู่บรรทัดล่าง -->
         <div class="w-full">
             <slot />
-            <p v-if="hint" class="mt-1 text-xs text-gray-400">{{ hint }}</p>
         </div>
+
+        <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
     </div>
 </template>
+
 <script setup>
 defineProps({
-    label: { type: String, required: true },
-    required: { type: Boolean, default: false },
-    hint: { type: String, default: "" },
+    label: String,
+    required: Boolean,
+    error: String
 })
 </script>
