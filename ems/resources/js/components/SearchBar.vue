@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-3 w-full min-w-0">
+  <div class="flex flex-row items-center gap-3 overflow-visible">
     <div>
       <p class="text-neutral-700 font-medium text-2xl">Search</p>
       <input
@@ -8,7 +8,7 @@
         :placeholder="placeholder"
 
         @keyup.enter="emitSearch"
-        class="flex-1 w-[726px] h-[58px] px-4 rounded-[20px] border border-neutral-200 bg-white
+        class="px-4 w-[650px] h-[50px] rounded-[20px] border border-neutral-200 bg-white
                focus:border-red-300 outline-none
                text-neutral-700 placeholder-red-300 shadow-sm transition-colors duration-200 font-medium text-base"
       />
@@ -16,12 +16,12 @@
 
     <button
       @click="emitSearch"
-      class="w-[62px] h-[60px] flex items-center justify-center rounded-full bg-red-700 text-white
-              transition-all duration-200 shadow-sm"
+      class="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-red-700 text-white
+              transition-all duration-200 shadow-sm mt-8"
       aria-label="Search"
       title="ค้นหา"
     >
-      <MagnifyingGlassIcon class="w-[50px] h-[50px]" />
+      <MagnifyingGlassIcon class="w-[30px] h-[30px]" />
     </button>
   </div>
 </template>

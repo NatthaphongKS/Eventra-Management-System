@@ -7,7 +7,8 @@
                     class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200" />
                 <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full
        bg-[#b91c1c] text-white hover:bg-[#991b1b]
-       focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default select-none." @click="applySearch"
+       focus:outline-none focus:ring-2 focus:ring-red-300"
+                    @click="applySearch"
                     aria-label="Search" title="ค้นหา (คลิกหรือกด Enter)">
                     <MagnifyingGlassIcon class="h-5 w-5" />
                 </button>
@@ -16,7 +17,7 @@
             <Filter v-model="filters" :filter-fields="filterFields" button-label="Filter" @apply="page = 1" />
             <EventSort v-model="selectedSort" :options="sortOptions" />
 
-            <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
+            <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full
        bg-[#b91c1c] px-4 font-semibold text-white
        hover:bg-[#991b1b] focus:outline-none
        focus:ring-2 focus:ring-red-300">
@@ -31,9 +32,79 @@
             :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
             :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="pageSize = $event; page = 1"
             @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
-            <template #cell-evn_status="{ value }">
-                <span :class="badgeClass(value)">
-                    {{ value || 'N/A' }}
+
+            <!-- [แก้โดยเอิร์ธ 2025-10-25]: กดได้ทั้งบรรทัด — ครอบทุกเซลล์ (ยกเว้น actions) ให้คลิก/Enter/Space แล้วไป goDetails(row.id) -->
+
+            <template #cell-evn_title="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)"
+                      title="ดูรายละเอียด">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-cat_name="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_date="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_timestart="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_num_guest="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_sum_accept="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_status="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    <span :class="badgeClass(value)">
+                        {{ value || 'N/A' }}
+                    </span>
                 </span>
             </template>
             <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
@@ -46,10 +117,11 @@
                 <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
                     <PencilIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <button @click="deleteEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
+
                     <TrashIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <router-link :to="`/EventCheckIn/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor" class="h-5 w-5 text-neutral-800">
@@ -59,21 +131,24 @@
                 </router-link>
             </template>
 
-            <!-- ===== Table ===== -->
-            <EventTable :rows="sorted" v-model:page="page" v-model:pageSize="pageSize"
-                :pageSizeOptions="[10, 20, 50, 100]" @edit="editEvent" @delete="deleteEvent" />
-
-            <template #empty>
-                {{ sorted.length === 0 ? 'ไม่พบข้อมูลกิจกรรม' : 'ไม่มีข้อมูลในหน้านี้' }}
-            </template>
 
         </DataTable>
+        <ModalAlert :open="showModalAsk" type="confirm" title='ARE YOU SURE TO DELETE'
+            message="This wil by deleted permanently /n Are you sure?" :show-cancel="true" okText="OK"
+            cancelText="Calcel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert :open="showModalSuccess" type="success" title='DELETE SUCCESS!'
+            message="We have already deleted event." :show-cancel="false" okText="OK"
+            @confirm="onConfirmSuccess" />
+        <ModalAlert :open="showModalFail" type="error" title='ERROR!'
+            message="Sorry, Please try again later." :show-cancel="false" okText="OK"
+            @confirm="onConfirmFail" />
+            
     </section>
 </template>
 
 <script>
+import ModalAlert from "../../components/Alert/ModalAlert.vue";
 import axios from "axios";
-import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
 // (เปลี่ยน) Import DataTable แทน EventTable
 import DataTable from '@/components/DataTable.vue';
@@ -85,17 +160,15 @@ import {
     TrashIcon,
 } from '@heroicons/vue/24/outline';
 
-
 axios.defaults.baseURL = '/api'
 axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.withCredentials = true
-
 
 export default {
     // (เปลี่ยน) ลงทะเบียน DataTable
     components: {
         MagnifyingGlassIcon, PencilIcon, TrashIcon,
-        Filter, EventSort, DataTable
+        Filter, EventSort, DataTable, ModalAlert
     },
 
     filters: { category: [], status: [] },
@@ -142,14 +215,17 @@ export default {
 
             // (เพิ่ม) นิยาม Columns สำหรับ DataTable (เพิ่ม sortable)
             eventTableColumns: [
-              { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[450px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
-              { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
-              { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
-              { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap justify-center',cellClass:'justify-center', format: (v, r) => this.timeText(v, r.evn_timeend) },
-              { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
-              { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
-              { key: 'evn_status', label: 'Status', class: '',headerClass:'content-center',cellClass:'text-center', sortable: true },
+                { key: 'evn_title', label: 'Event', class: 'text-left', headerClass: 'w-[450px]', cellClass: 'pl-3 text-slate-800 font-medium truncate', sortable: true },
+                { key: 'cat_name', label: 'Category', class: 'text-left', headerClass: 'pl-2', cellClass: 'pl-3', sortable: true },
+                { key: 'evn_date', label: 'Date (D/M/Y)', class: 'w-[120px] text-center whitespace-nowrap', format: this.formatDate, sortable: true },
+                { key: 'evn_timestart', label: 'Time', class: 'w-[110px] text-center whitespace-nowrap justify-center', cellClass: 'justify-center', format: (v, r) => this.timeText(v, r.evn_timeend) },
+                { key: 'evn_num_guest', label: 'Invited', class: 'w-20 text-center', sortable: true },
+                { key: 'evn_sum_accept', label: 'Accepted', class: 'w-20 text-center', sortable: true },
+                { key: 'evn_status', label: 'Status', class: '', headerClass: 'content-center', cellClass: 'text-center', sortable: true },
             ],
+            showModalAsk: false,
+            showModalSuccess: false,
+            showModalFail: false,
         }
     },
 
@@ -285,6 +361,7 @@ export default {
                 this.page = this.totalPages;
             }
         }
+
     },
 
     // (เหมือนเดิมส่วนใหญ่)
@@ -329,24 +406,34 @@ export default {
         toggleSort() { this.showSort = !this.showSort; },
         // (ลบ) goToPage (ให้ DataTable จัดการผ่าน @update:page)
 
-        // (deleteEvent เหมือนเดิม แต่แก้ให้ fetchEvent หลังลบ)
-        async deleteEvent(id) {
-            const ev = this.normalized.find(e => e.id === id); // ใช้ normalized
-            const title = ev?.evn_title || 'this event';
-
-            const { isConfirmed } = await Swal.fire({ /* ... Swal config ... */ });
-            if (!isConfirmed) return;
-
+        // methods:
+        openDelete(id) {
+            this.deleteId = id
+            this.showModalAsk = true
+        },
+        async onConfirmDelete() {
+            const id = this.deleteId
+            this.showModal = false
+            if (!id) return
             try {
-                await axios.patch(`/event/${id}/deleted`);
-                await Swal.fire({ /* ... Swal success ... */ });
-                // (สำคัญ) โหลดข้อมูลทั้งหมดใหม่
-                this.fetchEvent();
-            } catch (err) {
-                console.error("Error deleting event", err);
-                await Swal.fire({ /* ... Swal error ... */ });
+                await axios.patch(`/event/${id}/deleted`)
+                this.showModalSuccess = true
+                this.fetchEvent()
+            } catch {
+                this.showModalFail = true
             }
         },
+        onCancelDelete() {
+            this.showModal = false
+            this.deleteId = null
+        },
+        onConfirmSuccess(){
+            this.showModalSuccess = false
+        },
+        onConfirmFail(){
+            this.showModalFail = false
+        },
+
 
         // (formatDate, timeText, badgeClass เหมือนเดิม)
         formatDate(val) {
@@ -369,7 +456,7 @@ export default {
                 case 'done': return `${base} bg-[#DCFCE7] text-[#00A73D]`;
                 case 'upcoming': return `${base} bg-[#FFF9C2] text-[#FDC800]`; // (แก้สี)
                 case 'ongoing': return `${base} bg-[#DFF3FE] text-[#0084D1]`;     // (แก้สี)
-                default: return `${base} bg-slate-100 text-slate-700`;      // (แก้สี)
+                default: return `${base} bg-slate-100 text-slate-700`;     // (แก้สี)
             }
         },
 
@@ -377,9 +464,20 @@ export default {
         handleClientSort({ key, order }) {
             this.sortBy = key;
             this.sortOrder = order;
-            this.page = 1; // กลับไปหน้า 1 เมื่อ sort
+            this.page = 1;// กลับไปหน้า 1 เมื่อ sort
             // (อัพเดท selectedSort ด้วย เพื่อให้ UI ของ EventSort ตรงกัน)
             this.selectedSort = this.sortOptions.find(opt => opt.key === key && opt.order === order) || this.selectedSort;
+        },
+
+            // earth: go to event details (Options API)
+        goDetails(id) {
+            // แบบใช้ชื่อ route (ถ้าตั้งชื่อไว้ว่า 'events.show')
+            try {
+            this.$router.push({ name: 'events.show', params: { id: String(id) } })
+            } catch (_) {
+            // fallback: ใช้ path ตรง
+            this.$router.push({ path: `/events/${id}` })
+            }
         },
     }
 };
