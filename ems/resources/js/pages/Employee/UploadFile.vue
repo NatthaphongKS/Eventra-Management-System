@@ -25,7 +25,9 @@
             <div class="p-6 max-w-[1400px] mx-auto ml-0 md:ml-10 lg:ml-20 xl:ml-28 2xl:ml-40">
                 <!-- Upload block -->
                 <div class="mt-4">
-                    <p class="text-sm font-semibold text-gray-800">Upload file Excel</p>
+                    <p class="text-sm font-semibold text-gray-800">
+                        Upload file Excel
+                    </p>
                     <p class="text-xs text-gray-400 mt-1">
                         Drag and drop document to your support task
                     </p>
@@ -35,161 +37,94 @@
 
                     <!-- ปุ่ม Generate -->
                     <div class="mt-3 flex justify-end">
-                        <button type="button" :disabled="!file || !!error || uploading" @click="upload"
-                            class="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
-                            <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
-                                upload
-                            </span>
-                            Generate Data
-                        </button>
-                    </div>
-
-                    <!-- Error -->
-                    <p v-if="error" class="text-sm text-red-500 mt-2">{{ error }}</p>
-                </div>
-
-                <!-- Divider -->
-                <div class="mt-20 border-t"></div>
-
-                <!-- Preview table -->
-                <div class="mt-4 overflow-x-auto bg-white border rounded-2xl shadow-sm max-w-full">
-                    <table class="min-w-full text-sm">
-                        <colgroup>
-                            <col style="width:72px" />
-                            <col style="width:140px" />
-                            <col style="width:240px" />
-                            <col style="width:120px" />
-                            <col style="width:140px" />
-                            <col style="width:180px" />
-                            <col style="width:160px" />
-                            <col style="width:180px" />
-                            <col style="width:220px" />
-                            <col style="width:140px" />
-                        </colgroup>
-                        <thead class="bg-[#F6F6F6] text-gray-700">
-                            <tr>
-                                <th class="px-4 py-3 text-left">#</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">ID</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">Name</th>
-                                <th class="px-4 py-3 text-left">Nickname</th>
-                                <th class="px-4 py-3 text-left">Phone</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">Department</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">Team</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">Position</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">Email</th>
-                                <th class="px-4 py-3 text-left whitespace-nowrap">Date Add (D/M/Y)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(r, idx) in paged" :key="idx" class="border-t">
-                                <td class="px-4 py-3">
-                                    {{ (page - 1) * pageSize + idx + 1 }}
-                                </td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ r.employeeId }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ r.name }}</td>
-                                <td class="px-4 py-3">{{ r.nickname }}</td>
-                                <td class="px-4 py-3">{{ r.phone }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ r.department }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ r.team }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ r.position }}</td>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ r.email }}</td>
-                                <td class="px-4 py-3">{{ r.dateAdd }}</td>
-                            </tr>
-
-                            <tr v-if="!paged.length">
-                                <td colspan="10" class="px-4 py-6 text-center text-gray-500">
-                                    ไม่พบข้อมูลที่ตรงกับไฟล์
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- toolbar -->
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4">
-                    <div class="flex items-center gap-2 text-sm text-gray-700">
-                        <span>แสดง</span>
-
-                        <!-- pill select -->
-                        <div class="relative">
-                            <select v-model.number="pageSize"
-                                class="appearance-none rounded-full border px-3 py-1.5 pr-8 border-[#B70E15] text-[#B70E15] bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">
-                                <option v-for="s in [10, 25, 50, 100]" :key="s" :value="s">
-                                    {{ s }}
-                                </option>
-                            </select>
-                            <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#B70E15]">
-                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M7 10l5 5 5-5z" />
-                                </svg>
-                            </span>
+                        <div :class="[
+                            (!file || !!error || uploading)
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'cursor-pointer'
+                        ]" :style="(!file || !!error || uploading)
+                                ? 'pointer-events: none;'
+                                : ''" :title="(!file || !!error || uploading)
+                                    ? 'Please upload or drop file first'
+                                    : ''">
+                            <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
                         </div>
-
-                        <span>{{ visibleCountText }}</span>
-                    </div>
-                </div>
-
-                <!-- pagination -->
-                <div class="mt-8 flex items-center justify-center gap-4 text-[#B70E15] select-none">
-                    <!-- Prev -->
-                    <button class="grid h-14 w-14 place-items-center rounded-full disabled:opacity-40"
-                        :disabled="page === 1" @click="page > 1 && (page--)" aria-label="Previous" title="Previous">
-                        <svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor">
-                            <path d="M15.5 6.5 9 12l6.5 5.5V6.5z" />
-                        </svg>
-                    </button>
-
-                    <!-- Numbers + dots -->
-                    <div v-for="(it, idx) in pagerItems" :key="`pg-${idx}-${it}`" class="contents">
-                        <div v-if="it === 'dots'" class="flex items-center gap-1 px-1">
-                            <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
-                            <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
-                            <span class="h-1 w-1 rounded-full bg-[#B70E15]"></span>
-                        </div>
-                        <button v-else @click="page = it"
-                            class="min-w-[36px] rounded-xl px-3 py-1.5 text-sm font-semibold transition" :class="page === it
-                                ? 'bg-[#B70E15] text-white'
-                                : 'border border-[#B70E15] text-[#B70E15] hover:bg-red-50'
-                                ">
-                            {{ it }}
-                        </button>
                     </div>
 
-                    <!-- Next -->
-                    <button class="grid h-14 w-14 place-items-center rounded-full disabled:opacity-40"
-                        :disabled="page === totalPages" @click="page < totalPages && (page++)" aria-label="Next"
-                        title="Next">
-                        <svg viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor">
-                            <path d="M8.5 6.5 15 12l-6.5 5.5V6.5z" />
-                        </svg>
-                    </button>
+                    <!-- Error ตอนอ่านไฟล์ -->
+                    <p v-if="error" class="text-sm text-red-500 mt-2">
+                        {{ error }}
+                    </p>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="pb-8">
-                <div class="mt-4 flex items-center justify-between">
-                    <button type="button" @click="onCancel"
-                        class="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white border border-transparent hover:opacity-95 active:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                        style="background:#B70E15">
-                        <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
-                            close
-                        </span>
-                        Cancel
-                    </button>
+            <!-- Divider -->
+            <div class="mt-20 border-t ml-16"></div>
 
-                    <button type="button" :disabled="!displayRows.length || creating" @click="onCreate"
-                        class="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50">
-                        <span class="material-symbols-outlined text-[18px] leading-none align-[-2px]">
-                            add
-                        </span>
-                        Create
-                    </button>
+            <!-- Table -->
+            <div class="px-6 w-full max-w-[1700px] mx-auto mt-6 ml-12">
+                <DataTable :loading="uploading || creating" :rows="paged" :columns="tableColumns" :page="page"
+                    :page-size="pageSize" :total-items="totalItems" :page-size-options="[10, 25, 50, 100]"
+                    :show-row-number="false" row-key="__rowKey" @update:page="val => page = val"
+                    @update:pageSize="val => pageSize = val">
+                    <!-- header "#" -->
+                    <template #header-index>
+                        #
+                    </template>
+
+                    <!-- cell "#" -->
+                    <template #cell-index="{ row }">
+                        {{ row.__displayIndex }}
+                    </template>
+
+                    <!-- empty state -->
+                    <template #empty>
+                        No Data Found
+                    </template>
+
+                    <!-- footer-info -->
+                    <template #footer-info="{ from, to, total }">
+                        <span>แสดง</span>
+
+                        <div class="relative inline-block">
+                            <select
+                                class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                :value="pageSize" @change="e => { pageSize = Number(e.target.value); page = 1; }">
+                                <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
+                                    {{ opt }}
+                                </option>
+                            </select>
+                            <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
+
+                        <span>{{ from }}-{{ to }} จาก {{ total }} รายการ</span>
+                    </template>
+                </DataTable>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="pb-8">
+            <div class="mt-4 flex items-center justify-between">
+                <div class="ml-8">
+                    <CancelButton @click="onCancel" />
+                </div>
+
+                <div class="mr-8" :class="canCreate
+                    ? 'cursor-pointer'
+                    : 'opacity-50 cursor-not-allowed'" :style="canCreate
+                            ? ''
+                            : 'pointer-events: none;'" :title="canCreate
+                            ? ''
+                            : 'Please upload file and click Generate Data first'">
+                    <CreateButton :disabled="!canCreate" @click="onCreate" />
                 </div>
             </div>
         </div>
 
-        <!-- Alert -->
+        <!-- Alerts / Modals -->
         <EmployeeCreateSuccess :open="showCreateSuccess" @close="handleSuccessClose" />
         <EmployeeCannotCreate :open="showCannotCreate" @close="showCannotCreate = false" />
     </div>
@@ -200,13 +135,15 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
+
+/* components */
 import Upload from '@/components/Input/Upload.vue'
 import EmployeeCreateSuccess from '@/components/Alert/Employee/EmployeeCreateSuccess.vue'
 import EmployeeCannotCreate from '@/components/Alert/Employee/EmployeeCannotCreate.vue'
-import Swal from 'sweetalert2'
-import 'sweetalert2/dist/sweetalert2.min.css'
-
-const emit = defineEmits(['cancel', 'uploaded', 'fileSelected'])
+import CancelButton from '@/components/Button/CancelButton.vue'
+import CreateButton from '@/components/Button/CreateButton.vue'
+import GenerateDataButton from '@/components/Button/GenerateDataButton.vue'
+import DataTable from '@/components/DataTable.vue'
 
 const router = useRouter()
 
@@ -216,7 +153,7 @@ const error = ref('')
 const uploading = ref(false)
 const creating = ref(false)
 
-const displayRows = ref([])
+const displayRows = ref([]) // ข้อมูลทั้งหมดจากไฟล์ (ยังไม่ยิง create)
 const page = ref(1)
 const pageSize = ref(10)
 
@@ -237,39 +174,30 @@ async function loadMeta() {
 }
 onMounted(loadMeta)
 
-/* ---------- pagination ---------- */
-watch(pageSize, () => {
-    page.value = 1
-})
-
-const startIndex = computed(() => (page.value - 1) * pageSize.value)
-const filtered = computed(() => displayRows.value)
-const totalPages = computed(() =>
-    Math.max(1, Math.ceil(filtered.value.length / pageSize.value))
-)
-
-const visibleCountText = computed(() => {
-    const total = filtered.value.length
-    if (total === 0) return '0-0 จาก 0 รายการ'
-    const from = startIndex.value + 1
-    const to = Math.min(startIndex.value + pageSize.value, total)
-    return `${from}-${to} รายการ`
-})
+/* ---------- table pagination computed ---------- */
+const totalItems = computed(() => displayRows.value.length)
 
 const paged = computed(() => {
-    const start = startIndex.value
-    return filtered.value.slice(start, start + pageSize.value)
+    const start = (page.value - 1) * pageSize.value
+    const slice = displayRows.value.slice(start, start + pageSize.value)
+
+    return slice.map((row, idx) => ({
+        ...row,
+        __rowKey: row.employeeId || `${start + idx}`,
+        __displayIndex: start + idx + 1
+    }))
 })
 
-watch([filtered, pageSize], () => {
-    const last = Math.max(1, Math.ceil(filtered.value.length / pageSize.value))
-    if (page.value > last) page.value = last
+watch([pageSize, totalItems], () => {
+    const lastPage = Math.max(1, Math.ceil(totalItems.value / pageSize.value))
+    if (page.value > lastPage) page.value = lastPage
 })
 
-/* ---------- excel read & parse ---------- */
+/* ---------- upload & parse excel ---------- */
 async function upload() {
     if (!file.value || error.value) return
     uploading.value = true
+
     try {
         const ext = file.value.name.split('.').pop()?.toLowerCase()
         const data = await readFile(file.value, ext === 'csv' ? 'text' : 'array')
@@ -293,12 +221,12 @@ async function upload() {
         const dataAoA = rowsAoA.slice(headerRowIdx + 1)
 
         const json = arraysToObjects(headers, dataAoA)
-        displayRows.value = mapRows(json)
+        const mapped = mapRows(json)
+
+        displayRows.value = mapped
         page.value = 1
 
-        emit('uploaded', file.value)
-
-        error.value = displayRows.value.length
+        error.value = mapped.length
             ? ''
             : 'ไฟล์อ่านได้ แต่ไม่พบแถวข้อมูลหลังหัวตาราง'
     } catch (e) {
@@ -331,7 +259,9 @@ function detectHeaderRow(rowsAoA) {
             String(x || '').toLowerCase().replace(/\s+/g, '')
         )
         let score = 0
-        for (const cell of row) if (candidates.includes(cell)) score++
+        for (const cell of row) {
+            if (candidates.includes(cell)) score++
+        }
         if (score >= 2) return i
     }
     return -1
@@ -351,7 +281,7 @@ function arraysToObjects(headers, rows) {
     return out
 }
 
-/* ---------- utils ---------- */
+/* ---------- small utils ---------- */
 function readFile(f, mode = 'array') {
     return new Promise((resolve, reject) => {
         const r = new FileReader()
@@ -384,7 +314,7 @@ function toDMY(d) {
     return `${dd}/${mm}/${yy}`
 }
 
-/* ---------- map rows for preview ---------- */
+/* ---------- mapRows (normalize headers / reshape row) ---------- */
 function mapRows(rows) {
     const keyAlias = {
         company: 'company',
@@ -393,34 +323,43 @@ function mapRows(rows) {
         'รหัสพนักงาน': 'employeeId',
         'idพนักงาน': 'employeeId',
         'พนักงานid': 'employeeId',
+
         'คำนำหน้า': 'prefix',
         'คำนำหน้าชื่อ': 'prefix',
         'prefix': 'prefix',
+
         'ชื่อ': 'firstName',
         'firstname': 'firstName',
+
         'นามสกุล': 'lastName',
         'lastname': 'lastName',
+
         'ชื่อเล่น': 'nickname',
         'nickname': 'nickname',
+
         'position': 'position',
         'ตำแหน่ง': 'position',
+
         'department': 'department',
         'แผนก': 'department',
         'ฝ่าย': 'department',
+
         'team': 'team',
         'ทีม': 'team',
+
         'phone': 'phone',
         'โทรศัพท์': 'phone',
         'เบอร์': 'phone',
+
         'email': 'email',
         'อีเมล': 'email',
+
         'date add': 'dateAdd',
         'date': 'dateAdd',
         'วันที่': 'dateAdd'
     }
 
     return rows.map(r => {
-        // normalize header keys
         const norm = {}
         for (const [k, v] of Object.entries(r)) {
             const nk = normalizeKey(k)
@@ -429,13 +368,13 @@ function mapRows(rows) {
             norm[mapped || k] = v ?? ''
         }
 
-        // "<prefix> <first> <last>"
+        // รวมชื่อ
         const fullName = [norm.prefix, norm.firstName, norm.lastName]
             .filter(Boolean)
             .join(' ')
             .trim()
 
-        // normalise date
+        // ปรับวันที่
         let dateAdd = ''
         if (norm.dateAdd) {
             if (norm.dateAdd instanceof Date) {
@@ -466,7 +405,7 @@ function mapRows(rows) {
     })
 }
 
-/* ---------- ensure masters exist ---------- */
+/* ---------- ensure masters ---------- */
 async function ensureDepartmentId(depName) {
     if (!depName) return null
     const found = departments.value.find(d => d.dpm_name === depName)
@@ -515,30 +454,28 @@ async function ensureTeamId(teamName) {
     }
 }
 
-/* ---------- success modal state ---------- */
+/* ---------- modal states ---------- */
 const showCreateSuccess = ref(false)
 const showCannotCreate = ref(false)
 
-
-/* ---------- bulk create employees ---------- */
+/* ---------- bulk create employees (partial success logic) ---------- */
 async function onCreate() {
     if (!displayRows.value.length || creating.value) return
-
     creating.value = true
 
     const prefixMap = { 'นาย': 1, 'นาง': 2, 'นางสาว': 3 }
 
-    const successList = []
-    const failList = []
-
     try {
+        // เตรียม payload ที่สร้างได้จริง (master พร้อม) เท่านั้น
+        const preparedRows = []
+
         for (const row of displayRows.value) {
-            // --- เตรียมชื่อ ---
+            // แตกชื่อ
             let emp_prefix = 1
             let emp_firstname = ''
             let emp_lastname = ''
 
-            const parts = row.name.trim().split(/\s+/)
+            const parts = (row.name || '').trim().split(/\s+/)
             if (parts.length >= 3) {
                 emp_prefix = prefixMap[parts[0]] ?? 1
                 emp_firstname = parts[1] ?? ''
@@ -546,80 +483,131 @@ async function onCreate() {
             } else if (parts.length === 2) {
                 emp_firstname = parts[0]
                 emp_lastname = parts[1]
-            } else if (parts.length === 1) {
+            } else if (parts.length === 1 && parts[0]) {
                 emp_firstname = parts[0]
             }
 
-            // --- ensure master data ---
+            // ensure master ids
             const depId = await ensureDepartmentId(row.department || '')
             const posId = await ensurePositionId(row.position || '')
             const teamId = await ensureTeamId(row.team || '')
 
+            // ถ้าหา master id ไม่ได้ -> ข้ามแถวนี้ไป (เราจะไม่พยายามสร้าง)
             if (!depId || !posId || !teamId) {
-                failList.push({
-                    emp_id: row.employeeId,
-                    reason: 'Cannot create/find Department / Team / Position',
-                })
                 continue
             }
 
-            const payload = {
-                emp_id: (row.employeeId || '').trim(),
-                emp_prefix,
-                emp_nickname: row.nickname || null,
-                emp_firstname,
-                emp_lastname,
-                emp_email: row.email || '',
-                emp_phone: row.phone || '',
-                emp_position_id: posId,
-                emp_department_id: depId,
-                emp_team_id: teamId,
-                emp_password: 'Password123',
-                emp_status: 2,
+            preparedRows.push({
+                row,
+                payload: {
+                    emp_id: (row.employeeId || '').trim(),
+                    emp_prefix,
+                    emp_nickname: row.nickname || null,
+                    emp_firstname,
+                    emp_lastname,
+                    emp_email: row.email || '',
+                    emp_phone: row.phone || '',
+                    emp_position_id: posId,
+                    emp_department_id: depId,
+                    emp_team_id: teamId,
+                    emp_password: 'Password123',
+                    emp_status: 2,
+                }
+            })
+        }
+
+        // ไม่มีใครพร้อมสร้างเลย
+        if (preparedRows.length === 0) {
+            // ไม่มี payload valid -> ถือว่า fail
+            showCreateSuccess.value = false
+            showCannotCreate.value = true
+            return
+        }
+
+        // นับผลลัพธ์
+        let createdCount = 0    // insert สำเร็จ
+        let dupCount = 0        // duplicate พบในระบบ
+        let hardFailCount = 0   // error อื่น
+
+        for (const item of preparedRows) {
+            const p = item.payload
+
+            // เช็ค duplicate ก่อน (optional safety)
+            let isDuplicate = false
+            try {
+                const dupResp = await axios.post('/check-employee-duplicate', {
+                    emp_id: p.emp_id,
+                    emp_phone: p.emp_phone,
+                    emp_email: p.emp_email
+                })
+                if (dupResp.data?.duplicate) {
+                    isDuplicate = true
+                }
+            } catch (dupErr) {
+                // ถ้า duplicate check พัง เราจะไม่ block ตรงนี้
+                console.warn('duplicate check failed, continue anyway', dupErr)
             }
 
+            if (isDuplicate) {
+                dupCount++
+                continue
+            }
+
+            // ถ้าไม่ถูก mark ว่าซ้ำ ลอง save จริง
             try {
-                await axios.post('/save-employee', payload)
-                successList.push(row.employeeId)
+                await axios.post('/save-employee', p)
+                createdCount++
             } catch (empErr) {
                 console.error(
                     'save-employee failed for',
-                    row.employeeId,
+                    p.emp_id,
                     empErr.response?.data || empErr.message
                 )
-                failList.push({
-                    emp_id: row.employeeId,
-                    reason:
-                        empErr.response?.data?.message ||
-                        empErr.response?.data?.error ||
-                        'save-employee failed',
-                })
+
+                const reasonTextRaw =
+                    empErr.response?.data?.message ||
+                    empErr.response?.data?.error ||
+                    ''
+
+                const looksLikeDup =
+                    /already\s+exists/i.test(reasonTextRaw) ||
+                    /already been taken/i.test(reasonTextRaw) ||
+                    /duplicate/i.test(reasonTextRaw) ||
+                    /ซ้ำ/.test(reasonTextRaw) ||
+                    /มีอยู่แล้ว/.test(reasonTextRaw)
+
+                if (looksLikeDup) {
+                    dupCount++
+                } else {
+                    hardFailCount++
+                }
             }
         }
 
-        // ---- หลัง loop: ตัดสินใจเปิด modal ไหน ----
-        if (successList.length > 0) {
-            // อย่างน้อยมีบางแถวสร้างสำเร็จ
-            // เคลียร์ preview + ขึ้น modal success
+        // ตัดสินใจ modal
+        const shouldShowCannotCreate =
+            dupCount > 0 ||
+            hardFailCount > 0 ||
+            createdCount === 0
+
+        const shouldShowCreateSuccess = createdCount > 0
+
+        // ถ้าสร้างได้บางคนขึ้นไป -> ล้างตาราง/ไฟล์
+        if (createdCount > 0) {
             displayRows.value = []
             file.value = null
             error.value = ''
             page.value = 1
-
-            showCreateSuccess.value = true
-            showCannotCreate.value = false
-        } else {
-            // ไม่มีแถวไหนสำเร็จเลย -> เปิด modal fail
-            showCreateSuccess.value = false
-            showCannotCreate.value = true
         }
+
+        showCannotCreate.value = shouldShowCannotCreate
+        showCreateSuccess.value = shouldShowCreateSuccess
     } finally {
         creating.value = false
     }
 }
 
-
-/* ---------- กด OK บน popup success ---------- */
+/* ---------- modal success close ---------- */
 function handleSuccessClose() {
     showCreateSuccess.value = false
     router.push('/employee')
@@ -681,31 +669,71 @@ function downloadTemplate() {
     URL.revokeObjectURL(url)
 }
 
-/* ---------- pager buttons list ---------- */
-const pagerItems = computed(() => {
-    const pages = totalPages.value
-    const cur = page.value
-    const out = []
-    if (pages <= 7) {
-        for (let i = 1; i <= pages; i++) out.push(i)
-        return out
-    }
-    out.push(1)
-    const left = Math.max(2, cur - 1)
-    const right = Math.min(pages - 1, cur + 1)
-    if (left > 2) out.push('dots')
-    for (let i = left; i <= right; i++) out.push(i)
-    if (right < pages - 1) out.push('dots')
-    out.push(pages)
-    return out
-})
-
 /* ---------- cancel button ---------- */
 function onCancel() {
     displayRows.value = []
     file.value = null
     error.value = ''
     page.value = 1
-    router.push('/employee')
+    router.push('/add-employee')
 }
+
+/* ---------- columns for DataTable ---------- */
+const tableColumns = [
+    {
+        key: 'index',
+        label: '#',
+        class: 'text-left w-[72px] whitespace-nowrap'
+    },
+    {
+        key: 'employeeId',
+        label: 'ID',
+        class: 'text-left w-[140px] whitespace-nowrap'
+    },
+    {
+        key: 'name',
+        label: 'Name',
+        class: 'text-left w-[240px] whitespace-nowrap'
+    },
+    {
+        key: 'nickname',
+        label: 'Nickname',
+        class: 'text-left w-[120px] whitespace-nowrap'
+    },
+    {
+        key: 'phone',
+        label: 'Phone',
+        class: 'text-left w-[140px] whitespace-nowrap'
+    },
+    {
+        key: 'department',
+        label: 'Department',
+        class: 'text-left w-[180px] whitespace-nowrap'
+    },
+    {
+        key: 'team',
+        label: 'Team',
+        class: 'text-left w-[160px] whitespace-nowrap'
+    },
+    {
+        key: 'position',
+        label: 'Position',
+        class: 'text-left w-[180px] whitespace-nowrap'
+    },
+    {
+        key: 'email',
+        label: 'Email',
+        class: 'text-left w-[220px] whitespace-nowrap'
+    },
+    {
+        key: 'dateAdd',
+        label: 'Date Add (D/M/Y)',
+        class: 'text-center w-[140px] whitespace-nowrap'
+    }
+]
+
+/* ---------- enable/disable ปุ่ม Create ---------- */
+const canCreate = computed(() => {
+    return displayRows.value.length > 0 && !creating.value && !uploading.value
+})
 </script>

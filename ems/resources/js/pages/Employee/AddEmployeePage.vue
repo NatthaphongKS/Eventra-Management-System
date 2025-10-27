@@ -20,7 +20,7 @@
                         </div>
                     </div>
                     <!-- Success alert -->
-                    <EmployeeCreateSuccess :open="showCreateSuccess" @close="showCreateSuccess = false" />
+                    <EmployeeCreateSuccess :open="showCreateSuccess" @close= "handleSuccessClose" />
                 </div>
 
                 <!-- Body -->
@@ -35,8 +35,8 @@
                                 </FormField>
 
                                 <FormField label="First Name" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.firstName" placeholder="Ex.Perapat"
-                                        :error="errors.firstName" />
+                                    <InputPill class="mt-1 block w-full" v-model="form.firstName"
+                                        placeholder="Ex.Perapat" :error="errors.firstName" />
                                 </FormField>
 
                                 <FormField label="Last Name" required class="w-[399px]">
@@ -50,13 +50,13 @@
                                 </FormField>
 
                                 <FormField label="Phone" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.phone" placeholder="Ex.0988900988"
-                                        inputmode="numeric" :error="errors.phone" />
+                                    <InputPill class="mt-1 block w-full" v-model="form.phone"
+                                        placeholder="Ex.0988900988" inputmode="numeric" :error="errors.phone" />
                                 </FormField>
 
                                 <FormField label="Employee ID" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.employeeId" placeholder="Ex.CN707008"
-                                        :error="errors.employeeId" />
+                                    <InputPill class="mt-1 block w-full" v-model="form.employeeId"
+                                        placeholder="Ex.CN707008" :error="errors.employeeId" />
                                 </FormField>
 
                                 <div @click="onCancel">
@@ -68,39 +68,41 @@
                             <div></div>
 
                             <!-- ขวา -->
-                            <div class="flex flex-col gap-5 md:ml-32 lg:ml-48 xl:ml-64 2xl:ml-80">
-                                <FormField label="Department" required class="w-[500px]">
-                                    <DropdownPill class="mt-1 block w-full" v-model="form.department" :options="departments"
-                                        placeholder="Select Department" :error="errors.department" />
+                            <div class="flex flex-col gap-5 md:pl-32 lg:pl-40 xl:pl-48 2xl:pl-56">
+                                <FormField label="Department" required class="w-full min-w-[500px] max-w-[500px]">
+                                    <DropdownPill class="mt-1 block w-full" v-model="form.department"
+                                        :options="departments" placeholder="Select Department"
+                                        :error="errors.department" />
                                 </FormField>
 
-                                <FormField label="Team" required class="w-[500px]">
+                                <FormField label="Team" required class="w-full min-w-[500px] max-w-[500px]">
                                     <DropdownPill class="mt-1 block w-full" v-model="form.team" :options="teamOptions"
                                         placeholder="Select Team" :error="errors.team" />
                                 </FormField>
 
-                                <FormField label="Position" required class="w-[500px]">
+                                <FormField label="Position" required class="w-full min-w-[500px] max-w-[500px]">
                                     <DropdownPill class="mt-1 block w-full" v-model="form.position" :options="positions"
                                         placeholder="Select Position" :error="errors.position" />
                                 </FormField>
 
-                                <FormField label="Email" required class="w-[500px]">
+                                <FormField label="Email" required class="w-full min-w-[500px] max-w-[500px]">
                                     <InputPill class="mt-1 block w-full" v-model="form.email" type="email"
                                         placeholder="Ex.66160106@go.buu.ac.th" :error="errors.email" />
                                 </FormField>
 
-                                <FormField label="Password" required class="w-[500px]">
+                                <FormField label="Password" required class="w-full min-w-[500px] max-w-[500px]">
                                     <InputPill class="mt-1 block w-full" v-model="form.password" type="password"
                                         placeholder="Ex.Ssaw.1234" :error="errors.password" />
                                 </FormField>
 
-                                <FormField label="Permission" required class="w-[500px]">
-                                    <DropdownPill class="mt-1 block w-full" v-model="form.permission" :options="permissions"
-                                        placeholder="Select Permission" :error="errors.permission" />
+                                <FormField label="Permission" required class="w-full min-w-[500px] max-w-[500px]">
+                                    <DropdownPill class="mt-1 block w-full" v-model="form.permission"
+                                        :options="permissions" placeholder="Select Permission"
+                                        :error="errors.permission" />
                                 </FormField>
 
                                 <!-- ปุ่ม Create -->
-                                <div class="-mt-2 ml-80">
+                                <div class="-mt-2 ml-[23rem]">
                                     <button type="submit" :disabled="submitting"
                                         class="bg-transparent border-0 p-0 disabled:opacity-50"
                                         style="all: unset; display: inline-block;">
@@ -123,7 +125,7 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
-// components
+/* ---------- components ---------- */
 import FormField from '../../components/Input/FormField.vue'
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
@@ -404,11 +406,12 @@ function onCancel() {
     Object.keys(errors).forEach(k => delete errors[k])
     router.push('/employee')
 }
+
+/* ---------- close modal success ---------- */
+function handleSuccessClose() {
+    showCreateSuccess.value = false
+    router.push('/employee')
+}
 </script>
 
-<style>
-/* ยังเก็บ style ของ sweetalert error/warning ได้
-   แต่ style ของ success popup (swal-compact / okmark / etc.)
-   ตอนนี้ไม่จำเป็นต่อ flow แล้ว
-   ถ้าจะล้าง ก็ลบทั้งหมดทิ้งได้ปลอดภัย */
-</style>
+<style></style>
