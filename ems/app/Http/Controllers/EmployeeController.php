@@ -253,5 +253,20 @@ class EmployeeController extends Controller
 
         return response()->json(['message' => 'Deleted successfully']);
     }
+    public function softDelete($id)
+{
+    $emp = Employee::find($id);
+
+    if (!$emp) {
+        return response()->json(['message' => 'Employee not found'], 404);
+    }
+
+    $emp->emp_delete_status = 'inactive';
+    $emp->emp_delete_at = now();
+    $emp->emp_delete_by = Auth::id();
+    $emp->save();
+
+    return response()->json(['message' => 'Employee soft deleted successfully']);
+}
 
 }
