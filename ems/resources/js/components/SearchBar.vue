@@ -6,7 +6,7 @@
         v-model.trim="searchInput"
         type="text"
         :placeholder="placeholder"
-        @input="emitSearch"
+
         @keyup.enter="emitSearch"
         class="px-4 w-[650px] h-[50px] rounded-[20px] border border-neutral-200 bg-white
                focus:border-red-300 outline-none
