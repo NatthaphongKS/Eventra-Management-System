@@ -8,17 +8,19 @@
         placeholder="Search Category / Created by"
         @search="onSearch"
       />
+
+      <!-- ✅ ห่อไว้เพื่อจับคลิกรอบนอก -->
       <div class="relative z-[60]" ref="sortWrap">
-  <SortMenu
-    v-model:is-open="sortMenuOpen"
-    :options="sortOptions"
-    :selected="sortBy"
-    @update:is-open="val => (sortMenuOpen = val)"
-    @toggle="sortMenuOpen = !sortMenuOpen"
-    @select="onSortSelect($event)"  
-    @close="sortMenuOpen = false"
-  />
-</div>
+        <SortMenu
+          :is-open="sortMenuOpen"
+          :options="sortOptions"
+          :sort-by="sortBy.key"
+          :sort-order="sortBy.order"
+          @toggle="sortMenuOpen = !sortMenuOpen"
+          @choose="onSortChoose"
+        />
+      </div>
+
       <AddButton @click="openAdd" />
     </div>
 
@@ -34,7 +36,6 @@
       @update:pageSize="onChangePageSize"
       class="mt-4"
     >
-      <!-- ปุ่ม action -->
       <template #actions="{ row }">
         <button
           class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-emerald-600"
@@ -112,14 +113,14 @@ export default {
       page: 1,
       pageSize: 10,
 
-      /* ✅ สถานะซอร์ท */
+      /* ✅ สถานะซอร์ต */
       sortMenuOpen: false,
-      sortBy: { key: 'cat_created_at', order: 'desc' },
+      sortBy: { key: 'cat_created_at', order: 'desc' }, // เริ่มที่ “วันที่ล่าสุด”
       sortOptions: [
-        { key: 'cat_name',       order: 'asc',  label: 'A → Z', value: 'az' },
-        { key: 'cat_name',       order: 'desc', label: 'Z → A', value: 'za' },
-        { key: 'cat_created_at', order: 'desc', label: 'Created date (Newest)', value: 'newest' },
-        { key: 'cat_created_at', order: 'asc',  label: 'Created date (Oldest)', value: 'oldest' },
+        { key: 'cat_name',       order: 'asc',  label: 'ชื่อ A-Z', value: 'az' },
+        { key: 'cat_name',       order: 'desc', label: 'ชื่อ Z-A', value: 'za' },
+        { key: 'cat_created_at', order: 'desc', label: 'วันที่สร้างล่าสุด', value: 'newest' },
+        { key: 'cat_created_at', order: 'asc',  label: 'วันที่สร้างเก่าสุด', value: 'oldest' },
       ],
 
       alert: { open: false, type: '', title: '', message: '', showCancel: false, okText: 'OK', cancelText: 'Cancel' },
@@ -160,13 +161,11 @@ export default {
           const bn = (b.cat_name || '').toLowerCase()
           return an.localeCompare(bn) * dir
         }
-
         if (key === 'cat_created_at') {
           const ta = new Date(a.cat_created_at).getTime() || 0
           const tb = new Date(b.cat_created_at).getTime() || 0
           return (ta - tb) * dir
         }
-
         return 0
       })
     },
@@ -180,13 +179,14 @@ export default {
   async created() {
     await this.loadCategories()
   },
+
   mounted() {
-      // ปิดเมนูเมื่อคลิกรอบนอก
-      document.addEventListener('click', this.onDocClick, true)
-    },
-    beforeUnmount() {
-      document.removeEventListener('click', this.onDocClick, true)
-    },
+    // ✅ ใช้ bubbling phase (ไม่ใส่ true) เพื่อให้ @click.stop ในเมนูทำงานก่อน
+    document.addEventListener('click', this.onDocClick)
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.onDocClick)
+  },
 
   methods: {
     /* --------- โหลดรายการ --------- */
@@ -217,10 +217,26 @@ export default {
       this.page = 1
     },
 
-    /* ================== CREATE ================== */
-    openAdd() {
-      this.addOpen = true
+    /* ================== SORT ================== */
+    onSortChoose(option) {
+      // option = { key, order, label, value }
+      if (!option || !option.key || !option.order) return
+      this.sortBy = { key: option.key, order: option.order }
+      this.page = 1
+      this.sortMenuOpen = false
     },
+
+    // ปิดเมนูเมื่อคลิกรอบนอก
+    onDocClick(e) {
+      if (!this.sortMenuOpen) return
+      const wrap = this.$refs.sortWrap
+      if (wrap && !wrap.contains(e.target)) {
+        this.sortMenuOpen = false
+      }
+    },
+
+    /* ================== CREATE/EDIT/DELETE (เดิม) ================== */
+    openAdd() { this.addOpen = true },
     isDuplicate(name) {
       const n = (name || '').trim().toLowerCase()
       if (!n) return false
@@ -250,15 +266,8 @@ export default {
         this.alert = { open: true, type: 'error', title: 'Failed', message: msg }
       }
     },
-
-    /* =================== EDIT =================== */
     openEdit(row) {
-      this.editing = {
-        id: row.id,
-        name: row.cat_name,
-        createdBy: row.created_by_name,
-        createdAt: row.cat_created_at,
-      }
+      this.editing = { id: row.id, name: row.cat_name, createdBy: row.created_by_name, createdAt: row.cat_created_at }
       this.editOpen = true
     },
     isDupForEdit(name, currentId) {
@@ -268,15 +277,10 @@ export default {
     },
     async updateCategory({ id, name }) {
       const n = (name || '').trim()
-      if (!n) {
-        this.alert = { open: true, type: 'error', title: 'Failed', message: 'Name is empty.' }
-        return
-      }
+      if (!n) { this.alert = { open: true, type: 'error', title: 'Failed', message: 'Name is empty.' }; return }
       if (this.isDupForEdit(n, id)) {
-        this.alert = { open: true, type: 'error', title: 'Duplicate', message: 'มีชื่อนี้อยู่แล้วในรายการ' }
-        return
+        this.alert = { open: true, type: 'error', title: 'Duplicate', message: 'มีชื่อนี้อยู่แล้วในรายการ' }; return
       }
-
       try {
         await axios.put(`/categories/${id}`, { cat_name: n })
         this.rows = this.rows.map(r => (r.id === id ? { ...r, cat_name: n } : r))
@@ -288,19 +292,11 @@ export default {
         this.alert = { open: true, type: 'error', title: 'Failed', message: msg }
       }
     },
-
-    /* ================== DELETE ================== */
     requestDelete(row) {
       this.alert = {
-        open: true,
-        type: 'confirm',
-        title: 'Confirm Delete',
-        message: `Delete "${row.cat_name}"?`,
-        showCancel: true,
-        okText: 'Delete',
-        cancelText: 'Cancel',
-        onConfirm: () => this.confirmDelete(row.id),
-        onCancel: () => (this.alert.open = false),
+        open: true, type: 'confirm', title: 'Confirm Delete', message: `Delete "${row.cat_name}"?`,
+        showCancel: true, okText: 'Delete', cancelText: 'Cancel',
+        onConfirm: () => this.confirmDelete(row.id), onCancel: () => (this.alert.open = false),
       }
     },
     async confirmDelete(id) {
@@ -312,39 +308,6 @@ export default {
         console.error(err?.response || err)
         const msg = err?.response?.data?.message || 'Cannot delete this category.'
         this.alert = { open: true, type: 'error', title: 'Failed', message: msg }
-      }
-    },
-
-    onSortSelect(option) {
-      let key, order
-
-      if (option && typeof option === 'object') {
-        // กรณี SortMenu ส่ง { key, order }
-        key = option.key
-        order = option.order
-      } else if (typeof option === 'string') {
-        // กรณีส่ง string ช็อตคัต
-        const map = {
-          az:      { key: 'cat_name',       order: 'asc'  },
-          za:      { key: 'cat_name',       order: 'desc' },
-          newest:  { key: 'cat_created_at', order: 'desc' },
-          oldest:  { key: 'cat_created_at', order: 'asc'  },
-        }
-        ;({ key, order } = map[option] || {})
-      }
-
-      if (!key || !order) return
-      this.sortBy = { key, order }
-      this.page = 1
-      this.sortMenuOpen = false
-    },
-
-    // ✅ ปิดเมนูเมื่อคลิกรอบนอกกล่อง sortWrap
-    onDocClick(e) {
-      if (!this.sortMenuOpen) return
-      const wrap = this.$refs.sortWrap
-      if (wrap && !wrap.contains(e.target)) {
-        this.sortMenuOpen = false
       }
     },
   },
