@@ -19,8 +19,11 @@
                     </div>
                     <div>
                         <!-- เลือก Category -->
-                        <label>Event Category</label><br />
-                        <select class="border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px]" v-model="eventCategoryId">
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Event
+                            Category</label><br />
+                        <select
+                            class="border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition "
+                            v-model="eventCategoryId">
                             <!-- v-model ตรงนี้จะผูกค่ากับ evn_category_id โหลดครั้งแรกจะได้ค่าเก่า + ถ้าเลืกใหม่จะได้ค่าใหม่ เวลาส่งไป save ก็จะส่งเป็น id -->
 
                             <!-- ถ้าหมวดเดิมเป็น inactive แต่อยากแสดงไว้ -->
@@ -40,217 +43,252 @@
             </div>
 
             <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
-            <div >
+            <div>
                 <!-- v-model.trim="evn_description" = ผูกค่ากับตัวแปร evn_description อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม-->
-                <label>Event Description</label><br />
-                <textarea class="border border-neutral-200 w-full h-[165px] rounded-2xl" v-model.trim="eventDescription"></textarea>
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Event
+                    Description</label><br />
+                <textarea
+                    class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                    v-model.trim="eventDescription"></textarea>
             </div>
 
-
             <div class="grid grid-cols-3">
-                <div>
+                <div class="pr-[10px]">
                     <!-- วันที่ -->
-                    <label>Date</label><br>
-                    <input type="date" v-model="eventDate">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Date</label><br>
+                    <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
+                        focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition
+                        px-[20px]" type="date" v-model="eventDate">
+                </div>
+                <!-- เวลา -->
+                <div class="mx-[10px] ">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Time</label>
+                    <div class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 shadow-sm">
+                        <input type="time" v-model="eventTimeStart" step="300"
+                            class="time-input ml-[20px] w-[105px] bg-transparent text-[15px] font-medium text-neutral-800 outline-none" />
+                        <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData 2 ตอนเลือกค่า ใน Input
+                             ค่าก็จะเปลี่ยนไปตามที่เราเลือกแล้วส่งไปคำนวณ-->
+                        <!-- ตัวคั่น : -->
+                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
+
+                        <!-- เวลาสิ้นสุด -->
+                        <input type="time" v-model="eventTimeEnd" step="300"
+                            class="time-input w-[105px] bg-transparent text-[15px] font-medium text-neutral-800 outline-none" />
+                        <Icon icon="iconamoon:clock-light" class="w-10 h-10  text-rose-400" />
+
+                    </div>
+
                 </div>
 
                 <div>
-                    <label>Time</label>
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">duration</label>
+                    <div
+                        class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
+                        <!-- ส่วนแสดงช่วงเวลา -->
 
-                    <input type="time" v-model="eventTimeStart"></input>
-                    <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData
-        2 ตอนเลือกค่า ใน Input ค่าก็จะเปลี่ยนไปตามที่เราเลือกแล้วส่งไปคำนวณ-->
-
-                    <label> : </label>
-                    <input type="time" v-model="eventTimeEnd"></input>
-                </div>
-                <div>
-                    <!-- ส่วนแสดงช่วงเวลา -->
-                    <label>duration</label><br>
-                    <input disabled v-model="eventDuration"></input><br>
-                    <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
+                        <input class=" w-full h-[52px] bg-transparent" disabled v-model="eventDuration"></input>
+                        <Icon icon="iconamoon:clock-light" class="w-10 h-10  text-neutral-400" />
+                        <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
+                    </div>
                 </div>
             </div>
             <!-- ส่วนแสดงสถานที่ -->
             <label>Location</label><br>
-            <input type="text" v-model="eventLocation"></input>
+            <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
+             border border-neutral-200 rounded-[20px] px-5" />
         </div>
         <!-- Upload attachments -->
-        <div class="col-span-4" style="margin: 20px">
-            <label>Upload attachments</label>
+        <div class="col-span-4 m-5">
+            <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
+            <p class="text-sm text-neutral-500 mb-2">Drag and drop document to your support task</p>
+
+            <!-- ▼ Drop zone -->
+            <div class="group relative rounded-2xl border-2 border-dashed border-rose-300 bg-rose-50 p-6 transition-all hover:border-rose-400"
+                :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
+                @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
+                <!-- รายการไฟล์ (เดิม + ใหม่) เต็มความกว้าง เรียงลงมา -->
+                <div v-if="hasAnyFiles" class="mb-4 space-y-2">
+                    <div v-for="item in uploadItems" :key="item.key"
+                        class="w-full flex items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 shadow-sm">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-red-600">
+                                <Icon icon="mdi:file" class="h-5 w-5 text-white" />
+                            </div>
+
+                            <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
+                            <template v-if="item.kind === 'existing'">
+                                <a :href="item.url" target="_blank" rel="noopener"
+                                    class="truncate text-[15px] text-rose-700 hover:underline">
+                                    {{ item.name }}
+                                </a>
+                                <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                    }})</span>
+                            </template>
+                            <template v-else>
+                                <span class="truncate text-[15px] text-neutral-800">{{ item.name }}</span>
+                                <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                    }})</span>
+                            </template>
+                        </div>
+
+                        <button type="button"
+                            class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100"
+                            @click="item.kind === 'existing' ? removeExisting(item.id) : removeFile(item.index)"
+                            aria-label="Remove file" title="Remove">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <!-- เมฆ + ข้อความ: โชว์เฉพาะตอน “ยังไม่มีไฟล์เลย” -->
+                <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
+                    <Icon icon="entypo:upload-to-cloud" class="w-16 h-16 mb-3 text-rose-400" />
+                    <p class="text-[15px] font-medium text-neutral-800">Choose a file or drag &amp; drop it here</p>
+                    <p class="mt-1 text-sm text-neutral-600">pdf, txt, docx, jpeg, xlsx</p>
+                </div>
+
+                <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
+                <div class="flex justify-center mt-6">
+                    <button type="button"
+                        class="inline-flex items-center rounded-[12px] border border-rose-500 px-4 py-1.5 text-sm text-rose-700 hover:bg-rose-50 active:bg-rose-100"
+                        @click="pickFiles">
+                        Browse files
+                    </button>
+                </div>
+
+                <!-- error (ถ้ามี) -->
+                <!-- <p v-if="uploadError" class="mt-2 text-xs text-red-600 text-center">{{ uploadError }}</p> -->
+
+                <!-- input file (ซ่อน) -->
+                <input ref="fileInput" type="file" multiple class="hidden"
+                    accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
+            </div>
+
+
+
 
             <!-- ไฟล์เดิม -->
-            <div v-if="filesExisting.length > 0" style="margin-bottom:8px">
-                <!-- จะโชว์ก็ต่อเมื่อ length > 0 กันไม่มีข้อมูล-->
-                <p style="margin:4px 0 8px; opacity:.8">ไฟล์เดิม</p>
-                <ul style="list-style:none; padding:0; margin:0">
-                    <!-- v for ตรงนี้ร้างตัวแปร oldFile ขึ้นมาเพื่อวนเก็บขอมูลใน array ของ filesExisting ในแต่ละรอบวน -->
+            <!-- <div v-if="filesExisting.length > 0" class="mt-4">
+                <p class="text-sm text-neutral-600 mb-2">ไฟล์เดิม</p>
+                <ul class="space-y-2">
                     <li v-for="oldFile in filesExisting" :key="oldFile.id"
-                        style="display:flex; gap:10px; align-items:center; padding:6px 0;">
-                        <a :href="oldFile.url" target="_blank" rel="noopener">{{ oldFile.file_name }}</a>
-                        <!-- ส่วนใส่ชื่อไฟล์ แล้วทำเป็นเหมือนลิ้งค์ให้กดดู โดย href จะเอา link ที่ถูกเพิ่มโดย .map ใน controller แล้วส่งมาที่หน้าบ้าน -->
-
-                        <span style="opacity:.7; font-size:12px">({{ prettySize(oldFile.file_size) }})</span>
-                        <!-- เรียกใช้ prettysize ใน script จะแปลงจาก byte -> kbถ้า ≥ 1kB → MB ถ้า ≥ 1MB -->
-
-                        <!-- ส่วนเอาออกจาก UI click แล้วจะเรียก removeExisting แล้วส่ง(oldFile.id) ไปด้วย-->
-                        <button type="button" @click="removeExisting(oldFile.id)"
-                            style="border:0; background:#eee; border-radius:6px; padding:4px 8px; cursor:pointer">
+                        class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                        <a :href="oldFile.url" target="_blank" rel="noopener"
+                            class="truncate text-[15px] text-rose-700 hover:underline">
+                            {{ oldFile.file_name }}
+                        </a>
+                        <span class="text-xs text-neutral-500">({{ prettySize(oldFile.file_size) }})</span>
+                        <button type="button"
+                            class="ml-auto rounded-full px-2.5 py-0.5 text-sm text-neutral-600 hover:bg-neutral-100"
+                            @click="removeExisting(oldFile.id)">
                             ✕
                         </button>
                     </li>
                 </ul>
-            </div>
-
-            <!-- โซนอัปโหลดไฟล์ใหม่ -->
-            <div class="dropzone" @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false"
-                @drop.prevent="onDrop" :class="{ dragging }"
-                style="border:1px dashed #bbb; padding:12px; border-radius:8px;">
-                <!-- มีการเรียก ondrop เมื่อมีไฟล์ลากมาวางในช่อง -->
-                <!-- @dragover.prevent="dragging = true" → เวลา ลากไฟล์มาทับ บล็อกนี้ → ตั้งค่า dragging = true (ตัวแปรที่สร้างไว้ใน script) + prevent กัน event ค่า default ของเบราว์เซอร์ -->
-                <!-- @dragleave.prevent="dragging = false" → เวลา ลากไฟล์ออกจากบล็อกนี้ → ตั้งค่า dragging = false -->
-                <!-- :class="{ dragging }" → ถ้า dragging = true จะเพิ่ม class CSS dragging ให้อัตโนมัติ (เช่นเปลี่ยนพื้นหลัง, border ฯลฯ) -->
-                <p>Choose a file or drag & drop it here</p>
-                <p class="muted">pdf, txt, docx, jpeg, xlsx – Up to 50MB</p>
-                <button type="button" @click="pickFiles">Browse files</button>
-                <!-- ส่วนนี้จะเป็นปุ่มเพิ่มไฟล์ ถ้ากด click เพิ่มไฟล์จะไปเรียก method  pickFiles -->
-                <input ref="fileInput" type="file" multiple class="hidden-file"
-                    accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" style="display:none" />
-                <!-- ref="fileInput" → ให้ Vue อ้างถึง element นี้จากโค้ด JS ส่วน pickFiles (this.$refs.fileInput)
-
-            type="file" → ช่องเลือกสำหรับไฟล์
-
-            multiple → เลือกได้หลายไฟล์ในครั้งเดียว ได้ข้อมูลมาเป็น !!! filelist เหมือน array แต่ไม่ใช่ เลยต้องไปแปลงเป็น array ใน method addfile
-
-            accept="..." → จำกัดชนิดไฟล์ที่เลือกได้
-
-            @change="onPick" → เวลาเลือกไฟล์ → เรียก method onPick เพื่อเก็บไฟล์เข้า state (filesNew)
-
-            style="display:none" → ซ่อน input นี้ไม่ให้ผู้ใช้เห็น (กดปุ่ม Browse files ข้างบนแทน) -->
-
-            </div>
+            </div> -->
 
             <!-- รายการไฟล์ใหม่ -->
-            <ul v-if="filesNew.length > 0" class="file-list">
-                <!-- ไม่ render อะไรเลยถ้า  filesNew ไม่มีข้อมูลด้านใน -->
-
-                <li v-for="(newFile, index) in filesNew" :key="index">
-                    <!-- วนลูปใน array filesNew
-                รอบแรก newFile = ไฟล์ที่ index 0, รอบสอง = ไฟล์ที่ index 1 …
-                index = ตำแหน่งไฟล์ใน array -->
-
-                    {{ newFile.name }} ({{ prettySize(newFile.size) }})
-                    <button type="button" @click="removeFile(index)">✕</button>
+            <!-- <ul v-if="filesNew.length > 0" class="mt-4 space-y-2">
+                <li v-for="(newFile, index) in filesNew" :key="index"
+                    class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                    <span class="truncate text-[15px] text-neutral-800">{{ newFile.name }}</span>
+                    <span class="text-xs text-neutral-500">({{ prettySize(newFile.size) }})</span>
+                    <button type="button"
+                        class="ml-auto rounded-full px-2.5 py-0.5 text-sm text-neutral-600 hover:bg-neutral-100"
+                        @click="removeFile(index)">✕
+                    </button>
                 </li>
-            </ul>
+            </ul> -->
         </div>
     </div>
-    <!-- ===== Add Guest (table) ===== -->
-    <h3 style="margin-top: 24px">Add Guest</h3>
+    <h3 class="text-neutral-800 font-semibold font-[Poppins] text-[15px] m-4">Add Guest</h3>
 
-    <div class="guest-toolbar" style="display:flex;gap:10px;align-items:center;margin:14px 0;">
-
-        <!-- ช่อง serach -->
-        <input v-model.trim="searchDraft" placeholder="Search..."
-            style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:999px;" />
-
-        <!-- ช่อง dropdown โชว์ข้อมูล department-->
-        <select v-model="filtersDraft.department">
-            <option value="">Department</option>
-            <option v-for="department in departments" :key="department" :value="department">{{ department }}
-            </option>
-        </select>
-
-        <!-- ช่อง dropdown โชว์ข้อมูล Team-->
-        <select v-model="filtersDraft.team">
-            <option value="">Team</option>
-            <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
-        </select>
-
-        <!-- ช่อง dropdown โชว์ข้อมูล Position-->
-        <select v-model="filtersDraft.position">
-            <option value="">Position</option>
-            <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
-        </select>
-        <button type="button" @click="applySearch">Search</button>
-        <!-- ปุ่ม search เรียก Method applySearch -->
-        <button type="button" @click="resetSearch">Clear</button>
-        <!-- ปุ่ม clear search เรียก Method resetSearch -->
-    </div>
-
-    <!-- ช่อง table โชว์ข้อมูล พนักงาน-->
-    <div class="table-wrap" style="border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff;">
-        <table class="guest-table" style="width:100%;border-collapse:collapse;">
-            <thead>
-                <tr style="background:#fafafa">
-                    <th style="width:40px;padding:10px;border-bottom:1px solid #f1f1f1">
-
-                        <!-- ปุ่มเลือกทั้งหมด -->
-                        <input type="checkbox" :checked="allCheckedOnPage" @change="toggleAllOnPage" />
-                        <!-- ถ้ากด check จะเรียก computed allCheckedOnPage
-                         แล้วถ้ามีการเปลี่ยนที่ติ๊ก จะเรียก method toggleAllOnPage
-                         เป็นการ ผูกค่า checked ของ checkbox กับ computed property allCheckedOnPage
-                        เวลา Vue render กล่อง checkbox มันจะถามว่า
-                        allCheckedOnPage ตอนนี้คืนค่า true หรือ false ?-->
-
-                    </th>
-                    <th style="width:60px;padding:10px;border-bottom:1px solid #f1f1f1">#</th>
-                    <th style="width:120px;padding:10px;border-bottom:1px solid #f1f1f1">ID</th>
-                    <th style="padding:10px;border-bottom:1px solid #f1f1f1">Name</th>
-                    <th style="width:120px;padding:10px;border-bottom:1px solid #f1f1f1">Nickname</th>
-                    <th style="padding:10px;border-bottom:1px solid #f1f1f1">Department</th>
-                    <th style="padding:10px;border-bottom:1px solid #f1f1f1">Team</th>
-                    <th style="padding:10px;border-bottom:1px solid #f1f1f1">Position</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(employee, index) in pagedEmployees" :key="employee.id"
-                    :style="lockedIds.has(employee.id) ? 'opacity:.6' : ''">
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">
-                        <input type="checkbox" :value="employee.id" :checked="selectedIds.has(employee.id)"
-                            :disabled="lockedIds.has(employee.id)" @change="toggleOne(employee.id, $event)" />
-                    </td>
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">{{ (page - 1) * perPage + index + 1 }}</td>
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">{{ employee.emp_id }}</td>
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">{{ employee.emp_firstname }} {{
-                        employee.emp_lastname }}
-                    </td>
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">{{ employee.nickname || '-' }}</td>
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">{{ employee.department || '-' }}</td>
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">{{ employee.team || '-' }}</td>
-                    <td style="padding:10px;border-bottom:1px solid #f1f1f1">{{ employee.position || '-' }}</td>
-                </tr>
-
-                <tr v-if="!loadingEmployees && pagedEmployees.length === 0">
-                    <td colspan="8" style="padding:14px;text-align:center;color:#777">ไม่พบข้อมูล</td>
-                </tr>
-                <tr v-if="loadingEmployees">
-                    <td colspan="8" style="padding:14px;text-align:center;color:#777">กำลังโหลด...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="table-footer" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+    <div class="guest-toolbar grid gap-3 mt-3 mb-3 md:grid-cols-[1fr,165px,165px,165px,165px] items-center">
+        <!-- Search -->
         <div>
-            แสดง
-            <select v-model.number="perPage">
-                <option :value="10">10</option>
-                <option :value="25">25</option>
-                <option :value="50">50</option>
-            </select>
-            รายการต่อหน้า
+            <SearchBar v-model="searchDraft" class="w-full" placeholder="Search Employee ID / Name / Nickname"
+                @search="applySearch" />
         </div>
-        <div class="pager">
-            <button :disabled="page === 1" @click="page--">‹</button>
-            <span>{{ page }} / {{ totalPages || 1 }}</span>
-            <button :disabled="page === totalPages || totalPages === 0" @click="page++">›</button>
+
+        <!-- Company ID -->
+        <div class="mt-5">
+            <select v-model="filtersDraft.empId" @change="applySearch"
+                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                <option value="">Company ID</option>
+                <option v-for="team in empIdOptions" :key="team" :value="team">{{ team }}</option>
+            </select>
+        </div>
+
+        <!-- Department -->
+        <div class="mt-5">
+            <select v-model="filtersDraft.department" @change="applySearch"
+                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                <option value="">department</option>
+                <option v-for="team in departments" :key="team" :value="team">{{ team }}</option>
+            </select>
+        </div>
+
+        <!-- Team -->
+        <div class="mt-5">
+            <select v-model="filtersDraft.team" @change="applySearch"
+                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                <option value="">Team</option>
+                <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
+            </select>
+        </div>
+
+        <!-- Position -->
+        <div class="mt-5">
+            <select v-model="filtersDraft.position" @change="applySearch"
+                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                <option value="">Position</option>
+                <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
+            </select>
         </div>
     </div>
 
-    <button @click="saveEvent">
-        บันทึกการแก้ไข
-    </button>
+
+    <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
+        :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
+        :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id" :rowClass="rowClass"
+        :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected">
+        <!-- ชื่อเต็ม -->
+        <template #cell-fullname="{ row }">
+            {{ (row.emp_firstname || '') + ' ' + (row.emp_lastname || '') }}
+        </template>
+
+        <!-- ข้อความตอนว่าง -->
+        <template #empty>ไม่พบข้อมูล</template>
+    </DataTable>
+
+
+    <!-- ปุ่มยกเลิก / ยืนยัน -->
+
+    <!-- แถบปุ่ม -->
+    <div class="mt-6 w-full flex justify-between items-center">
+        <!-- ปุ่มยกเลิก (ซ้าย) -->
+        <div>
+            <CancelButton size="md" :disabled="saving" @click="onCancel">
+                Cancel
+            </CancelButton>
+        </div>
+        <div>
+            <!-- ปุ่มบันทึก (ขวา) -->
+            <button type="button" @click="saveEvent" :disabled="saving" class="inline-flex items-center justify-center gap-2
+         rounded-[20px] px-4 py-2 bg-green-600 text-white font-semibold
+         hover:bg-green-700 w-[140px] h-[45px] transition">
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
+                <span>บันทึก</span>
+            </button>
+
+        </div>
+    </div>
+
+    <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
+        :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText" @confirm="alert.onConfirm"
+        @cancel="alert.onCancel" />
+
+
 
 
 </template>
@@ -258,9 +296,16 @@
 <script>
 import axios from 'axios';
 import InputPill from '@/components/Input/InputPill.vue';
+import SearchBar from "@/components/SearchBar.vue";
+import { Icon } from '@iconify/vue'
+import DropdownPill from '@/components/Input/DropdownPill.vue'
+import DataTable from '@/components/DataTable.vue'
+import CancelButton from '@/components/Button/CancelButton.vue'
+import ModalAlert from '@/components/Alert/ModalAlert.vue'
+
 
 export default {
-    components: { InputPill },
+    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert },
     data() { // เก็บ state ของฟอร์มไว้ใน component
         return {
 
@@ -289,8 +334,8 @@ export default {
 
             search: '',
             searchDraft: '', //เก็บค่าที่ผู้ใช้ป้อน ก่อนกด search
-            filters: { department: '', team: '', position: '' }, //เก็บค่าที่เลือก จาก dropdown
-            filtersDraft: { department: '', team: '', position: '' }, //เก็บค่าที่เลือก จาก dropdown ก่อนกด search
+            filters: { department: '', team: '', position: '', empId: '' }, //เก็บค่าที่เลือก จาก dropdown
+            filtersDraft: { department: '', team: '', position: '', empId: '' }, //เก็บค่าที่เลือก จาก dropdown ก่อนกด search
 
             departments: [],
             teams: [],
@@ -300,6 +345,18 @@ export default {
             lockedIds: new Set(), //เก็บข้อมูลคนที่เคยถูกเลือกไว้แล้ว
             page: 1,
             perPage: 10,
+
+            alert: {
+                open: false,
+                type: 'confirm', // success | error | warning | confirm
+                title: '',
+                message: '',
+                showCancel: false,
+                okText: 'OK',
+                cancelText: 'Cancel',
+                onConfirm: null,
+                onCancel: null,
+            },
 
         };
     },
@@ -373,7 +430,18 @@ export default {
                 console.error(err)
                 this.eventTitle = '(โหลดข้อมูลไม่สำเร็จ)'
             }
-        }, pickFiles() { this.$refs.fileInput?.click?.() },
+        },
+        // ซีดแถวที่ล็อกไว้
+        rowClass(row) {
+            return this.lockedIds.has(row.id) ? 'opacity-60' : ''
+        },
+
+        // รับค่าจาก DataTable เวลาเช็ค/ยกเลิกเช็ค
+        onUpdateSelected(nextArr) {
+            const filtered = nextArr.filter(id => !this.lockedIds.has(id))
+            this.selectedIds = new Set(filtered)
+        },
+        pickFiles() { this.$refs.fileInput?.click?.() },
         //<input ref="fileInput" ... style="display:none" /> → ช่อง input hidden ถูกซ่อนตลอด ในส่วน input ใต้ browsefile
 
         // พอผู้ใช้กดปุ่ม "Browse files" → เรียก pickFiles()
@@ -383,6 +451,7 @@ export default {
         // Browser จะเด้ง File Picker (หน้าต่างเลือกไฟล์ของระบบปฏิบัติการ) ขึ้นมาให้ผู้ใช้เลือกไฟล์
 
         // พอเลือกเสร็จ → trigger event @change="onPick" → เรียกฟังก์ชัน onPick(file) มารับไฟล์ต่อเลย
+
 
         onPick(file) { this.addFiles([...file.target.files]); file.target.value = '' },
         // พอรับไฟล์แล้ว ([...file.target.files]) จะแปลงไฟล์จากที่เป็น filelist เป็น array ก่อนส่งให้ add files เพราะ arary ใช้คำสั่งได้เยอะกว่า
@@ -420,7 +489,7 @@ export default {
         removeFile(index) { this.filesNew.splice(index, 1) },
 
         removeExisting(id) { //รับ id ของไฟล์ที่จะลบมา แล้ว  filter(file => file.id === id) คือ วนลูป หา id ในข้อมูลarray ของfilesExisting
-            this.filesExisting = this.filesExisting.filter(file => file.id === id)
+            this.filesExisting = this.filesExisting.filter(file => file.id !== id)
             this.filesDeleted.push(id) //เจอแล้วก็เพิ่มข้อมูล Id ใส่ตัวแปร fileDeleted
         },
         //ส่วนแปลง ขนาดไฟล์
@@ -429,7 +498,11 @@ export default {
         //mb.toFixed(2) = ปัดทศนิยม 2 ตำแหน่ง
         //${(byte / 1024).toFixed(0)} KB ถ้าไฟล์เล็กกว่า 1 MB → จะแปลงเป็น KB แทน
 
-        applySearch() { this.search = this.searchDraft; this.filters = { ...this.filtersDraft }; this.page = 1 },
+        applySearch() {
+            this.search = this.searchDraft
+            this.filters = { ...this.filtersDraft }
+            this.page = 1
+        },
         // this.search = this.searchDraft;           เอาค่าที่พิมพ์ไว้ใน input (searchDraft) → ไปใส่ตัวแปร search
         // this.filters = { ...this.filtersDraft }; เอาค่า department/team/position ที่เลือกชั่วคราว → ไปใส่ filters
         //  this.page = 1;                          รีเซ็ต pagination กลับไปหน้าแรก
@@ -475,48 +548,77 @@ export default {
         },
 
         async saveEvent() {
-            if (!this.eventTitle?.trim()) return alert('กรอกชื่ออีเวนต์ก่อน')
-            try {
-                this.saving = true
-                const id = this.$route.params.id
-                const formData = new FormData()
+            this.openAlert({
+                type: 'confirm',
+                title: 'ARE YOU SURE TO EDIT?',
+                message: 'Are you sure you want to change this?',
+                showCancel: true,
+                okText: 'OK',
+                cancelText: 'Cancel',
+                onConfirm: async () => {
+                    try {
+                        this.saving = true
 
-                formData.append('id', id)
-                formData.append('evn_title', this.eventTitle.trim())
+                        const id = this.$route.params.id
+                        const formData = new FormData()
+                        formData.append('id', id)
+                        formData.append('evn_title', this.eventTitle?.trim() || '')
 
-                // ฟิลด์อื่นๆ (ส่งเฉพาะที่ใช้งานอยู่)
-                if (this.eventCategoryId) formData.append('evn_category_id', this.eventCategoryId)
-                if (this.eventDescription !== undefined) formData.append('evn_description', this.eventDescription ?? '')
-                if (this.eventDate) formData.append('evn_date', this.eventDate)
-                if (this.eventTimeStart) formData.append('evn_timestart', this.eventTimeStart)
-                if (this.eventTimeEnd) formData.append('evn_timeend', this.eventTimeEnd)
-                if (this.eventLocation) formData.append('evn_location', this.eventLocation)
+                        if (this.eventCategoryId)
+                            formData.append('evn_category_id', String(this.eventCategoryId))
 
-                // duration เป็น “นาที”
-                formData.append('evn_duration', String(this.eventDurationMinutes || 0))
+                        formData.append('evn_description', this.eventDescription ?? '')
+                        formData.append('evn_date', this.eventDate)
+                        formData.append('evn_timestart', this.eventTimeStart)
+                        formData.append('evn_timeend', this.eventTimeEnd)
+                        formData.append('evn_location', this.eventLocation)
+                        formData.append('evn_duration', String(this.eventDurationMinutes || 0))
 
-                // ไฟล์
-                this.filesNew.forEach(file => formData.append('attachments[]', file, file.name))
-                this.filesDeleted.forEach(fileId => formData.append('delete_file_ids[]', fileId))
+                        // ✅ ไฟล์ใหม่ (ที่ลาก/เลือกมา)
+                        if (this.filesNew.length > 0) {
+                            this.filesNew.forEach((file) => {
+                                formData.append('attachments[]', file)
+                            })
+                        }
 
-                // แขก (รวมแขกเดิม)
-                Array.from(this.selectedIds).forEach(employeeId => formData.append('employee_ids[]', employeeId))
+                        // ✅ ไฟล์เดิมที่ถูกลบ
+                        if (this.filesDeleted.length > 0) {
+                            this.filesDeleted.forEach((id) => {
+                                formData.append('deleted_ids[]', id)
+                            })
+                        }
 
-                const res = await axios.post('/edit-event', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data', 'Accept': 'application/json' }
-                })
+                        // ✅ Guest ที่เลือก (optional)
+                        // แขก (รวมแขกเดิมที่ล็อก)
+                        this.selectedIdsForSubmit.forEach(empId =>
+                            formData.append('employee_ids[]', empId)
+                        );
 
-                alert(res.data?.message || 'อัปเดตสำเร็จ')
-                this.filesExisting = res.data?.files || []
-                this.filesNew = []
-                this.filesDeleted = []
-            } catch (err) {
-                console.error(err)
-                alert(err.response?.data?.message || 'อัปเดตไม่สำเร็จ')
-            } finally {
-                this.saving = false
-            }
+
+                        const res = await axios.post('/edit-event', formData, {
+                            headers: { 'Accept': 'application/json' },
+                        })
+
+                        this.openAlert({
+                            type: 'success',
+                            title: 'EDIT SUCCESS!',
+                            message: 'This event has been successfully edited.',
+                            okText: 'OK',
+                            onConfirm: () => this.$router.back(),
+                        })
+                    } catch (err) {
+                        this.openAlert({
+                            type: 'error',
+                            title: 'EDIT FAILED!',
+                            message: err.response?.data?.message || 'An error occurred.',
+                        })
+                    } finally {
+                        this.saving = false
+                    }
+                },
+            })
         },
+
 
         calDuration() {
             const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
@@ -535,21 +637,115 @@ export default {
             // ส่วนโชว์ ใน input :
             const hour = Math.floor(diff / 60), //hour เก็บชม ที่แปลง นาที จากdiff เศษปัดลง
                 min = diff % 60;  //min เก็บนาที เอาเศษ
-            this.eventDuration = `${hour}h${min}m`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
+            this.eventDuration = `${hour} Hour ${min} Min`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
+            // เช็คว่า ถ้าไม่มีนาที หรือ ชั่วโมง ให้แสดงแค่ค่าเดียว
+            if (min === 0) {
+                this.eventDuration = `${hour} Hour`;
+            } else if (hour === 0) {
+                this.eventDuration = `${min} Min`;
+            }
+        },
+        onCancel() {
+            if (this.saving || this.filesNew.length) {
+                if (!confirm('ยกเลิกและละทิ้งการแก้ไขทั้งหมด?')) return
+            }
+            this.$router?.back?.()  // หรือ this.$router.push('/events')
+        },
+        openAlert(cfg = {}) {
+            // รีเซ็ต handler เก่า
+            this.alert.onConfirm = null
+            this.alert.onCancel = null
+
+            // รวมค่าที่ส่งเข้ามากับค่า default
+            Object.assign(this.alert, {
+                open: true,
+                type: 'success',
+                title: '',
+                message: '',
+                showCancel: false,
+                okText: 'OK',
+                cancelText: 'Cancel',
+            }, cfg)
         },
     },
     computed: {
+        // โครงคอลัมน์ของ DataTable
+        columns() {
+            return [
+                { key: 'emp_id', label: 'ID', sortable: false, class: 'min-w-[120px]' },
+                { key: 'fullname', label: 'Name', sortable: false }, // เรนเดอร์ผ่าน slot
+                { key: 'nickname', label: 'Nickname', sortable: false, class: 'min-w-[120px]' },
+                { key: 'department', label: 'Department', sortable: false },
+                { key: 'team', label: 'Team', sortable: false },
+                { key: 'position', label: 'Position', sortable: false },
+            ]
+        },
+
+        // DataTable ต้องใช้ array; ของเดิมเก็บเป็น Set
+        selectedIdsArr: {
+            get() { return Array.from(this.selectedIds) },
+            set(arr) {
+                // ป้องกันเลือกคนที่ถูกล็อก
+                this.selectedIds = new Set(arr.filter(id => !this.lockedIds.has(id)))
+            }
+        },
+        empIdOptions() {
+            // ได้เป็น array ของ string เช่น ["E001","E002",...]
+            return [...new Set(this.employees.map(e => e.emp_id).filter(Boolean))];
+        },
+        // กรองด้วย empId เพิ่ม
         filteredEmployees() {
-            const searchData = (this.search || '').toLowerCase() //ถ้า this.search ไม่มีค่า → ใช้ '' (สตริงว่าง) แทน + เปลี่ยนให้เป็นตัวพิมพ์เล็กทั้งหมด
+            const searchData = (this.search || '').toLowerCase()
             return this.employees.filter(employee => {
-                //วนลูปทุก employee () ที่อยู่ใน array this.employees
-                // filter จะคืนพนักงานที่ตรงเงื่อนไขเท่านั้น
                 const matchText = !searchData || `${employee.emp_id} ${employee.emp_firstname} ${employee.emp_lastname} ${employee.nickname || ''}`.toLowerCase().includes(searchData)
                 const matchDept = !this.filters.department || employee.department === this.filters.department
                 const matchTeam = !this.filters.team || employee.team === this.filters.team
                 const matchPos = !this.filters.position || employee.position === this.filters.position
-                return matchText && matchDept && matchTeam && matchPos
+
+                // ถ้าเลือก empId ในดรอปดาวน์ให้บังคับตรง emp_id
+                const matchEmpId = !this.filters.empId || employee.emp_id === this.filters.empId
+
+                return matchText && matchDept && matchTeam && matchPos && matchEmpId
             })
+        },
+        hasAnyFiles() {
+            return (this.filesExisting?.length || 0) + (this.filesNew?.length || 0) > 0
+        },
+        uploadItems() {
+            const existing = (this.filesExisting || []).map(f => ({
+                key: `old-${f.id}`,
+                kind: 'existing',
+                id: f.id,
+                name: f.file_name,
+                url: f.url,
+                size: f.file_size ?? 0,
+            }))
+            const news = (this.filesNew || []).map((f, i) => ({
+                key: `new-${i}`,
+                kind: 'new',
+                index: i,
+                name: f.name,
+                size: f.size ?? 0,
+            }))
+            // ให้ไฟล์เดิมขึ้นก่อน แล้วต่อด้วยไฟล์ใหม่
+            return [...existing, ...news]
+        },
+        // ใช้ตัวนี้ตอนส่งจริง: รวมแขกเดิมที่ล็อก + แขกใหม่ที่เลือก
+        selectedIdsForSubmit() {
+            return Array.from(new Set([...this.lockedIds, ...this.selectedIds]));
+        },
+
+        // v-model ที่ bind กับ DataTable ต้อง “คง” แขกที่ล็อกไว้เสมอ
+        selectedIdsArr: {
+            get() {
+                // ให้ DataTable เห็นว่าเช็ค (รวมล็อกด้วย) เพื่อแสดง checkbox เป็นติ๊ก
+                return Array.from(new Set([...this.lockedIds, ...this.selectedIds]));
+            },
+            set(arr) {
+                // เก็บเฉพาะที่ “ไม่ใช่ล็อก” ลง selectedIds, และบวก lockedIds กลับเข้าไปเสมอ
+                const nonLocked = arr.filter(id => !this.lockedIds.has(id));
+                this.selectedIds = new Set(nonLocked);
+            }
         },
 
         totalPages() {
@@ -606,3 +802,11 @@ export default {
 
 }
 </script>
+<style scoped>
+/* ทำให้ input type="time" ดู “เรียบ” และกลืนกับกล่องพิล */
+.time-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+}
+
+/* ซ่อนปุ่มปฏิทินเดิมของ Chrome/Safari */
+</style>
