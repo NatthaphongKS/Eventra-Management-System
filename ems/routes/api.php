@@ -1,3 +1,4 @@
+
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
@@ -17,14 +18,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']); // ล็อคเอ้าท์
 
     // === Employee ===
-    Route::get('/meta', [EmployeeController::class, 'meta']); //ข้อมูลที่ใช้สร้าง employee
+    Route::get('/meta', [EmployeeController::class, 'meta']); //ข้อมูลvที่ใช้สร้าง employee
     Route::get('/get-employees', [EmployeeController::class, 'index']); // ข้อมูล employee
-    Route::get('/employees', [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
+    Route::get('/employees',     [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']); // soft delete employee
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
     Route::get('/event-info', [EventController::class, 'index']); // ข้อมูล event
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
-    Route::get('/event/{id}', [EventController::class, 'show']);
+    Route::get('/event/{id}',   [EventController::class, 'show']);
     Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
 
 
@@ -39,13 +40,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
     // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
-    Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
+    Route::patch('/event/{id}/deleted',     [EventController::class, 'deleted'])->whereNumber('id');
     Route::post('/event-save', [EventController::class, 'store']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
 
     Route::post('/edit-event', [EventController::class, 'Update']); // บันทึกการแก้ไขอีเว้น
     Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']); // ข้อมูลอีเว้นนั้นๆ อ้างอิงจาก id
-
     Route::get('/events', [EventController::class, 'index']);
 
 
@@ -60,6 +60,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
     Route::put('/employees/{id}', [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
+    Route::put('/employees/{id}/soft-delete', [EmployeeController::class, 'softDelete']); // ลบพนักงานแบบซอฟต์ดีลีท
     Route::get('/employees-meta', [EmployeeController::class, 'meta']);    // รายการตำแหน่ง/แผนก/ทีม
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
     Route::get('/event', [EventController::class, 'index']);
