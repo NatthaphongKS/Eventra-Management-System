@@ -34,6 +34,30 @@ class EventFileSeeder extends Seeder
                 'file_size' => 265659,
                 'uploaded_at' => '2025-08-30 16:28:54',
             ],
+            [
+                'file_event_id' => 4,
+                'file_name' => 'meeting_minutes_2025-09-01.pdf',
+                'file_path' => 'events/4/Xk20sdfQWEasdhJASD9087sadljqweUasd123kL.pdf',
+                'file_type' => 'application/pdf',
+                'file_size' => 189340,
+                'uploaded_at' => '2025-09-01 10:15:32',
+            ],
+            [
+                'file_event_id' => 5,
+                'file_name' => 'training_materials_security_2025-09-03.pdf',
+                'file_path' => 'events/5/FAsd9823asdJkl9087asdLLsdf21ZxcvbnMqw.pdf',
+                'file_type' => 'application/pdf',
+                'file_size' => 245870,
+                'uploaded_at' => '2025-09-03 13:42:11',
+            ],
+            [
+                'file_event_id' => 6,
+                'file_name' => 'annual_plan_presentation_2025-09-05.pdf',
+                'file_path' => 'events/6/Lk9pO0QweKjh213asdMNB45zxcv9087WERtyu.pdf',
+                'file_type' => 'application/pdf',
+                'file_size' => 310452,
+                'uploaded_at' => '2025-09-05 09:58:44',
+            ],
         ]);
     }
 }
