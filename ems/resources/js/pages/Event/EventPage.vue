@@ -7,7 +7,8 @@
                     class="h-11 w-[750px] rounded-full border border-slate-200 bg-white px-3 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200" />
                 <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full
        bg-[#b91c1c] text-white hover:bg-[#991b1b]
-       focus:outline-none focus:ring-2 focus:ring-red-300 cursor-default select-none." @click="applySearch"
+       focus:outline-none focus:ring-2 focus:ring-red-300"
+                    @click="applySearch"
                     aria-label="Search" title="ค้นหา (คลิกหรือกด Enter)">
                     <MagnifyingGlassIcon class="h-5 w-5" />
                 </button>
@@ -16,7 +17,7 @@
             <Filter v-model="filters" :filter-fields="filterFields" button-label="Filter" @apply="page = 1" />
             <EventSort v-model="selectedSort" :options="sortOptions" />
 
-            <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full cursor-default select-none
+            <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full
        bg-[#b91c1c] px-4 font-semibold text-white
        hover:bg-[#991b1b] focus:outline-none
        focus:ring-2 focus:ring-red-300">
@@ -31,9 +32,79 @@
             :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
             :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="pageSize = $event; page = 1"
             @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
-            <template #cell-evn_status="{ value }">
-                <span :class="badgeClass(value)">
-                    {{ value || 'N/A' }}
+
+            <!-- [แก้โดยเอิร์ธ 2025-10-25]: กดได้ทั้งบรรทัด — ครอบทุกเซลล์ (ยกเว้น actions) ให้คลิก/Enter/Space แล้วไป goDetails(row.id) -->
+
+            <template #cell-evn_title="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)"
+                      title="ดูรายละเอียด">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-cat_name="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_date="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_timestart="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_num_guest="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_sum_accept="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
+                </span>
+            </template>
+
+            <template #cell-evn_status="{ row, value }">
+                <span role="button" tabindex="0"
+                      class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+                      @click="goDetails(row.id)"
+                      @keydown.enter.prevent="goDetails(row.id)"
+                      @keydown.space.prevent="goDetails(row.id)">
+                    <span :class="badgeClass(value)">
+                        {{ value || 'N/A' }}
+                    </span>
                 </span>
             </template>
             <!-- ปุ่ม Filter/Sort (ตอนนี้ยัง UI) -->
@@ -85,11 +156,9 @@ import {
     TrashIcon,
 } from '@heroicons/vue/24/outline';
 
-
 axios.defaults.baseURL = '/api'
 axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.withCredentials = true
-
 
 export default {
     // (เปลี่ยน) ลงทะเบียน DataTable
@@ -369,7 +438,7 @@ export default {
                 case 'done': return `${base} bg-[#DCFCE7] text-[#00A73D]`;
                 case 'upcoming': return `${base} bg-[#FFF9C2] text-[#FDC800]`; // (แก้สี)
                 case 'ongoing': return `${base} bg-[#DFF3FE] text-[#0084D1]`;     // (แก้สี)
-                default: return `${base} bg-slate-100 text-slate-700`;      // (แก้สี)
+                default: return `${base} bg-slate-100 text-slate-700`;     // (แก้สี)
             }
         },
 
@@ -377,9 +446,20 @@ export default {
         handleClientSort({ key, order }) {
             this.sortBy = key;
             this.sortOrder = order;
-            this.page = 1; // กลับไปหน้า 1 เมื่อ sort
+            this.page = 1;// กลับไปหน้า 1 เมื่อ sort
             // (อัพเดท selectedSort ด้วย เพื่อให้ UI ของ EventSort ตรงกัน)
             this.selectedSort = this.sortOptions.find(opt => opt.key === key && opt.order === order) || this.selectedSort;
+        },
+
+            // earth: go to event details (Options API)
+        goDetails(id) {
+            // แบบใช้ชื่อ route (ถ้าตั้งชื่อไว้ว่า 'events.show')
+            try {
+            this.$router.push({ name: 'events.show', params: { id: String(id) } })
+            } catch (_) {
+            // fallback: ใช้ path ตรง
+            this.$router.push({ path: `/events/${id}` })
+            }
         },
     }
 };
