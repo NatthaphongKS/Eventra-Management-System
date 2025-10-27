@@ -1,70 +1,56 @@
 <!-- resources/js/components/CategoryEdit.vue -->
 <template>
-  <div
-    v-if="open"
-    class="fixed inset-0 z-20 grid place-items-center bg-black/40 p-4"
-    @click.self="close"
-  >
-    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-      <h3 class="text-xl font-semibold text-gray-900">Edit Category</h3>
+  <div v-if="open" class="fixed inset-0 z-[70] flex items-center justify-center">
+    <!-- Dim background -->
+    <div class="absolute inset-0 bg-black/50" @click.self="close"></div>
 
-      <div class="mt-5 space-y-3">
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">
-            Type name <span class="text-red-600">*</span>
+    <!-- Modal -->
+    <div class="relative w-[762px] h-[412px] rounded-[20px] bg-white p-12 text-left shadow-2xl">
+      <p class="text-3xl font-semibold text-neutral-800 text-left">Edit Category</p>
+
+      <div class="mt-20 space-y-4">
+        <div class="text-left">
+          <label class="mb-2 block text-2xl font-semibold text-neutral-800">
+            Type name <span class="text-red-700">*</span>
           </label>
+
           <input
             v-model.trim="name"
             type="text"
-            placeholder="Ex. สัมมนา"
-            class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-200"
+            placeholder="Ex. สัมนา"
+            :aria-invalid="invalid"
+            class="w-[653px] h-[58px] rounded-2xl border px-4 py-3 text-xl font-semibold outline-none
+                   placeholder-red-300 focus:ring-2 focus:ring-red-200"
+            :class="{
+              'border-neutral-200': !invalid,
+              'border-red-500': invalid
+            }"
             @keyup.enter="submit"
           />
-          <p v-if="showDup" class="mt-2 text-xs text-red-600">
-            มีชื่อนี้อยู่แล้วในรายการ
-          </p>
-          <p v-if="unchanged" class="mt-2 text-xs text-gray-500">
-            ชื่อไม่ได้เปลี่ยนจากเดิม
-          </p>
-        </div>
 
-        <!-- แสดงข้อมูลประกอบ (อ่านอย่างเดียว) -->
-         <!--
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <div>
-            <span class="block text-gray-500">Created by</span>
-            <span class="font-medium text-gray-800">{{ createdBy || "-" }}</span>
-          </div>
-          <div>
-            <span class="block text-gray-500">Created date</span>
-            <span class="font-medium text-gray-800">{{ formatDate(createdAt) }}</span>
-          </div>
+          <!-- ข้อความเตือน -->
+          <p v-if="isEmpty" class="mt-2 text-sm text-red-700">Required field </p>
+          <p v-else-if="unchanged" class="mt-2 text-sm text-red-700">The name hasn’t changed </p>
+          <p v-else-if="showDup" class="mt-2 text-sm text-red-700">This name is already use!</p>
         </div>
-        -->
       </div>
 
-
+      <!-- Actions -->
       <div class="mt-6 flex justify-between">
-        <button
+        <div>
+        <CancelButton
           @click="close"
-          class="inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700"
           :disabled="saving"
-        >
-          ✕ Cancel
-        </button>
-
-        <button
+          class="inline-flex items-center gap-2"
+        /></div>
+        <div>
+        <CreateButton
           @click="submit"
-          class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-          :disabled="!name || showDup || saving"
+          :disabled="saving || isEmpty || unchanged || showDup"
+          class="inline-flex items-center gap-2 "
         >
-          <svg v-if="saving" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-          </svg>
-          <span>Save</span>
-        </button>
+          Edit
+        </CreateButton></div>
       </div>
     </div>
   </div>
@@ -72,14 +58,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import CancelButton from "../../components/CancelButton.vue";
+import CreateButton from "../CreateButton.vue";
 
-/**
- * Props:
- * - open: ควบคุมการเปิด/ปิด modal ผ่าน v-model:open
- * - category: ออบเจ็กต์แถวที่กำลังแก้ไข (ต้องมี id, name, createdBy, createdAt)
- * - isDuplicate: ฟังก์ชันตรวจชื่อซ้ำ (ยกเว้น id ปัจจุบัน) -> ควรส่งจากหน้าแม่
- * - formatDate: ฟังก์ชันฟอร์แมตวันที่ (ใช้ร่วมกับของหน้าแม่เพื่อ UI ตรงกัน)
- */
 type Row = {
   id: number;
   name: string;
@@ -90,8 +71,8 @@ type Row = {
 const props = defineProps<{
   open: boolean;
   category?: Row | null;
+  /** ฟังก์ชันเช็กชื่อซ้ำ (ต้อง exclude id ปัจจุบันเองภายนอก) */
   isDuplicate?: (name: string, currentId?: number) => boolean;
-  formatDate?: (iso?: string | null) => string;
 }>();
 
 const emit = defineEmits<{
@@ -101,32 +82,33 @@ const emit = defineEmits<{
 
 const name = ref("");
 const originalName = ref("");
-const createdBy = ref<string>("-");
-const createdAt = ref<string | null>(null);
 const saving = ref(false);
 
+/* โหลดค่าเดิมเข้ามาเมื่อเปิด modal */
 watch(
   () => props.open,
   (v) => {
     if (v && props.category) {
-      name.value = props.category.name ?? "";
-      originalName.value = props.category.name ?? "";
-      createdBy.value = props.category.createdBy ?? "-";
-      createdAt.value = props.category.createdAt ?? null;
+      const n = props.category.name ?? "";
+      name.value = n;
+      originalName.value = n;
       saving.value = false;
     }
   },
   { immediate: true }
 );
 
+/* --- validations --- */
+const trimmed = computed(() => name.value.trim());
+const isEmpty = computed(() => trimmed.value.length === 0);
+const unchanged = computed(() => trimmed.value === (originalName.value ?? "").trim());
 const showDup = computed(() => {
-  if (!name.value) return false;
-  if (!props.isDuplicate) return false;
-  return props.isDuplicate(name.value, props.category?.id);
+  if (!trimmed.value || !props.isDuplicate || !props.category) return false;
+  return props.isDuplicate(trimmed.value, props.category.id);
 });
+const invalid = computed(() => isEmpty.value || unchanged.value || showDup.value);
 
-const unchanged = computed(() => name.value === originalName.value);
-
+/* --- actions --- */
 function close() {
   if (saving.value) return;
   emit("update:open", false);
@@ -134,28 +116,12 @@ function close() {
 
 function submit() {
   if (!props.category) return;
-  const trimmed = name.value.trim();
-  if (!trimmed) return;
-  if (props.isDuplicate?.(trimmed, props.category.id)) return;
+
+  // กันทุกกรณีผิดปกติ
+  if (invalid.value) return;
 
   saving.value = true;
-  // ไม่เรียก API ที่นี่ — ปล่อยให้หน้าแม่ทำ (สอดคล้องกับ CategoryCreate.vue)
-  emit("submit", { id: props.category.id, name: trimmed });
-  // ปิดจะถูกจัดการหลังหน้าแม่อัปเดตเสร็จ (หรือจะปิดทันทีตรงนี้ก็ได้)
-  // emit("update:open", false);
+  emit("submit", { id: props.category.id, name: trimmed.value });
   saving.value = false;
 }
-
-// fallback ถ้าไม่ส่งมา
-function defaultFormatDate(iso?: string | null) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "-";
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
-}
-
-const formatDate = (iso?: string | null) => (props.formatDate ? props.formatDate(iso) : defaultFormatDate(iso));
 </script>
