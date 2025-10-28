@@ -13,7 +13,7 @@
         <!-- Modal -->
         <transition name="pop">
           <div
-            class="relative max-w-[90vw] text-center shadow-2xl"
+            class="relative max-w-[90vw] w-[350px] h-[350px] text-center shadow-2xl"
             :class="wrapperClass"
           >
             <!-- Icon circle -->
@@ -100,34 +100,34 @@ const iconName = computed(() => {
 
 const iconWrapperClass = computed(() => {
   // success: วงกลมเขียวทึบ 120x120
-  if (props.type === 'success') return 'h-[120px] w-[120px] mt-6'
+  if (props.type === 'success') return 'h-[120px] w-[120px]'
   // confirm: ใหญ่ 144
-  if (props.type === 'confirm') return 'h-[144px] w-[144px]  mt-12'
+  if (props.type === 'confirm') return 'h-[120px] w-[120px]  '
   // อื่นๆ โทนพาสเทล
-  if (props.type === 'error')   return 'h-[120px] w-[120px] bg-red-100 mt-10'
-  if (props.type === 'warning') return 'h-[120px] w-[120px] bg-yellow-100 mt-10'
-  return 'h-[120px] w-[120px] bg-neutral-100 mt-10'
+  if (props.type === 'error')   return 'h-[120px] w-[120px] bg-red-100 '
+  if (props.type === 'warning') return 'h-[120px] w-[120px] bg-yellow-100 '
+  return 'h-[120px] w-[120px] bg-neutral-100 '
 })
 
 const iconClass = computed(() => {
-  if (props.type === 'success') return 'h-[120px] w-[120px] text-green-500' // เช็คสีขาว
-  if (props.type === 'confirm') return 'h-[120px] w-[120px] text-[#FDC800]' // ? สีขาว
-  return 'h-[70px] w-[70px] text-current'
+  if (props.type === 'success') return 'h-[90px] w-[90px] text-green-500' // เช็คสีขาว
+  if (props.type === 'confirm') return 'h-[90px] w-[90px] text-[#FDC800]' // ? สีขาว
+  return 'h-[90px] w-[90px] text-current'
 })
 
 // ---------- Typography ----------
 const titleClass = computed(() => {
   if (props.type === 'success') {
-    return 'mt-6 text-2xl font-extrabold tracking-wide text-neutral-800 uppercase'
+    return 'text-xl font-extrabold tracking-wide text-neutral-800 uppercase'
   }
-  return 'mt-6 text-3xl font-extrabold tracking-[0.02em] text-neutral-800'
+  return 'text-xl font-extrabold tracking-[0.02em] text-neutral-800'
 })
 
 const messageClass = computed(() => {
   if (props.type === 'success') {
-    return 'mx-auto mt-6 mb-10 max-w-[420px] text-base font-medium text-neutral-700'
+    return 'mx-auto  mb-10 max-w-[420px] text-base font-medium text-neutral-700'
   }
-  return 'mx-auto mt-10 max-w-[420px] text-xl font-semibold leading-6 text-neutral-800/90'
+  return 'mt-2 mx-auto max-w-[420px] text-l font-semibold leading-6 text-neutral-800/90'
 })
 
 // ---------- Wrapper / Buttons ----------
@@ -149,7 +149,7 @@ const okBtnClass = computed(() => {
 })
 
 // ช่องว่างปุ่ม
-const actionGapClass = computed(() => (props.type === 'success' ? 'mt-0 gap-0' : 'mt-14 gap-12 sm:gap-20'))
+const actionGapClass = computed(() => (props.type === 'success' ? 'mt-0 gap-0' : 'mt-10 gap-12 sm:gap-20'))
 
 // success ไม่ให้มี Cancel (แม้ parent จะส่งมา)
 const showCancelFinal = computed(() => props.type === 'success' ? false : props.showCancel)
