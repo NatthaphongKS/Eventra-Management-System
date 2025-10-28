@@ -27,6 +27,11 @@ class DepartmentSeeder extends Seeder
             'MakeWebEasy',
             'Chatcone',
             'Developer',
+            'Team Leader', // 15
+            'Development', //16
+            'Quality', //17
+            'Support', //18
+            'Planning', //19
         ];
 
         foreach ($departments as $name) {

@@ -604,12 +604,15 @@ export default {
             try {
                 const res = await axios.get("/event-info");
                 const cats = res.data?.categories || [];
-                this.categories = cats.map((c) => ({
-                    id: c.id,
-                    name: c.cat_name,
+
+                // ✅ ใช้ id / cat_name ตามที่ EventFilter ต้องการ
+                this.categories = cats.map(c => ({
+                    id: String(c.id),
+                    cat_name: c.cat_name
                 }));
+
                 this.catMap = Object.fromEntries(
-                    cats.map((c) => [String(c.id), c.cat_name])
+                    cats.map(c => [String(c.id), c.cat_name])
                 );
             } catch (err) {
                 console.error("fetchCategories error", err);

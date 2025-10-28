@@ -13,6 +13,7 @@ class TeamSeeder extends Seeder
     public function run(): void
     {
         $teams = [
+            'Byteforge',
             'Mobile',
             'Graphic',
             'SMS-SALE&SUPPORT',
