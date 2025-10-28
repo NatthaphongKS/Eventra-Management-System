@@ -13,8 +13,17 @@ class PositionSeeder extends Seeder
     public function run(): void
     {
         $positions = [
-            'Project Manager',
-            'Senior Graphic Designer',
+            'Team Leader', // 1
+            'Planning Manager', // 2
+            'Planning Engineer', // 3
+            'Development Manager', // 4
+            'Development Engineer', // 5
+            'Quality Manager', // 6
+            'Quality Engineer', // 7
+            'Support Manager', // 8
+            'Support Engineer', // 9
+            'Project Manager', // 10
+            'Senior Graphic Designer', // 11
             'Senior Sales Executive',
             'Senior Application Developer',
             'Senior AR Accountant',
