@@ -73,6 +73,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post  ('/categories',        [CategoryController::class, 'store']);
     Route::put   ('/categories/{id}',   [CategoryController::class, 'update']); // หรือ Route::patch(...)
     Route::delete('/categories/{id}',   [CategoryController::class, 'destroy']);
+    Route::get   ('/categoriesAll',        [CategoryController::class, 'details']);
+
 
 });
 
