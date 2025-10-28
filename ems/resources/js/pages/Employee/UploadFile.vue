@@ -46,7 +46,7 @@
                                 : ''" :title="(!file || !!error || uploading)
                                     ? 'Please upload or drop file first'
                                     : ''">
-                            <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
+                            <Button variant="generate" :disabled="!file || !!error || uploading" @click="upload">Generate Data</Button>
                         </div>
                     </div>
 
@@ -109,7 +109,7 @@
         <div class="pb-8">
             <div class="mt-4 flex items-center justify-between">
                 <div class="ml-8">
-                    <CancelButton @click="onCancel" />
+                    <Button variant="cancel" @click="onCancel">Cancel</Button>
                 </div>
 
                 <div class="mr-8" :class="canCreate
@@ -119,7 +119,7 @@
                             : 'pointer-events: none;'" :title="canCreate
                             ? ''
                             : 'Please upload file and click Generate Data first'">
-                    <CreateButton :disabled="!canCreate" @click="onCreate" />
+                    <Button variant="create" :disabled="!canCreate" @click="onCreate">Create</Button>
                 </div>
             </div>
         </div>
@@ -140,9 +140,7 @@ import axios from 'axios'
 import Upload from '@/components/Input/Upload.vue'
 import EmployeeCreateSuccess from '@/components/Alert/Employee/EmployeeCreateSuccess.vue'
 import EmployeeCannotCreate from '@/components/Alert/Employee/EmployeeCannotCreate.vue'
-import CancelButton from '@/components/Button/CancelButton.vue'
-import CreateButton from '@/components/Button/CreateButton.vue'
-import GenerateDataButton from '@/components/Button/GenerateDataButton.vue'
+import Button from '@/components/Button.vue'
 import DataTable from '@/components/DataTable.vue'
 
 const router = useRouter()

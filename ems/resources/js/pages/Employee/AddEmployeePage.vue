@@ -16,7 +16,7 @@
                         </div>
                         <div class="relative md:-translate-x-32">
                             <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
-                            <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
+                            <Button variant="import" @click="goImport">Import</Button>
                         </div>
                     </div>
                     <!-- Success alert -->
@@ -60,7 +60,7 @@
                                 </FormField>
 
                                 <div @click="onCancel">
-                                    <CancelButton />
+                                    <Button variant="cancel">Cancel</Button>
                                 </div>
                             </div>
 
@@ -106,7 +106,7 @@
                                     <button type="submit" :disabled="submitting"
                                         class="bg-transparent border-0 p-0 disabled:opacity-50"
                                         style="all: unset; display: inline-block;">
-                                        <CreateButton :disabled="submitting" />
+                                        <Button variant="create" :disabled="submitting">Create</Button>
                                     </button>
                                 </div>
                             </div>
@@ -129,9 +129,7 @@ import 'sweetalert2/dist/sweetalert2.min.css'
 import FormField from '../../components/Input/FormField.vue'
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
-import ImportButton from '@/components/Button/ImportButton.vue'
-import CreateButton from '@/components/Button/CreateButton.vue'
-import CancelButton from '@/components/Button/CancelButton.vue'
+import Button from '@/components/Button.vue'
 import EmployeeCreateSuccess from '../../components/Alert/Employee/EmployeeCreateSuccess.vue'
 
 const router = useRouter()
