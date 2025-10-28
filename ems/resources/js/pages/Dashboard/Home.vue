@@ -1,7 +1,9 @@
 <template>
-    <div><h2>Home Page </h2></div>
+    <div>
+      <h2 class="text-neutral-800 font-medium text-2xl">Welcome to Dashboard</h2>
+    </div>
     <div> 
-      <h4> นี่คือข้อความจากพี่ PO : รักนะจุ้บๆ ทำเว็บพี่ให้เสร็จด้วย</h4>
+      <h4></h4>
       
     </div>
   </template>
