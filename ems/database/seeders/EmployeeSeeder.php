@@ -155,7 +155,7 @@ class EmployeeSeeder extends Seeder
                 'emp_email' => '66160350@go.buu.ac.th',
                 'emp_phone' => '0866666666',
                 'emp_position_id' => 7, // QE
-                'emp_department_id' => 18,
+                'emp_department_id' => 17,
                 'emp_team_id' => 1,
                 'emp_password' => Hash::make('password'),
                 'emp_permission' => 'enabled',
