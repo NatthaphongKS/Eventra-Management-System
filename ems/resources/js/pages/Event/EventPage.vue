@@ -2,122 +2,71 @@
     <section class="p-0">
         <div class="mt-3 mb-1 flex items-center gap-4">
             <!-- ✅ SearchBar -->
-            <div class="flex-shrink-0 w-[900px]">
-                <SearchBar
-                    v-model="searchInput"
-                    placeholder="Search event..."
-                    @search="applySearch"
-                    class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
-                />
+            <div class="flex flex-1">
+                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch"
+                    class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5" />
             </div>
 
             <!-- ✅ Filter / Sort -->
-            <EventFilter
-                v-model="filters"
-                :categories="categories"
-                :status-options="statusOptions"
-                @update:modelValue="applyFilter"
-                class="mt-6"
-            />
-            <EventSort
-                v-model="selectedSort"
-                :options="sortOptions"
-                @change="onPickSort"
-                class="mt-6"
-            />
+            <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
+                @update:modelValue="applyFilter" class="mt-6" />
+            <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort" class="mt-6" />
             <!-- ✅ Add Button -->
-            <router-link
-                to="/add-event"
-                class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6"
-            >
+            <router-link to="/add-event"
+                class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6">
                 + Add
             </router-link>
         </div>
 
         <!-- ตาราง -->
-        <DataTable
-            :rows="paged"
-            :columns="eventTableColumns"
-            :loading="false"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            :page="page"
-            :pageSize="pageSize"
-            :sortKey="sortBy"
-            :sortOrder="sortOrder"
-            @update:page="page = $event"
-            @update:pageSize="
+        <DataTable :rows="paged" :columns="eventTableColumns" :loading="false" :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
+            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="
                 pageSize = $event;
-                page = 1;
-            "
-            @sort="handleClientSort"
-            row-key="id"
-            :show-row-number="true"
-            class="mt-4"
-        >
+            page = 1;
+            " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                    title="ดูรายละเอียด"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)" title="ดูรายละเอียด">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-cat_name="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_status="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     <span :class="badgeClass(value)">
                         {{ value || "N/A" }}
                     </span>
@@ -125,70 +74,30 @@
             </template>
 
             <template #actions="{ row }">
-                <button
-                    @click="editEvent(row.id)"
-                    class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Edit"
-                >
+                <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
                     <PencilIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <button
-                    @click="openDelete(row.id)"
-                    class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Delete"
-                >
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
                     <TrashIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <router-link
-                    :to="`/EventCheckIn/eveId/${row.id}`"
-                    class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Check-in"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="20px"
-                        viewBox="0 -960 960 960"
-                        width="20px"
-                        fill="currentColor"
-                        class="h-5 w-5 text-neutral-800"
-                    >
+                <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                    title="Check-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor" class="h-5 w-5 text-neutral-800">
                         <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z"
-                        />
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
                     </svg>
                 </router-link>
             </template>
         </DataTable>
 
-        <ModalAlert
-            :open="showModalAsk"
-            type="confirm"
-            title="ARE YOU SURE TO DELETE"
-            message="This wil by deleted permanently. Are you sure?"
-            :show-cancel="true"
-            okText="OK"
-            cancelText="Cancel"
-            @confirm="onConfirmDelete"
-            @cancel="onCancelDelete"
-        />
-        <ModalAlert
-            :open="showModalSuccess"
-            type="success"
-            title="DELETE SUCCESS!"
-            message="We have already deleted event."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmSuccess"
-        />
-        <ModalAlert
-            :open="showModalFail"
-            type="error"
-            title="ERROR!"
-            message="Sorry, Please try again later."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmFail"
-        />
+        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
+            message="This wil by deleted permanently. Are you sure?" :show-cancel="true" okText="OK" cancelText="Cancel"
+            @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
+            message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
+        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
+            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
     </section>
 </template>
 
