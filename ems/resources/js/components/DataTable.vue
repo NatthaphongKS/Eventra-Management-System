@@ -37,7 +37,7 @@
 
                 <tbody>
                     <template v-if="!loading && rows.length > 0">
-                        <tr v-for="(row, index) in rows" :key="row[rowKey] ?? index" class="border-t hover:bg-slate-100"
+                        <tr v-for="(row, index) in rows" :key="row[rowKey] ?? index" class="border-t hover:bg-neutral-100"
                             :class="[
                                 { 'bg-red-100': selectable && selectedSet.has(row[rowKey]) },
                                 rowClass(row),
@@ -67,7 +67,7 @@
                     </template>
 
                     <tr v-if="!loading && rows.length === 0">
-                        <td :colspan="totalColspan" class="px-3 py-6 text-center text-slate-600">
+                        <td :colspan="totalColspan" class="px-3 py-6 text-center text-neutral-700">
                             <slot name="empty"> No data found </slot>
                         </td>
                     </tr>
