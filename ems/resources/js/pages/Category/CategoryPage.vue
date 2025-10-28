@@ -7,10 +7,11 @@
         v-model="searchInput"
         placeholder="Search Category / Created by"
         @search="onSearch"
+        class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
       />
 
       <!-- ✅ ห่อไว้เพื่อจับคลิกรอบนอก -->
-      <div class="relative z-[60]" ref="sortWrap">
+      <div class="relative z-[60] mt-6" ref="sortWrap">
         <SortMenu
           :is-open="sortMenuOpen"
           :options="sortOptions"
@@ -21,7 +22,9 @@
         />
       </div>
 
-      <AddButton @click="openAdd" />
+      <div class="mt-6">
+        <AddButton  @click="openAdd" />
+      </div>
     </div>
 
     <!-- DataTable -->

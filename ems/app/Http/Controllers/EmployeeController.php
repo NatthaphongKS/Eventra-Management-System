@@ -278,20 +278,20 @@ class EmployeeController extends Controller
         return response()->json(['message' => 'Deleted successfully']);
     }
     public function softDelete($id)
-{
-    $emp = Employee::find($id);
+    {
+        $emp = Employee::find($id);
 
-    if (!$emp) {
-        return response()->json(['message' => 'Employee not found'], 404);
+        if (!$emp) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        $emp->emp_delete_status = 'inactive';
+        $emp->emp_delete_at = now();
+        $emp->emp_delete_by = Auth::id();
+        $emp->save();
+
+        return response()->json(['message' => 'Employee soft deleted successfully']);
     }
-
-    $emp->emp_delete_status = 'inactive';
-    $emp->emp_delete_at = now();
-    $emp->emp_delete_by = Auth::id();
-    $emp->save();
-
-    return response()->json(['message' => 'Employee soft deleted successfully']);
-}
 
     public function importBulk(Request $request)
     {
@@ -802,5 +802,75 @@ class EmployeeController extends Controller
             'tm_name' => $team->tm_name,
             'status' => 'created',
         ], 201);
+    }
+    public function checkDuplicate(Request $request)
+    {
+
+        $emp_id = $request->input('emp_id');
+        $emp_phone = $request->input('emp_phone');
+        $emp_email = $request->input('emp_email');
+
+        $dupFields = [];
+
+        // เราจะเช็คเฉพาะพนักงานที่ยัง active (emp_delete_status != 'inactive')
+        // เพื่อไม่ไปชนกับคนที่โดนลบแล้ว ถ้าคุณอยากนับที่ถูกลบด้วย ให้เอา where() ออก
+
+        // --- เช็ค emp_id ---
+        if (!empty($emp_id)) {
+            $exists = Employee::where('emp_id', $emp_id)
+                ->where(function ($q) {
+                    $q->whereNull('emp_delete_status')
+                        ->orWhere('emp_delete_status', '')
+                        ->orWhere('emp_delete_status', 'active');
+                })
+                ->exists();
+
+            if ($exists) {
+                $dupFields[] = 'emp_id';
+            }
+        }
+
+        // --- เช็ค emp_phone ---
+        if (!empty($emp_phone)) {
+            $exists = Employee::where('emp_phone', $emp_phone)
+                ->where(function ($q) {
+                    $q->whereNull('emp_delete_status')
+                        ->orWhere('emp_delete_status', '')
+                        ->orWhere('emp_delete_status', 'active');
+                })
+                ->exists();
+
+            if ($exists) {
+                $dupFields[] = 'emp_phone';
+            }
+        }
+
+        // --- เช็ค emp_email ---
+        if (!empty($emp_email)) {
+            $exists = Employee::where('emp_email', $emp_email)
+                ->where(function ($q) {
+                    $q->whereNull('emp_delete_status')
+                        ->orWhere('emp_delete_status', '')
+                        ->orWhere('emp_delete_status', 'active');
+                })
+                ->exists();
+
+            if ($exists) {
+                $dupFields[] = 'emp_email';
+            }
+        }
+
+        // สร้าง response ตามที่ frontend รออยู่
+        if (count($dupFields) > 0) {
+            return response()->json([
+                'duplicate' => true,
+                'fields' => $dupFields,
+            ], 200);
+        }
+
+        return response()->json([
+            'duplicate' => false,
+            'fields' => [],
+        ], 200);
     }
 }

@@ -517,7 +517,7 @@ export default {
     async fetchCategories() {
       try {
         // ปรับ params ให้ตรง backend ของคุณ เช่น ?withTrashed=1
-        const r = await axios.get('/categoriesDetails', { params: { withTrashed: 1, includeInactive: 1 } });
+        const r = await axios.get('/categoriesAll', { params: { withTrashed: 1, includeInactive: 1 } });
         const arr = Array.isArray(r.data) ? r.data : (r.data?.data ?? []);
         this.Categories = arr.map(this._normCat);
         // สร้าง map
