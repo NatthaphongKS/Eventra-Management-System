@@ -18,6 +18,7 @@ use App\Mail\EventInvitationMail;
 // use App\Mail\EventInvitation; // ถ้ายังใช้ตัวนี้อยู่ให้คงไว้
 use App\Models\Connect;
 use App\Models\File;       // กันชนกับ Facade/File
+use Exception;
 
 class EventController extends Controller
 {
@@ -27,21 +28,21 @@ class EventController extends Controller
      * - Positions/Departments/Teams/Categories: ดึงเฉพาะ active และจัดเรียงชื่อ
      */
 
-     // GET /api/event-info
+    // GET /api/event-info
     public function index()
     {
         // คืนข้อมูลเป็น array ของอีเวนต์
         return response()->json(Event::orderBy('id', 'asc')->get());
     }
-        //คืนชุด employee_ids ของอีเวนต์นั้น
-        public function connectList($id)
+    //คืนชุด employee_ids ของอีเวนต์นั้น
+    public function connectList($id)
     {
         $ids = DB::table('ems_connect')
             ->where('con_event_id', $id)
-            ->where(function($q){
+            ->where(function ($q) {
                 $q->whereNull('con_delete_status')
-                ->orWhere('con_delete_status', '')
-                ->orWhere('con_delete_status', 'active');
+                    ->orWhere('con_delete_status', '')
+                    ->orWhere('con_delete_status', 'active');
             })
             ->pluck('con_employee_id'); // => [1,2,3,...]
 
@@ -82,7 +83,7 @@ class EventController extends Controller
             ->select('id', 'file_name', 'file_path', 'file_size')
             ->orderBy('id', 'asc')
             ->get() //ส่วนดึงข้อมูลจาก DB
-            ->map(function ($f) {//ใช้สร้าง URL ให้ frontend โหลดไฟล์จริง ต้องมี php artisan storage:link
+            ->map(function ($f) { //ใช้สร้าง URL ให้ frontend โหลดไฟล์จริง ต้องมี php artisan storage:link
 
                 //ข้อมูลจาก file_path ก่อน Map { id: 1, file_name: "contract.pdf", file_path: "events/12/contract.pdf", file_size: 120000 }
 
@@ -299,15 +300,24 @@ class EventController extends Controller
     public function eventInfo()
     {
         $employees = Employee::with([
-                'position:id,pst_name',
-                'department:id,dpm_name',
-                'team:id,tm_name',
-            ])
+            'position:id,pst_name',
+            'department:id,dpm_name',
+            'team:id,tm_name',
+        ])
             ->where('emp_delete_status', 'active')
             ->orderBy('id', 'desc')
             ->get([
-                'id','emp_id','emp_prefix','emp_firstname','emp_lastname','emp_nickname',
-                'emp_email','emp_phone','emp_position_id','emp_department_id','emp_team_id'
+                'id',
+                'emp_id',
+                'emp_prefix',
+                'emp_firstname',
+                'emp_lastname',
+                'emp_nickname',
+                'emp_email',
+                'emp_phone',
+                'emp_position_id',
+                'emp_department_id',
+                'emp_team_id'
             ])
             ->map(function (Employee $e) {
                 return [
@@ -320,7 +330,7 @@ class EventController extends Controller
                     'emp_email'        => $e->emp_email,
                     'emp_phone'        => $e->emp_phone,
                     'emp_position_id'  => $e->emp_position_id,
-                    'emp_department_id'=> $e->emp_department_id,
+                    'emp_department_id' => $e->emp_department_id,
                     'emp_team_id'      => $e->emp_team_id,
                     'position_name'    => optional($e->position)->pst_name,
                     'department_name'  => optional($e->department)->dpm_name,
@@ -372,7 +382,7 @@ class EventController extends Controller
                 'evn_date'         => $data['event_date'],
                 'evn_timestart'    => $data['event_timestart'],
                 'evn_timeend'      => $data['event_timeend'],
-                'evn_duration'     => $data['event_duration'] ,
+                'evn_duration'     => $data['event_duration'],
                 'evn_location'     => $data['event_location'],
                 'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
                 'evn_create_by'    => Auth::id(),
@@ -405,7 +415,7 @@ class EventController extends Controller
             // 3) ผูกผู้เข้าร่วม (ems_connect) ผ่านความสัมพันธ์ connects()
             $connectRows = collect($data['employee_ids'])
                 ->unique()
-                ->map(fn ($eid) => [
+                ->map(fn($eid) => [
                     // 'con_event_id' จะถูกใส่อัตโนมัติจากความสัมพันธ์
                     'con_employee_id'   => $eid,
                     'con_answer'        => 'invalid',
@@ -422,7 +432,9 @@ class EventController extends Controller
                 ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
             foreach ($employees as $emp) {
-                if (!$emp->emp_email) { continue; }
+                if (!$emp->emp_email) {
+                    continue;
+                }
                 Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles));
                 // หรือใช้คิว: Mail::to(...)->queue(new EventInvitationMail(...));
             }
@@ -443,95 +455,99 @@ class EventController extends Controller
      * - คืนค่า cat_name และ evn_cat_id (alias ของ evn_category_id) ให้ Vue ใช้งาน
      */
     public function Eventtable(Request $request)
-{
+    {
         // อนุญาตให้ sort ตามชื่อคอลัมน์/alias ที่ select มา
-    $allowSort = [
-        'evn_title'      => 'ems_event.evn_title',
-        'cat_name'       => 'cat_name',
-        'evn_date'       => 'ems_event.evn_date',
-        'evn_duration'   => 'ems_event.evn_duration',
-        'evn_num_guest'  => 'evn_num_guest',
-        'evn_sum_accept' => 'evn_sum_accept',
-        'evn_status'     => 'ems_event.evn_status',
-    ];
+        $allowSort = [
+            'evn_title'      => 'ems_event.evn_title',
+            'cat_name'       => 'cat_name',
+            'evn_date'       => 'ems_event.evn_date',
+            'evn_duration'   => 'ems_event.evn_duration',
+            'evn_num_guest'  => 'evn_num_guest',
+            'evn_sum_accept' => 'evn_sum_accept',
+            'evn_status'     => 'ems_event.evn_status',
+        ];
 
-    $sortBy  = $request->query('sortBy', 'evn_date');
-    $sortDir = strtolower($request->query('sortDir', 'desc')) === 'asc' ? 'asc' : 'desc';
-    $sortCol = $allowSort[$sortBy] ?? 'ems_event.evn_date';
+        $sortBy  = $request->query('sortBy', 'evn_date');
+        $sortDir = strtolower($request->query('sortDir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $sortCol = $allowSort[$sortBy] ?? 'ems_event.evn_date';
 
-    $q = trim((string) $request->query('q', ''));
+        $q = trim((string) $request->query('q', ''));
 
-    // สร้าง subquery สำหรับนับทั้งหมด (active)
-    $subTotal = DB::table('ems_connect')
-        ->selectRaw('COUNT(*)')
-        ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
-        ->where('con_delete_status', 'active');
+        // สร้าง subquery สำหรับนับทั้งหมด (active)
+        $subTotal = DB::table('ems_connect')
+            ->selectRaw('COUNT(*)')
+            ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
+            ->where('con_delete_status', 'active');
 
-    // สร้าง subquery สำหรับนับที่ตอบรับ (active + accept)
-    $subAccept = DB::table('ems_connect')
-        ->selectRaw('COUNT(*)')
-        ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
-        ->where('con_delete_status', 'active')
-        ->where('con_answer', 'accept');
+        // สร้าง subquery สำหรับนับที่ตอบรับ (active + accept)
+        $subAccept = DB::table('ems_connect')
+            ->selectRaw('COUNT(*)')
+            ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
+            ->where('con_delete_status', 'active')
+            ->where('con_answer', 'accept');
 
-    $rows = Event::query()
-        ->leftJoin('ems_categories as c', 'c.id', '=', 'ems_event.evn_category_id')
+        $rows = Event::query()
+            ->leftJoin('ems_categories as c', 'c.id', '=', 'ems_event.evn_category_id')
 
-        // เลือกฟิลด์ + ผูก subquery เป็น alias
-        ->select([
-            'ems_event.id',
-            'ems_event.evn_title',
-            DB::raw('ems_event.evn_category_id as evn_cat_id'),
-            DB::raw('COALESCE(c.cat_name, "") as cat_name'),
-            // 'ems_event.evn_description', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
-            'ems_event.evn_date',
-            'ems_event.evn_timestart',
-            'ems_event.evn_timeend',
-            // 'ems_event.evn_duration', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
-            DB::raw('COALESCE(ems_event.evn_status, "") as evn_status'),
-        ])
-        ->selectSub($subTotal,  'evn_num_guest')
-        ->selectSub($subAccept, 'evn_sum_accept')
+            // เลือกฟิลด์ + ผูก subquery เป็น alias
+            ->select([
+                'ems_event.id',
+                'ems_event.evn_title',
+                DB::raw('ems_event.evn_category_id as evn_cat_id'),
+                DB::raw('COALESCE(c.cat_name, "") as cat_name'),
+                // 'ems_event.evn_description', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
+                'ems_event.evn_date',
+                'ems_event.evn_timestart',
+                'ems_event.evn_timeend',
+                // 'ems_event.evn_duration', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
+                DB::raw('COALESCE(ems_event.evn_status, "") as evn_status'),
+            ])
+            ->selectSub($subTotal,  'evn_num_guest')
+            ->selectSub($subAccept, 'evn_sum_accept')
 
-        // ไม่เอา status = deleted (ไม่ต้องพึ่ง scope ในโมเดล)
-        ->where(function ($w) {
-            $w->whereNull('ems_event.evn_status')
-              ->orWhere('ems_event.evn_status', '!=', 'deleted');
-        })
+            // ไม่เอา status = deleted (ไม่ต้องพึ่ง scope ในโมเดล)
+            ->where(function ($w) {
+                $w->whereNull('ems_event.evn_status')
+                    ->orWhere('ems_event.evn_status', '!=', 'deleted');
+            })
 
-        // ค้นหา
-        ->when($q !== '', function ($builder) use ($q) {
-            $like = '%'.$q.'%';
-            $builder->where(function ($w) use ($like) {
-                $w->where('ems_event.evn_title', 'like', $like)
-                  ->orWhere('ems_event.evn_description', 'like', $like)
-                  ->orWhere('ems_event.evn_status', 'like', $like)
-                  ->orWhere('c.cat_name', 'like', $like);
-            });
-        })
+            // ค้นหา
+            ->when($q !== '', function ($builder) use ($q) {
+                $like = '%' . $q . '%';
+                $builder->where(function ($w) use ($like) {
+                    $w->where('ems_event.evn_title', 'like', $like)
+                        ->orWhere('ems_event.evn_description', 'like', $like)
+                        ->orWhere('ems_event.evn_status', 'like', $like)
+                        ->orWhere('c.cat_name', 'like', $like);
+                });
+            })
 
-        // เรียงตามคอลัมน์ที่อนุญาต (รวม alias จาก selectSub)
-        ->orderBy($sortCol, $sortDir)
-        ->get();
+            // เรียงตามคอลัมน์ที่อนุญาต (รวม alias จาก selectSub)
+            ->orderBy($sortCol, $sortDir)
+            ->get();
 
-    return response()->json($rows);
+        return response()->json($rows);
     }
 
 
     public function deleted($id)
-{
-      // อัปเดตข้อมูล Event ที่มี id ตรงกับ $id โดยเปลี่ยนสถานะเป็น 'deleted'
-    $affected = Event::where('id', $id)->update([
-        'evn_status'     => 'deleted', // เปลี่ยนสถานะเป็น 'deleted'
-        'evn_deleted_at' => Carbon::now(), // เวลาที่ลบ
-        'evn_deleted_by' => Auth::id(), // id ของผู้ลบ
-    ]);
-    // เช็คว่ามีข้อมูลให้แก้ไขหรือไม่
-    if ($affected === 0) {
-        return response()->json(['message' => 'Event not found'], 404);
-    }
-    // ส่งกลับข้อความการลบสำเร็จ
-    return response()->json(['message' => 'Event deleted successfully']);
+    {
+        try {
+            // อัปเดตข้อมูล Event ที่มี id ตรงกับ $id โดยเปลี่ยนสถานะเป็น 'deleted'
+            $affected = Event::where('id', $id)->update([
+                'evn_status'     => 'deleted', // เปลี่ยนสถานะเป็น 'deleted'
+                'evn_deleted_at' => Carbon::now(), // เวลาที่ลบ
+                'evn_deleted_by' => Auth::id(), // id ของผู้ลบ
+            ]);
+            // เช็คว่ามีข้อมูลให้แก้ไขหรือไม่
+            if ($affected === 0) {
+                return response()->json(['message' => 'Event not found'], 404);
+            }
+            // ส่งกลับข้อความการลบสำเร็จ
+            return response()->json(['message' => 'Event deleted successfully']);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Event deleted failed']);
+        }
     }
 
     /**

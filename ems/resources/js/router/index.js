@@ -27,7 +27,7 @@ const routes = [
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
   { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'EditEvent' } },
-  { path: '/EventCheckIn/:id', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
+  { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
   { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event' } },
