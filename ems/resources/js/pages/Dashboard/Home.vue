@@ -48,64 +48,6 @@
       </Button>
       
     </div>
-
-    <!-- Button Testing Section - UI Design Matching -->
-    <div class="ui-button-showcase">
-      <div class="showcase-title">Button Showcase - Design Matching</div>
-      
-      <!-- Top Row Buttons -->
-      <div class="ui-button-row top-row">
-        <Button 
-          variant="ok"
-        >
-          OK
-        </Button>
-        
-        <Button 
-          variant="cancel"
-        >
-          Cancel
-        </Button>
-        
-        <Button 
-          variant="confirm"
-        >
-          Confirm
-        </Button>
-        
-        <Button 
-          variant="create"
-        >
-          Create
-        </Button>
-        
-        <Button 
-          variant="back"
-        >
-          Back
-        </Button>
-      </div>
-
-      <!-- Bottom Row Buttons -->
-      <div class="ui-button-row bottom-row">
-        <Button 
-          variant="add"
-        >
-          Add
-        </Button>
-        
-        <Button 
-          variant="export"
-        >
-          Export
-        </Button>
-        
-        <Button 
-          variant="show-data"
-        >
-          Show Data
-        </Button>
-      </div>
       
       <!-- Export Button Label -->
       <div class="export-label">Export Button</div>
@@ -304,7 +246,6 @@
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
