@@ -31,6 +31,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
 
 
+    Route::post('/check-employee-duplicate', action: [EmployeeController::class, 'checkDuplicate']);
     Route::post('/save-employee', [EmployeeController::class, 'store']); //บันทึก employee
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']); // บันทึก แผนก
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);// บันทึก ตำแหน่ง
