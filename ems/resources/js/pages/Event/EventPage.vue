@@ -134,7 +134,7 @@
 
         </DataTable>
         <ModalAlert :open="showModalAsk" type="confirm" title='ARE YOU SURE TO DELETE'
-            message="This wil by deleted permanently /n Are you sure?" :show-cancel="true" okText="OK"
+            message="This wil by deleted permanently  Are you sure?" :show-cancel="true" okText="OK"
             cancelText="Calcel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
         <ModalAlert :open="showModalSuccess" type="success" title='DELETE SUCCESS!'
             message="We have already deleted event." :show-cancel="false" okText="OK"
@@ -142,7 +142,7 @@
         <ModalAlert :open="showModalFail" type="error" title='ERROR!'
             message="Sorry, Please try again later." :show-cancel="false" okText="OK"
             @confirm="onConfirmFail" />
-            
+
     </section>
 </template>
 
