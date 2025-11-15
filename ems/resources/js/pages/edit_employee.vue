@@ -1,174 +1,176 @@
 <template>
-  <div class="min-screen">
-    <!-- Card หลัก -->
-    <div class="max-w-2xl mx-auto bg-white rounded-2xl p-8 mt-6">
-      <!-- หัวข้อ -->
-      <h2 class="text-lg font-semibold text-gray-800 mb-8 pl-1">
-        Edit New Employee
-      </h2>
+  <div>
+    <header class="mx-auto max-w-[960px] px-4 pt-6">
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      />
+    </header>
 
-      <!-- Loading / Error -->
-      <div v-if="loading" class="py-10 text-center text-gray-500">
-        Loading…
-      </div>
-      <div v-else-if="loadError" class="py-10 text-center text-rose-600">
-        {{ loadError }}
+    <!-- Body -->
+    <div class="px-2 py-0">
+      <!-- Header -->
+      <div class="px-0 md:px-0 pt-1 pb-7">
+        <div class="flex items-center justify-between gap-3">
+          <div class="translate-x-0 md:translate-x-20">
+            <h2 class="text-xl font-semibold text-gray-800">Edit Employee</h2>
+          </div>
+        </div>
       </div>
 
       <!-- Form -->
-      <form v-else class="pb-6 space-y-6" @submit.prevent="save">
-        <!-- Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-          <!-- คำนำหน้า -->
-          <FormField label="Prefix" required>
-            <DropdownPill
-              v-model="form.emp_prefix"
-              :options="prefixes"
-              placeholder="Select prefix"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- แผนก -->
-          <FormField label="Department" required>
-            <DropdownPill
-              v-model="form.emp_department_id"
-              :options="departments"
-              placeholder="Select department"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- ชื่อจริง -->
-          <FormField label="First Name" required>
-            <InputPill
-              v-model="form.emp_firstname"
-              placeholder="Ex.John"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- ทีม -->
-          <FormField label="Team" required>
-            <DropdownPill
-              v-model="form.emp_team_id"
-              :options="teams"
-              placeholder="Select team"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- นามสกุล -->
-          <FormField label="Last Name" required>
-            <InputPill
-              v-model="form.emp_lastname"
-              placeholder="Ex.Doe"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- ตำแหน่ง -->
-          <FormField label="Position" required>
-            <DropdownPill
-              v-model="form.emp_position_id"
-              :options="positions"
-              placeholder="Select position"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- ชื่อเล่น -->
-          <FormField label="Nickname">
-            <InputPill
-              v-model="form.emp_nickname"
-              placeholder="Ex.Beam"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- อีเมล -->
-          <FormField label="Email" required>
-            <InputPill
-              v-model="form.emp_email"
-              type="email"
-              placeholder="Ex.user@mail.com"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- เบอร์โทร -->
-          <FormField label="Phone" required>
-            <InputPill
-              v-model="form.emp_phone"
-              inputmode="numeric"
-              placeholder="098xxxxxxx"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- รหัสพนักงาน -->
-          <FormField label="Employee ID" required>
-            <InputPill
-              v-model="form.emp_id"
-              placeholder="Ex.CN707008"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- สิทธิ์การใช้งาน -->
-          <FormField label="Permission" required>
-            <DropdownPill
-              v-model="form.emp_permission"
-              :options="permissions"
-              placeholder="Select permission"
-              class="h-11"
-            />
-          </FormField>
-
-          <!-- รหัสผ่าน -->
-          <FormField label="Password">
-            <InputPill
-              v-model="form.password"
-              type="password"
-              placeholder="*******"
-              class="h-11"
-            />
-          </FormField>
-        </div>
-
-        <!-- ปุ่ม -->
-        <div class="flex items-center justify-between pt-6">
-          <button
-            type="button"
-            @click="$router.back()"
-            class="inline-flex items-center gap-2 rounded-full min-w-[120px] justify-center py-2.5 text-sm font-semibold text-white bg-red-700 border border-transparent hover:bg-red-800 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300"
+      <div class="max-w-[1080px] mx-auto px-4 md:px-8">
+        <form @submit.prevent="save">
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between"
           >
-            ✕ Cancel
-          </button>
+            <!-- ซ้าย -->
+            <div class="flex flex-col gap-5">
+              <FormField label="Prefix" required class="max-w-[220px]">
+                <DropdownPill
+                  v-model="form.emp_prefix"
+                  :options="prefixes"
+                  placeholder="Select prefix"
+                  class="h-11"
+                />
+              </FormField>
 
-          <button
-            type="submit"
-            :disabled="saving"
-            class="inline-flex items-center gap-2 rounded-full bg-green-600 min-w-[120px] justify-center py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-          >
-            {{ saving ? "Saving…" : "Confirm" }}
-          </button>
-        </div>
+              <FormField label="First Name" required>
+                <InputPill
+                  v-model="form.emp_firstname"
+                  placeholder="Ex. John"
+                  class="h-11 w-full"
+                />
+              </FormField>
 
-        <!-- ข้อความแจ้ง -->
-        <p v-if="saveError" class="text-rose-600 text-sm pt-2">
-          {{ saveError }}
-        </p>
-        <p v-if="saveDone" class="text-emerald-600 text-sm pt-2">
+              <FormField label="Last Name" required>
+                <InputPill
+                  v-model="form.emp_lastname"
+                  placeholder="Ex. Doe"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Nickname">
+                <InputPill
+                  v-model="form.emp_nickname"
+                  placeholder="Ex. Beam"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Phone" required>
+                <InputPill
+                  v-model="form.emp_phone"
+                  inputmode="numeric"
+                  placeholder="098xxxxxxx"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Employee ID" required>
+                <InputPill
+                  v-model="form.emp_id"
+                  placeholder="Ex. CN707008"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <!-- ปุ่ม Cancel -->
+              <div class="pt-2">
+                <button
+                  type="button"
+                  @click="$router.back()"
+                  class="inline-flex items-center gap-2 rounded-full min-w-[120px] justify-center py-2.5 text-sm font-semibold text-white bg-red-700 hover:bg-red-800 focus:ring-2 focus:ring-red-300"
+                >
+                  ✕ Cancel
+                </button>
+              </div>
+            </div>
+
+            <!-- ขวา -->
+            <div class="flex flex-col gap-5">
+              <FormField label="Department" required>
+                <DropdownPill
+                  v-model="form.emp_department_id"
+                  :options="departments"
+                  placeholder="Select department"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Team" required>
+                <DropdownPill
+                  v-model="form.emp_team_id"
+                  :options="teams"
+                  placeholder="Select team"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Position" required>
+                <DropdownPill
+                  v-model="form.emp_position_id"
+                  :options="positions"
+                  placeholder="Select position"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Email" required>
+                <InputPill
+                  v-model="form.emp_email"
+                  type="email"
+                  placeholder="Ex.user@mail.com"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Password">
+                <InputPill
+                  v-model="form.password"
+                  type="password"
+                  placeholder="*******"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <FormField label="Permission" required>
+                <DropdownPill
+                  v-model="form.emp_permission"
+                  :options="permissions"
+                  placeholder="Select permission"
+                  class="h-11 w-full"
+                />
+              </FormField>
+
+              <!-- ปุ่ม Confirm -->
+              <div class="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  :disabled="saving"
+                  class="inline-flex items-center gap-2 rounded-full bg-green-600 min-w-[120px] justify-center py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  {{ saving ? "Saving…" : "Confirm" }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- ✅ Alert -->
+        <p v-if="saveError" class="text-rose-600 text-sm pt-4">{{ saveError }}</p>
+        <p v-if="saveDone" class="text-emerald-600 text-sm pt-4">
           Updated successfully.
         </p>
-        <p v-if="noChange" class="text-amber-600 text-sm pt-2">
+        <p v-if="noChange" class="text-amber-600 text-sm pt-4">
           Please make some changes.
         </p>
-      </form>
+      </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from "vue";
@@ -254,14 +256,10 @@ async function save() {
 
   try {
     const current = { ...form.value };
-    if (current.password === "*******") {
-      delete current.password;
-    }
+    if (current.password === "*******") delete current.password;
 
     const compareOriginal = { ...original };
-    if (compareOriginal.password === "*******") {
-      delete compareOriginal.password;
-    }
+    if (compareOriginal.password === "*******") delete compareOriginal.password;
 
     if (JSON.stringify(current) === JSON.stringify(compareOriginal)) {
       noChange.value = true;

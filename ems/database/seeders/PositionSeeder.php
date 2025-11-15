@@ -2,24 +2,28 @@
 
 namespace Database\Seeders;
 
-use App\Models\Employee;
-use App\Models\Team;
-use App\Models\Department;
-use App\Models\Position;
-use App\Models\Category;
-use App\Models\Company;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 class PositionSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-
         $positions = [
-            'Project Manager',
-            'Senior Graphic Designer',
+            'Team Leader', // 1
+            'Planning Manager', // 2
+            'Planning Engineer', // 3
+            'Development Manager', // 4
+            'Development Engineer', // 5
+            'Quality Manager', // 6
+            'Quality Engineer', // 7
+            'Support Manager', // 8
+            'Support Engineer', // 9
+            'Project Manager', // 10
+            'Senior Graphic Designer', // 11
             'Senior Sales Executive',
             'Senior Application Developer',
             'Senior AR Accountant',
@@ -101,7 +105,5 @@ class PositionSeeder extends Seeder
                 'pst_delete_status' => 'active',
             ]);
         }
-
-
     }
 }

@@ -1,5 +1,8 @@
 <?php
-
+/*
+Model : Connect
+Edit by : Chitdanai
+*/
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +19,7 @@ class Connect extends Model
         'con_answer',
         'con_reason',
         'con_delete_status',
+        'con_checkin_status',
     ];
 
     public function event()
