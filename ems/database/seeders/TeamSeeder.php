@@ -2,21 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\Employee;
-use App\Models\Team;
-use App\Models\Department;
-use App\Models\Position;
-use App\Models\Category;
-use App\Models\Company;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 class TeamSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $teams = [
+            'Byteforge',
             'Mobile',
             'Graphic',
             'SMS-SALE&SUPPORT',
@@ -53,6 +50,5 @@ class TeamSeeder extends Seeder
                 'tm_delete_status' => 'active',
             ]);
         }
-
     }
 }

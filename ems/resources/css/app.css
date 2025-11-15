@@ -2,10 +2,136 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ใส่ของคุณต่อจากนี้ได้ */
+/* ===== ฟอนต์พื้นฐาน ===== */
 @layer base {
   :root {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* ใช้ Poppins */
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
-  html { font-family: var(--font-sans); }
+  html {
+    font-family: var(--font-sans);
+  }
+}
+
+
+/* ===== Pagination ===== */
+@layer components {
+
+  /* ปุ่มลูกศร */
+  .pg-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;      /* ขนาดปุ่ม 40px */
+    height: 2.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity .15s ease;
+  }
+  .pg-arrow:hover { opacity: 0.8; }
+  .pg-arrow[disabled] { opacity: 0.3; cursor: not-allowed; }
+
+  .pg-arrow svg {
+    width: 2rem;
+    height: 2rem;
+    display: block;
+  }
+
+  .pg-arrow svg path {
+    fill: #b91c1c;        /* สีแดง */
+    stroke: #e5e7eb;      /* ขอบเทา */
+    stroke-width: 0.8;
+
+    /* ===== ใช้งานจริง (หัวคม ไม่มน) ===== */
+    stroke-linejoin: miter;   /* มุมคมเป็นสัน */
+    stroke-miterlimit: 10;    /* กันมุมแตก/บิ่น */
+    stroke-linecap: butt;     /* ปลายเส้นตรง */
+    shape-rendering: crispEdges; /* เรนเดอร์คมบนจอบางแบบ */
+
+    /* ===== ปิดการทำงาน (ไม่ใช้ แต่เก็บไว้เผื่อกลับมา) ===== */
+    /* stroke-linejoin: round;   ทำหัวโค้งมน */
+    /* stroke-linecap: round;    ปลายเส้นมน */
+  }
+
+  /* ปุ่มหมายเลข */
+  .pg-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+    border: 2px solid #b91c1c;
+    background: #fff;
+    color: #b91c1c;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 0.5rem;
+    cursor: pointer;
+    transition: background-color .15s ease;
+  }
+  .pg-num:hover { background-color: #fef2f2; }
+
+  /* ปุ่มหมายเลขที่เลือกอยู่ */
+  .pg-active {
+    background-color: #b91c1c;
+    color: #fff;
+    border-color: #b91c1c;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  /* จุดคั่น */
+  .pg-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.25rem;
+  }
+  .pg-ellipsis .dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 9999px;
+    background-color: #b91c1c;
+    display: inline-block;
+  }
+  /* ปุ่มล้วน ซ่อน caret */
+.pg-num,
+.pg-arrow,
+.pg-num * {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  caret-color: transparent;
+}
+
+ /* โฟกัสแบบคีย์บอร์ดเท่านั้น */
+.pg-num:focus { outline: none; }
+.pg-arrow:focus { outline: none; }
+.pg-num:focus-visible,
+.pg-arrow:focus-visible {
+  outline: 2px solid #fecaca; /* เทียบ tailwind: rose-200 */
+  outline-offset: 2px;
+}
+
+/* Polygon 2 */
+/*
+box-sizing: border-box;
+
+position: absolute;
+height: 39px;
+left: 87.81%;
+right: 0.62%;
+top: calc(50% - 39px/2 + 2px);
+
+background: #BA0C16;
+border: 1px solid #E9E9E9;
+border-radius: 5px;
+transform: matrix(0, -1, -1, 0, 0, 0);
+*/
+
 }

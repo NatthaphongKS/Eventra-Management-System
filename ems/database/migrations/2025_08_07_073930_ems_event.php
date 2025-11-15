@@ -36,7 +36,7 @@ return new class extends Migration
             $table->timestamp('evn_created_at')->useCurrent();
             $table->timestamp('evn_deleted_at')->nullable();
             $table->foreignId('evn_deleted_by')->nullable()->constrained('ems_employees')->nullOnDelete();
-            $table->enum('evn_status', ['upcoming','done','deleted'])->default('upcoming');
+            $table->enum('evn_status', ['upcoming','ongoing','done','deleted'])->default('upcoming');
         });
 
         Schema::create('ems_connect', function (Blueprint $table) {
