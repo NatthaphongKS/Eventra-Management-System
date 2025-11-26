@@ -230,7 +230,7 @@ async function upload() {
 
         error.value = mapped.length
             ? ''
-            : 'ไฟล์อ่านได้ แต่ไม่พบแถวข้อมูลหลังหัวตาราง'
+            : 'ไม่พบแถวข้อมูลหลังหัวตาราง'
     } catch (e) {
         console.error(e)
         error.value = 'ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบข้อมูล'
