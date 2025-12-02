@@ -1,25 +1,40 @@
-
 services:
-  # App (รวม Apache + PHP + Laravel Code + Vue Build ไว้หมดแล้ว)
+  # 1. App (Laravel + Apache + Vue)
   app:
-    build: .                # สำคัญ! สั่งให้สร้าง Image จาก Dockerfile ในเครื่องนี้
+    build: .
     container_name: ems_app
     restart: unless-stopped
     ports:
-      - "7080:80"           # เข้าเว็บผ่าน http://ip-server:7080
+      - "7080:80"
     volumes:
-      - ./.env:/var/www/html/.env  # Map แค่ .env เพื่อให้ Config ตรงกับ Server
+      - ./.env:/var/www/html/.env
+    # ตั้งค่าให้ App รู้จัก Database ตัวข้างล่างนี้
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db                  # ใช้ชื่อ service 'db' ในการคุยกันภายใน
+      DB_PORT: 7336                # ภายในคุยกันที่ port มาตรฐาน
+      DB_DATABASE: Byteforge       # ชื่อ DB ที่คุณต้องการ
+      DB_USERNAME: Byteforge       # User ที่คุณต้องการ
+      DB_PASSWORD: Byteforge_Secret2307 # Password ที่คุณต้องการ
     networks:
       - appnet
+    depends_on:
+      - db
 
-  # Database (MySQL)
+  # 2. Database (สร้างขึ้นมาใหม่ตามสเปคคุณ)
   db:
     image: mysql:8.0
     container_name: ems_db
     restart: unless-stopped
+    # เปิด Port 7306 ตามที่คุณต้องการ (เข้าผ่าน 10.80.7.17:7306 ได้ถ้าเครื่องนี้คือ IP นั้น)
+    ports:
+      - "7306:7336"
+    # ตั้งค่ารหัสผ่านตอนสร้างครั้งแรก
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: Byteforge
+      MYSQL_USER: Byteforge
+      MYSQL_PASSWORD: Byteforge_Secret2307
+      MYSQL_ROOT_PASSWORD: Byteforge_Secret2307
     volumes:
       - dbdata:/var/lib/mysql
     networks:
