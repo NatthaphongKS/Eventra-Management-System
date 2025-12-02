@@ -12,7 +12,7 @@ services:
     environment:
       DB_CONNECTION: mysql
       DB_HOST: db                  # ใช้ชื่อ service 'db' ในการคุยกันภายใน
-      DB_PORT: 7336                # ภายในคุยกันที่ port มาตรฐาน
+      DB_PORT: 3306               # ภายในคุยกันที่ port มาตรฐาน
       DB_DATABASE: Byteforge       # ชื่อ DB ที่คุณต้องการ
       DB_USERNAME: Byteforge       # User ที่คุณต้องการ
       DB_PASSWORD: Byteforge_Secret2307 # Password ที่คุณต้องการ
@@ -28,7 +28,7 @@ services:
     restart: unless-stopped
     # เปิด Port 7306 ตามที่คุณต้องการ (เข้าผ่าน 10.80.7.17:7306 ได้ถ้าเครื่องนี้คือ IP นั้น)
     ports:
-      - "7306:7336"
+      - "7306:3306"
     # ตั้งค่ารหัสผ่านตอนสร้างครั้งแรก
     environment:
       MYSQL_DATABASE: Byteforge
