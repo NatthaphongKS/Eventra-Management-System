@@ -1,4 +1,4 @@
-version: '3'
+
 services:
   # App (รวม Apache + PHP + Laravel Code + Vue Build ไว้หมดแล้ว)
   app:
