@@ -1,29 +1,34 @@
+version: '3'
 services:
+  # App (รวม Apache + PHP + Laravel Code + Vue Build ไว้หมดแล้ว)
   app:
-    image: php:8.2-apache
-    container_name: ems_laravel_app
-    ports: ["7080:80"]
+    build: .                # สำคัญ! สั่งให้สร้าง Image จาก Dockerfile ในเครื่องนี้
+    container_name: ems_app
+    restart: unless-stopped
+    ports:
+      - "7080:80"           # เข้าเว็บผ่าน http://ip-server:7080
     volumes:
-      - ./.env:/var/www/html/.env
-    environment:
-      APACHE_DOCUMENT_ROOT: /var/www/html/public
-    depends_on: [node]
-    networks: [appnet]
+      - ./.env:/var/www/html/.env  # Map แค่ .env เพื่อให้ Config ตรงกับ Server
+    networks:
+      - appnet
 
-  node:
-    image: node:20
-    container_name: ems_vite_dev
-    working_dir: /app
-    command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 5173"
-    ports: ["5173:5173"]
+  # Database (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: ems_db
+    restart: unless-stopped
     environment:
-      CHOKIDAR_USEPOLLING: "true"
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - ./:/app
-    networks: [appnet]
-
-volumes:
-  dbdata:
+      - dbdata:/var/lib/mysql
+    networks:
+      - appnet
 
 networks:
   appnet:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
