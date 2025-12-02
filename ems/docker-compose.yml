@@ -4,7 +4,7 @@ services:
     container_name: ems_laravel_app
     ports: ["7080:80"]
     volumes:
-      - ./:/var/www/html
+      - ./.env:/var/www/html/.env
     environment:
       APACHE_DOCUMENT_ROOT: /var/www/html/public
     depends_on: [node]
