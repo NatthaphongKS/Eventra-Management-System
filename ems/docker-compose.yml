@@ -23,7 +23,7 @@ services:
 
   # 2. Database (สร้างขึ้นมาใหม่ตามสเปคคุณ)
   db:
-    image: mysql:8.0
+    image: mariadb:10.6
     container_name: ems_db
     restart: unless-stopped
     # เปิด Port 7306 ตามที่คุณต้องการ (เข้าผ่าน 10.80.7.17:7306 ได้ถ้าเครื่องนี้คือ IP นั้น)
