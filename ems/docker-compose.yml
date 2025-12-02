@@ -2,7 +2,7 @@ services:
   app:
     image: php:8.2-apache
     container_name: ems_laravel_app
-    ports: ["8080:80"]
+    ports: ["7080:80"]
     volumes:
       - ./:/var/www/html
     environment:
