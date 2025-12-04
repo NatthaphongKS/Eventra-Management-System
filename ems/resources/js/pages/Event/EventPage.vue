@@ -2,20 +2,18 @@
     <section class="p-0">
         <div class="mt-3 mb-1 flex items-center gap-4">
             <!-- ✅ SearchBar -->
-            <div class="flex-shrink-0 w-[900px]">
+            <div class="flex flex-1">
                 <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch"
-                    class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5" />
+                    class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5" />
             </div>
 
             <!-- ✅ Filter / Sort -->
             <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                @update:modelValue="applyFilter" />
-            <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort" />
+                @update:modelValue="applyFilter" class="mt-6" />
+            <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort" class="mt-6" />
             <!-- ✅ Add Button -->
-            <router-link to="/add-event" class="ml-auto inline-flex h-11 items-center rounded-full
-        bg-[#b91c1c] px-4 font-semibold text-white
-        hover:bg-[#991b1b] focus:outline-none
-        focus:ring-2 focus:ring-red-300">
+            <router-link to="/add-event"
+                class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6">
                 + Add
             </router-link>
         </div>
@@ -23,8 +21,10 @@
         <!-- ตาราง -->
         <DataTable :rows="paged" :columns="eventTableColumns" :loading="false" :total-items="sorted.length"
             :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
-            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="pageSize = $event; page = 1"
-            @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
+            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="
+                pageSize = $event;
+            page = 1;
+            " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
                 <span role="button" tabindex="0"
@@ -68,7 +68,7 @@
                     @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
                     @keydown.space.prevent="goDetails(row.id)">
                     <span :class="badgeClass(value)">
-                        {{ value || 'N/A' }}
+                        {{ value || "N/A" }}
                     </span>
                 </span>
             </template>
@@ -92,8 +92,8 @@
         </DataTable>
 
         <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
-            message="This wil by deleted permanently /n Are you sure?" :show-cancel="true" okText="OK"
-            cancelText="Calcel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+            message="This wil by deleted permanently. Are you sure?" :show-cancel="true" okText="OK" cancelText="Cancel"
+            @confirm="onConfirmDelete" @cancel="onCancelDelete" />
         <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
             message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
@@ -109,7 +109,11 @@ import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
 
-import { MagnifyingGlassIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import {
+    MagnifyingGlassIcon,
+    PencilIcon,
+    TrashIcon,
+} from "@heroicons/vue/24/outline";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -138,18 +142,83 @@ export default {
 
             sortBy: "evn_status",
             sortOrder: "asc",
-            selectedSort: { id: "status_asc", key: "evn_status", order: "asc", type: "custom" },
+            selectedSort: {
+                id: "status_asc",
+                key: "evn_status",
+                order: "asc",
+                type: "custom",
+            },
             sortOptions: [
-                { id: "title_asc", label: "ชื่องาน A–Z", key: "evn_title", order: "asc", type: "text" },
-                { id: "title_desc", label: "ชื่องาน Z–A", key: "evn_title", order: "desc", type: "text" },
-                { id: "invited_desc", label: "จำนวนคนเชิญมากสุด", key: "evn_num_guest", order: "desc", type: "number" },
-                { id: "invited_asc", label: "จำนวนคนเชิญน้อยสุด", key: "evn_num_guest", order: "asc", type: "number" },
-                { id: "accepted_desc", label: "จำนวนคนเข้าร่วมมากสุด", key: "evn_sum_accept", order: "desc", type: "number" },
-                { id: "accepted_asc", label: "จำนวนคนเข้าร่วมน้อยสุด", key: "evn_sum_accept", order: "asc", type: "number" },
-                { id: "date_desc", label: "วันที่จัดงานใหม่สุด", key: "evn_date", order: "desc", type: "date" },
-                { id: "date_asc", label: "วันที่จัดงานเก่าสุด", key: "evn_date", order: "asc", type: "date" },
-                { id: "status_asc", label: "สถานะ (Ongoing → Done)", key: "evn_status", order: "asc", type: "custom" },
-                { id: "status_desc", label: "สถานะ (Done → Ongoing)", key: "evn_status", order: "desc", type: "custom" },
+                {
+                    id: "title_asc",
+                    label: "ชื่องาน A–Z",
+                    key: "evn_title",
+                    order: "asc",
+                    type: "text",
+                },
+                {
+                    id: "title_desc",
+                    label: "ชื่องาน Z–A",
+                    key: "evn_title",
+                    order: "desc",
+                    type: "text",
+                },
+                {
+                    id: "invited_desc",
+                    label: "จำนวนคนเชิญมากสุด",
+                    key: "evn_num_guest",
+                    order: "desc",
+                    type: "number",
+                },
+                {
+                    id: "invited_asc",
+                    label: "จำนวนคนเชิญน้อยสุด",
+                    key: "evn_num_guest",
+                    order: "asc",
+                    type: "number",
+                },
+                {
+                    id: "accepted_desc",
+                    label: "จำนวนคนเข้าร่วมมากสุด",
+                    key: "evn_sum_accept",
+                    order: "desc",
+                    type: "number",
+                },
+                {
+                    id: "accepted_asc",
+                    label: "จำนวนคนเข้าร่วมน้อยสุด",
+                    key: "evn_sum_accept",
+                    order: "asc",
+                    type: "number",
+                },
+                {
+                    id: "date_desc",
+                    label: "วันที่จัดงานใหม่สุด",
+                    key: "evn_date",
+                    order: "desc",
+                    type: "date",
+                },
+                {
+                    id: "date_asc",
+                    label: "วันที่จัดงานเก่าสุด",
+                    key: "evn_date",
+                    order: "asc",
+                    type: "date",
+                },
+                {
+                    id: "status_asc",
+                    label: "สถานะ (Ongoing → Done)",
+                    key: "evn_status",
+                    order: "asc",
+                    type: "custom",
+                },
+                {
+                    id: "status_desc",
+                    label: "สถานะ (Done → Ongoing)",
+                    key: "evn_status",
+                    order: "desc",
+                    type: "custom",
+                },
             ],
 
             page: 1,
@@ -159,13 +228,54 @@ export default {
             _appliedFlt: null,
 
             eventTableColumns: [
-                { key: "evn_title", label: "Event", class: "text-left", headerClass: "w-[450px]", cellClass: "pl-3 text-slate-800 font-medium truncate", sortable: true },
-                { key: "cat_name", label: "Category", class: "text-left", headerClass: "pl-2", cellClass: "pl-3", sortable: true },
-                { key: "evn_date", label: "Date (D/M/Y)", class: "w-[120px] text-center whitespace-nowrap", format: this.formatDate, sortable: true },
-                { key: "evn_timestart", label: "Time", class: "w-[110px] text-center whitespace-nowrap justify-center", cellClass: "justify-center", format: (v, r) => this.timeText(v, r.evn_timeend) },
-                { key: "evn_num_guest", label: "Invited", class: "w-20 text-center", sortable: true },
-                { key: "evn_sum_accept", label: "Accepted", class: "w-20 text-center", sortable: true },
-                { key: "evn_status", label: "Status", class: "text-center", sortable: true },
+                {
+                    key: "evn_title",
+                    label: "Event",
+                    class: "text-left",
+                    headerClass: "w-[450px]",
+                    cellClass: "pl-3 text-slate-800 font-medium truncate",
+                    sortable: true,
+                },
+                {
+                    key: "cat_name",
+                    label: "Category",
+                    class: "text-left",
+                    headerClass: "pl-2",
+                    cellClass: "pl-3",
+                    sortable: true,
+                },
+                {
+                    key: "evn_date",
+                    label: "Date (D/M/Y)",
+                    class: "w-[120px] text-center whitespace-nowrap",
+                    format: this.formatDate,
+                    sortable: true,
+                },
+                {
+                    key: "evn_timestart",
+                    label: "Time",
+                    class: "w-[110px] text-center whitespace-nowrap justify-center",
+                    cellClass: "justify-center",
+                    format: (v, r) => this.timeText(v, r.evn_timeend),
+                },
+                {
+                    key: "evn_num_guest",
+                    label: "Invited",
+                    class: "w-20 text-center",
+                    sortable: true,
+                },
+                {
+                    key: "evn_sum_accept",
+                    label: "Accepted",
+                    class: "w-20 text-center",
+                    sortable: true,
+                },
+                {
+                    key: "evn_status",
+                    label: "Status",
+                    class: "text-center",
+                    sortable: true,
+                },
             ],
             showModalAsk: false,
             showModalSuccess: false,
@@ -179,31 +289,49 @@ export default {
         { label: "Upcoming", value: "upcoming" },
     ],
 
-
     async created() {
         await Promise.all([this.fetchEvent(), this.fetchCategories()]);
     },
 
     computed: {
         filterFields() {
-            const categoryOptions = this.categories.map(c => ({ label: c.cat_name, value: String(c.id) }));
+            const categoryOptions = this.categories.map((c) => ({
+                label: c.cat_name,
+                value: String(c.id),
+            }));
             const statusOptions = [
                 { label: "Done", value: "done" },
                 { label: "Ongoing", value: "ongoing" },
                 { label: "Upcoming", value: "upcoming" },
             ];
             return [
-                { fieldKey: "category", label: "Category", fieldType: "checkbox", sectionTitle: "Category", fieldOptions: categoryOptions },
-                { fieldKey: "status", label: "Status", fieldType: "checkbox", sectionTitle: "Status", fieldOptions: statusOptions },
+                {
+                    fieldKey: "category",
+                    label: "Category",
+                    fieldType: "checkbox",
+                    sectionTitle: "Category",
+                    fieldOptions: categoryOptions,
+                },
+                {
+                    fieldKey: "status",
+                    label: "Status",
+                    fieldType: "checkbox",
+                    sectionTitle: "Status",
+                    fieldOptions: statusOptions,
+                },
             ];
         },
 
         normalized() {
-            return this.event.map(e => ({
+            return this.event.map((e) => ({
                 id: e.id,
                 evn_title: e.evn_title ?? e.evn_name ?? "",
                 evn_cat_id: e.evn_cat_id ?? e.evn_category_id ?? "",
-                cat_name: e.cat_name ?? e.category_name ?? this.catMap[String(e.evn_cat_id)] ?? "",
+                cat_name:
+                    e.cat_name ??
+                    e.category_name ??
+                    this.catMap[String(e.evn_cat_id)] ??
+                    "",
                 evn_date: e.evn_date ?? "",
                 evn_timestart: e.evn_timestart ?? "",
                 evn_timeend: e.evn_timeend ?? "",
@@ -219,7 +347,7 @@ export default {
 
             // 🔍 Search filter
             if (q) {
-                arr = arr.filter(e =>
+                arr = arr.filter((e) =>
                     `${e.evn_title} ${e.cat_name} ${e.evn_date} ${e.evn_status}`
                         .toLowerCase()
                         .includes(q)
@@ -228,12 +356,18 @@ export default {
 
             // ✅ Category filter
             if (this.filters.category.length > 0) {
-                arr = arr.filter(e => this.filters.category.includes(String(e.evn_cat_id)));
+                arr = arr.filter((e) =>
+                    this.filters.category.includes(String(e.evn_cat_id))
+                );
             }
 
             // ✅ Status filter
             if (this.filters.status.length > 0) {
-                arr = arr.filter(e => this.filters.status.includes((e.evn_status || "").toLowerCase()));
+                arr = arr.filter((e) =>
+                    this.filters.status.includes(
+                        (e.evn_status || "").toLowerCase()
+                    )
+                );
             }
 
             return arr;
@@ -249,11 +383,13 @@ export default {
 
             const parseDate = (val) => {
                 if (!val) return 0;
-                if (typeof val !== "string") return new Date(val).getTime() || 0;
+                if (typeof val !== "string")
+                    return new Date(val).getTime() || 0;
                 const s = val.trim();
-                if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s).getTime() || 0;
+                if (/^\d{4}-\d{2}-\d{2}/.test(s))
+                    return new Date(s).getTime() || 0;
                 if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-                    let [d, m, y] = s.split("/").map(n => parseInt(n, 10));
+                    let [d, m, y] = s.split("/").map((n) => parseInt(n, 10));
                     if (y >= 2400) y -= 543;
                     return new Date(y, m - 1, d).getTime();
                 }
@@ -263,9 +399,12 @@ export default {
             const getVal = (row) => {
                 if (type === "date") return parseDate(row[key]);
                 if (type === "number") return Number(row[key] ?? 0);
-                if (type === "text") return String(row[key] ?? "").toLowerCase();
+                if (type === "text")
+                    return String(row[key] ?? "").toLowerCase();
                 if (type === "custom" && key === "evn_status")
-                    return statusOrder[(row.evn_status || "").toLowerCase()] ?? 99;
+                    return (
+                        statusOrder[(row.evn_status || "").toLowerCase()] ?? 99
+                    );
                 return row[key];
             };
 
@@ -281,8 +420,8 @@ export default {
                     // ภายในสถานะเดียวกัน → เรียงวันที่
                     const da = parseDate(a.evn_date);
                     const db = parseDate(b.evn_date);
-                    if (sa === "done") return (db - da);
-                    return (da - db);
+                    if (sa === "done") return db - da;
+                    return da - db;
                 }
 
                 // 🔹 กรณีทั่วไป (text, number, date)
@@ -300,7 +439,7 @@ export default {
                 // กรณีค่าเท่ากัน → fallback: วันที่
                 const da = parseDate(a.evn_date);
                 const db = parseDate(b.evn_date);
-                return (da - db);
+                return da - db;
             });
 
             return arr;
@@ -317,8 +456,12 @@ export default {
     },
 
     watch: {
-        search() { this.page = 1; },
-        pageSize() { this.page = 1; },
+        search() {
+            this.page = 1;
+        },
+        pageSize() {
+            this.page = 1;
+        },
         selectedSort: {
             handler(v) {
                 if (!v) return;
@@ -355,7 +498,9 @@ export default {
         async fetchEvent() {
             try {
                 const res = await axios.get("/get-event");
-                this.event = Array.isArray(res.data) ? res.data : res.data?.data || [];
+                this.event = Array.isArray(res.data)
+                    ? res.data
+                    : res.data?.data || [];
             } catch (err) {
                 console.error("fetchEvent error", err);
                 this.event = [];
@@ -366,8 +511,16 @@ export default {
             try {
                 const res = await axios.get("/event-info");
                 const cats = res.data?.categories || [];
-                this.categories = cats.map(c => ({ id: c.id, name: c.cat_name }));
-                this.catMap = Object.fromEntries(cats.map(c => [String(c.id), c.cat_name]));
+
+                // ✅ ใช้ id / cat_name ตามที่ EventFilter ต้องการ
+                this.categories = cats.map(c => ({
+                    id: String(c.id),
+                    cat_name: c.cat_name
+                }));
+
+                this.catMap = Object.fromEntries(
+                    cats.map(c => [String(c.id), c.cat_name])
+                );
             } catch (err) {
                 console.error("fetchCategories error", err);
                 this.categories = [];
@@ -385,9 +538,12 @@ export default {
         },
 
         async deleteEvent(id) {
-            const ev = this.normalized.find(e => e.id === id);
+            const ev = this.normalized.find((e) => e.id === id);
             const title = ev?.evn_title || "this event";
-            const { isConfirmed } = await Swal.fire({ title: `Delete ${title}?`, showCancelButton: true });
+            const { isConfirmed } = await Swal.fire({
+                title: `Delete ${title}?`,
+                showCancelButton: true,
+            });
             if (!isConfirmed) return;
             try {
                 await axios.patch(`/event/${id}/deleted`);
@@ -413,12 +569,13 @@ export default {
         },
 
         timeText(startTime, endTime) {
-            const format = t => (t ? String(t).slice(0, 5) : "??:??");
+            const format = (t) => (t ? String(t).slice(0, 5) : "??:??");
             return `${format(startTime)}-${format(endTime)}`;
         },
 
         badgeClass(status) {
-            const base = "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
+            const base =
+                "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
             switch ((status || "").toLowerCase()) {
                 case "done":
                     return `${base} bg-[#DCFCE7] text-[#00A73D]`;
@@ -436,7 +593,9 @@ export default {
             this.sortOrder = order;
             this.page = 1;
             this.selectedSort =
-                this.sortOptions.find(opt => opt.key === key && opt.order === order) || this.selectedSort;
+                this.sortOptions.find(
+                    (opt) => opt.key === key && opt.order === order
+                ) || this.selectedSort;
         },
 
         // ✅ เพิ่ม method นี้
@@ -458,14 +617,19 @@ export default {
             if (!id) return;
             try {
                 await axios.patch(`/event/${id}/deleted`);
+                this.showModalAsk = false;
                 this.showModalSuccess = true;
-                this.fetchEvent();
-            } catch {
-                this.showModalFail = true;
+                this.deleteId = null;
+                await this.fetchEvent();
+            } catch (_) {
+                this.showModalAsk = false; // ปิดกล่องถาม
+                this.showModalFail = true; // แจ้ง error
+            } finally {
+                this.isDeleting = false;
             }
         },
         onCancelDelete() {
-            this.showModal = false;
+            this.showModalAsk = false;
             this.deleteId = null;
         },
         onConfirmSuccess() {
@@ -477,7 +641,10 @@ export default {
 
         goDetails(id) {
             try {
-                this.$router.push({ name: "events.show", params: { id: String(id) } });
+                this.$router.push({
+                    name: "events.show",
+                    params: { id: String(id) },
+                });
             } catch (_) {
                 this.$router.push({ path: `/events/${id}` });
             }

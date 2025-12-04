@@ -10,11 +10,12 @@
     <div class="flex flex-wrap items-center gap-3 w-full">
       <!-- ✅ Search bar ขยายเต็มแนว -->
       <div class="flex-1">
-        <SearchBar v-model="search" placeholder="Search Employee ID / Name / Nickname" @search="() => (page = 1)" />
+        <SearchBar v-model="search" placeholder="Search Employee ID / Name / Nickname" @search="() => (page = 1)" 
+        class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"/>
       </div>
 
       <!-- ✅ ส่วน filter ชิดขวา -->
-      <div class="flex flex-row flex-wrap items-center gap-2 mt-6">
+      <div class="flex flex-row flex-wrap items-center gap-2 mt-8">
         <EmployeeDropdown label="Company ID" v-model="selectedCompanyIds" :options="companyIdOptions" />
         <EmployeeDropdown label="Department" v-model="selectedDepartmentIds" :options="departmentOptions" />
         <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" />
