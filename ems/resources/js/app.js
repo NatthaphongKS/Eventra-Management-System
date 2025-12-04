@@ -1,3 +1,4 @@
+app.js
 // resources/js/app.js
 import { createApp } from 'vue'
 import '../css/app.css'

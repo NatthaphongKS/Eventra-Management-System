@@ -42,11 +42,11 @@
                                 ? 'opacity-50 cursor-not-allowed'
                                 : 'cursor-pointer'
                         ]" :style="(!file || !!error || uploading)
-                                ? 'pointer-events: none;'
-                                : ''" :title="(!file || !!error || uploading)
-                                    ? 'Please upload or drop file first'
-                                    : ''">
-                            <Button variant="generate" :disabled="!file || !!error || uploading" @click="upload">Generate Data</Button>
+                            ? 'pointer-events: none;'
+                            : ''" :title="(!file || !!error || uploading)
+                                ? 'Please upload or drop file first'
+                                : ''">
+                            <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
                         </div>
                     </div>
 
@@ -115,8 +115,8 @@
                 <div class="mr-8" :class="canCreate
                     ? 'cursor-pointer'
                     : 'opacity-50 cursor-not-allowed'" :style="canCreate
-                            ? ''
-                            : 'pointer-events: none;'" :title="canCreate
+                        ? ''
+                        : 'pointer-events: none;'" :title="canCreate
                             ? ''
                             : 'Please upload file and click Generate Data first'">
                     <Button variant="create" :disabled="!canCreate" @click="onCreate">Create</Button>
@@ -135,6 +135,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
+import Swal from 'sweetalert2'
+
 
 /* components */
 import Upload from '@/components/Input/Upload.vue'
@@ -458,17 +460,24 @@ const showCannotCreate = ref(false)
 
 /* ---------- bulk create employees (partial success logic) ---------- */
 async function onCreate() {
+    // ถ้าไม่มีข้อมูลในตาราง หรือกำลังประมวลผลอยู่แล้ว ก็ไม่ต้องทำซ้ำ
     if (!displayRows.value.length || creating.value) return
     creating.value = true
+
+    // รีเซ็ต modal state รอบก่อน
+    showCreateSuccess.value = false
+    showCannotCreate.value = false
 
     const prefixMap = { 'นาย': 1, 'นาง': 2, 'นางสาว': 3 }
 
     try {
-        // เตรียม payload ที่สร้างได้จริง (master พร้อม) เท่านั้น
-        const preparedRows = []
+        // ---------------------------------
+        // STEP 1: เตรียม payload สำหรับทุกแถวที่ master พร้อม
+        // ---------------------------------
+        const preparedRows = [] // เก็บ { row, payload }
 
         for (const row of displayRows.value) {
-            // แตกชื่อ
+            // แตกชื่อ prefix / first / last
             let emp_prefix = 1
             let emp_firstname = ''
             let emp_lastname = ''
@@ -479,8 +488,8 @@ async function onCreate() {
                 emp_firstname = parts[1] ?? ''
                 emp_lastname = parts.slice(2).join(' ')
             } else if (parts.length === 2) {
-                emp_firstname = parts[0]
-                emp_lastname = parts[1]
+                emp_firstname = parts[0] ?? ''
+                emp_lastname = parts[1] ?? ''
             } else if (parts.length === 1 && parts[0]) {
                 emp_firstname = parts[0]
             }
@@ -490,7 +499,7 @@ async function onCreate() {
             const posId = await ensurePositionId(row.position || '')
             const teamId = await ensureTeamId(row.team || '')
 
-            // ถ้าหา master id ไม่ได้ -> ข้ามแถวนี้ไป (เราจะไม่พยายามสร้าง)
+            // ถ้ามีอันไหนสร้าง/หาไม่ได้ แถวนี้ไม่พร้อม insert -> ข้าม
             if (!depId || !posId || !teamId) {
                 continue
             }
@@ -503,8 +512,8 @@ async function onCreate() {
                     emp_nickname: row.nickname || null,
                     emp_firstname,
                     emp_lastname,
-                    emp_email: row.email || '',
-                    emp_phone: row.phone || '',
+                    emp_email: (row.email || '').trim(),
+                    emp_phone: (row.phone || '').trim(),
                     emp_position_id: posId,
                     emp_department_id: depId,
                     emp_team_id: teamId,
@@ -514,96 +523,121 @@ async function onCreate() {
             })
         }
 
-        // ไม่มีใครพร้อมสร้างเลย
+        // ถ้าไม่มีใครพร้อมสร้างเลย -> แสดง alert, ไม่ทำอะไรต่อ
         if (preparedRows.length === 0) {
-            // ไม่มี payload valid -> ถือว่า fail
             showCreateSuccess.value = false
             showCannotCreate.value = true
             return
         }
 
-        // นับผลลัพธ์
-        let createdCount = 0    // insert สำเร็จ
-        let dupCount = 0        // duplicate พบในระบบ
-        let hardFailCount = 0   // error อื่น
+        // ---------------------------------
+        // STEP 2: ตรวจซ้ำกับระบบ (เบอร์ / อีเมล / employeeId)
+        // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch + SweetAlert
+        // ---------------------------------
+        let foundDuplicateInSystem = false
+        let duplicateInfo = [] // จะเก็บ fields ที่ซ้ำ เช่น ["emp_id","emp_email"]
 
-        for (const item of preparedRows) {
-            const p = item.payload
+        for (const { payload } of preparedRows) {
+            // เตรียม body สำหรับเช็คซ้ำ
+            const checkBody = {}
+            if (payload.emp_id && payload.emp_id.trim() !== '') {
+                checkBody.emp_id = payload.emp_id.trim()
+            }
+            if (payload.emp_phone && payload.emp_phone.trim() !== '') {
+                checkBody.emp_phone = payload.emp_phone.trim()
+            }
+            if (payload.emp_email && payload.emp_email.trim() !== '') {
+                checkBody.emp_email = payload.emp_email.trim()
+            }
 
-            // เช็ค duplicate ก่อน (optional safety)
-            let isDuplicate = false
             try {
-                const dupResp = await axios.post('/check-employee-duplicate', {
-                    emp_id: p.emp_id,
-                    emp_phone: p.emp_phone,
-                    emp_email: p.emp_email
-                })
-                if (dupResp.data?.duplicate) {
-                    isDuplicate = true
+                // ตัวอย่าง response backend:
+                // { "duplicate": true, "fields": ["emp_id", "emp_email"] }
+                const dupResp = await axios.post('/check-employee-duplicate', checkBody)
+
+                if (dupResp.data?.duplicate === true) {
+                    foundDuplicateInSystem = true
+                    duplicateInfo = dupResp.data?.fields || []
+                    break
                 }
             } catch (dupErr) {
-                // ถ้า duplicate check พัง เราจะไม่ block ตรงนี้
-                console.warn('duplicate check failed, continue anyway', dupErr)
+                console.error('duplicate check failed', dupErr)
+                // ถ้าเช็กไม่ได้ ให้ถือว่า fail แบบ duplicate
+                foundDuplicateInSystem = true
+                duplicateInfo = ['unknown']
+                break
+            }
+        }
+
+        if (foundDuplicateInSystem) {
+            // map key จาก backend -> ข้อความสวยๆ
+            const labelMap = {
+                emp_id: 'Employee ID',
+                emp_phone: 'Phone number',
+                emp_email: 'Email',
+                unknown: 'Unknown field',
             }
 
-            if (isDuplicate) {
-                dupCount++
-                continue
-            }
+            const niceMsg = duplicateInfo.length
+                ? duplicateInfo.map(f => labelMap[f] || f).join(', ')
+                : 'Some user data already exists in the system.'
 
-            // ถ้าไม่ถูก mark ว่าซ้ำ ลอง save จริง
+            // SweetAlert แจ้งว่ามีข้อมูลซ้ำ
+            Swal.fire({
+                icon: 'error',
+                title: 'Cannot create employee',
+                text: `One or more users in this file already exist in the system (${niceMsg}).`,
+            })
+
+            // หยุดเลย ไม่ต้องสร้างใคร
+            return
+        }
+
+        // ---------------------------------
+        // STEP 3: ไม่มีซ้ำเลย -> อนุญาตให้สร้างทุกคน
+        // ---------------------------------
+        let createdCount = 0
+
+        for (const { payload } of preparedRows) {
             try {
-                await axios.post('/save-employee', p)
+                await axios.post('/save-employee', payload)
                 createdCount++
-            } catch (empErr) {
+            } catch (err) {
                 console.error(
                     'save-employee failed for',
-                    p.emp_id,
-                    empErr.response?.data || empErr.message
+                    payload.emp_id,
+                    err.response?.data || err.message
                 )
-
-                const reasonTextRaw =
-                    empErr.response?.data?.message ||
-                    empErr.response?.data?.error ||
-                    ''
-
-                const looksLikeDup =
-                    /already\s+exists/i.test(reasonTextRaw) ||
-                    /already been taken/i.test(reasonTextRaw) ||
-                    /duplicate/i.test(reasonTextRaw) ||
-                    /ซ้ำ/.test(reasonTextRaw) ||
-                    /มีอยู่แล้ว/.test(reasonTextRaw)
-
-                if (looksLikeDup) {
-                    dupCount++
-                } else {
-                    hardFailCount++
-                }
+                // ถ้ามี error insert คนใดคนหนึ่ง เรา "ยังคงพยายามสร้างคนอื่นต่อ"
+                // เพราะ requirement ล่าสุดคือ:
+                //    - block ทั้ง batch เมื่อ "เจอว่าซ้ำ"
+                //    - error insert อื่น ๆ ตอน save ไม่ได้พูดว่าต้อง block ทั้ง batch
+                // ถ้าอยาก block ทั้ง batch ทุก error ให้ return ทันทีแทน
             }
         }
 
-        // ตัดสินใจ modal
-        const shouldShowCannotCreate =
-            dupCount > 0 ||
-            hardFailCount > 0 ||
-            createdCount === 0
-
-        const shouldShowCreateSuccess = createdCount > 0
-
-        // ถ้าสร้างได้บางคนขึ้นไป -> ล้างตาราง/ไฟล์
-        if (createdCount > 0) {
-            displayRows.value = []
-            file.value = null
-            error.value = ''
-            page.value = 1
+        // ถ้าสุดท้ายสร้างไม่ได้เลยซักคน -> ถือว่า fail
+        if (createdCount === 0) {
+            showCreateSuccess.value = false
+            showCannotCreate.value = true
+            return
         }
 
-        showCannotCreate.value = shouldShowCannotCreate
-        showCreateSuccess.value = shouldShowCreateSuccess
+        // ---------------------------------
+        // STEP 4: success -> ล้างหน้าจอ และโชว์ modal success
+        // ---------------------------------
+        displayRows.value = []
+        file.value = null
+        error.value = ''
+        page.value = 1
+
+        showCannotCreate.value = false
+        showCreateSuccess.value = true
     } finally {
         creating.value = false
     }
 }
+
 
 /* ---------- modal success close ---------- */
 function handleSuccessClose() {
