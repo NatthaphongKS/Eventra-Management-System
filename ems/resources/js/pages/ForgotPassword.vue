@@ -3,14 +3,14 @@
     
     <div class="rounded-[28px] bg-white shadow-lg w-[484px] h-[592px] p-8 flex flex-col items-center relative">
       
-      <div class="mt-10">
-        <h2 class="text-4xl font-semibold text-neutral-800 text-center">
+      <div class="mt-4">
+        <h2 class="text-4xl font-medium text-neutral-800 text-center">
           Forgot your password?
         </h2>
       </div>
 
-      <div class="flex-grow flex items-center justify-center w-full">
-        <p class="text-4xl font-normal text-neutral-600 text-center leading-relaxed">
+      <div class="mt-24 items-center justify-center w-full mb-44">
+        <p class="text-4xl font-light text-neutral-700 text-center leading-relaxed">
           Please tell your admin <br>
           to reset your password
         </p>
