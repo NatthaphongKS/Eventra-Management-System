@@ -8,19 +8,19 @@
             class="w-20 h-20 object-cover rounded-2xl shadow-sm" 
             loading="lazy"
           >
-          <span class="text-5xl font-semibold text-red-700 tracking-tight">
+          <span class="text-5xl font-medium text-red-700 tracking-tight">
                 Eventra
           </span>
         </div>
       <div class="left">
-        <h2 class="mt-16 text-4xl font-semibold text-gray-900 mb-5">Sign In</h2>
+        <h2 class="mt-16 ml-10 text-4xl font-medium text-gray-900 mb-5">Sign In</h2>
         
         <form @submit.prevent="login">
           <div class="p-2 text-2xl">
             <input 
               type="email" 
               v-model="email" 
-              class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:font-semibold focus:outline-none focus:ring-0" 
+              class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:font-medium focus:outline-none focus:ring-0" 
               placeholder="Email" 
               required
             />
@@ -30,14 +30,14 @@
             <input 
               type="password" 
               v-model="password" 
-              class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:font-semibold focus:outline-none focus:ring-0" 
+              class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:font-medium focus:outline-none focus:ring-0" 
               placeholder="Password" 
               required
             />
           </div>
 
           <div class="flex justify-center mt-12 mb-4">
-             <router-link to="/forgot-password" class="text-rose-300 text-lg underline font-medium hover:text-rose-500 transition-colors">
+             <router-link to="/forgot-password" class="text-red-200 text-lg underline font-regular hover:text-red-700 transition-colors">
                forgot password
              </router-link>
           </div>
@@ -45,7 +45,7 @@
           <div class="flex justify-center">
             <button 
               type="submit" 
-              class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-semibold text-2xl transition-all duration-300 shadow-md"
+              class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md"
             >
               Sign In
             </button>
