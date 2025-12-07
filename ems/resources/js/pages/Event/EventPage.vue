@@ -1,4 +1,4 @@
-<template>
++<template>
     <section class="p-0">
         <div class="mt-3 mb-1 flex items-center gap-4">
             <!-- ✅ SearchBar -->
