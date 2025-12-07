@@ -16,7 +16,7 @@
               class="w-full border rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold"
               placeholder="Email"
             />
-
+            <!-- ส่วนแสดง error ไม่ใส่ email -->
             <p v-if="errors.email" class="text-red-700 text-m mt-1 text[16px]">
               {{ errors.email[0] }}
             </p>
@@ -31,12 +31,12 @@
               class="w-full border rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold"
               placeholder="Password"
             />
-
+            <!-- ส่วนแสดง error ไม่ใส่ password -->
             <p v-if="errors.password" class="text-red-700 text-m mt-1 text[16px]">
               {{ errors.password[0] }}
             </p>
           </div>
-
+            <!-- ส่วนแสดง error ตรวจเช็คความถูกไหม email password กับ ดูว่า คนนี้ยังเข้าได้อยู่ไหมเป็น inactive รึเปล่า-->
           <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
 
           <div class="flex justify-center">
@@ -59,8 +59,8 @@ export default {
     return {
       email: "",
       password: "",
-      message: "",
-      errors: {} // 1. เพิ่มตัวแปรสำหรับเก็บ error ของแต่ละ field
+      message: "", //ตัวแปรสำหรับเก็บ error
+      errors: {} //ตัวแปรสำหรับเก็บ error ของ field password email
     };
   },
   methods: {
@@ -73,7 +73,7 @@ export default {
         const res = await axios.post('/logined', {
           email: this.email,
           password: this.password
-        }, { baseURL: '' }); // ใส่ Base URL ของ API คุณตรงนี้ถ้ามี
+        }, { baseURL: '' }); // ใส่ Base URL ของ API
 
         this.message = res.data.message;
 
@@ -81,6 +81,7 @@ export default {
           this.$router.push(res.data.redirect);
         }
 
+        //ส่วนจัดการ handle error อื่นๆ
       } catch (err) {
         console.log('Error:', err.response);
 
