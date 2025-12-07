@@ -20,12 +20,12 @@ class LoginController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
-        ]);
+        ]
+    );
 
         $employee = Employee::where('emp_email', $request->email)->first();
-
-        if (!$employee) {
-            return response()->json(['message' => 'Email not found'], 404);
+        if (!$employee || !Hash::check($request->password, $employee->emp_password)) {
+            return response()->json(['message' => 'Incorrect username or password. Please try again'], 404);
         }
         if ($employee->emp_status === 'disabled') {
             return response()->json(['message' => 'Account can not login'], 403);
@@ -33,10 +33,6 @@ class LoginController extends Controller
 
         if ($employee->emp_delete_status === 'inactive') {
             return response()->json(['message' => 'Account is inactive'], 403);
-        }
-
-        if (!Hash::check($request->password, $employee->emp_password)) {
-            return response()->json(['message' => 'Incorrect password'], 401);
         }
 
         Auth::login($employee);

@@ -3,59 +3,99 @@
     <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
       <div class="text-center text-3xl font-semibold mb-6 text-red-700">Eventra</div>
 
+      <div class="left">
+        <h2 class="text-3xl font-semibold text-gray-900 mb-6">Sign In</h2>
+        <form @submit.prevent="login">
 
-    <div class="left">
-      <h2 class="text-3xl font-semibold text-gray-900 mb-6">Sign In</h2>
-      <form @submit.prevent="login">
-        <div class="p-2">
-          <label></label>
-          <input type="email" v-model="email" class=" w-full border border-red-700 rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold" placeholder="Email" />
+          <div class="p-2">
+            <label></label>
+            <input
+              type="email"
+              v-model="email"
+              :class="{'border-red-500': errors.email, 'border-red-700': !errors.email}"
+              class="w-full border rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold"
+              placeholder="Email"
+            />
 
-        </div>
-        <div class="p-2">
-          <label></label>
-          <input type="password" v-model="password" class=" w-full border border-red-700 rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold" placeholder="Password" />
-        </div>
-        <div class="flex justify-center">
-          <button type="submit" class="w-2/4 bg-red-700 text-white rounded-3xl p-3 mt-4 font-semibold">Login</button>
-        </div>
-      </form>
-      <p v-if="message">{{ message }}</p>
-    </div>
+            <p v-if="errors.email" class="text-red-700 text-m mt-1 text[16px]">
+              {{ errors.email[0] }}
+            </p>
+          </div>
+
+          <div class="p-2">
+            <label></label>
+            <input
+              type="password"
+              v-model="password"
+              :class="{'border-red-500': errors.password, 'border-red-700': !errors.password}"
+              class="w-full border rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold"
+              placeholder="Password"
+            />
+
+            <p v-if="errors.password" class="text-red-700 text-m mt-1 text[16px]">
+              {{ errors.password[0] }}
+            </p>
+          </div>
+
+          <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
+
+          <div class="flex justify-center">
+            <button type="submit" class="w-2/4 bg-red-700 text-white rounded-3xl p-3 mt-4 font-semibold hover:bg-red-800 transition">
+              Sign In
+            </button>
+          </div>
+        </form>
+
+      </div>
     </div>
   </div>
-  </template>
+</template>
 
 <script>
 import axios from "axios";
-
 
 export default {
   data() {
     return {
       email: "",
       password: "",
-      message: ""
+      message: "",
+      errors: {} // 1. เพิ่มตัวแปรสำหรับเก็บ error ของแต่ละ field
     };
   },
   methods: {
     async login() {
+      // เคลียร์ค่า error เก่าก่อนส่ง request ใหม่
+      this.message = "";
+      this.errors = {};
+
       try {
         const res = await axios.post('/logined', {
           email: this.email,
           password: this.password
-        }, { baseURL: '' });
+        }, { baseURL: '' }); // ใส่ Base URL ของ API คุณตรงนี้ถ้ามี
 
         this.message = res.data.message;
 
-        // ถ้า login ผ่าน → ไปหน้า employee
         if (res.data.redirect) {
           this.$router.push(res.data.redirect);
         }
 
       } catch (err) {
-        console.log('data', err.response?.data)
-        this.message = err.response?.data?.message || "เกิดข้อผิดพลาด";
+        console.log('Error:', err.response);
+
+        if (err.response) {
+          // 2. เช็คว่าเป็น Error 422 (Validation Error) หรือไม่
+          if (err.response.status === 422) {
+            this.errors = err.response.data.errors;
+          }
+          // 3. กรณีเป็น Error อื่นๆ เช่น 401, 403, 404 ให้แสดง message รวม
+          else if (err.response.data && err.response.data.message) {
+            this.message = err.response.data.message;
+          } else {
+            this.message = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+          }
+        }
       }
     }
   }
