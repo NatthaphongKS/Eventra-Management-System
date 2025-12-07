@@ -1,122 +1,126 @@
-    <template>
-        <div>
-            <header class="mx-auto max-w-[960px] px-4 pt-6">
-                <link rel="stylesheet"
-                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-            </header>
+<template>
+    <div>
+        <!-- Header + ปุ่ม Import -->
+        <header class="mx-auto max-w-[1400px] px-6 pt-6">
+            <link rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-            <!-- Card -->
-            <div class="px-2 py-0">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">
+                    Add New Employee
+                </h2>
 
-                <!-- Header -->
-                <div class="px-0 md:px-0 pt-1 pb-7">
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="translate-x-0 md:translate-x-20">
-                            <h2 class="text-xl font-semibold text-gray-800">Add New Employee</h2>
-                        </div>
-                        <div class="relative md:-translate-x-32">
-                            <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
-                            <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
-                        </div>
-                    </div>
-                    <!-- Success alert -->
-                    <EmployeeCreateSuccess :open="showCreateSuccess" @close= "handleSuccessClose" />
+                <div class="flex justify-end">
+                    <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
+                    <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
                 </div>
 
-                <!-- Body -->
-                <div class="max-w-[1160px] px-6 md:px-8 lg:px-20 mr-auto">
-                    <form @submit.prevent="handleSubmit">
-                        <div class="grid grid-cols-1 md:grid-cols-[520px_64px_520px] items-start gap-y-5">
-                            <!-- ซ้าย -->
-                            <div class="flex flex-col gap-5">
-                                <FormField label="Prefix" required class="max-w-[220px]">
-                                    <DropdownPill class="mt-1 block w-full" v-model="form.prefix" :options="prefixes"
-                                        placeholder="Select prefix" :error="errors.prefix" />
-                                </FormField>
+                <!-- Success alert -->
+                <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success"
+                    type="success" @confirm="handleSuccessClose" />
+            </div>
+        </header>
 
-                                <FormField label="First Name" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.firstName"
-                                        placeholder="Ex.Perapat" :error="errors.firstName" />
-                                </FormField>
+        <!-- Body -->
+        <div class="px-2 py-0">
+            <!-- กล่องฟอร์ม: กว้างขึ้น และจัดกึ่งกลาง -->
+            <div class="max-w-[1400px] mx-auto px-6">
+                <form @submit.prevent="handleSubmit">
+                    <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between">
+                        <!-- ซ้าย -->
+                        <div class="flex flex-col gap-5">
+                            <FormField label="Prefix" required class="w-full">
+                                <DropdownPill v-model="form.prefix" :options="prefixes" placeholder="Select prefix"
+                                    class="mt-1 block h-11 w-full" :error="errors.prefix" />
+                            </FormField>
 
-                                <FormField label="Last Name" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.lastName" placeholder="Ex.Saimai"
-                                        :error="errors.lastName" />
-                                </FormField>
+                            <FormField label="First Name" required>
+                                <InputPill v-model="form.firstName" placeholder="Ex.Perapat"
+                                    class="mt-1 block h-11 w-full" :error="errors.firstName" />
+                            </FormField>
 
-                                <FormField label="Nickname" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.nickname" placeholder="Ex.beam"
-                                        :error="errors.nickname" />
-                                </FormField>
+                            <FormField label="Last Name" required>
+                                <InputPill v-model="form.lastName" placeholder="Ex.Saimai"
+                                    class="mt-1 block h-11 w-full" :error="errors.lastName" />
+                            </FormField>
 
-                                <FormField label="Phone" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.phone"
-                                        placeholder="Ex.0988900988" inputmode="numeric" :error="errors.phone" />
-                                </FormField>
+                            <FormField label="Nickname" required>
+                                <InputPill v-model="form.nickname" placeholder="Ex.beam" class="mt-1 block h-11 w-full"
+                                    :error="errors.nickname" />
+                            </FormField>
 
-                                <FormField label="Employee ID" required class="w-[399px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.employeeId"
-                                        placeholder="Ex.CN707008" :error="errors.employeeId" />
-                                </FormField>
+                            <FormField label="Phone" required>
+                                <InputPill v-model="form.phone" placeholder="Ex.0988900988" inputmode="numeric"
+                                    class="mt-1 block h-11 w-full" :error="errors.phone" />
+                            </FormField>
 
+                            <FormField label="Employee ID" required>
+                                <InputPill v-model="form.employeeId" placeholder="Ex.CN707008"
+                                    class="mt-1 block h-11 w-full" :error="errors.employeeId" />
+                            </FormField>
+
+                            <!-- ปุ่ม Cancel -->
+                            <div class="pt-2">
                                 <div @click="onCancel">
                                     <CancelButton />
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- ช่องกลาง -->
-                            <div></div>
+                        <!-- ขวา -->
+                        <div class="flex flex-col gap-5">
+                            <FormField label="Department" required>
+                                <DropdownPill v-model="form.department" :options="departments"
+                                    placeholder="Select Department" class="mt-1 block h-11 w-full"
+                                    :error="errors.department" />
+                            </FormField>
 
-                            <!-- ขวา -->
-                            <div class="flex flex-col gap-5 md:pl-32 lg:pl-40 xl:pl-48 2xl:pl-56">
-                                <FormField label="Department" required class="w-full min-w-[500px] max-w-[500px]">
-                                    <DropdownPill class="mt-1 block w-full" v-model="form.department"
-                                        :options="departments" placeholder="Select Department"
-                                        :error="errors.department" />
-                                </FormField>
+                            <FormField label="Team" required>
+                                <DropdownPill v-model="form.team" :options="teamOptions"
+                                    :placeholder="form.department ? 'Select Team' : 'Please select Department first'"
+                                    class="mt-1 block h-11 w-full" :error="errors.team" :disabled="!form.department" />
+                            </FormField>
 
-                                <FormField label="Team" required class="w-full min-w-[500px] max-w-[500px]">
-                                    <DropdownPill class="mt-1 block w-full" v-model="form.team" :options="teamOptions"
-                                        placeholder="Select Team" :error="errors.team" />
-                                </FormField>
+                            <FormField label="Position" required>
+                                <DropdownPill v-model="form.position" :options="positionOptions"
+                                    :placeholder="form.team ? 'Select Position' : 'Please select Team first'"
+                                    class="mt-1 block h-11 w-full" :error="errors.position" :disabled="!form.team" />
+                            </FormField>
 
-                                <FormField label="Position" required class="w-full min-w-[500px] max-w-[500px]">
-                                    <DropdownPill class="mt-1 block w-full" v-model="form.position" :options="positions"
-                                        placeholder="Select Position" :error="errors.position" />
-                                </FormField>
+                            <FormField label="Email" required>
+                                <InputPill v-model="form.email" type="email" placeholder="Ex.66160106@go.buu.ac.th"
+                                    class="mt-1 block h-11 w-full" :error="errors.email" />
+                            </FormField>
 
-                                <FormField label="Email" required class="w-full min-w-[500px] max-w-[500px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.email" type="email"
-                                        placeholder="Ex.66160106@go.buu.ac.th" :error="errors.email" />
-                                </FormField>
+                            <FormField label="Password" required>
+                                <InputPill v-model="form.password" type="password" placeholder="Ex.Ssaw.1234"
+                                    class="mt-1 block h-11 w-full" :error="errors.password" />
+                            </FormField>
 
-                                <FormField label="Password" required class="w-full min-w-[500px] max-w-[500px]">
-                                    <InputPill class="mt-1 block w-full" v-model="form.password" type="password"
-                                        placeholder="Ex.Ssaw.1234" :error="errors.password" />
-                                </FormField>
+                            <FormField label="Permission" required>
+                                <DropdownPill v-model="form.permission" :options="permissions"
+                                    placeholder="Select Permission" class="mt-1 block h-11 w-full"
+                                    :error="errors.permission" />
+                            </FormField>
 
-                                <FormField label="Permission" required class="w-full min-w-[500px] max-w-[500px]">
-                                    <DropdownPill class="mt-1 block w-full" v-model="form.permission"
-                                        :options="permissions" placeholder="Select Permission"
-                                        :error="errors.permission" />
-                                </FormField>
-
-                                <!-- ปุ่ม Create -->
-                                <div class="-mt-2 ml-[23rem]">
-                                    <button type="submit" :disabled="submitting"
-                                        class="bg-transparent border-0 p-0 disabled:opacity-50"
-                                        style="all: unset; display: inline-block;">
-                                        <CreateButton :disabled="submitting" />
-                                    </button>
-                                </div>
+                            <!-- ปุ่ม Create -->
+                            <div class="pt-2 flex justify-end">
+                                <button type="submit" :disabled="submitting"
+                                    class="bg-transparent border-0 p-0 disabled:opacity-50"
+                                    style="all: unset; display: inline-block;">
+                                    <CreateButton :disabled="submitting" />
+                                </button>
                             </div>
                         </div>
-                    </form>
-                </div>
-
+                    </div>
+                </form>
             </div>
         </div>
-    </template>
+    </div>
+</template>
+
+
+
 
 <script setup>
 import { reactive, computed, watch, ref, onMounted } from 'vue'
@@ -132,7 +136,7 @@ import DropdownPill from '../../components/Input/DropdownPill.vue'
 import ImportButton from '@/components/Button/ImportButton.vue'
 import CreateButton from '@/components/Button/CreateButton.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
-import EmployeeCreateSuccess from '../../components/Alert/Employee/EmployeeCreateSuccess.vue'
+import ModalAlert from '../../components/Alert/ModalAlert.vue'
 
 const router = useRouter()
 const goImport = () => router.push({ name: 'upload-file' })
@@ -174,12 +178,25 @@ const showCreateSuccess = ref(false)
 onMounted(async () => {
     try {
         const { data } = await axios.get('/meta')
-        departments.value = (data.departments || []).map(d => ({ label: d.dpm_name, value: d.id }))
-        positions.value = (data.positions || []).map(p => ({ label: p.pst_name, value: p.id }))
+
+        // Department = แค่ชื่อกับ id พอ
+        departments.value = (data.departments || []).map(d => ({
+            label: d.dpm_name,
+            value: d.id,
+        }))
+
+        // Team = ต้องมี department_id ไว้ filter
         teams.value = (data.teams || []).map(t => ({
             label: t.tm_name,
             value: t.id,
-            department_id: t.tm_department_id ?? null
+            department_id: t.tm_department_id ?? null,
+        }))
+
+        // Position = ต้องมี team_id ไว้ filter
+        positions.value = (data.positions || []).map(p => ({
+            label: p.pst_name,
+            value: p.id,
+            team_id: p.pst_team_id ?? null,
         }))
     } catch (e) {
         await Swal.fire({
@@ -199,7 +216,19 @@ onMounted(async () => {
     }
 })
 
-const teamOptions = computed(() => teams.value)
+
+const teamOptions = computed(() => {
+    if (!form.department) return []
+    const depId = Number(form.department)
+    return teams.value.filter(t => t.department_id === depId)
+})
+
+const positionOptions = computed(() => {
+    if (!form.team) return []
+    const teamId = Number(form.team)
+    return positions.value.filter(p => p.team_id === teamId)
+})
+
 
 /* ====== Validation ====== */
 const MSG = {
@@ -262,15 +291,38 @@ function validate() {
 }
 
 // live-validate
-Object.keys(fieldRules).forEach(k => {
-    watch(() => form[k], (v) => {
-        if (errors[k]) {
+Object.keys(fieldRules).forEach((k) => {
+    watch(
+        () => form[k],
+        (v) => {
             const msg = validateField(k, v)
-            if (msg) errors[k] = msg
-            else delete errors[k]
+            if (msg) {
+                errors[k] = msg
+            } else {
+                delete errors[k]
+            }
         }
-    })
+    )
 })
+
+watch(
+    () => form.department,
+    () => {
+        form.team = ''
+        form.position = ''
+        delete errors.team
+        delete errors.position
+    }
+)
+
+watch(
+    () => form.team,
+    () => {
+        form.position = ''
+        delete errors.position
+    }
+)
+
 
 /* ------- submit -> บันทึกลง DB ------- */
 async function handleSubmit() {
@@ -414,4 +466,5 @@ function handleSuccessClose() {
 }
 </script>
 
-<style></style>
+<style>
+</style>
