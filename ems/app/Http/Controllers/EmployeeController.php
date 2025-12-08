@@ -133,7 +133,7 @@ class EmployeeController extends Controller
     public function meta()
     {
         $positions = Position::query()
-            ->select('id', 'pst_name')
+            ->select('id', 'pst_name', 'pst_team_id')
             ->where('pst_delete_status', 'active')
             ->orderBy('pst_name')
             ->get();
@@ -145,13 +145,14 @@ class EmployeeController extends Controller
             ->get();
 
         $teams = Team::query()
-            ->select('id', 'tm_name')
+            ->select('id', 'tm_name', 'tm_department_id')
             ->where('tm_delete_status', 'active')
             ->orderBy('tm_name')
             ->get();
 
         return response()->json(compact('positions', 'departments', 'teams'));
     }
+
 
     /**
      * บันทึกพนักงานใหม่
