@@ -43,7 +43,7 @@ class LoginController extends Controller
 
         // ส่ง success กลับ
         return response()->json([
-            'message' => 'Login success',
+            // 'message' => 'Login success',
             'redirect' => '/employee' // path ใน Vue
         ]);
     }
