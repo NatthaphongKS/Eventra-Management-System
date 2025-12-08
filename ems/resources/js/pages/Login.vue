@@ -22,9 +22,9 @@
           <div class="p-2">
             <label></label>
             <input
-              type="email"
+              type="text"
               v-model="email"
-              :class="{'border-red-500': errors.email, 'border-red-700': !errors.email}"
+              
               class="w-full border rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold"
               placeholder="Email"
             />
