@@ -1,8 +1,20 @@
 <template>
-  <div class="min-h-screen flex items-center justify-end pr-[8vw] md:pr-[12vw] px-6 bg-red-700">
+  <div class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/email/ChatGPT_Image_20_.._2568_23_31_01.png')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
     <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
-      <div class="text-center text-3xl font-semibold mb-6 text-red-700">Eventra</div>
+      <div class="flex justify-center items-center gap-4 mb-8">
+          <img 
+            src="../../../public/images/email/clicknext.jpeg" 
+            alt="Remote" 
+            class="w-20 h-20 object-cover rounded-2xl shadow-sm" 
+            loading="lazy"
+          >
+          <span class="text-5xl font-medium text-red-700 tracking-tight">
+                Eventra
+          </span>
+        </div>
+                
 
+          
       <div class="left">
         <h2 class="text-3xl font-semibold text-gray-900 mb-6">Sign In</h2>
         <form @submit.prevent="login">
@@ -39,12 +51,25 @@
             <!-- ส่วนแสดง error ตรวจเช็คความถูกไหม email password กับ ดูว่า คนนี้ยังเข้าได้อยู่ไหมเป็น inactive รึเปล่า-->
           <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
 
+          <div class="flex justify-center mt-12 mb-4">
+             <router-link to="/forgot-password" class="text-red-200 text-lg underline font-regular hover:text-red-700 transition-colors">
+               forgot password
+             </router-link>
+          </div>
+
           <div class="flex justify-center">
-            <button type="submit" class="w-2/4 bg-red-700 text-white rounded-3xl p-3 mt-4 font-semibold hover:bg-red-800 transition">
+            <button 
+              type="submit" 
+              class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md"
+            >
               Sign In
             </button>
           </div>
         </form>
+
+        <p v-if="error" class="text-center text-red-600 mt-4 text-lg font-medium">
+          {{ error }}
+        </p>
 
       </div>
     </div>
@@ -70,6 +95,7 @@ export default {
       this.errors = {};
 
       try {
+        // เช็ค URL ให้ชัวร์ (ปกติ Laravel ใช้ /login ถ้าคุณแก้ Route เป็น /logined ก็ใช้ตัวเดิม)
         const res = await axios.post('/logined', {
           email: this.email,
           password: this.password
@@ -78,7 +104,10 @@ export default {
         this.message = res.data.message;
 
         if (res.data.redirect) {
-          this.$router.push(res.data.redirect);
+          window.location.href = res.data.redirect;
+        } else {
+          // เผื่อไว้กรณีไม่มี redirect
+          this.$router.push('/'); 
         }
 
         //ส่วนจัดการ handle error อื่นๆ
