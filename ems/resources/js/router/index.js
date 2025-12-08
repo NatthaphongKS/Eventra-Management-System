@@ -31,7 +31,7 @@ const routes = [
   { path: '/forgot-password', component: ForgotPassword, meta: { blank: true, title: 'Forgot Password' } },
 
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
-  { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'EditEvent' } },
+  { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'Event' } },
   { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
