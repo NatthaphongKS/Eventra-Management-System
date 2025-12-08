@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 // Pages
 import Home from '../pages/Dashboard/Home.vue'
 import Login from '../pages/Login.vue'
+import ForgotPassword from '../pages/ForgotPassword.vue' // [เพิ่ม] นำเข้าไฟล์ ForgotPassword
 import AddEmployee from '../pages/Employee/AddEmployeePage.vue'
 import EventPage from '../pages/Event/EventPage.vue'
 import Employees from '../pages/Employee/EmployeePage.vue'
@@ -25,6 +26,10 @@ const routes = [
 
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
+  
+  // [เพิ่ม] เส้นทาง Forgot Password (ใส่ blank: true เพื่อให้ไม่มี Sidebar)
+  { path: '/forgot-password', component: ForgotPassword, meta: { blank: true, title: 'Forgot Password' } },
+
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
   { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'EditEvent' } },
   { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
