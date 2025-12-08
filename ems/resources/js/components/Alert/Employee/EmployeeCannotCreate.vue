@@ -5,20 +5,22 @@
             <div class="absolute inset-0 bg-black/50" @click="$emit('close')"></div>
 
             <!-- modal card -->
-            <div class="relative bg-white rounded-3xl shadow-xl text-center w-[480px] max-w-[90vw] p-6 flex flex-col items-center"
-                <!-- ไอคอนกากบาทใหญ่ สีแดง ไม่มีวงขาว -->
-                <XCircleIcon class="w-[96px] h-[96px] text-red-600 mt-6" />
+            <div class="relative bg-white rounded-3xl shadow-xl text-center w-[480px] max-w-[90vw] p-6 flex flex-col items-center">
+
+                <!-- ไอคอนกากบาทวงกลมทึบสีแดง -->
+                <ExclamationCircleIcon class="mt-6 h-[96px] w-[96px] text-red-600" />
 
                 <!-- กล่องข้อความ -->
                 <div class="mt-8 text-center flex flex-col items-center leading-snug">
                     <!-- บรรทัดบน -->
                     <div class="text-[20px] font-bold text-neutral-800 uppercase tracking-tight">
-                        CAN’T CREATE EMPLOYEE!
+                        ERROR!
                     </div>
 
-                    <!-- บรรทัดล่าง -->
-                    <div class="mt-6 text-[14px] font-normal text-neutral-800 normal-case whitespace-nowrap">
-                        One or more users in this file already exist in the system. </div>
+                    <!-- บรรทัดล่าง: แสดงข้อความจาก Prop (ถ้าไม่มีให้ใช้ค่า Default) -->
+                    <div class="mt-6 text-[14px] font-normal text-neutral-800 normal-case px-4 break-words whitespace-pre-wrap">
+                        {{ message }}
+                    </div>
                 </div>
 
                 <!-- ปุ่ม OK -->
@@ -35,14 +37,21 @@
 </template>
 
 <script>
-import { XCircleIcon } from '@heroicons/vue/24/solid'
+import { ExclamationCircleIcon } from '@heroicons/vue/24/solid'
 
 export default {
     name: 'EmployeeCannotCreate',
-    components: { XCircleIcon },
+    components: { ExclamationCircleIcon },
     props: {
         open: { type: Boolean, default: false },
+        message: {
+            type: String,
+            default: 'Please try again later.'
+        }
     },
     emits: ['close'],
 }
 </script>
+
+
+

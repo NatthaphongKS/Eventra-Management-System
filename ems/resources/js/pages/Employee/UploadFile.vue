@@ -1,14 +1,16 @@
 <template>
-    <div class="min-h-screen">
 
-        <head>
-            <link rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-        </head>
+    <head>
+        <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    </head>
 
-        <div class="p-6 max-w-[1400px] ml-12">
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 w-full">
+        <!-- โซนหัวข้อ + upload (จัดกึ่งกลาง, responsive) -->
+        <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 pt-6">
             <!-- Header -->
-            <div class="pt-6">
+            <div>
                 <h2 class="text-lg md:text-xl font-semibold text-gray-900">
                     Upload file information
                 </h2>
@@ -21,47 +23,51 @@
                 </div>
             </div>
 
-            <!-- Body -->
-            <div class="p-6 max-w-[1400px] mx-auto ml-0 md:ml-10 lg:ml-20 xl:ml-28 2xl:ml-40">
-                <!-- Upload block -->
-                <div class="mt-4">
-                    <p class="text-sm font-semibold text-gray-800">
-                        Upload file Excel
-                    </p>
-                    <p class="text-xs text-gray-400 mt-1">
-                        Drag and drop document to your support task
-                    </p>
+            <!-- Body: Upload block -->
+            <div class="mt-6">
+                <p class="text-sm font-semibold text-gray-800">
+                    Upload file Excel
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                    Drag and drop document to your support task
+                </p>
 
-                    <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="msg => (error = msg)"
-                        @picked="() => (error = '')" @cleared="() => (error = '')" />
+                <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="msg => (error = msg)"
+                    @picked="() => (error = '')" @cleared="() => (error = '')" />
 
-                    <!-- ปุ่ม Generate -->
-                    <div class="mt-3 flex justify-end">
-                        <div :class="[
-                            (!file || !!error || uploading)
-                                ? 'opacity-50 cursor-not-allowed'
-                                : 'cursor-pointer'
-                        ]" :style="(!file || !!error || uploading)
-                            ? 'pointer-events: none;'
-                            : ''" :title="(!file || !!error || uploading)
-                                ? 'Please upload or drop file first'
-                                : ''">
-                            <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
-                        </div>
+                <!-- ปุ่ม Generate -->
+                <div class="mt-3 flex justify-end">
+                    <div :class="[
+                        (!file || !!error || uploading)
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'cursor-pointer'
+                    ]" :style="(!file || !!error || uploading)
+                        ? 'pointer-events: none;'
+                        : ''" :title="(!file || !!error || uploading)
+                            ? 'Please upload or drop file first'
+                            : ''">
+                        <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
                     </div>
-
-                    <!-- Error ตอนอ่านไฟล์ -->
-                    <p v-if="error" class="text-sm text-red-500 mt-2">
-                        {{ error }}
-                    </p>
                 </div>
+
+                <!-- Error ตอนอ่านไฟล์ -->
+                <p v-if="error" class="text-sm text-red-500 mt-2">
+                    {{ error }}
+                </p>
             </div>
+        </div>
 
-            <!-- Divider -->
-            <div class="mt-20 border-t ml-16"></div>
+        <!-- Divider -->
+        <div class="mt-10">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                <div class="border-t"></div>
+            </div>
+        </div>
 
-            <!-- Table -->
-            <div class="px-6 w-full max-w-[1700px] mx-auto mt-6 ml-12">
+        <!-- Table -->
+        <div class="mt-6 mx-auto w-full max-w-[1700px] px-4 sm:px-6 lg:px-8">
+            <!-- จอเล็กยังเลื่อนได้, จอใหญ่โชว์เต็มไม่ต้อง scroll -->
+            <div class="overflow-x-auto lg:overflow-x-visible">
                 <DataTable :loading="uploading || creating" :rows="paged" :columns="tableColumns" :page="page"
                     :page-size="pageSize" :total-items="totalItems" :page-size-options="[10, 25, 50, 100]"
                     :show-row-number="false" row-key="__rowKey" @update:page="val => page = val"
@@ -85,9 +91,9 @@
                     <template #footer-info="{ from, to, total }">
                         <span>แสดง</span>
 
-                        <div class="relative inline-block">
+                        <div class="relative inline-block mx-2">
                             <select
-                                class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
                                 :value="pageSize" @change="e => { pageSize = Number(e.target.value); page = 1; }">
                                 <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
                                     {{ opt }}
@@ -99,49 +105,51 @@
                             </svg>
                         </div>
 
-                        <span>{{ from }}-{{ to }} จาก {{ total }} รายการ</span>
+                        <span class="text-sm">
+                            {{ from }}-{{ to }} จาก {{ total }} รายการ
+                        </span>
                     </template>
                 </DataTable>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="pb-8">
-            <div class="mt-4 flex items-center justify-between">
-                <div class="ml-8">
-                    <CancelButton @click="onCancel" />
-                </div>
+    </div>
 
-                <div class="mr-8" :class="canCreate
-                    ? 'cursor-pointer'
-                    : 'opacity-50 cursor-not-allowed'" :style="canCreate
-                        ? ''
-                        : 'pointer-events: none;'" :title="canCreate
-                            ? ''
-                            : 'Please upload file and click Generate Data first'">
-                    <CreateButton :disabled="!canCreate" @click="onCreate" />
-                </div>
+    <!-- Footer (ปุ่ม) -->
+    <div class="pb-8">
+        <div
+            class="mx-auto w-full max-w-9xl px-4 sm:px-6 lg:px-8 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex justify-start">
+                <CancelButton @click="onCancel" />
+            </div>
+
+            <div class="flex justify-end" :class="canCreate ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'"
+                :style="canCreate ? '' : 'pointer-events: none;'" :title="canCreate
+                    ? ''
+                    : 'Please upload file and click Generate Data first'">
+                <CreateButton :disabled="!canCreate" @click="onCreate" />
             </div>
         </div>
-
-        <!-- Alerts / Modals -->
-        <EmployeeCreateSuccess :open="showCreateSuccess" @close="handleSuccessClose" />
-        <EmployeeCannotCreate :open="showCannotCreate" @close="showCannotCreate = false" />
     </div>
+
+    <!-- Alerts / Modals -->
+    <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success" type="success"
+        @confirm="handleSuccessClose" />
+    <EmployeeCannotCreate :open="showCannotCreate" :message="errorMessage" @close="showCannotCreate = false" />
 </template>
+
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
-import Swal from 'sweetalert2'
 
 
 /* components */
 import Upload from '@/components/Input/Upload.vue'
-import EmployeeCreateSuccess from '@/components/Alert/Employee/EmployeeCreateSuccess.vue'
-import EmployeeCannotCreate from '@/components/Alert/Employee/EmployeeCannotCreate.vue'
+import ModalAlert from '@/components/Alert/ModalAlert.vue'
+import EmployeeCannotCreate from '../../components/Alert/Employee/EmployeeCannotCreate.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
 import CreateButton from '@/components/Button/CreateButton.vue'
 import GenerateDataButton from '@/components/Button/GenerateDataButton.vue'
@@ -230,10 +238,10 @@ async function upload() {
 
         error.value = mapped.length
             ? ''
-            : 'ไฟล์อ่านได้ แต่ไม่พบแถวข้อมูลหลังหัวตาราง'
+            : 'Unable to read file. Please check the information.'
     } catch (e) {
         console.error(e)
-        error.value = 'ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบข้อมูล'
+        error.value = 'Unable to read file. Please check the information.'
     } finally {
         uploading.value = false
     }
@@ -407,56 +415,57 @@ function mapRows(rows) {
     })
 }
 
-/* ---------- ensure masters ---------- */
-async function ensureDepartmentId(depName) {
-    if (!depName) return null
-    const found = departments.value.find(d => d.dpm_name === depName)
-    if (found) return found.id
-    try {
-        const resp = await axios.post('/save-department', { dpm_name: depName })
-        const newId = resp.data?.id
-        if (!newId) throw new Error('No id from /save-department')
-        departments.value.push({ id: newId, dpm_name: depName })
-        return newId
-    } catch (err) {
-        console.error('create department failed', err)
-        return null
+function resolveMasterForRow(row) {
+    const depName = (row.department || '').trim()
+    const teamName = (row.team || '').trim()
+    const posName = (row.position || '').trim()
+
+    // ฟังก์ชันช่วยเปรียบเทียบ: ตัดช่องว่างหน้าหลัง + แปลงเป็นตัวพิมพ์เล็ก ก่อนเทียบ
+    const isMatch = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase()
+
+    // 1. ค้นหา Department
+    const dep = departments.value.find(d => isMatch(d.dpm_name, depName))
+    if (!dep) {
+        return { ok: false, reason: 'notFound', target: 'Department' }
     }
+
+    // 2. ค้นหา Team (ต้องตรงทั้งชื่อ และต้องอยู่ในแผนกที่ถูกต้อง)
+    let team = teams.value.find(t => isMatch(t.tm_name, teamName) && t.tm_department_id === dep.id)
+
+    // ถ้าหาแบบตรงเป๊ะไม่เจอ (อาจจะชื่อถูกแต่อยู่ผิดแผนก หรือไม่มีชื่อนี้เลย)
+    if (!team) {
+        const teamExistsAnywhere = teams.value.find(t => isMatch(t.tm_name, teamName))
+        if (teamExistsAnywhere) {
+            // ชื่อทีมมีอยู่จริง แต่อยู่คนละแผนก
+            return { ok: false, reason: 'teamNotInDepartment', dep, team: teamExistsAnywhere, pos: null }
+        } else {
+            // ไม่มีชื่อทีมนี้เลย
+            return { ok: false, reason: 'notFound', target: 'Team' }
+        }
+    }
+
+    // 3. ค้นหา Position (ต้องตรงทั้งชื่อ และต้องอยู่ในทีมที่ถูกต้อง)
+    let pos = positions.value.find(p => isMatch(p.pst_name, posName) && p.pst_team_id === team.id)
+
+    // ถ้าหาแบบตรงเป๊ะไม่เจอ
+    if (!pos) {
+        const posExistsAnywhere = positions.value.find(p => isMatch(p.pst_name, posName))
+        if (posExistsAnywhere) {
+            // ชื่อตำแหน่งมีอยู่จริง แต่อยู่คนละทีม
+            return { ok: false, reason: 'positionNotInTeam', dep, team, pos: posExistsAnywhere }
+        } else {
+            // ไม่มีชื่อตำแหน่งนี้เลย
+            return { ok: false, reason: 'notFound', target: 'Position' }
+        }
+    }
+
+    // 4. เจอครบถ้วนสมบูรณ์
+    return { ok: true, dep, team, pos }
 }
 
-async function ensurePositionId(posName) {
-    if (!posName) return null
-    const found = positions.value.find(p => p.pst_name === posName)
-    if (found) return found.id
-    try {
-        const resp = await axios.post('/save-position', { pst_name: posName })
-        const newId = resp.data?.id
-        if (!newId) throw new Error('No id from /save-position')
-        positions.value.push({ id: newId, pst_name: posName })
-        return newId
-    } catch (err) {
-        console.error('create position failed', err)
-        return null
-    }
-}
-
-async function ensureTeamId(teamName) {
-    if (!teamName) return null
-    const found = teams.value.find(t => t.tm_name === teamName)
-    if (found) return found.id
-    try {
-        const resp = await axios.post('/save-team', { tm_name: teamName })
-        const newId = resp.data?.id
-        if (!newId) throw new Error('No id from /save-team')
-        teams.value.push({ id: newId, tm_name: teamName })
-        return newId
-    } catch (err) {
-        console.error('create team failed', err)
-        return null
-    }
-}
 
 /* ---------- modal states ---------- */
+const errorMessage = ref('')
 const showCreateSuccess = ref(false)
 const showCannotCreate = ref(false)
 
@@ -469,16 +478,42 @@ async function onCreate() {
     // รีเซ็ต modal state รอบก่อน
     showCreateSuccess.value = false
     showCannotCreate.value = false
+    errorMessage.value = ''
 
     const prefixMap = { 'นาย': 1, 'นาง': 2, 'นางสาว': 3 }
 
     try {
         // ---------------------------------
-        // STEP 1: เตรียม payload สำหรับทุกแถวที่ master พร้อม
+        // STEP 1: เตรียม payload สำหรับทุกแถว และเช็กโครงสร้าง Dept/Team/Position
         // ---------------------------------
         const preparedRows = [] // เก็บ { row, payload }
 
         for (const row of displayRows.value) {
+            // เช็กว่า department / team / position ตรงตาม master หรือไม่
+            const resolved = resolveMasterForRow(row)
+
+            if (!resolved.ok) {
+                // ถ้าแถวไหนไม่ตรง -> block ทั้ง batch และแสดง EmployeeCannotCreate
+                let errText = 'โครงสร้างข้อมูลไม่ถูกต้อง'
+
+                if (resolved.reason === 'notFound') {
+                    const target = resolved.target || 'Item'
+                    errText = `ไม่พบข้อมูล ${target} "${target === 'Department' ? row.department : target === 'Team' ? row.team : row.position}" ในระบบ`
+                } else if (resolved.reason === 'teamNotInDepartment') {
+                    errText = `ทีม "${row.team}" ไม่ได้อยู่ในแผนก "${row.department}"`
+                } else if (resolved.reason === 'positionNotInTeam') {
+                    errText = `ตำแหน่ง "${row.position}" ไม่ได้อยู่ในทีม "${row.team}"`
+                }
+
+                // กำหนดข้อความ Error และแสดง Modal
+                errorMessage.value = errText
+                showCannotCreate.value = true
+                creating.value = false
+                return
+            }
+
+            const { dep, team, pos } = resolved
+
             // แตกชื่อ prefix / first / last
             let emp_prefix = 1
             let emp_firstname = ''
@@ -496,16 +531,7 @@ async function onCreate() {
                 emp_firstname = parts[0]
             }
 
-            // ensure master ids
-            const depId = await ensureDepartmentId(row.department || '')
-            const posId = await ensurePositionId(row.position || '')
-            const teamId = await ensureTeamId(row.team || '')
-
-            // ถ้ามีอันไหนสร้าง/หาไม่ได้ แถวนี้ไม่พร้อม insert -> ข้าม
-            if (!depId || !posId || !teamId) {
-                continue
-            }
-
+            // ถ้ามาถึงตรงนี้ แปลว่า dept/team/position ถูกต้องแน่นอน
             preparedRows.push({
                 row,
                 payload: {
@@ -516,16 +542,16 @@ async function onCreate() {
                     emp_lastname,
                     emp_email: (row.email || '').trim(),
                     emp_phone: (row.phone || '').trim(),
-                    emp_position_id: posId,
-                    emp_department_id: depId,
-                    emp_team_id: teamId,
+                    emp_position_id: pos.id,
+                    emp_department_id: dep.id,
+                    emp_team_id: team.id,
                     emp_password: 'Password123',
                     emp_status: 2,
                 }
             })
         }
 
-        // ถ้าไม่มีใครพร้อมสร้างเลย -> แสดง alert, ไม่ทำอะไรต่อ
+        // ถ้าไม่มีใครพร้อมสร้างเลย (เช่น บรรทัดว่างทั้งไฟล์)
         if (preparedRows.length === 0) {
             showCreateSuccess.value = false
             showCannotCreate.value = true
@@ -534,69 +560,64 @@ async function onCreate() {
 
         // ---------------------------------
         // STEP 2: ตรวจซ้ำกับระบบ (เบอร์ / อีเมล / employeeId)
-        // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch + SweetAlert
+        // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch
         // ---------------------------------
         let foundDuplicateInSystem = false
-        let duplicateInfo = [] // จะเก็บ fields ที่ซ้ำ เช่น ["emp_id","emp_email"]
+        let duplicateInfo = [] // เก็บรายชื่อฟิลด์ที่ซ้ำ
+        let duplicatePayload = null // เก็บชุดข้อมูลที่ซ้ำเพื่อเอาค่ามาแสดง
 
         for (const { payload } of preparedRows) {
-            // เตรียม body สำหรับเช็คซ้ำ
             const checkBody = {}
-            if (payload.emp_id && payload.emp_id.trim() !== '') {
-                checkBody.emp_id = payload.emp_id.trim()
-            }
-            if (payload.emp_phone && payload.emp_phone.trim() !== '') {
-                checkBody.emp_phone = payload.emp_phone.trim()
-            }
-            if (payload.emp_email && payload.emp_email.trim() !== '') {
-                checkBody.emp_email = payload.emp_email.trim()
-            }
+            if (payload.emp_id) checkBody.emp_id = payload.emp_id
+            if (payload.emp_phone) checkBody.emp_phone = payload.emp_phone
+            if (payload.emp_email) checkBody.emp_email = payload.emp_email
 
             try {
-                // ตัวอย่าง response backend:
-                // { "duplicate": true, "fields": ["emp_id", "emp_email"] }
                 const dupResp = await axios.post('/check-employee-duplicate', checkBody)
 
                 if (dupResp.data?.duplicate === true) {
                     foundDuplicateInSystem = true
                     duplicateInfo = dupResp.data?.fields || []
+                    duplicatePayload = payload // จำค่า payload ที่ซ้ำไว้
                     break
                 }
             } catch (dupErr) {
-                console.error('duplicate check failed', dupErr)
-                // ถ้าเช็กไม่ได้ ให้ถือว่า fail แบบ duplicate
-                foundDuplicateInSystem = true
-                duplicateInfo = ['unknown']
-                break
+                console.error('API Check Duplicate Failed:', dupErr)
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'System Error',
+                    text: 'ไม่สามารถตรวจสอบข้อมูลซ้ำได้ (API Error)',
+                })
+                return
             }
         }
 
         if (foundDuplicateInSystem) {
-            // map key จาก backend -> ข้อความสวยๆ
+            // Map ชื่อฟิลด์ให้เป็นภาษาอังกฤษที่เข้าใจง่าย
             const labelMap = {
                 emp_id: 'Employee ID',
-                emp_phone: 'Phone number',
-                emp_email: 'Email',
-                unknown: 'Unknown field',
+                emp_phone: 'Phone Number',
+                emp_email: 'Email'
             }
 
-            const niceMsg = duplicateInfo.length
-                ? duplicateInfo.map(f => labelMap[f] || f).join(', ')
-                : 'Some user data already exists in the system.'
+            // สร้างข้อความระบุว่าอะไรซ้ำ และค่าคืออะไร
+            // ตัวอย่าง output: "Employee ID (12345), Email (test@mail.com)"
+            const duplicateDetails = duplicateInfo.map(field => {
+                const label = labelMap[field] || field
+                const value = duplicatePayload ? duplicatePayload[field] : ''
+                return `${label} "${value}"`
+            }).join(', ')
 
-            // SweetAlert แจ้งว่ามีข้อมูลซ้ำ
-            Swal.fire({
-                icon: 'error',
-                title: 'Cannot create employee',
-                text: `One or more users in this file already exist in the system (${niceMsg}).`,
-            })
+            // กรณีพบข้อมูลซ้ำ แจ้งเตือนพร้อมระบุค่าที่ซ้ำ
+            errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
 
-            // หยุดเลย ไม่ต้องสร้างใคร
+            showCreateSuccess.value = false
+            showCannotCreate.value = true
             return
         }
 
         // ---------------------------------
-        // STEP 3: ไม่มีซ้ำเลย -> อนุญาตให้สร้างทุกคน
+        // STEP 3: ไม่มีซ้ำ -> insert ทุกคน
         // ---------------------------------
         let createdCount = 0
 
@@ -610,18 +631,16 @@ async function onCreate() {
                     payload.emp_id,
                     err.response?.data || err.message
                 )
-                // ถ้ามี error insert คนใดคนหนึ่ง เรา "ยังคงพยายามสร้างคนอื่นต่อ"
-                // เพราะ requirement ล่าสุดคือ:
-                //    - block ทั้ง batch เมื่อ "เจอว่าซ้ำ"
-                //    - error insert อื่น ๆ ตอน save ไม่ได้พูดว่าต้อง block ทั้ง batch
-                // ถ้าอยาก block ทั้ง batch ทุก error ให้ return ทันทีแทน
             }
         }
 
-        // ถ้าสุดท้ายสร้างไม่ได้เลยซักคน -> ถือว่า fail
         if (createdCount === 0) {
-            showCreateSuccess.value = false
-            showCannotCreate.value = true
+            // กรณี Save ไม่ผ่านสักคนเลย
+            await Swal.fire({
+                icon: 'error',
+                title: 'Save Failed',
+                text: 'เกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้',
+            })
             return
         }
 
@@ -647,54 +666,145 @@ function handleSuccessClose() {
     router.push('/employee')
 }
 
-/* ---------- download template ---------- */
-function downloadTemplate() {
-    const header = [
-        'Company',
-        'Employee ID',
-        'ชื่อเล่น',
-        'คำนำหน้า',
-        'ชื่อ',
-        'นามสกุล',
-        'ID',
-        'Position',
-        'Department',
-        'Team',
-        'Phone',
-        'Email',
-        'Date Add'
-    ]
-
-    const sampleRow = [
-        'CN',
-        'CN0001',
-        'มด',
-        'นาย',
-        'สมปอง',
-        'แซ่บสุด',
-        '—',
-        'Software Engineer',
-        'Product Development',
-        'Mobile',
-        "'0918231678",
-        'employee@example.com',
-        '20/08/2025'
-    ]
-
-    const ws = XLSX.utils.aoa_to_sheet([header, sampleRow])
-    ws['!cols'] = header.map(h => {
-        if (h === 'Email') return { wch: 28 }
-        return { wch: Math.max(12, String(h).length + 2) }
-    })
+async function downloadTemplate() {
+    if (!departments.value.length && !teams.value.length && !positions.value.length) {
+        try {
+            await loadMeta()
+        } catch (e) {
+            console.error('loadMeta in downloadTemplate failed', e)
+        }
+    }
 
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
 
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    const blob = new Blob([wbout], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    // 1. Data Prep
+    const depMap = new Map((departments.value || []).map(d => [d.id, d.dpm_name]))
+    const teamMap = new Map((teams.value || []).map(t => [t.id, t]))
+
+    const relationRows = []
+        ; (positions.value || []).forEach(p => {
+            const team = teamMap.get(p.pst_team_id)
+            if (!team) return
+            const depName = depMap.get(team.tm_department_id) || ''
+
+            relationRows.push({ d: depName, t: team.tm_name, p: p.pst_name })
+        })
+
+    relationRows.sort((a, b) => {
+        return a.d.localeCompare(b.d) || a.t.localeCompare(b.t) || a.p.localeCompare(b.p)
     })
 
+    const distinctDeps = [...new Set(relationRows.map(x => x.d).filter(Boolean))].sort()
+    const distinctTeams = [...new Set(relationRows.map(x => x.t).filter(Boolean))].sort()
+    const distinctPositions = [...new Set(relationRows.map(x => x.p).filter(Boolean))].sort()
+
+    // 2. Reference Sheet
+    const refHeader = ['Department', 'Team', 'Position', '', '', '', '', '']
+    const refSheetData = [refHeader]
+
+    const maxRow = Math.max(relationRows.length, distinctDeps.length, distinctTeams.length, distinctPositions.length)
+
+    for (let i = 0; i < maxRow; i++) {
+        const rel = relationRows[i] || {}
+        refSheetData.push([
+            rel.d || '', rel.t || '', rel.p || '', '', '',
+            distinctDeps[i] || '', distinctTeams[i] || '', distinctPositions[i] || ''
+        ])
+    }
+
+    const wsRef = XLSX.utils.aoa_to_sheet(refSheetData)
+
+    const refRange = XLSX.utils.decode_range(wsRef['!ref'])
+    // AutoFilter
+    wsRef['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: refRange.e.r, c: 2 } }) };
+    // Cols
+    wsRef['!cols'] = [
+        { wch: 25 }, { wch: 25 }, { wch: 35 },
+        { wch: 5, hidden: true }, { wch: 5, hidden: true },
+        { wch: 20, hidden: true }, { wch: 20, hidden: true }, { wch: 20, hidden: true }
+    ]
+
+    // 3. UploadTemplate Sheet
+    const header = [
+        'Company', 'Employee ID', 'ชื่อเล่น', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ID',
+        'Department', 'Team', 'Position', 'Phone', 'Email', 'Date Add'
+    ]
+
+    const validSample = relationRows.length > 0 ? relationRows[0] : { d: '', t: '', p: '' }
+    const sampleRow = [
+        'CN', 'Test001', 'มด', 'นาย', 'สมปอง', 'แซ่บสุด', '—',
+        validSample.d, validSample.t, validSample.p,
+        "0918231678", 'employee@example.com', '20/08/2025', ''
+    ]
+
+    const wsTemplate = XLSX.utils.aoa_to_sheet([header, sampleRow])
+
+    // AutoFilter
+    const tRange = XLSX.utils.decode_range(wsTemplate['!ref'])
+    wsTemplate['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: tRange.e.r, c: tRange.e.c } }) }
+
+    // Warning Text (Keep text, remove style)
+    const noteCell = XLSX.utils.encode_cell({ r: 0, c: 13 })
+    wsTemplate[noteCell] = {
+        v: '*กรอกเบอร์ไม่ต้องกรอก 0 นำหน้า ระบบจะเพิ่ม 0 ให้อัตโนมัติ',
+        t: 's'
+    }
+
+    // Apply Formats (Only Format, no visual style)
+    for (let R = tRange.s.r; R <= tRange.e.r; ++R) {
+        for (let C = tRange.s.c; C <= tRange.e.c; ++C) {
+            const cellAddr = XLSX.utils.encode_cell({ r: R, c: C })
+            if (!wsTemplate[cellAddr]) continue
+
+            // Formats
+            if (C === 1 || C === 10) {
+                wsTemplate[cellAddr].z = '@'; wsTemplate[cellAddr].t = 's'
+            } else if (C === 12) {
+                wsTemplate[cellAddr].z = 'dd/mm/yyyy'
+            }
+        }
+    }
+
+    // Cols
+    const colWidths = header.map(h => {
+        if (h === 'Email') return { wch: 28 }
+        if (h === 'Date Add') return { wch: 15 }
+        return { wch: Math.max(12, String(h).length + 5) }
+    })
+    colWidths.push({ wch: 60 })
+    wsTemplate['!cols'] = colWidths
+
+    // Data Validation
+    const rowsBuffer = 1000
+    const listDeptRef = `Reference!$F$2:$F$${Math.max(2, distinctDeps.length + 1)}`
+    const listTeamRef = `Reference!$G$2:$G$${Math.max(2, distinctTeams.length + 1)}`
+    const listPosRef = `Reference!$H$2:$H$${Math.max(2, distinctPositions.length + 1)}`
+
+    wsTemplate['!dataValidation'] = [
+        {
+            sqref: `H2:H${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctDeps.length ? listDeptRef : '"No Data"',
+            showErrorMessage: true, error: 'กรุณาเลือกแผนกจากรายการ'
+        },
+        {
+            sqref: `I2:I${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctTeams.length ? listTeamRef : '"No Data"',
+            showErrorMessage: true, error: 'กรุณาเลือกทีมจากรายการ'
+        },
+        {
+            sqref: `J2:J${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctPositions.length ? listPosRef : '"No Data"',
+            showErrorMessage: true, error: 'กรุณาเลือกตำแหน่งจากรายการ'
+        },
+        {
+            sqref: `M2:M${rowsBuffer}`, type: 'date', operator: 'between', formula1: '1', formula2: '73415',
+            showInputMessage: true, promptTitle: 'Date Format', prompt: 'กรุณากรอกวันที่ในรูปแบบ วว/ดด/ปปปป (เช่น 20/08/2025)',
+            showErrorMessage: true, error: 'กรุณากรอกวันที่ให้ถูกต้องตามรูปแบบ'
+        }
+    ]
+
+    // Save
+    XLSX.utils.book_append_sheet(wb, wsTemplate, 'UploadTemplate')
+    XLSX.utils.book_append_sheet(wb, wsRef, 'Reference')
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) // Remove cellStyles: true
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
