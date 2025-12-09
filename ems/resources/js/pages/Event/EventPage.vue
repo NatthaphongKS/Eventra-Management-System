@@ -606,6 +606,11 @@ export default {
             }
         },
 
+        openDelete(id) {
+            this.deleteId = id;
+            this.showModalAsk = true;
+        },
+
         handleClientSort({ key, order }) {
             this.sortBy = key;
             this.sortOrder = order;
