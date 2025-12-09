@@ -106,18 +106,23 @@
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
             :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
 
+        <!--Popup V.เก่า -->
         <!-- icon สีไม่ตรงตามแบบ Figma -->
         <!-- ❌ Block: DONE -->
+        <!--
         <ModalAlert :open="showModalBlockedDone" type="error" title="CANNOT DELETE!"
             message="Sorry, This event has already ended." :show-cancel="false" okText="OK"
             @confirm="showModalBlockedDone = false" />
+        -->
 
+        <!--Popup V.เก่า -->
         <!-- icon สีไม่ตรงตามแบบ Figma -->
         <!-- ❌ Block: ONGOING -->
+        <!--
         <ModalAlert :open="showModalBlockedOngoing" type="error" title="CANNOT DELETE!"
             message="Sorry, This event is ongoing." :show-cancel="false" okText="OK"
             @confirm="showModalBlockedOngoing = false" />
-
+        -->
     </section>
 </template>
 
