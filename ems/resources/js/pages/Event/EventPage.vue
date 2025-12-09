@@ -106,23 +106,6 @@
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
             :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
 
-        <!--Popup V.เก่า -->
-        <!-- icon สีไม่ตรงตามแบบ Figma -->
-        <!-- ❌ Block: DONE -->
-        <!--
-        <ModalAlert :open="showModalBlockedDone" type="error" title="CANNOT DELETE!"
-            message="Sorry, This event has already ended." :show-cancel="false" okText="OK"
-            @confirm="showModalBlockedDone = false" />
-        -->
-
-        <!--Popup V.เก่า -->
-        <!-- icon สีไม่ตรงตามแบบ Figma -->
-        <!-- ❌ Block: ONGOING -->
-        <!--
-        <ModalAlert :open="showModalBlockedOngoing" type="error" title="CANNOT DELETE!"
-            message="Sorry, This event is ongoing." :show-cancel="false" okText="OK"
-            @confirm="showModalBlockedOngoing = false" />
-        -->
     </section>
 </template>
 
@@ -633,34 +616,13 @@ export default {
                 ) || this.selectedSort;
         },
 
-        // ✅ เพิ่ม method นี้
+        // ✅ เมื่อเลือกการเรียงลำดับจาก EventSort
         onPickSort(sort) {
             if (!sort) return;
             this.selectedSort = sort;
             this.sortBy = sort.key;
             this.sortOrder = sort.order;
             this.page = 1;
-        },
-
-        openDelete(id) {
-            const ev = this.normalized.find(e => e.id === id);
-            const status = (ev?.evn_status || "").toLowerCase();
-
-            // ❌ ถ้า Done → ห้ามลบ
-            if (status === "done") {
-                this.showModalBlockedDone = true;
-                return;
-            }
-
-            // ❌ ถ้า Ongoing → ห้ามลบ
-            if (status === "ongoing") {
-                this.showModalBlockedOngoing = true;
-                return;
-            }
-
-            // ✔ ถ้า status อื่น → ลบได้
-            this.deleteId = id;
-            this.showModalAsk = true;
         },
 
         async onConfirmDelete() {
@@ -680,13 +642,16 @@ export default {
                 this.isDeleting = false;
             }
         },
+
         onCancelDelete() {
             this.showModalAsk = false;
             this.deleteId = null;
         },
+
         onConfirmSuccess() {
             this.showModalSuccess = false;
         },
+
         onConfirmFail() {
             this.showModalFail = false;
         },
