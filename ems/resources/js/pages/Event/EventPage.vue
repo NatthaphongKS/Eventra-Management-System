@@ -58,67 +58,46 @@
             class="mt-4"
         >
             <template #cell-evn_title="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                    title="ดูรายละเอียด"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)" title="ดูรายละเอียด">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-cat_name="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_status="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     <span :class="badgeClass(value)">
                         {{ value || "N/A" }}
                     </span>
@@ -126,70 +105,43 @@
             </template>
 
             <template #actions="{ row }">
-                <button
-                    @click="editEvent(row.id)"
-                    class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Edit"
-                >
+                <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
                     <PencilIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <button
-                    @click="openDelete(row.id)"
-                    class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Delete"
-                >
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
                     <TrashIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <router-link
-                    :to="`/EventCheckIn/eveId/${row.id}`"
-                    class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Check-in"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="20px"
-                        viewBox="0 -960 960 960"
-                        width="20px"
-                        fill="currentColor"
-                        class="h-5 w-5 text-neutral-800"
-                    >
+                <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                    title="Check-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor" class="h-5 w-5 text-neutral-800">
                         <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z"
-                        />
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
                     </svg>
                 </router-link>
             </template>
         </DataTable>
 
-        <ModalAlert
-            :open="showModalAsk"
-            type="confirm"
-            title="ARE YOU SURE TO DELETE"
-            message="This wil by deleted permanently. Are you sure?"
-            :show-cancel="true"
-            okText="OK"
-            cancelText="Cancel"
-            @confirm="onConfirmDelete"
-            @cancel="onCancelDelete"
-        />
-        <ModalAlert
-            :open="showModalSuccess"
-            type="success"
-            title="DELETE SUCCESS!"
-            message="We have already deleted event."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmSuccess"
-        />
-        <ModalAlert
-            :open="showModalFail"
-            type="error"
-            title="ERROR!"
-            message="Sorry, Please try again later."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmFail"
-        />
+        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
+            message="This wil by deleted permanently. Are you sure?" :show-cancel="true" okText="OK" cancelText="Cancel"
+            @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
+            message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
+        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
+            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
+
+        <!-- icon สีไม่ตรงตามแบบ Figma -->
+        <!-- ❌ Block: DONE -->
+        <ModalAlert :open="showModalBlockedDone" type="error" title="CANNOT DELETE!"
+            message="Sorry, This event has already ended." :show-cancel="false" okText="OK"
+            @confirm="showModalBlockedDone = false" />
+
+        <!-- icon สีไม่ตรงตามแบบ Figma -->
+        <!-- ❌ Block: ONGOING -->
+        <ModalAlert :open="showModalBlockedOngoing" type="error" title="CANNOT DELETE!"
+            message="Sorry, This event is ongoing." :show-cancel="false" okText="OK"
+            @confirm="showModalBlockedOngoing = false" />
+
     </section>
 </template>
 
@@ -230,6 +182,9 @@ export default {
 
     data() {
         return {
+            showModalBlockedDone: false,
+            showModalBlockedOngoing: false,
+
             event: [],
             categories: [],
             catMap: {},
@@ -718,9 +673,26 @@ export default {
         },
 
         openDelete(id) {
+            const ev = this.normalized.find(e => e.id === id);
+            const status = (ev?.evn_status || "").toLowerCase();
+
+            // ❌ ถ้า Done → ห้ามลบ
+            if (status === "done") {
+                this.showModalBlockedDone = true;
+                return;
+            }
+
+            // ❌ ถ้า Ongoing → ห้ามลบ
+            if (status === "ongoing") {
+                this.showModalBlockedOngoing = true;
+                return;
+            }
+
+            // ✔ ถ้า status อื่น → ลบได้
             this.deleteId = id;
             this.showModalAsk = true;
         },
+
         async onConfirmDelete() {
             const id = this.deleteId;
             this.showModal = false;
