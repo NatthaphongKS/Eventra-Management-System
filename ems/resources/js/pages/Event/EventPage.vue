@@ -1,31 +1,62 @@
 <template>
     <section class="p-0">
         <div class="mt-3 mb-1 flex items-center gap-4">
-            <!-- ✅ SearchBar -->
-            <div class="flex flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch"
-                    class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5" />
+            <div class="flex-shrink-0 w-[450px]">
+                <SearchBar
+                    v-model="searchInput"
+                    placeholder="Search event..."
+                    @search="applySearch"
+                    class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
+                />
             </div>
 
-            <!-- ✅ Filter / Sort -->
-            <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                @update:modelValue="applyFilter" class="mt-6" />
-            <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort" class="mt-6" />
-            <!-- ✅ Add Button -->
-            <router-link to="/add-event"
-                class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6">
+            <EventDatePicker
+                v-model="dateRange"
+                @update:modelValue="applyDateRange"
+                class="mt-6 ml-auto"
+            />
+
+            <EventFilter
+                v-model="filters"
+                :categories="categories"
+                :status-options="statusOptions"
+                @update:modelValue="applyFilter"
+                class="mt-6"
+            />
+            <EventSort
+                v-model="selectedSort"
+                :options="sortOptions"
+                @change="onPickSort"
+                class="mt-6"
+            />
+            <router-link
+                to="/add-event"
+                class="inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6"
+            >
                 + Add
             </router-link>
         </div>
 
-        <!-- ตาราง -->
-        <DataTable :rows="paged" :columns="eventTableColumns" :loading="false" :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
-            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="
+        <DataTable
+            :rows="paged"
+            :columns="eventTableColumns"
+            :loading="false"
+            :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]"
+            :page="page"
+            :pageSize="pageSize"
+            :sortKey="sortBy"
+            :sortOrder="sortOrder"
+            @update:page="page = $event"
+            @update:pageSize="
                 pageSize = $event;
-            page = 1;
-            " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
-            <!-- คลิกได้ทั้งแถว -->
+                page = 1;
+            "
+            @sort="handleClientSort"
+            row-key="id"
+            :show-row-number="true"
+            class="mt-4"
+        >
             <template #cell-evn_title="{ row, value }">
                 <span role="button" tabindex="0"
                     class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
@@ -122,6 +153,8 @@ import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
+import dayjs from "dayjs";
+import EventDatePicker from "@/components/IndexEvent/EventDatePicker.vue";
 
 import {
     MagnifyingGlassIcon,
@@ -144,6 +177,7 @@ export default {
         EventFilter,
         SearchBar,
         ModalAlert,
+        EventDatePicker,
     },
 
     data() {
@@ -157,6 +191,8 @@ export default {
 
             searchInput: "",
             search: "",
+
+            dateRange: { start: null, end: null },
 
             sortBy: "evn_status",
             sortOrder: "asc",
@@ -300,7 +336,6 @@ export default {
             showModalFail: false,
         };
     },
-    filters: { category: [], status: [] }, // ✅ สำหรับเชื่อม v-model
     statusOptions: [
         { label: "Done", value: "done" },
         { label: "Ongoing", value: "ongoing" },
@@ -362,6 +397,7 @@ export default {
         filtered() {
             let arr = [...this.normalized];
             const q = this.search.toLowerCase().trim();
+            const { start, end } = this.dateRange;
 
             // 🔍 Search filter
             if (q) {
@@ -370,6 +406,27 @@ export default {
                         .toLowerCase()
                         .includes(q)
                 );
+            }
+
+            // 🗓️ Date Range filter (Logic กรองวันที่ยังอยู่ที่นี่)
+            const startTimestamp = start ? this.normalizeDateForComparison(start) : null;
+            const endTimestamp = end ? (this.normalizeDateForComparison(end) + 24 * 60 * 60 * 1000) : null;
+
+            if (startTimestamp || endTimestamp) {
+                arr = arr.filter((e) => {
+                    const eventDateTimestamp = this.parseDate(e.evn_date);
+                    if (!eventDateTimestamp) return false;
+
+                    let isWithinRange = true;
+
+                    if (startTimestamp) {
+                        isWithinRange = isWithinRange && eventDateTimestamp >= startTimestamp;
+                    }
+                    if (endTimestamp) {
+                        isWithinRange = isWithinRange && eventDateTimestamp < endTimestamp;
+                    }
+                    return isWithinRange;
+                });
             }
 
             // ✅ Category filter
@@ -399,23 +456,8 @@ export default {
 
             const statusOrder = { ongoing: 1, upcoming: 2, done: 3 };
 
-            const parseDate = (val) => {
-                if (!val) return 0;
-                if (typeof val !== "string")
-                    return new Date(val).getTime() || 0;
-                const s = val.trim();
-                if (/^\d{4}-\d{2}-\d{2}/.test(s))
-                    return new Date(s).getTime() || 0;
-                if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-                    let [d, m, y] = s.split("/").map((n) => parseInt(n, 10));
-                    if (y >= 2400) y -= 543;
-                    return new Date(y, m - 1, d).getTime();
-                }
-                return new Date(s).getTime() || 0;
-            };
-
             const getVal = (row) => {
-                if (type === "date") return parseDate(row[key]);
+                if (type === "date") return this.parseDate(row[key]);
                 if (type === "number") return Number(row[key] ?? 0);
                 if (type === "text")
                     return String(row[key] ?? "").toLowerCase();
@@ -436,8 +478,8 @@ export default {
                     if (oa !== ob) return (oa - ob) * dir;
 
                     // ภายในสถานะเดียวกัน → เรียงวันที่
-                    const da = parseDate(a.evn_date);
-                    const db = parseDate(b.evn_date);
+                    const da = this.parseDate(a.evn_date);
+                    const db = this.parseDate(b.evn_date);
                     if (sa === "done") return db - da;
                     return da - db;
                 }
@@ -455,8 +497,8 @@ export default {
                 }
 
                 // กรณีค่าเท่ากัน → fallback: วันที่
-                const da = parseDate(a.evn_date);
-                const db = parseDate(b.evn_date);
+                const da = this.parseDate(a.evn_date);
+                const db = this.parseDate(b.evn_date);
                 return da - db;
             });
 
@@ -513,6 +555,34 @@ export default {
             this.page = 1;
         },
 
+        applyDateRange() {
+            this.page = 1;
+        },
+
+        // 🔹 Function นี้ใช้แปลง Date string 'YYYY-MM-DD' (จาก Component)
+        normalizeDateForComparison(dateString) {
+            if (!dateString) return null;
+            return new Date(dateString).getTime();
+        },
+
+        // 🔹 parseDate ที่ใช้สำหรับแปลงวันที่ในข้อมูล Event (รูปแบบอื่น)
+        parseDate(val) {
+            if (!val) return 0;
+            if (typeof val !== "string")
+                return new Date(val).getTime() || 0;
+            const s = val.trim();
+            // YYYY-MM-DD (format มาตรฐาน)
+            if (/^\d{4}-\d{2}-\d{2}/.test(s))
+                return new Date(s).getTime() || 0;
+            // D/M/Y (format ที่คุณเคยเขียนไว้)
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+                let [d, m, y] = s.split("/").map((n) => parseInt(n, 10));
+                if (y >= 2400) y -= 543;
+                return new Date(y, m - 1, d).getTime();
+            }
+            return new Date(s).getTime() || 0;
+        },
+
         async fetchEvent() {
             try {
                 const res = await axios.get("/get-event");
@@ -555,32 +625,10 @@ export default {
             this.$router.push(`/EditEvent/${id}`);
         },
 
-        async deleteEvent(id) {
-            const ev = this.normalized.find((e) => e.id === id);
-            const title = ev?.evn_title || "this event";
-            const { isConfirmed } = await Swal.fire({
-                title: `Delete ${title}?`,
-                showCancelButton: true,
-            });
-            if (!isConfirmed) return;
-            try {
-                await axios.patch(`/event/${id}/deleted`);
-                await Swal.fire("Deleted!", "", "success");
-                this.fetchEvent();
-            } catch (err) {
-                console.error("Error deleting event", err);
-                await Swal.fire("Error", "ไม่สามารถลบได้", "error");
-            }
-        },
-
         formatDate(val) {
             if (!val) return "N/A";
             try {
-                const d = new Date(val);
-                const dd = String(d.getDate()).padStart(2, "0");
-                const mm = String(d.getMonth() + 1).padStart(2, "0");
-                const yyyy = d.getFullYear();
-                return `${dd}/${mm}/${yyyy}`;
+                return dayjs(val).format('DD/MM/YYYY');
             } catch {
                 return "Invalid Date";
             }
@@ -616,7 +664,6 @@ export default {
                 ) || this.selectedSort;
         },
 
-        // ✅ เพิ่ม method นี้
         onPickSort(sort) {
             if (!sort) return;
             this.selectedSort = sort;
