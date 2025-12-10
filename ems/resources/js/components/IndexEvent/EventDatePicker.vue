@@ -356,8 +356,9 @@ export default {
         nextMonth() {
             this.currentCalendarMonth = this.currentCalendarMonth.add(1, 'month');
         },
-        
 
+
+        
         clearDateRange() {
             this.selectedRange.start = null;
             this.selectedRange.end = null;

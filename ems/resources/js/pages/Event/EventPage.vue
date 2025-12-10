@@ -224,6 +224,7 @@ export default {
                     order: "desc",
                     type: "number",
                 },
+                
                 {
                     id: "invited_asc",
                     label: "จำนวนคนเชิญน้อยสุด",
