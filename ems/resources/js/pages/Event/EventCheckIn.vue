@@ -62,14 +62,14 @@
 
             <button
                 class="status-pill"
-                :class="statusFilter === 'dinied' ? 'ring-2 ring-rose-300' : ''"
-                @click="setStatus('dinied')"
+                :class="statusFilter === 'denied' ? 'ring-2 ring-rose-300' : ''"
+                @click="setStatus('denied')"
             >
                 <span
                     class="inline-flex h-2 w-2 rounded-full bg-rose-500"
                 ></span>
                 <span class="ml-2"
-                    >{{ counts.dinied }}/{{ totals.dinied }} dinied</span
+                    >{{ counts.denied }}/{{ totals.denied }} Denied</span
                 >
             </button>
 
@@ -300,8 +300,7 @@ function setStatus(s) {
 function mapInvite(ans) {
     const a = String(ans || "").toLowerCase();
     if (a.includes("accept")) return "accepted";
-    if (a.includes("dinied") || a.includes("reject") || a.includes("decline"))
-        return "dinied";
+    if (a.includes("denied")) return "denied";
     if (a.includes("invalid")) return "pending";
     return "notInvited";
 }
@@ -309,7 +308,7 @@ function mapInvite(ans) {
 function statusLabel(key) {
     return {
         accepted: "Accepted",
-        dinied: "Dinied",
+        denied: "denied",
         pending: "Pending",
         notInvited: "Not Invited",
     }[key];
@@ -318,7 +317,7 @@ function statusLabel(key) {
 function statusClass(key) {
     return {
         accepted: "bg-emerald-100 text-emerald-700",
-        dinied: "bg-rose-100 text-rose-700",
+        denied: "bg-rose-100 text-rose-700",
         pending: "bg-amber-100 text-amber-700",
         notInvited: "bg-slate-100 text-slate-600",
     }[key];
@@ -373,13 +372,13 @@ const filteredBase = computed(() => {
 
 /* ===== Status Counters ===== */
 const totals = computed(() => {
-    const t = { accepted: 0, dinied: 0, pending: 0, notInvited: 0 };
+    const t = { accepted: 0, denied: 0, pending: 0, notInvited: 0 };
     rows.value.forEach((r) => t[mapInvite(r.empInviteStatus)]++);
     return t;
 });
 
 const counts = computed(() => {
-    const c = { accepted: 0, dinied: 0, pending: 0, notInvited: 0 };
+    const c = { accepted: 0, denied: 0, pending: 0, notInvited: 0 };
     filteredBase.value.forEach((r) => c[mapInvite(r.empInviteStatus)]++);
     return c;
 });
