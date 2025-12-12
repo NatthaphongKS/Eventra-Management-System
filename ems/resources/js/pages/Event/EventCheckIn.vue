@@ -240,7 +240,8 @@ function normalize(list) {
         eveId: r.eveId ?? null,
         eveTitle: r.eveTitle ?? "",
         empId: r.empId, // ใช้เป็น rowKey หลัก
-        empCompanyId: r.empCompanyId ?? r.empCompamyId ?? "",
+        empFullId: r.empFullId ?? "",
+        empCompanyId: r.empFullId ,
         empFullname: r.empFullname ?? "",
         empNickname: r.empNickname ?? "",
         empDepartment: r.empDepartment ?? "",
@@ -308,7 +309,7 @@ function mapInvite(ans) {
 function statusLabel(key) {
     return {
         accepted: "Accepted",
-        denied: "denied",
+        denied: "Denied",
         pending: "Pending",
         notInvited: "Not Invited",
     }[key];
