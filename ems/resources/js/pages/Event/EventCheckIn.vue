@@ -192,6 +192,7 @@ let controller = null;
 async function fetchEmployeeForCheckin(id) {
     controller?.abort?.();
     controller = new AbortController();
+    //ดึงข้อมูลพนักงานเพื่อมาใช้ check in
     const res = await fetch(`/api/getEmployeeForCheckin/eveId/${id}`, {
         headers: { Accept: "application/json" },
         credentials: "include",
@@ -274,11 +275,13 @@ const selectedTeamIds = ref([]);
 const selectedPositionIds = ref([]);
 
 function toOptions(arr, getLabel = (x) => x, getValue = (x) => x) {
+    //เปลี่ยน arr เป็นตัวเลือก
     const uniq = [...new Set(arr.filter(Boolean))];
     return uniq.map((v) => ({ label: getLabel(v), value: getValue(v) }));
 }
 
 function buildFilterOptions() {
+    //สร้างตัวเลือกสำหรับ Filter จากข้อมูลพนักงาน
     companyIdOptions.value = toOptions(
         rows.value.map((r) => r.empCompanyId),
         (v) => String(v),
@@ -294,11 +297,13 @@ const search = ref("");
 const statusFilter = ref("all");
 
 function setStatus(s) {
+    //กำหนดค่า Status
     statusFilter.value = s;
     page.value = 1;
 }
 
 function mapInvite(ans) {
+    //จับคู่ข้อมูลจาก API เพื่อนำไปใช้ในปุ่มสำหรับแสดงแต่ละสถานะต่อ
     const a = String(ans || "").toLowerCase();
     if (a.includes("accept")) return "accepted";
     if (a.includes("denied")) return "denied";
@@ -307,6 +312,7 @@ function mapInvite(ans) {
 }
 
 function statusLabel(key) {
+    //กำหนดคำสำหรับแสดงแต่ละสถานะ
     return {
         accepted: "Accepted",
         denied: "Denied",
@@ -316,6 +322,7 @@ function statusLabel(key) {
 }
 
 function statusClass(key) {
+    //ตกแต่งสีสำหรับปุ่มเลือกแสดงแต่ละสถานะ
     return {
         accepted: "bg-emerald-100 text-emerald-700",
         denied: "bg-rose-100 text-rose-700",
@@ -461,6 +468,7 @@ const pagedRows = computed(() => {
 });
 
 function onSort({ key, order }) {
+    //จัดเรียงข้อมูล
     sortKey.value = key;
     sortOrder.value = order;
 }
@@ -472,6 +480,7 @@ function onSort({ key, order }) {
  * - แนบ eveId ปัจจุบันไปกับ route (ใช้ .value)
  */
 async function handleCheckin({ keys, checked }) {
+    //ฟังก์ชันสำหรับจัดการการ Check in
     console.log(
         "Handle check-in for keys:",
         keys,
@@ -501,6 +510,7 @@ async function handleCheckin({ keys, checked }) {
 }
 
 async function handleCheckAllOnPage() {
+    //ฟังก์ชันสำหรับจัดการการกด Check in all
     res = await axios
         .put(`/updateEmployeeAttendanceAll/eveId/${eveId.value}`)
         .then((response) => {

@@ -6,6 +6,9 @@ use App\Models\Connect;
 use App\Models\Employee;
 use App\Models\Event;
 
+/**
+ * CheckInController เป็นการจัดการข้อมูลในส่วนของการ Check in พนักงานในแต่ละกิจกรรม
+ */
 class CheckInController extends Controller
 {
 
