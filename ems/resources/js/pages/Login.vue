@@ -2,19 +2,19 @@
   <div class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/email/ChatGPT_Image_20_.._2568_23_31_01.png')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
     <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
       <div class="flex justify-center items-center gap-4 mb-8">
-          <img 
-            src="../../../public/images/email/clicknext.jpeg" 
-            alt="Remote" 
-            class="w-20 h-20 object-cover rounded-2xl shadow-sm" 
+          <img
+            src="../../../public/images/email/clicknext.jpeg"
+            alt="Remote"
+            class="w-20 h-20 object-cover rounded-2xl shadow-sm"
             loading="lazy"
           >
           <span class="text-5xl font-medium text-red-700 tracking-tight">
                 Eventra
           </span>
         </div>
-                
 
-          
+
+
       <div class="left">
         <h2 class="text-3xl font-semibold text-gray-900 mb-6">Sign In</h2>
         <form @submit.prevent="login">
@@ -24,7 +24,7 @@
             <input
               type="text"
               v-model="email"
-              
+
               class="w-full border rounded-3xl p-3 px-5 placeholder:text-gray-800 placeholder:font-semibold"
               placeholder="Email"
             />
@@ -58,8 +58,8 @@
           </div>
 
           <div class="flex justify-center">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md"
             >
               Sign In
@@ -75,6 +75,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -95,7 +96,6 @@ export default {
       this.errors = {};
 
       try {
-        // เช็ค URL ให้ชัวร์ (ปกติ Laravel ใช้ /login ถ้าคุณแก้ Route เป็น /logined ก็ใช้ตัวเดิม)
         const res = await axios.post('/logined', {
           email: this.email,
           password: this.password
@@ -104,10 +104,7 @@ export default {
         this.message = res.data.message;
 
         if (res.data.redirect) {
-          window.location.href = res.data.redirect;
-        } else {
-          // เผื่อไว้กรณีไม่มี redirect
-          this.$router.push('/'); 
+          this.$router.push(res.data.redirect);
         }
 
         //ส่วนจัดการ handle error อื่นๆ
