@@ -59,3 +59,30 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+### Docker Manaul
+คู่มือย่อ: Docker Dev vs Production
+
+โหมด Dev (hotdev)
+
+ใช้ไฟล์ docker-compose.hotdev.yml (แก้แล้วเห็นผลทันที)
+รัน: cd ems && docker compose -f docker-compose.hotdev.yml up -d --build
+เว็บ: http://localhost:7080, Vite dev: http://localhost:5173
+Artisan/Composer/Vite ในคอนเทนเนอร์:
+docker compose -f docker-compose.hotdev.yml exec app php artisan <cmd>
+docker compose -f docker-compose.hotdev.yml exec vite npm <cmd>
+แก้โค้ด PHP/Vue/CSS แล้วรีเฟรช/Hot Reload ทันที (อย่าใช้ config/route cache ระหว่าง dev; ถ้าเคย cache ให้ php artisan config:clear route:clear)
+โหมด Production-ish (build asset ก่อน)
+
+ใช้ไฟล์ docker-compose.yml (มีขั้น build frontend ใน Dockerfile)
+รัน: cd ems && docker compose up -d --build
+ทดสอบ: curl -I http://localhost (line 7080) ควรได้ 200/302 ตาม auth
+Artisan (ถ้าต้องรันในคอนเทนเนอร์):
+docker compose exec app php artisan <cmd>
+ถ้าต้อง rebuild asset ใหม่ ให้ docker compose up -d --build อีกครั้ง หรือปรับ Dockerfile ให้ cache npm/composer ตามต้องการ
+Notes สำคัญ
+
+Dev ใช้ bind-mount code → เปลี่ยนไฟล์แล้วเห็นผลทันที; Production ใช้ image ที่ build จาก Dockerfile
+อย่าลืมตั้งค่า .env ให้ตรงสิ่งแวดล้อม (โดยเฉพาะ SESSION_SECURE_COOKIE/SAME_SITE ถ้าอยู่หลัง https หรือ http)
+หากมี cache artisan ใน prod ใช้ php artisan config:cache route:cache view:cache หลัง build เสร็จ (dev ให้ clear)
