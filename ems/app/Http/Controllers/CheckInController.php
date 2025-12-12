@@ -95,4 +95,62 @@ class CheckInController extends Controller
             'data' => $record
         ], 200);
     }
+
+    public function updateEmployeeAttendanceAll($eveId)
+    {
+        $records = Connect::where('con_event_id', $eveId)->get();
+        $checkIn = false;
+        $nonCheckIn = false;
+        foreach ($records as $record) {
+            if ($record->con_checkin_status == 1) {
+                $checkIn = true;
+            } else if ($record->con_checkin_status == 0) {
+                $nonCheckIn = true;
+            }
+            if ($checkIn && $nonCheckIn) {
+                break;
+            }
+        }
+
+        if (!$checkIn && $nonCheckIn) {
+            // ถ้า con_checkin_status เป็น 0 ให้เปลี่ยนเป็น 1 ทั้งหมด
+            foreach ($records as $record) {
+                $record->con_checkin_status = 1;
+                $record->save();
+            }
+
+            return response()->json([
+                'message' => 'All records updated to checked in',
+                'data' => $records
+            ], 200);
+        } else if ($checkIn && !$nonCheckIn) {
+            // ถ้า con_checkin_status เป็น 1 ให้เปลี่ยนเป็น 0 ทั้งหมด
+            foreach ($records as $record) {
+                $record->con_checkin_status = 0;
+                $record->save();
+            }
+
+            return response()->json([
+                'message' => 'All records updated to not checked in',
+                'data' => $records
+            ], 200);
+        } else {
+            //ถถ้าอย่างอื่นให้ เปลี่ยนเป็น 1 ทั้งหมด
+            foreach ($records as $record) {
+                $record->con_checkin_status = 1;
+                $record->save();
+            }
+
+            foreach ($records as $record) {
+                // toggle con_checkin_status สำหรับแต่ละ record
+                $record->con_checkin_status = $record->con_checkin_status ? 0 : 1;
+                $record->save();
+            }
+
+            return response()->json([
+                'message' => 'All records updated',
+                'data' => $records
+            ], 200);
+        }
+    }
 }
