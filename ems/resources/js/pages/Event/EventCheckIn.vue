@@ -465,13 +465,6 @@ function onSort({ key, order }) {
     sortOrder.value = order;
 }
 
-function rowClass(row) {
-    // ✅ แก้
-    return Number(row?.empCheckinStatus) === 1
-        ? "bg-red-100 text-left" // แดงค้างเมื่อเช็กแล้ว
-        : "text-left";
-}
-
 /* ===== Handlers ===== */
 /**
  * handleCheckin

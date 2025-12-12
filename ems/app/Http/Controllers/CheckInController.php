@@ -23,7 +23,7 @@ class CheckInController extends Controller
                 'eveId' => $event->id,
                 'eveTitle' => $event->evn_title,
                 'empId' => $employee->id,
-                'empCompanyId' => $employee->emp_id,
+                'empCompanyId' => $employee->company->com_name,
                 'empCheckinStatus' => $this->getCheckinStatus($employee->id, $eveId),
                 'empFullname' => $employee->emp_prefix . $employee->emp_firstname . ' ' . $employee->emp_lastname,
                 'empNickname' => $employee->emp_nickname,

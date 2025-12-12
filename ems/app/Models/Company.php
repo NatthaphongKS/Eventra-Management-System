@@ -14,5 +14,8 @@ class Company extends Model
     protected $fillable = [
         'com_name',
         'com_delete_status',
+        'com_name'
     ];
+
+    
 }

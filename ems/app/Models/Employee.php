@@ -79,4 +79,6 @@ class Employee extends Authenticatable
     {
         return $this->belongsTo(Team::class, 'emp_team_id');
     }
+
+    
 }
