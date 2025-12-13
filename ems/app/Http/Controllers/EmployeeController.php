@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use App\Models\Position;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 
 class EmployeeController extends Controller
@@ -132,6 +133,29 @@ class EmployeeController extends Controller
      */
     public function meta()
     {
+        $prefixes = collect();
+
+        $columns = DB::select("
+    SELECT COLUMN_TYPE
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'ems_employees'
+      AND COLUMN_NAME = 'emp_prefix'
+");
+
+        if (!empty($columns)) {
+            preg_match("/^enum\((.*)\)$/", $columns[0]->COLUMN_TYPE, $matches);
+
+            if (!empty($matches[1])) {
+                $prefixes = collect(
+                    str_getcsv($matches[1], ',', "'")
+                )->values()->map(fn($p, $i) => [
+                        'value' => $i + 1,
+                        'label' => $p,
+                    ]);
+            }
+        }
+        
         $positions = Position::query()
             ->select('id', 'pst_name', 'pst_team_id')
             ->where('pst_delete_status', 'active')
@@ -150,7 +174,12 @@ class EmployeeController extends Controller
             ->orderBy('tm_name')
             ->get();
 
-        return response()->json(compact('positions', 'departments', 'teams'));
+        return response()->json(compact(
+            'prefixes',
+            'positions',
+            'departments',
+            'teams'
+        ));
     }
 
 
