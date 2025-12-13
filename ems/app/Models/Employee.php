@@ -16,6 +16,7 @@ class Employee extends Authenticatable
     use Notifiable;
 
     protected $table = 'ems_employees';
+    protected $primaryKey = 'emp_id';
 
     public $timestamps = false;
 
@@ -79,6 +80,8 @@ class Employee extends Authenticatable
     {
         return $this->belongsTo(Team::class, 'emp_team_id');
     }
-
-    
+    public function getAuthPassword()
+    {
+        return $this->emp_password;
+    }
 }
