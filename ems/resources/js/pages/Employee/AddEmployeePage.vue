@@ -18,12 +18,14 @@
                 <!-- Success alert -->
                 <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success"
                     type="success" @confirm="handleSuccessClose" />
+                <!-- Error alert -->
+                <ModalAlert v-model:open="showCreateError" title="Error" :message="createErrorMessage" type="error"
+                    @confirm="handleErrorClose" />
             </div>
         </header>
 
         <!-- Body -->
         <div class="px-2 py-0">
-            <!-- กล่องฟอร์ม: กว้างขึ้น และจัดกึ่งกลาง -->
             <div class="max-w-[1400px] mx-auto px-6">
                 <form @submit.prevent="handleSubmit">
                     <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between">
@@ -88,7 +90,7 @@
                             </FormField>
 
                             <FormField label="Email" required>
-                                <InputPill v-model="form.email" type="email" placeholder="Ex.66160106@go.buu.ac.th"
+                                <InputPill v-model="form.email" type="email" placeholder="Ex.example@gmail.com"
                                     class="mt-1 block h-11 w-full" :error="errors.email" />
                             </FormField>
 
@@ -142,18 +144,14 @@ const router = useRouter()
 const goImport = () => router.push({ name: 'upload-file' })
 
 /* ------- options ------- */
-const prefixes = [
-    { label: 'นาย', value: 1 },
-    { label: 'นาง', value: 2 },
-    { label: 'นางสาว', value: 3 },
-]
+
 const permissions = [
     { label: 'Administrator', value: 1 },
     { label: 'Human Resources', value: 2 },
     { label: 'Position1', value: 3 },
 ]
-const PREFIX_MAP = { 'นาย': 1, 'นาง': 2, 'นางสาว': 3 }
 
+const prefixes = ref([])   // [{ label, value }]
 const departments = ref([])  // [{label, value}]
 const teams = ref([])        // [{label, value, department_id}]
 const positions = ref([])    // [{label, value}]
@@ -179,6 +177,11 @@ onMounted(async () => {
     try {
         const { data } = await axios.get('/meta')
 
+        prefixes.value = (data.prefixes || []).map(p => ({
+            label: p.label,
+            value: p.value,
+        }))
+
         // Department = แค่ชื่อกับ id พอ
         departments.value = (data.departments || []).map(d => ({
             label: d.dpm_name,
@@ -199,10 +202,16 @@ onMounted(async () => {
             team_id: p.pst_team_id ?? null,
         }))
     } catch (e) {
+        const msg =
+        e.response?.data?.message ||   // message จาก backend
+        e.response?.data?.error ||     // error เพิ่มเติม (ถ้ามี)
+        e.message ||                   // axios / js error
+        'โหลดข้อมูลไม่สำเร็จ'          // fallback
+
         await Swal.fire({
             icon: 'error',
             title: 'Load failed',
-            text: 'โหลด Department/Team/Position ไม่สำเร็จ',
+            text: msg ,
             confirmButtonText: 'OK',
             buttonsStyling: false,
             customClass: {
@@ -326,7 +335,6 @@ watch(
 
 /* ------- submit -> บันทึกลง DB ------- */
 async function handleSubmit() {
-    // ถ้ากดรอบใหม่ ซ่อน success เก่าก่อน
     showCreateSuccess.value = false
 
     if (!validate()) return
@@ -358,7 +366,7 @@ async function handleSubmit() {
 
 
     } catch (err) {
-        showCreateSuccess.value = false // อย่าโชว์ success ถ้า error
+        showCreateSuccess.value = false
 
         if (err.response?.status === 422) {
             const e = err.response.data.errors || {}
@@ -373,6 +381,7 @@ async function handleSubmit() {
                     /duplicate/i.test(fieldMsg) ||
                     /ซ้ำ/.test(fieldMsg) ||
                     /มีอยู่แล้ว/.test(fieldMsg)
+
                 ) {
                     switch (fieldName) {
                         case 'emp_email':
@@ -466,5 +475,4 @@ function handleSuccessClose() {
 }
 </script>
 
-<style>
-</style>
+<style></style>
