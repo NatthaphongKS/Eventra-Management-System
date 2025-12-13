@@ -71,6 +71,7 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 เว็บ: http://localhost:7080, Vite dev: http://localhost:5173
 Artisan/Composer/Vite ในคอนเทนเนอร์:
 docker compose -f docker-compose.hotdev.yml exec app php artisan <cmd>
+docker compose -f docker-compose.hotdev.yml up -d --build
 docker compose -f docker-compose.hotdev.yml exec vite npm <cmd>
 แก้โค้ด PHP/Vue/CSS แล้วรีเฟรช/Hot Reload ทันที (อย่าใช้ config/route cache ระหว่าง dev; ถ้าเคย cache ให้ php artisan config:clear route:clear)
 โหมด Production-ish (build asset ก่อน)
