@@ -86,3 +86,5 @@ Notes สำคัญ
 Dev ใช้ bind-mount code → เปลี่ยนไฟล์แล้วเห็นผลทันที; Production ใช้ image ที่ build จาก Dockerfile
 อย่าลืมตั้งค่า .env ให้ตรงสิ่งแวดล้อม (โดยเฉพาะ SESSION_SECURE_COOKIE/SAME_SITE ถ้าอยู่หลัง https หรือ http)
 หากมี cache artisan ใน prod ใช้ php artisan config:cache route:cache view:cache หลัง build เสร็จ (dev ให้ clear)
+หยุด docker compose stop
+
