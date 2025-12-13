@@ -1,4 +1,3 @@
-
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
@@ -13,6 +12,11 @@ use App\Http\Controllers\CheckInController;
 
 // API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
+// Public Open Route for Debugging
+Route::get('/get-event', [EventController::class, 'Eventtable']);
+Route::get('/get-employees', [EmployeeController::class, 'index']); // For EmployeePage.vue
+Route::get('/categories', [CategoryController::class, 'index']);    // For CategoryPage.vue
+
 Route::middleware(['web', 'auth'])->group(function () {
 
 
@@ -20,7 +24,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // === Employee ===
     Route::get('/meta', [EmployeeController::class, 'meta']); //ข้อมูลvที่ใช้สร้าง employee
-    Route::get('/get-employees', [EmployeeController::class, 'index']); // ข้อมูล employee
+    // Route::get('/get-employees', [EmployeeController::class, 'index']); // ข้อมูล employee
     Route::get('/employees',     [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']); // soft delete employee
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
@@ -40,7 +44,6 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // === Event ===
     Route::get('/event-info', [EventController::class, 'eventInfo']);
-    Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
     // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
     // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
@@ -70,11 +73,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/event', [EventController::class, 'index']);
 
     // Category
-    Route::get   ('/categories',        [CategoryController::class, 'index']);
+    // Route::get   ('/categories',        [CategoryController::class, 'index']);
     Route::post  ('/categories',        [CategoryController::class, 'store']);
     Route::put   ('/categories/{id}',   [CategoryController::class, 'update']); // หรือ Route::patch(...)
     Route::delete('/categories/{id}',   [CategoryController::class, 'destroy']);
     Route::get   ('/categoriesAll',        [CategoryController::class, 'details']);
+
 
 
 });
