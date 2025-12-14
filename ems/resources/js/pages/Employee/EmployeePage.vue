@@ -44,7 +44,7 @@
             <template #actions="{ row }">
                 <button
                     class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600"
-                    @click="editEmployee(row.id)"
+                    @click="editEmployee(row.emp_id)"
                     title="Edit"
                     aria-label="edit"
                 >
@@ -53,7 +53,7 @@
 
                 <button
                     class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-red-600"
-                    @click="openDelete(row.id)"
+                    @click="openDelete(row.emp_id)"
                     title="Delete"
                     aria-label="delete"
                 >
@@ -143,7 +143,7 @@ export default {
             page: 1,
             pageSize: 10,
             sortMenuOpen: false,
-            sortBy: { key: "created_at", order: "desc" }, // ค่าเริ่มต้น (ถ้าอยากให้เริ่มมาไม่ Sort เลย ให้แก้เป็น key: "" ตรงนี้ได้เช่นกัน)
+            sortBy: { key: "created_at", order: "desc" },
 
             sortOptions: [
                 { key: "emp_firstname", order: "asc", label: "ชื่อพนักงาน A–Z" },
@@ -229,8 +229,6 @@ export default {
         },
         sorted() {
             const { key, order } = this.sortBy;
-
-            // ✅ จุดที่ 1: ถ้าไม่มี key (คือ user ยกเลิกการเลือก) ให้ส่ง list กลับเลย ไม่ต้อง sort
             if (!key) {
                 return this.filtered;
             }
@@ -254,6 +252,7 @@ export default {
     methods: {
         async fetchEmployees() {
             try {
+                // อย่าลืมแก้ API ฝั่งหลังบ้านให้ Select มาเฉพาะ status = 'active'
                 const res = await axios.get("/get-employees");
                 const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
                 this.employees = data.map((e) => ({
@@ -269,24 +268,16 @@ export default {
         goAdd() {
             this.$router.push("/add-employee");
         },
-
-        // ✅ จุดที่ 2: ปรับ Logic การเลือก
         onSortChoose(option) {
             if (!option || !option.key || !option.order) return;
-
-            // ตรวจสอบว่า user เลือกตัวเดิมซ้ำหรือไม่
             if (this.sortBy.key === option.key && this.sortBy.order === option.order) {
-                // ถ้ากดซ้ำ -> เคลียร์ค่าทิ้ง (ไม่เรียง)
                 this.sortBy = { key: "", order: "" };
             } else {
-                // ถ้าเลือกใหม่ -> เปลี่ยนค่าตามปกติ
                 this.sortBy = { key: option.key, order: option.order };
             }
-
             this.page = 1;
             this.sortMenuOpen = false;
         },
-
         onDocClick(e) {
             if (!this.sortMenuOpen) return;
             const wrap = this.$refs.sortWrap;
@@ -309,14 +300,30 @@ export default {
             this.deleteId = id;
             this.showModalAsk = true;
         },
+
+        // ✅ [UPDATED] ฟังก์ชันลบแบบ Soft Delete
         async onConfirmDelete() {
             const id = this.deleteId;
             if (!id) return;
+
+            // 1. ดึง ID ของคนที่ Login อยู่ (Admin)
+            // ⚠️ เช็ค: คุณเก็บใน localStorage ชื่อ 'userData' ใช่ไหม?
+            const userStorage = localStorage.getItem('userData');
+            const currentUser = userStorage ? JSON.parse(userStorage) : {};
+            const myId = currentUser.emp_id; // ID คนลบ
+
             try {
-                await axios.delete(`/employees/${id}`);
+                // 2. ใช้ PUT แทน DELETE และส่งข้อมูลคนลบไปด้วย
+                await axios.put(`/employees/soft-delete/${id}`, {
+                    emp_delete_by: myId,
+                    emp_delete_status: 'deleted'
+                });
+
                 this.showModalAsk = false;
                 this.showModalSuccess = true;
-                this.employees = this.employees.filter((e) => e.id !== id);
+
+                // 3. ลบข้อมูลจากหน้าจอโดยใช้ emp_id (ไม่ต้องโหลดใหม่)
+                this.employees = this.employees.filter((e) => e.emp_id !== id);
                 this.deleteId = null;
             } catch (err) {
                 console.error("Delete failed:", err);
@@ -324,6 +331,7 @@ export default {
                 this.showModalFail = true;
             }
         },
+
         onCancelDelete() {
             this.showModalAsk = false;
             this.deleteId = null;
