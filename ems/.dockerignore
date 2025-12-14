@@ -9,7 +9,6 @@
 .env.production
 .phpunit.result.cache
 docker-compose.override.yml
-docker-compose.yml
 .git
 .github
 .idea
