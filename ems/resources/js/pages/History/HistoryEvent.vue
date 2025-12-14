@@ -1,3 +1,11 @@
+<!-- /**
+ * ชื่อไฟล์: HistoryEvent.vue
+ * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
+ * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
+ * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
+ * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
+ * วันที่จัดทำ/แก้ไข: 2025-12-14
+ */ -->
 <template>
     <section class="p-0">
         <div class="mt-3 mb-4 flex items-center gap-4">
@@ -39,10 +47,14 @@
             :show-row-number="true"
             class="mt-4"
         >
-            <template #cell-evn_title="{ value }">
-                <span class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate" title="Event Name">
+            <template #cell-evn_title="{ value, row }">
+                <router-link 
+                    :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate  cursor-pointer transition-colors"
+                    title="Click to view details"
+                >
                     {{ value }}
-                </span>
+                </router-link>
             </template>
 
             <template #cell-created_by="{ value }">

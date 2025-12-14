@@ -14,6 +14,7 @@ import reply_form from '../pages/ReplyForm.vue'
 import UploadFile from '../pages/Employee/UploadFile.vue'
 import History_Employee from '../pages/History/HistoryEmployee.vue'
 import History_Event from '../pages/History/HistoryEvent.vue'
+import HistoryDetailsEvent from '../pages/History/HistoryDetailsEvent.vue'
 import HistoryCategory from '../components/History/DataTableHistoryCategory.vue'
 // [เพิ่ม] หน้าแก้ไข
 import EditEvent from '../pages/Event/EditEvent.vue'
@@ -41,7 +42,15 @@ const routes = [
   { path: '/categories', component: Category, meta: { title: 'Category' } },
   { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
   { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
+  { 
+    path: '/history/event/:id', 
+    name: 'history-event-detail', // ตั้งชื่อเพื่อให้เรียกใช้ง่ายๆ
+    component: HistoryDetailsEvent, 
+    props: true, // เปิดรับ id เป็น props
+    meta: { title: 'History Event Details' } 
+  },
   { path: '/history-category', component: HistoryCategory, meta: { title: 'History Category'}},
+
 
   { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
   { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees' } },
