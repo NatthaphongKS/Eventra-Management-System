@@ -24,7 +24,7 @@ class EventInvitationMail extends Mailable
     public function build()
     {
         $mail = $this->subject('คำเชิญเข้าร่วมกิจกรรม: ' . $this->event->evn_title)
-            ->markdown('emails.event.invitation');
+            ->view('emails.event.invitation');
 
         foreach ($this->files as $f) {
             // รองรับได้ทั้ง array และ object (stdClass/Eloquent)

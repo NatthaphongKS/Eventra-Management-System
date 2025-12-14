@@ -27,7 +27,7 @@ class LoginController extends Controller
         $employee = Employee::where('emp_email', $request->email)->first();
 
         // 3. Check Credentials
-        // Combine checks to prevent user enumeration if desired, 
+        // Combine checks to prevent user enumeration if desired,
         // though specific messages are helpful for legitimate users in internal apps.
         if (!$employee || !Hash::check($request->password, $employee->emp_password)) {
             return response()->json(['message' => 'Incorrect username or password. Please try again'], 401);
