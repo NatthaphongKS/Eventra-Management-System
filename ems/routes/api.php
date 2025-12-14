@@ -61,8 +61,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/history/employees', [HistoryEmployeeController::class, 'index']); //ประวัติการลบ พนักงาน
     // Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']); // (ซ้ำ)
     Route::get('/history/events', [HistoryEventController::class, 'eventInfo']); //ประวัติการลบ อีเว้น
-
-    // Employee Detail & Update
+    Route::get('/history/event/{id}', [HistoryEventController::class, 'show']);
+    //Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
     Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน

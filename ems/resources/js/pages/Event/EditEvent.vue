@@ -1,3 +1,11 @@
+<!-- /**
+ * ชื่อไฟล์: HistoryEvent.vue
+ * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
+ * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
+ * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
+ * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
+ * วันที่จัดทำ/แก้ไข: 2025-12-14
+ */ -->
 <!-- pages/edit_event.vue -->
 <template>
     <div class="text-neutral-800 font-semibold font-[Poppins] text-3xl mb-4">
