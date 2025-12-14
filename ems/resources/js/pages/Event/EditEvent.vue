@@ -87,22 +87,32 @@
                     </label>
                     <div class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 shadow-sm px-5 py-4"
                         :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd) }">
+                    <!-- Time Start -->
+                    <div class="flex items-center justify-center">
+                        <input
+                            type="time"
+                            v-model="eventTimeStart"
+                            step="300"
+                            class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                            @click="$event.target.showPicker()"
+                        />
+                        <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                    </div>
 
-                        <div class="flex items-center justify-center">
-                            <input type="time" v-model="eventTimeStart" step="300"
-                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center" />
-                            <span class="text-[15px] font-medium text-neutral-800 ml-1"></span>
-                        </div>
+                    <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
+                    <!-- Time End -->
+                    <div class="flex items-center justify-center">
+                        <input
+                            type="time"
+                            v-model="eventTimeEnd"
+                            step="300"
+                            class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                            @click="$event.target.showPicker()"
+                        />
+                        <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                    </div>
 
-                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
-
-                        <div class="flex items-center justify-center">
-                            <input type="time" v-model="eventTimeEnd" step="300"
-                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center" />
-                            <span class="text-[15px] font-medium text-neutral-800 ml-1"></span>
-                        </div>
-
-                        <Icon icon="iconamoon:clock-light" class="w-6 h-6 text-rose-400 shrink-0 ml-2" />
+                        <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-rose-400 shrink-0 ml-2" />
 
                     </div>
 
@@ -449,7 +459,14 @@ export default {
         },
         // ซีดแถวที่ล็อกไว้
         rowClass(row) {
-            return this.lockedIds.has(row.id) ? 'opacity-60' : ''
+            // เช็คว่าถ้าเป็น id ที่ถูกล็อก (เชิญไปแล้ว)
+            if (this.lockedIds.has(row.id)) {
+                // opacity-60: ทำให้สีจางลง
+                // pointer-events-none: ปิดการคลิกทุกอย่างในแถวนั้น (รวมถึง checkbox)
+                // bg-gray-50: ถมสีพื้นหลังให้ดูว่าเป็นสถานะ disabled
+                return 'opacity-60 pointer-events-none bg-gray-50 select-none'
+            }
+            return ''
         },
 
         // รับค่าจาก DataTable เวลาเช็ค/ยกเลิกเช็ค
@@ -871,6 +888,7 @@ export default {
 <style scoped>
 /* ทำให้ input type="time" ดู “เรียบ” และกลืนกับกล่องพิล */
 .time-input::-webkit-calendar-picker-indicator {
+    /* opacity: 0; */
     display: none;
 }
 

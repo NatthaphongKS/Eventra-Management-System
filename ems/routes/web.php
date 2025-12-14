@@ -6,7 +6,36 @@ use App\Http\Controllers\ReplyController;
 
 
 
+// Ensure middleware groups are registered (missing Kernel in this setup)
+Route::middlewareGroup('web', [
+    \Illuminate\Cookie\Middleware\EncryptCookies::class,
+    \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Routing\Middleware\SubstituteBindings::class,
+]);
+
+Route::middlewareGroup('api', [
+    \Illuminate\Routing\Middleware\SubstituteBindings::class,
+]);
+
+
+
 Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
+
+
+// Test Route
+Route::get('/test-session', function () {
+    request()->session()->put('test_key', 'test_value');
+    request()->session()->save(); 
+    $response = response()->json([
+        'session_id' => request()->session()->getId(),
+        'value' => request()->session()->get('test_key'),
+        'path' => config('session.files'),
+    ]);
+    return $response;
+});
 
 // หน้า login ของ Vue (ไม่ครอบ auth)
 Route::get('/login', fn() => view('spa'))->name('login');
