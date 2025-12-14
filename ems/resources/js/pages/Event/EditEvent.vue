@@ -449,7 +449,14 @@ export default {
         },
         // ซีดแถวที่ล็อกไว้
         rowClass(row) {
-            return this.lockedIds.has(row.id) ? 'opacity-60' : ''
+            // เช็คว่าถ้าเป็น id ที่ถูกล็อก (เชิญไปแล้ว)
+            if (this.lockedIds.has(row.id)) {
+                // opacity-60: ทำให้สีจางลง
+                // pointer-events-none: ปิดการคลิกทุกอย่างในแถวนั้น (รวมถึง checkbox)
+                // bg-gray-50: ถมสีพื้นหลังให้ดูว่าเป็นสถานะ disabled
+                return 'opacity-60 pointer-events-none bg-gray-50 select-none'
+            }
+            return ''
         },
 
         // รับค่าจาก DataTable เวลาเช็ค/ยกเลิกเช็ค

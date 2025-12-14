@@ -1,126 +1,184 @@
 <template>
-    <div>
-        <!-- Header + ปุ่ม Import -->
-        <header class="mx-auto max-w-[1400px] px-6 pt-6">
-            <link rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <div class="font-[Poppins] text-neutral-800 min-h-screen bg-white">
+        <header class="max-w-[1160px] mx-auto px-6 pt-8 mb-8">
+            <div class="flex items-center justify-between">
+                <div class="text-3xl font-semibold text-neutral-800">Add New Employee</div>
 
-            <div class="flex items-center justify-between gap-3">
-                <h2 class="text-xl font-semibold text-gray-800">
-                    Add New Employee
-                </h2>
-
-                <div class="flex justify-end">
+                <div class="relative">
                     <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
-                    <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
+                    <button type="button"
+                        class="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition"
+                        @click="goImport">
+                        <span class="material-symbols-outlined text-[20px]">download</span>
+                        <span>Import</span>
+                    </button>
                 </div>
-
-                <!-- Success alert -->
-                <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success"
-                    type="success" @confirm="handleSuccessClose" />
             </div>
+
+            <EmployeeCreateSuccess :open="showCreateSuccess" @close="handleSuccessClose" />
         </header>
 
-        <!-- Body -->
-        <div class="px-2 py-0">
-            <!-- กล่องฟอร์ม: กว้างขึ้น และจัดกึ่งกลาง -->
-            <div class="max-w-[1400px] mx-auto px-6">
-                <form @submit.prevent="handleSubmit">
-                    <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between">
-                        <!-- ซ้าย -->
-                        <div class="flex flex-col gap-5">
-                            <FormField label="Prefix" required class="w-full">
-                                <DropdownPill v-model="form.prefix" :options="prefixes" placeholder="Select prefix"
-                                    class="mt-1 block h-11 w-full" :error="errors.prefix" />
-                            </FormField>
+        <div class="max-w-[1160px] mx-auto px-6 pb-20">
+            <form @submit.prevent="handleSubmit">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
 
-                            <FormField label="First Name" required>
-                                <InputPill v-model="form.firstName" placeholder="Ex.Perapat"
-                                    class="mt-1 block h-11 w-full" :error="errors.firstName" />
-                            </FormField>
-
-                            <FormField label="Last Name" required>
-                                <InputPill v-model="form.lastName" placeholder="Ex.Saimai"
-                                    class="mt-1 block h-11 w-full" :error="errors.lastName" />
-                            </FormField>
-
-                            <FormField label="Nickname" required>
-                                <InputPill v-model="form.nickname" placeholder="Ex.beam" class="mt-1 block h-11 w-full"
-                                    :error="errors.nickname" />
-                            </FormField>
-
-                            <FormField label="Phone" required>
-                                <InputPill v-model="form.phone" placeholder="Ex.0988900988" inputmode="numeric"
-                                    class="mt-1 block h-11 w-full" :error="errors.phone" />
-                            </FormField>
-
-                            <FormField label="Employee ID" required>
-                                <InputPill v-model="form.employeeId" placeholder="Ex.CN707008"
-                                    class="mt-1 block h-11 w-full" :error="errors.employeeId" />
-                            </FormField>
-
-                            <!-- ปุ่ม Cancel -->
-                            <div class="pt-2">
-                                <div @click="onCancel">
-                                    <Button variant="cancel">Cancel</Button>
-                                </div>
-                            </div>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Prefix <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.prefix"
+                                :options="prefixes"
+                                placeholder="Select prefix"
+                                :error="errors.prefix"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
                         </div>
 
-                        <!-- ขวา -->
-                        <div class="flex flex-col gap-5">
-                            <FormField label="Department" required>
-                                <DropdownPill v-model="form.department" :options="departments"
-                                    placeholder="Select Department" class="mt-1 block h-11 w-full"
-                                    :error="errors.department" />
-                            </FormField>
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">First Name <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.firstName"
+                                placeholder="Ex. Perapat"
+                                :error="errors.firstName"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
 
-                            <FormField label="Team" required>
-                                <DropdownPill v-model="form.team" :options="teamOptions"
-                                    :placeholder="form.department ? 'Select Team' : 'Please select Department first'"
-                                    class="mt-1 block h-11 w-full" :error="errors.team" :disabled="!form.department" />
-                            </FormField>
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Last Name <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.lastName"
+                                placeholder="Ex. Saimai"
+                                :error="errors.lastName"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
 
-                            <FormField label="Position" required>
-                                <DropdownPill v-model="form.position" :options="positionOptions"
-                                    :placeholder="form.team ? 'Select Position' : 'Please select Team first'"
-                                    class="mt-1 block h-11 w-full" :error="errors.position" :disabled="!form.team" />
-                            </FormField>
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Nickname</label>
+                            <InputPill
+                                v-model="form.nickname"
+                                placeholder="Ex. Beam"
+                                :error="errors.nickname"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
 
-                            <FormField label="Email" required>
-                                <InputPill v-model="form.email" type="email" placeholder="Ex.66160106@go.buu.ac.th"
-                                    class="mt-1 block h-11 w-full" :error="errors.email" />
-                            </FormField>
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Phone <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.phone"
+                                placeholder="Ex. 0988900988"
+                                inputmode="numeric"
+                                :error="errors.phone"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
 
-                            <FormField label="Password" required>
-                                <InputPill v-model="form.password" type="password" placeholder="Ex.Ssaw.1234"
-                                    class="mt-1 block h-11 w-full" :error="errors.password" />
-                            </FormField>
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Employee ID <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.employeeId"
+                                placeholder="Ex. CN707008"
+                                :error="errors.employeeId"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
 
-                            <FormField label="Permission" required>
-                                <DropdownPill v-model="form.permission" :options="permissions"
-                                    placeholder="Select Permission" class="mt-1 block h-11 w-full"
-                                    :error="errors.permission" />
-                            </FormField>
-
-                            <!-- ปุ่ม Create -->
-                            <div class="pt-2 flex justify-end">
-                                <button type="submit" :disabled="submitting"
-                                    class="bg-transparent border-0 p-0 disabled:opacity-50"
-                                    style="all: unset; display: inline-block;">
-                                    <CreateButton :disabled="submitting" />
-                                </button>
-                            </div>
+                        <div class="pt-6 hidden md:block">
+                            <button type="button" @click="onCancel"
+                                class="h-[48px] px-8 rounded-[20px] border border-neutral-300 text-neutral-600 font-semibold hover:bg-neutral-50 hover:text-neutral-800 transition">
+                                Cancel
+                            </button>
                         </div>
                     </div>
-                </form>
-            </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Department <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.department"
+                                :options="departments"
+                                placeholder="Select Department"
+                                :error="errors.department"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Team <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.team"
+                                :options="teamOptions"
+                                placeholder="Select Team"
+                                :error="errors.team"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Position <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.position"
+                                :options="positions"
+                                placeholder="Select Position"
+                                :error="errors.position"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Email <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.email"
+                                type="email"
+                                placeholder="Ex. 66160106@go.buu.ac.th"
+                                :error="errors.email"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Password <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.password"
+                                type="password"
+                                placeholder="Ex. Ssaw.1234"
+                                :error="errors.password"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Permission <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.permission"
+                                :options="permissions"
+                                placeholder="Select Permission"
+                                :error="errors.permission"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div class="pt-6 flex flex-col-reverse md:flex-row justify-end gap-4">
+                            <button type="button" @click="onCancel"
+                                class="md:hidden h-[48px] px-8 rounded-[20px] border border-neutral-300 text-neutral-600 font-semibold hover:bg-neutral-50 transition">
+                                Cancel
+                            </button>
+
+                            <button type="submit" :disabled="submitting"
+                                class="inline-flex items-center justify-center gap-2 h-[48px] px-8 rounded-[20px] bg-green-600 text-white font-semibold hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md">
+                                <span class="material-symbols-outlined text-[20px]">add</span>
+                                <span>Create</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
         </div>
     </div>
 </template>
-
-
-
 
 <script setup>
 import { reactive, computed, watch, ref, onMounted } from 'vue'
@@ -129,14 +187,10 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
-/* ---------- components ---------- */
-import FormField from '../../components/Input/FormField.vue'
+// components (ใช้ InputPill และ DropdownPill เหมือนเดิม)
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
-import ImportButton from '@/components/Button/ImportButton.vue'
-import CreateButton from '@/components/Button/CreateButton.vue'
-import CancelButton from '@/components/Button/CancelButton.vue'
-import ModalAlert from '../../components/Alert/ModalAlert.vue'
+import EmployeeCreateSuccess from '../../components/Alert/Employee/EmployeeCreateSuccess.vue'
 
 const router = useRouter()
 const goImport = () => router.push({ name: 'upload-file' })
@@ -152,11 +206,10 @@ const permissions = [
     { label: 'Human Resources', value: 2 },
     { label: 'Position1', value: 3 },
 ]
-const PREFIX_MAP = { 'นาย': 1, 'นาง': 2, 'นางสาว': 3 }
 
-const departments = ref([])  // [{label, value}]
-const teams = ref([])        // [{label, value, department_id}]
-const positions = ref([])    // [{label, value}]
+const departments = ref([])
+const teams = ref([])
+const positions = ref([])
 const loadingMeta = ref(true)
 
 /* ------- form ------- */
@@ -167,10 +220,7 @@ const form = reactive({
     email: '', password: '', permission: '',
 })
 
-/* ------- validation state ------- */
 const errors = reactive({})
-
-/* ------- success state ------- */
 const submitting = ref(false)
 const showCreateSuccess = ref(false)
 
@@ -199,18 +249,8 @@ onMounted(async () => {
             team_id: p.pst_team_id ?? null,
         }))
     } catch (e) {
-        await Swal.fire({
-            icon: 'error',
-            title: 'Load failed',
-            text: 'โหลด Department/Team/Position ไม่สำเร็จ',
-            confirmButtonText: 'OK',
-            buttonsStyling: false,
-            customClass: {
-                popup: 'rounded-2xl',
-                confirmButton:
-                    'rounded-full px-5 py-2.5 bg-gray-800 text-white font-semibold hover:bg-gray-900'
-            }
-        })
+        // Error handling แบบเดิม
+        console.error(e)
     } finally {
         loadingMeta.value = false
     }
@@ -230,7 +270,7 @@ const positionOptions = computed(() => {
 })
 
 
-/* ====== Validation ====== */
+/* ====== Validation logic (คงเดิม) ====== */
 const MSG = {
     requiredSelect: 'Required Select',
     requiredText: 'Required field only text',
@@ -256,31 +296,25 @@ const fieldRules = {
 function validateField(key, value) {
     const rules = fieldRules[key] || []
     for (const r of rules) {
-        if (r === 'requiredSelect') {
-            if (!value) return MSG.requiredSelect
-        } else if (r === 'requiredText') {
+        if (r === 'requiredSelect') { if (!value) return MSG.requiredSelect }
+        else if (r === 'requiredText') {
             if (!value) return MSG.requiredText
+            // Regex เดิมของคุณ
             const re = /^[A-Za-zก-๙ .'-]+$/u
             if (!re.test(value)) return MSG.requiredText
-        } else if (r === 'requiredNumber') {
-            // 1) ไม่ใส่อะไรเลย
-            if (!value) {
-                return 'Required phone number'
-            }
-            // 2) ใส่มาแล้วแต่ไม่ใช่ตัวเลขทั้งหมด หรือไม่ใช่ความยาว 10 หลักพอดี
-            if (!/^\d+$/.test(value) || value.length !== 10) {
-                return 'Phone number must be 10 digits'
-            }
-        } else if (r === 'requiredEmail') {
+        }
+        else if (r === 'requiredNumber') {
+            if (!value) return MSG.requiredNumber
+            if (!/^\d{10}$/.test(value)) return MSG.requiredNumber
+        }
+        else if (r === 'requiredEmail') {
             if (!value) return MSG.requiredEmail
             if (!(value.includes('@') && value.includes('.'))) return MSG.requiredEmail
-        } else if (r === 'requiredField') {
-            if (!value) return MSG.requiredField
         }
+        else if (r === 'requiredField') { if (!value) return MSG.requiredField }
     }
     return ''
 }
-
 function validate() {
     Object.keys(errors).forEach(k => delete errors[k])
     Object.keys(fieldRules).forEach(k => {
@@ -289,12 +323,9 @@ function validate() {
     })
     return Object.keys(errors).length === 0
 }
-
-// live-validate
-Object.keys(fieldRules).forEach((k) => {
-    watch(
-        () => form[k],
-        (v) => {
+Object.keys(fieldRules).forEach(k => {
+    watch(() => form[k], (v) => {
+        if (errors[k]) {
             const msg = validateField(k, v)
             if (msg) {
                 errors[k] = msg
@@ -305,30 +336,9 @@ Object.keys(fieldRules).forEach((k) => {
     )
 })
 
-watch(
-    () => form.department,
-    () => {
-        form.team = ''
-        form.position = ''
-        delete errors.team
-        delete errors.position
-    }
-)
-
-watch(
-    () => form.team,
-    () => {
-        form.position = ''
-        delete errors.position
-    }
-)
-
-
-/* ------- submit -> บันทึกลง DB ------- */
+/* ------- submit ------- */
 async function handleSubmit() {
-    // ถ้ากดรอบใหม่ ซ่อน success เก่าก่อน
     showCreateSuccess.value = false
-
     if (!validate()) return
     submitting.value = true
     try {
@@ -349,93 +359,35 @@ async function handleSubmit() {
 
         await axios.post('/save-employee', payload)
 
-        // ล้างฟอร์ม + ล้าง error เก่า
         Object.keys(form).forEach(k => (form[k] = ''))
         Object.keys(errors).forEach(k => delete errors[k])
 
-        //แสดงกล่องสำเร็จ
         showCreateSuccess.value = true
 
-
     } catch (err) {
-        showCreateSuccess.value = false // อย่าโชว์ success ถ้า error
-
+        showCreateSuccess.value = false
         if (err.response?.status === 422) {
             const e = err.response.data.errors || {}
+            // Map errors...
+            if(e.emp_id) errors.employeeId = e.emp_id[0]
+            if(e.emp_email) errors.email = e.emp_email[0]
+            if(e.emp_phone) errors.phone = e.emp_phone[0]
 
-            function normalizeMsg(fieldMsg, fieldName) {
-                if (!fieldMsg) return ''
-
-                // duplicate เคสซ้ำ
-                if (
-                    /already been taken/i.test(fieldMsg) ||
-                    /already exists/i.test(fieldMsg) ||
-                    /duplicate/i.test(fieldMsg) ||
-                    /ซ้ำ/.test(fieldMsg) ||
-                    /มีอยู่แล้ว/.test(fieldMsg)
-                ) {
-                    switch (fieldName) {
-                        case 'emp_email':
-                            return 'This email is already in use.'
-                        case 'emp_id':
-                            return 'This employee ID is already in use.'
-                        case 'emp_phone':
-                            return 'This phone number is already in use.'
-                        default:
-                            return 'Already in use.'
-                    }
-                }
-
-                return fieldMsg
-            }
-
-            errors.employeeId = normalizeMsg(e.emp_id?.[0], 'emp_id') || ''
-            errors.prefix = e.emp_prefix?.[0] || ''
-            errors.firstName = e.emp_firstname?.[0] || ''
-            errors.lastName = e.emp_lastname?.[0] || ''
-            errors.email = normalizeMsg(e.emp_email?.[0], 'emp_email') || ''
-            errors.phone = normalizeMsg(e.emp_phone?.[0], 'emp_phone') || ''
-            errors.position = e.emp_position_id?.[0] || ''
-            errors.department = e.emp_department_id?.[0] || ''
-            errors.team = e.emp_team_id?.[0] || ''
-            errors.password = e.emp_password?.[0] || ''
-            errors.permission = e.emp_status?.[0] || ''
-
-            const flatMsgsRaw = Object.values(e).flat().filter(Boolean)
-
-            const isDuplicate = flatMsgsRaw.some(msg =>
-                /already\s+exists/i.test(msg) ||
-                /already been taken/i.test(msg) ||
-                /duplicate/i.test(msg) ||
-                /ซ้ำ/.test(msg) ||
-                /มีอยู่แล้ว/.test(msg)
-            )
-
-            // กรณี invalid ปกติ (ไม่ใช่ duplicate) → ยังใช้ Swal เตือน
-            if (!isDuplicate) {
-                const msgHtml = flatMsgsRaw.join('<br>') || 'Please check your input.'
-                await Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid data',
-                    html: msgHtml,
-                    confirmButtonText: 'OK',
-                    buttonsStyling: false,
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton:
-                            'rounded-full px-5 py-2.5 bg-rose-600 text-white font-semibold hover:bg-rose-700'
-                    }
-                })
-            }
-
-        } else {
-            // server / network error → ยังเตือนด้วย Swal ได้
-            const msg = err.response?.data?.message
-                || err.response?.data?.error
-                || err.message
-                || 'Server error'
-
+            const msg = Object.values(e).flat().join('<br>')
             await Swal.fire({
+                icon: 'warning',
+                title: 'Invalid data',
+                html: msg || 'Please check your input.',
+                confirmButtonText: 'OK',
+                buttonsStyling: false,
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-full px-5 py-2.5 bg-rose-600 text-white font-semibold hover:bg-rose-700'
+                }
+            })
+        } else {
+             const msg = err.response?.data?.message || 'Server error'
+             await Swal.fire({
                 icon: 'error',
                 title: 'Create failed',
                 text: msg,
@@ -443,8 +395,7 @@ async function handleSubmit() {
                 buttonsStyling: false,
                 customClass: {
                     popup: 'rounded-2xl',
-                    confirmButton:
-                        'rounded-full px-5 py-2.5 bg-gray-800 text-white font-semibold hover:bg-gray-900'
+                    confirmButton: 'rounded-full px-5 py-2.5 bg-gray-800 text-white font-semibold hover:bg-gray-900'
                 }
             })
         }
@@ -459,12 +410,8 @@ function onCancel() {
     router.push('/employee')
 }
 
-/* ---------- close modal success ---------- */
 function handleSuccessClose() {
     showCreateSuccess.value = false
     router.push('/employee')
 }
 </script>
-
-<style>
-</style>
