@@ -89,3 +89,4 @@ Route::post('/store', [ReplyController::class, 'store']);//บันทึกข
 
 Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']); // ดึงข้อมูลการเช็คอินพนักงาน
 Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendance']);
+Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendanceAll']);
