@@ -191,6 +191,10 @@ import 'sweetalert2/dist/sweetalert2.min.css'
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
 import EmployeeCreateSuccess from '../../components/Alert/Employee/EmployeeCreateSuccess.vue'
+import ImportButton from '@/components/Button/ImportButton.vue'
+import CreateButton from '@/components/Button/CreateButton.vue'
+import CancelButton from '@/components/Button/CancelButton.vue'
+import ModalAlert from '../../components/Alert/ModalAlert.vue'
 
 const router = useRouter()
 const goImport = () => router.push({ name: 'upload-file' })
@@ -228,12 +232,25 @@ const showCreateSuccess = ref(false)
 onMounted(async () => {
     try {
         const { data } = await axios.get('/meta')
-        departments.value = (data.departments || []).map(d => ({ label: d.dpm_name, value: d.id }))
-        positions.value = (data.positions || []).map(p => ({ label: p.pst_name, value: p.id }))
+
+        // Department = แค่ชื่อกับ id พอ
+        departments.value = (data.departments || []).map(d => ({
+            label: d.dpm_name,
+            value: d.id,
+        }))
+
+        // Team = ต้องมี department_id ไว้ filter
         teams.value = (data.teams || []).map(t => ({
             label: t.tm_name,
             value: t.id,
-            department_id: t.tm_department_id ?? null
+            department_id: t.tm_department_id ?? null,
+        }))
+
+        // Position = ต้องมี team_id ไว้ filter
+        positions.value = (data.positions || []).map(p => ({
+            label: p.pst_name,
+            value: p.id,
+            team_id: p.pst_team_id ?? null,
         }))
     } catch (e) {
         // Error handling แบบเดิม
@@ -243,7 +260,19 @@ onMounted(async () => {
     }
 })
 
-const teamOptions = computed(() => teams.value)
+
+const teamOptions = computed(() => {
+    if (!form.department) return []
+    const depId = Number(form.department)
+    return teams.value.filter(t => t.department_id === depId)
+})
+
+const positionOptions = computed(() => {
+    if (!form.team) return []
+    const teamId = Number(form.team)
+    return positions.value.filter(p => p.team_id === teamId)
+})
+
 
 /* ====== Validation logic (คงเดิม) ====== */
 const MSG = {
@@ -302,13 +331,36 @@ Object.keys(fieldRules).forEach(k => {
     watch(() => form[k], (v) => {
         if (errors[k]) {
             const msg = validateField(k, v)
-            if (msg) errors[k] = msg
-            else delete errors[k]
+            if (msg) {
+                errors[k] = msg
+            } else {
+                delete errors[k]
+            }
         }
-    })
+    )
 })
 
 /* ------- submit ------- */
+watch(
+    () => form.department,
+    () => {
+        form.team = ''
+        form.position = ''
+        delete errors.team
+        delete errors.position
+    }
+)
+
+watch(
+    () => form.team,
+    () => {
+        form.position = ''
+        delete errors.position
+    }
+)
+
+
+/* ------- submit -> บันทึกลง DB ------- */
 async function handleSubmit() {
     showCreateSuccess.value = false
     if (!validate()) return
@@ -387,3 +439,6 @@ function handleSuccessClose() {
     router.push('/employee')
 }
 </script>
+
+<style>
+</style>
