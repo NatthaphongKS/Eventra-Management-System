@@ -337,7 +337,7 @@ Object.keys(fieldRules).forEach(k => {
                 delete errors[k]
             }
         }
-    )
+})
 })
 
 /* ------- submit ------- */
