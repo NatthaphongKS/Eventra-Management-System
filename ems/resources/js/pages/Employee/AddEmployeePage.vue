@@ -18,9 +18,13 @@
                 <!-- Success alert -->
                 <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success"
                     type="success" @confirm="handleSuccessClose" />
+
                 <!-- Error alert -->
-                <ModalAlert v-model:open="showCreateError" title="Error" :message="createErrorMessage" type="error"
-                    @confirm="handleErrorClose" />
+                <EmployeeCannotCreate :open="showCreateError" :message="createErrorMessage" @close="handleErrorClose" />
+
+                <!-- Load meta error alert -->
+                <EmployeeCannotCreate :open="showLoadMetaError" :message="loadMetaErrorMessage"
+                    @close="handleLoadMetaErrorClose" />
             </div>
         </header>
 
@@ -121,9 +125,6 @@
     </div>
 </template>
 
-
-
-
 <script setup>
 import { reactive, computed, watch, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -139,16 +140,16 @@ import ImportButton from '@/components/Button/ImportButton.vue'
 import CreateButton from '@/components/Button/CreateButton.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
 import ModalAlert from '../../components/Alert/ModalAlert.vue'
+import EmployeeCannotCreate from '../../components/Alert/Employee/EmployeeCannotCreate.vue'
 
 const router = useRouter()
 const goImport = () => router.push({ name: 'upload-file' })
 
 /* ------- options ------- */
-
 const permissions = [
     { label: 'Administrator', value: 1 },
     { label: 'Human Resources', value: 2 },
-    { label: 'Position1', value: 3 },
+    { label: 'Employee', value: 3 },
 ]
 
 const prefixes = ref([])   // [{ label, value }]
@@ -171,6 +172,14 @@ const errors = reactive({})
 /* ------- success state ------- */
 const submitting = ref(false)
 const showCreateSuccess = ref(false)
+
+/* ------- error state ------- */
+const showCreateError = ref(false)
+const createErrorMessage = ref('')
+
+/* ------- load meta error state ------- */
+const showLoadMetaError = ref(false)
+const loadMetaErrorMessage = ref('')
 
 /* ------- โหลด meta จาก backend ------- */
 onMounted(async () => {
@@ -195,36 +204,21 @@ onMounted(async () => {
             department_id: t.tm_department_id ?? null,
         }))
 
-        // Position = ต้องมี team_id ไว้ filter
+        // Position
         positions.value = (data.positions || []).map(p => ({
             label: p.pst_name,
             value: p.id,
             team_id: p.pst_team_id ?? null,
         }))
     } catch (e) {
-        const msg =
-        e.response?.data?.message ||   // message จาก backend
-        e.response?.data?.error ||     // error เพิ่มเติม (ถ้ามี)
-        e.message ||                   // axios / js error
-        'โหลดข้อมูลไม่สำเร็จ'          // fallback
+        showLoadMetaError.value = true
+        loadMetaErrorMessage.value = 'Load failed. Please try again.'
+    }
 
-        await Swal.fire({
-            icon: 'error',
-            title: 'Load failed',
-            text: msg ,
-            confirmButtonText: 'OK',
-            buttonsStyling: false,
-            customClass: {
-                popup: 'rounded-2xl',
-                confirmButton:
-                    'rounded-full px-5 py-2.5 bg-gray-800 text-white font-semibold hover:bg-gray-900'
-            }
-        })
-    } finally {
+    finally {
         loadingMeta.value = false
     }
 })
-
 
 const teamOptions = computed(() => {
     if (!form.department) return []
@@ -332,7 +326,6 @@ watch(
     }
 )
 
-
 /* ------- submit -> บันทึกลง DB ------- */
 async function handleSubmit() {
     showCreateSuccess.value = false
@@ -438,25 +431,10 @@ async function handleSubmit() {
             }
 
         } else {
-            // server / network error → ยังเตือนด้วย Swal ได้
-            const msg = err.response?.data?.message
-                || err.response?.data?.error
-                || err.message
-                || 'Server error'
-
-            await Swal.fire({
-                icon: 'error',
-                title: 'Create failed',
-                text: msg,
-                confirmButtonText: 'OK',
-                buttonsStyling: false,
-                customClass: {
-                    popup: 'rounded-2xl',
-                    confirmButton:
-                        'rounded-full px-5 py-2.5 bg-gray-800 text-white font-semibold hover:bg-gray-900'
-                }
-            })
+            createErrorMessage.value = 'Sorry, please try again later.'
+            showCreateError.value = true
         }
+
     } finally {
         submitting.value = false
     }
@@ -473,6 +451,17 @@ function handleSuccessClose() {
     showCreateSuccess.value = false
     router.push('/employee')
 }
+
+/* ---------- close modal error ---------- */
+function handleErrorClose() {
+    showCreateError.value = false
+}
+
+/* ---------- close modal load meta error ---------- */
+function handleLoadMetaErrorClose() {
+    showLoadMetaError.value = false
+}
+
 </script>
 
 <style></style>

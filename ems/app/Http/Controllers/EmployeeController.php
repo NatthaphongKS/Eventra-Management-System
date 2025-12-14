@@ -155,7 +155,7 @@ class EmployeeController extends Controller
                     ]);
             }
         }
-        
+
         $positions = Position::query()
             ->select('id', 'pst_name', 'pst_team_id')
             ->where('pst_delete_status', 'active')
