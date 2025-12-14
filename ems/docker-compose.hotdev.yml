@@ -1,13 +1,10 @@
 services:
-  # Laravel + Apache with built frontend assets
   app:
     build: .
-    container_name: ems_app
+    container_name: ems_app_dev
     restart: unless-stopped
     ports:
       - "7080:80"
-    volumes:
-      - ./.env:/var/www/html/.env
     environment:
       DB_CONNECTION: mysql
       DB_HOST: 10.80.7.17
@@ -15,15 +12,23 @@ services:
       DB_DATABASE: Byteforge
       DB_USERNAME: Byteforge
       DB_PASSWORD: Byteforge_Secret2307
+    volumes:
+      - ./:/var/www/html
+      - ./vendor:/var/www/html/vendor
+    command: >
+      sh -lc "
+        composer install --ignore-platform-reqs &&
+        php artisan config:clear &&
+        apache2-foreground
+      "
     networks:
       - appnet
     depends_on:
       - db
 
-  # MariaDB
   db:
     image: mariadb:10.6
-    container_name: ems_db
+    container_name: ems_db_dev
     restart: unless-stopped
     ports:
       - "7306:3306"
@@ -37,10 +42,9 @@ services:
     networks:
       - appnet
 
-  # Vite dev server so it runs under the same project/network
   vite:
     image: node:20
-    container_name: ems_vite
+    container_name: ems_vite_dev
     working_dir: /var/www/html
     command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     ports:
