@@ -1,4 +1,4 @@
-<template>
++<template>
     <section class="p-0">
         <div class="mt-3 mb-1 flex items-center gap-4">
             <!-- ✅ SearchBar -->
@@ -74,12 +74,19 @@
             </template>
 
             <template #actions="{ row }">
+                <button @click="canDelete(row) ? openDelete(row.id) : null" :disabled="!canDelete(row)"
+                    class="rounded-lg p-1.5" :class="[
+                        canDelete(row)
+                            ? 'hover:bg-slate-100 cursor-pointer'
+                            : 'opacity-30 cursor-not-allowed'
+                    ]" title="Delete">
+                    <TrashIcon class="h-5 w-5" :class="canDelete(row) ? 'text-neutral-800' : 'text-neutral-400'" />
+                </button>
+
                 <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
                     <PencilIcon class="h-5 w-5 text-neutral-800" />
                 </button>
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
-                    <TrashIcon class="h-5 w-5 text-neutral-800" />
-                </button>
+
                 <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -98,18 +105,6 @@
             message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
             :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
-
-        <!-- icon สีไม่ตรงตามแบบ Figma -->
-        <!-- ❌ Block: DONE -->
-        <ModalAlert :open="showModalBlockedDone" type="error" title="CANNOT DELETE!"
-            message="Sorry, This event has already ended." :show-cancel="false" okText="OK"
-            @confirm="showModalBlockedDone = false" />
-
-        <!-- icon สีไม่ตรงตามแบบ Figma -->
-        <!-- ❌ Block: ONGOING -->
-        <ModalAlert :open="showModalBlockedOngoing" type="error" title="CANNOT DELETE!"
-            message="Sorry, This event is ongoing." :show-cancel="false" okText="OK"
-            @confirm="showModalBlockedOngoing = false" />
 
     </section>
 </template>
@@ -513,6 +508,11 @@ export default {
             this.page = 1;
         },
 
+        canDelete(row) {
+            const status = (row.evn_status || "").toLowerCase();
+            return !(status === "done" || status === "ongoing");
+        },
+
         async fetchEvent() {
             try {
                 const res = await axios.get("/get-event");
@@ -606,6 +606,11 @@ export default {
             }
         },
 
+        openDelete(id) {
+            this.deleteId = id;
+            this.showModalAsk = true;
+        },
+
         handleClientSort({ key, order }) {
             this.sortBy = key;
             this.sortOrder = order;
@@ -616,34 +621,13 @@ export default {
                 ) || this.selectedSort;
         },
 
-        // ✅ เพิ่ม method นี้
+        // ✅ เมื่อเลือกการเรียงลำดับจาก EventSort
         onPickSort(sort) {
             if (!sort) return;
             this.selectedSort = sort;
             this.sortBy = sort.key;
             this.sortOrder = sort.order;
             this.page = 1;
-        },
-
-        openDelete(id) {
-            const ev = this.normalized.find(e => e.id === id);
-            const status = (ev?.evn_status || "").toLowerCase();
-
-            // ❌ ถ้า Done → ห้ามลบ
-            if (status === "done") {
-                this.showModalBlockedDone = true;
-                return;
-            }
-
-            // ❌ ถ้า Ongoing → ห้ามลบ
-            if (status === "ongoing") {
-                this.showModalBlockedOngoing = true;
-                return;
-            }
-
-            // ✔ ถ้า status อื่น → ลบได้
-            this.deleteId = id;
-            this.showModalAsk = true;
         },
 
         async onConfirmDelete() {
@@ -663,13 +647,16 @@ export default {
                 this.isDeleting = false;
             }
         },
+
         onCancelDelete() {
             this.showModalAsk = false;
             this.deleteId = null;
         },
+
         onConfirmSuccess() {
             this.showModalSuccess = false;
         },
+
         onConfirmFail() {
             this.showModalFail = false;
         },
