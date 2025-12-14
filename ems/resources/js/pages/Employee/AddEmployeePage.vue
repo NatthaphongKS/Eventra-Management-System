@@ -120,90 +120,8 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Department <span class="text-red-600">*</span></label>
-                            <DropdownPill
-                                v-model="form.department"
-                                :options="departments"
-                                placeholder="Select Department"
-                                :error="errors.department"
-                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Team <span class="text-red-600">*</span></label>
-                            <DropdownPill
-                                v-model="form.team"
-                                :options="teamOptions"
-                                placeholder="Select Team"
-                                :error="errors.team"
-                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Position <span class="text-red-600">*</span></label>
-                            <DropdownPill
-                                v-model="form.position"
-                                :options="positions"
-                                placeholder="Select Position"
-                                :error="errors.position"
-                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Email <span class="text-red-600">*</span></label>
-                            <InputPill
-                                v-model="form.email"
-                                type="email"
-                                placeholder="Ex. 66160106@go.buu.ac.th"
-                                :error="errors.email"
-                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Password <span class="text-red-600">*</span></label>
-                            <InputPill
-                                v-model="form.password"
-                                type="password"
-                                placeholder="Ex. Ssaw.1234"
-                                :error="errors.password"
-                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Permission <span class="text-red-600">*</span></label>
-                            <DropdownPill
-                                v-model="form.permission"
-                                :options="permissions"
-                                placeholder="Select Permission"
-                                :error="errors.permission"
-                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
-                            />
-                        </div>
-
-                        <div class="pt-6 flex flex-col-reverse md:flex-row justify-end gap-4">
-                            <button type="button" @click="onCancel"
-                                class="md:hidden h-[48px] px-8 rounded-[20px] border border-neutral-300 text-neutral-600 font-semibold hover:bg-neutral-50 transition">
-                                Cancel
-                            </button>
-
-                            <button type="submit" :disabled="submitting"
-                                class="inline-flex items-center justify-center gap-2 h-[48px] px-8 rounded-[20px] bg-green-600 text-white font-semibold hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md">
-                                <span class="material-symbols-outlined text-[20px]">add</span>
-                                <span>Create</span>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </template>
@@ -376,7 +294,7 @@ Object.keys(fieldRules).forEach(k => {
                 delete errors[k]
             }
         }
-})
+    })
 })
 
 /* ------- submit ------- */
@@ -403,6 +321,7 @@ async function handleSubmit() {
     showCreateSuccess.value = false
     if (!validate()) return
     submitting.value = true
+
     try {
         const payload = {
             emp_id: (form.employeeId || '').trim(),
@@ -430,14 +349,10 @@ async function handleSubmit() {
         showCreateSuccess.value = false
         if (err.response?.status === 422) {
             const e = err.response.data.errors || {}
-            // Map errors...
-            if(e.emp_id) errors.employeeId = e.emp_id[0]
-            if(e.emp_email) errors.email = e.emp_email[0]
-            if(e.emp_phone) errors.phone = e.emp_phone[0]
 
-            function normalizeMsg(fieldMsg, fieldName) {
+            // ฟังก์ชันสำหรับแปลงข้อความ Error
+            const normalizeMsg = (fieldMsg, fieldName) => {
                 if (!fieldMsg) return ''
-
                 // duplicate เคสซ้ำ
                 if (
                     /already been taken/i.test(fieldMsg) ||
@@ -445,7 +360,6 @@ async function handleSubmit() {
                     /duplicate/i.test(fieldMsg) ||
                     /ซ้ำ/.test(fieldMsg) ||
                     /มีอยู่แล้ว/.test(fieldMsg)
-
                 ) {
                     switch (fieldName) {
                         case 'emp_email':
@@ -458,7 +372,14 @@ async function handleSubmit() {
                             return 'Already in use.'
                     }
                 }
-            })
+                return fieldMsg
+            }
+
+            // Map errors และเรียกใช้ normalizeMsg
+            if (e.emp_id) errors.employeeId = normalizeMsg(e.emp_id[0], 'emp_id')
+            if (e.emp_email) errors.email = normalizeMsg(e.emp_email[0], 'emp_email')
+            if (e.emp_phone) errors.phone = normalizeMsg(e.emp_phone[0], 'emp_phone')
+
         } else {
             createErrorMessage.value = 'Sorry, please try again later.'
             showCreateError.value = true
