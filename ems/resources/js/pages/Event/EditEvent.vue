@@ -459,14 +459,14 @@ export default {
         },
         // ซีดแถวที่ล็อกไว้
         rowClass(row) {
-            // เช็คว่าถ้า id นี้อยู่ในรายการที่ถูกล็อก (เชิญไปแล้ว)
+            // เช็คว่าถ้าเป็น id ที่ถูกล็อก (เชิญไปแล้ว)
             if (this.lockedIds.has(row.id)) {
-                // opacity-60: ทำให้ตัวจางลง (มีอยู่แล้ว)
-                // pointer-events-none: ป้องกันการคลิกทุกอย่างในแถวนั้น (ทำให้ติ๊กออกไม่ได้)
-                // cursor-not-allowed: เปลี่ยนเมาส์เป็นรูปห้าม (Optional)
-                return 'opacity-60 pointer-events-none cursor-not-allowed bg-gray-50';
+                // opacity-60: ทำให้สีจางลง
+                // pointer-events-none: ปิดการคลิกทุกอย่างในแถวนั้น (รวมถึง checkbox)
+                // bg-gray-50: ถมสีพื้นหลังให้ดูว่าเป็นสถานะ disabled
+                return 'opacity-60 pointer-events-none bg-gray-50 select-none'
             }
-            return '';
+            return ''
         },
 
         // รับค่าจาก DataTable เวลาเช็ค/ยกเลิกเช็ค
