@@ -1,7 +1,7 @@
 <template>
     <div class="w-full">
         <input v-bind="$attrs" :type="type" :inputmode="inputmode" :placeholder="placeholder" :disabled="disabled"
-            class="rounded-full border px-4 py-2.5 text-sm transition
+            class="rounded-[20px] border px-4 py-2.5 text-sm transition
            bg-white placeholder-red-300
            focus:outline-none focus:ring-2" :class="[
             disabled

@@ -172,11 +172,8 @@ const toggle = (key) => {
     expanded.value[key] = !expanded.value[key]
 }
 
-axios.defaults.withCredentials = true
-const token = document.querySelector('meta[name="csrf-token"]')?.content
-if (token) axios.defaults.headers.common['X-CSRF-TOKEN'] = token
 
-const routerPush = (path) => router.push(path) // เผื่อใช้ต่อ
+// const routerPush = (path) => router.push(path) // เผื่อใช้ต่อ
 const logout = async () => {
     try {
         await axios.post('/logout')
