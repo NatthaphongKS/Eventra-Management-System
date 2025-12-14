@@ -1,18 +1,17 @@
 <template>
-    <div>
-        <!-- Header + ปุ่ม Import -->
-        <header class="mx-auto max-w-[1400px] px-6 pt-6">
-            <link rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <div class="font-[Poppins] text-neutral-800 min-h-screen bg-white">
+        <header class="max-w-[1160px] mx-auto px-6 pt-8 mb-8">
+            <div class="flex items-center justify-between">
+                <div class="text-3xl font-semibold text-neutral-800">Add New Employee</div>
 
-            <div class="flex items-center justify-between gap-3">
-                <h2 class="text-xl font-semibold text-gray-800">
-                    Add New Employee
-                </h2>
-
-                <div class="flex justify-end">
+                <div class="relative">
                     <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
-                    <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
+                    <button type="button"
+                        class="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition"
+                        @click="goImport">
+                        <span class="material-symbols-outlined text-[20px]">download</span>
+                        <span>Import</span>
+                    </button>
                 </div>
 
                 <!-- Success alert -->
@@ -26,6 +25,8 @@
                 <EmployeeCannotCreate :open="showLoadMetaError" :message="loadMetaErrorMessage"
                     @close="handleLoadMetaErrorClose" />
             </div>
+
+            <EmployeeCreateSuccess :open="showCreateSuccess" @close="handleSuccessClose" />
         </header>
 
         <!-- Body -->
@@ -119,8 +120,90 @@
                             </div>
                         </div>
                     </div>
-                </form>
-            </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Department <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.department"
+                                :options="departments"
+                                placeholder="Select Department"
+                                :error="errors.department"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Team <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.team"
+                                :options="teamOptions"
+                                placeholder="Select Team"
+                                :error="errors.team"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Position <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.position"
+                                :options="positions"
+                                placeholder="Select Position"
+                                :error="errors.position"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Email <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.email"
+                                type="email"
+                                placeholder="Ex. 66160106@go.buu.ac.th"
+                                :error="errors.email"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Password <span class="text-red-600">*</span></label>
+                            <InputPill
+                                v-model="form.password"
+                                type="password"
+                                placeholder="Ex. Ssaw.1234"
+                                :error="errors.password"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-neutral-800 font-semibold text-[15px] mb-3">Permission <span class="text-red-600">*</span></label>
+                            <DropdownPill
+                                v-model="form.permission"
+                                :options="permissions"
+                                placeholder="Select Permission"
+                                :error="errors.permission"
+                                class="w-full h-[52px] border border-neutral-200 rounded-[20px] px-5 text-[15px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                            />
+                        </div>
+
+                        <div class="pt-6 flex flex-col-reverse md:flex-row justify-end gap-4">
+                            <button type="button" @click="onCancel"
+                                class="md:hidden h-[48px] px-8 rounded-[20px] border border-neutral-300 text-neutral-600 font-semibold hover:bg-neutral-50 transition">
+                                Cancel
+                            </button>
+
+                            <button type="submit" :disabled="submitting"
+                                class="inline-flex items-center justify-center gap-2 h-[48px] px-8 rounded-[20px] bg-green-600 text-white font-semibold hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md">
+                                <span class="material-symbols-outlined text-[20px]">add</span>
+                                <span>Create</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
         </div>
     </div>
 </template>
@@ -132,10 +215,10 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
-/* ---------- components ---------- */
-import FormField from '../../components/Input/FormField.vue'
+// components (ใช้ InputPill และ DropdownPill เหมือนเดิม)
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
+import EmployeeCreateSuccess from '../../components/Alert/Employee/EmployeeCreateSuccess.vue'
 import ImportButton from '@/components/Button/ImportButton.vue'
 import CreateButton from '@/components/Button/CreateButton.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
@@ -166,10 +249,7 @@ const form = reactive({
     email: '', password: '', permission: '',
 })
 
-/* ------- validation state ------- */
 const errors = reactive({})
-
-/* ------- success state ------- */
 const submitting = ref(false)
 const showCreateSuccess = ref(false)
 
@@ -233,7 +313,7 @@ const positionOptions = computed(() => {
 })
 
 
-/* ====== Validation ====== */
+/* ====== Validation logic (คงเดิม) ====== */
 const MSG = {
     requiredSelect: 'Required Select',
     requiredText: 'Required field only text',
@@ -259,31 +339,25 @@ const fieldRules = {
 function validateField(key, value) {
     const rules = fieldRules[key] || []
     for (const r of rules) {
-        if (r === 'requiredSelect') {
-            if (!value) return MSG.requiredSelect
-        } else if (r === 'requiredText') {
+        if (r === 'requiredSelect') { if (!value) return MSG.requiredSelect }
+        else if (r === 'requiredText') {
             if (!value) return MSG.requiredText
+            // Regex เดิมของคุณ
             const re = /^[A-Za-zก-๙ .'-]+$/u
             if (!re.test(value)) return MSG.requiredText
-        } else if (r === 'requiredNumber') {
-            // 1) ไม่ใส่อะไรเลย
-            if (!value) {
-                return 'Required phone number'
-            }
-            // 2) ใส่มาแล้วแต่ไม่ใช่ตัวเลขทั้งหมด หรือไม่ใช่ความยาว 10 หลักพอดี
-            if (!/^\d+$/.test(value) || value.length !== 10) {
-                return 'Phone number must be 10 digits'
-            }
-        } else if (r === 'requiredEmail') {
+        }
+        else if (r === 'requiredNumber') {
+            if (!value) return MSG.requiredNumber
+            if (!/^\d{10}$/.test(value)) return MSG.requiredNumber
+        }
+        else if (r === 'requiredEmail') {
             if (!value) return MSG.requiredEmail
             if (!(value.includes('@') && value.includes('.'))) return MSG.requiredEmail
-        } else if (r === 'requiredField') {
-            if (!value) return MSG.requiredField
         }
+        else if (r === 'requiredField') { if (!value) return MSG.requiredField }
     }
     return ''
 }
-
 function validate() {
     Object.keys(errors).forEach(k => delete errors[k])
     Object.keys(fieldRules).forEach(k => {
@@ -292,12 +366,9 @@ function validate() {
     })
     return Object.keys(errors).length === 0
 }
-
-// live-validate
-Object.keys(fieldRules).forEach((k) => {
-    watch(
-        () => form[k],
-        (v) => {
+Object.keys(fieldRules).forEach(k => {
+    watch(() => form[k], (v) => {
+        if (errors[k]) {
             const msg = validateField(k, v)
             if (msg) {
                 errors[k] = msg
@@ -305,9 +376,10 @@ Object.keys(fieldRules).forEach((k) => {
                 delete errors[k]
             }
         }
-    )
+})
 })
 
+/* ------- submit ------- */
 watch(
     () => form.department,
     () => {
@@ -329,7 +401,6 @@ watch(
 /* ------- submit -> บันทึกลง DB ------- */
 async function handleSubmit() {
     showCreateSuccess.value = false
-
     if (!validate()) return
     submitting.value = true
     try {
@@ -350,19 +421,19 @@ async function handleSubmit() {
 
         await axios.post('/save-employee', payload)
 
-        // ล้างฟอร์ม + ล้าง error เก่า
         Object.keys(form).forEach(k => (form[k] = ''))
         Object.keys(errors).forEach(k => delete errors[k])
 
-        //แสดงกล่องสำเร็จ
         showCreateSuccess.value = true
-
 
     } catch (err) {
         showCreateSuccess.value = false
-
         if (err.response?.status === 422) {
             const e = err.response.data.errors || {}
+            // Map errors...
+            if(e.emp_id) errors.employeeId = e.emp_id[0]
+            if(e.emp_email) errors.email = e.emp_email[0]
+            if(e.emp_phone) errors.phone = e.emp_phone[0]
 
             function normalizeMsg(fieldMsg, fieldName) {
                 if (!fieldMsg) return ''
@@ -387,49 +458,7 @@ async function handleSubmit() {
                             return 'Already in use.'
                     }
                 }
-
-                return fieldMsg
-            }
-
-            errors.employeeId = normalizeMsg(e.emp_id?.[0], 'emp_id') || ''
-            errors.prefix = e.emp_prefix?.[0] || ''
-            errors.firstName = e.emp_firstname?.[0] || ''
-            errors.lastName = e.emp_lastname?.[0] || ''
-            errors.email = normalizeMsg(e.emp_email?.[0], 'emp_email') || ''
-            errors.phone = normalizeMsg(e.emp_phone?.[0], 'emp_phone') || ''
-            errors.position = e.emp_position_id?.[0] || ''
-            errors.department = e.emp_department_id?.[0] || ''
-            errors.team = e.emp_team_id?.[0] || ''
-            errors.password = e.emp_password?.[0] || ''
-            errors.permission = e.emp_status?.[0] || ''
-
-            const flatMsgsRaw = Object.values(e).flat().filter(Boolean)
-
-            const isDuplicate = flatMsgsRaw.some(msg =>
-                /already\s+exists/i.test(msg) ||
-                /already been taken/i.test(msg) ||
-                /duplicate/i.test(msg) ||
-                /ซ้ำ/.test(msg) ||
-                /มีอยู่แล้ว/.test(msg)
-            )
-
-            // กรณี invalid ปกติ (ไม่ใช่ duplicate) → ยังใช้ Swal เตือน
-            if (!isDuplicate) {
-                const msgHtml = flatMsgsRaw.join('<br>') || 'Please check your input.'
-                await Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid data',
-                    html: msgHtml,
-                    confirmButtonText: 'OK',
-                    buttonsStyling: false,
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton:
-                            'rounded-full px-5 py-2.5 bg-rose-600 text-white font-semibold hover:bg-rose-700'
-                    }
-                })
-            }
-
+            })
         } else {
             createErrorMessage.value = 'Sorry, please try again later.'
             showCreateError.value = true
@@ -446,7 +475,6 @@ function onCancel() {
     router.push('/employee')
 }
 
-/* ---------- close modal success ---------- */
 function handleSuccessClose() {
     showCreateSuccess.value = false
     router.push('/employee')
