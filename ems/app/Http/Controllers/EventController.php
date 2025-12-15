@@ -297,8 +297,13 @@ class EventController extends Controller
                 ')
                 ->first();
 
+            return response()->json($statistics);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
-    function eventInfo()
+    public function eventInfo()
     {
         $employees = Employee::with([
             'position:id,pst_name',

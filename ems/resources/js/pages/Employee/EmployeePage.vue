@@ -109,7 +109,7 @@
                 </div>
 
                 <!-- ✅ AddButton -->
-                <AddButton @click="goAdd" />
+                <Button variant="add" @click="goAdd" />
             </div>
         </div>
 
@@ -185,7 +185,7 @@ import { Icon } from "@iconify/vue";
 import SearchBar from "@/components/SearchBar.vue";
 import DataTable from "@/components/DataTable.vue";
 import SortMenu from "@/components/SortMenu.vue";
-import AddButton from "@/components/AddButton.vue";
+import Button from "@/components/Button.vue";
 import ConfirmDelete from "@/components/Alert/ConfirmDelete.vue";
 import EmployeeDeleteSuccess from "@/components/Alert/Employee/EmloyeeDeleteSuccess.vue";
 
@@ -199,7 +199,7 @@ export default {
         SearchBar,
         DataTable,
         SortMenu,
-        AddButton,
+        Button,
         ConfirmDelete,
         EmployeeDeleteSuccess,
     },

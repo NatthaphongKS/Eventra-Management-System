@@ -75,7 +75,7 @@
               </FormField>
 
               <div @click="onCancel">
-                <CancelButton />
+                <Button variant="cancel" />
               </div>
             </div>
 
@@ -177,7 +177,7 @@ import axios from "axios";
 import FormField from "../../components/Input/FormField.vue";
 import InputPill from "../../components/Input/InputPill.vue";
 import DropdownPill from "../../components/Input/DropdownPill.vue";
-import CancelButton from "@/components/Button/CancelButton.vue";
+import Button from "@/components/Button.vue";
 import EmployeeConfirmEdit from "../../components/Alert/Employee/EmployeeConfirmEdit.vue";
 import EmployeeEditSuccess from "../../components/Alert/Employee/EmployeeEditSuccess.vue";
 
