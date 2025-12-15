@@ -3,10 +3,10 @@
         <button
             type="button"
             @click="toggle"
-            class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-gray-50"
+            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800 hover:bg-gray-50"
             :class="{ 'bg-gray-100': isOpen }"
         >
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
                 <line x1="4" y1="7" x2="20" y2="7" />
                 <line x1="6" y1="12" x2="16" y2="12" />
                 <line x1="8" y1="17" x2="12" y2="17" />
