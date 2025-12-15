@@ -1,142 +1,165 @@
 <!-- pages/event_page.vue -->
 <template>
 
-<div class="dashboard-grid">
-  
-  <!-- Event Table Section -->
-  <div class="card event-card">
-     <!--created toolbar pill-->
-
-    <div class="toolbar toolbar--pill">
-      <!-- SearchBar Component -->
+<!-- Event Table Section - Refactored to match EventPage -->
+<section class="p-0">
+  <div class="mt-3 mb-1 flex items-center gap-3">
+    <!-- SearchBar -->
+    <div class="flex flex-1">
       <SearchBar 
-        v-model="search" 
-        placeholder="Search events..." 
-        @search="handleSearch"
-        class="flex-1"
+        v-model="searchInput" 
+        placeholder="Search event..." 
+        @search="applySearch"
+        class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
       />
+    </div>
 
-      <!-- EventFilter Component -->
-      <EventFilter 
-        v-model="filterValue"
-        :categories="categories"
-        @update:modelValue="handleFilter"
+    <!-- Date Icon Button -->
+    <div class="relative mt-6">
+      <input 
+        type="date" 
+        v-model="selectedDate"
+        @change="filterByDate"
+        id="dateInput"
+        class="absolute opacity-0 w-11 h-11 cursor-pointer"
       />
-
-      <!-- EventSort Component -->
-      <EventSort 
-        v-model="sortValue"
-        @update:modelValue="handleSort"
-      />
-
-      <Button 
-        variant="light" 
-        icon="download" 
-        shape="pill"
-        class="h-10 min-w-[120px] flex items-center justify-center"
-        @click="onViewReport"
-      >
-        Export
-      </Button>
-      <Button 
-        variant="danger" 
-        shape="pill"
-        class="h-10 min-w-[120px] flex items-center justify-center ml-2"
-        @click="onExport"
-      >
-        Show Data
-      </Button>
-      
+      <label for="dateInput" class="flex items-center justify-center w-11 h-11 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </label>
     </div>
-      
-      <!-- Export Button Label -->
-      <div class="export-label">Export Button</div>
-    </div>
-    <div class="event-table-wrap">
-      <table class="event-table">
-        <thead>
-          <tr>
-            <th class="event-th evt-col-idx">
-              <input type="checkbox" @change="selectAllEvents" v-model="selectAll" />
-            </th>
-            <th class="event-th evt-col-id">Event ID</th>
-            <th class="event-th evt-col-title">Event</th>
-            <th class="event-th evt-col-cat">Category</th>
-            <th class="event-th evt-col-date">Date (D/M/Y)</th>
-            <th class="event-th evt-col-time">Time</th>
-            <th class="event-th evt-col-num">Invited</th>
-            <th class="event-th evt-col-num">Accepted</th>
-            <th class="event-th evt-col-status">Status</th>
-          </tr>
-        </thead>
 
-        <tbody>
-          <tr v-for="(ev, i) in paged" :key="ev.id" 
-              :class="['event-row', { 'selected-row': selectedEventId === (ev.id || ev.evn_id) }]">
-            <td class="event-td evt-col-idx">
-              <input 
-                type="radio" 
-                :value="ev.id || ev.evn_id" 
-                :checked="selectedEventId === (ev.id || ev.evn_id)"
-                @change="onEventSelect(ev)"
-                name="selectedEvent"
-              />
-            </td>
-            <td class="event-td evt-col-id">{{ ev.id || ev.evn_id || 'N/A' }}</td>
-            <td class="event-td evt-col-title">{{ ev.evn_title || 'N/A' }}</td>
-            <td class="event-td evt-col-cat">{{ ev.cat_name || 'N/A' }}</td>
-            <td class="event-td evt-col-date">{{ formatDate(ev.evn_date) }}</td>
-            <td class="event-td evt-col-time">
-              {{ ev.evn_timestart ? ev.evn_timestart.slice(0,5) : '??:??' }} -
-              {{ ev.evn_timeend ? ev.evn_timeend.slice(0,5) : '??:??' }}
-            </td>
-            <td class="event-td evt-col-num">{{ ev.evn_num_guest ?? '0' }}</td>
-            <td class="event-td evt-col-num">{{ ev.evn_sum_accept ?? 'N/A' }}</td>
-            <td class="event-td evt-col-status">
-              <span :class="['badge', ev.evn_status]">{{ ev.evn_status || 'N/A' }}</span>
-            </td>
-          </tr>
-
-          <tr v-if="paged.length === 0">
-            <td colspan="9" class="event-td no-data">No data found</td>
-          </tr>
-        </tbody>
-    </table>
-    </div>
+    <!-- Filter -->
+    <EventFilter 
+      v-model="filters" 
+      :categories="categories" 
+      :status-options="statusOptions"
+      @update:modelValue="applyFilter" 
+      class="mt-6" 
+    />
     
-    <!-- Event table info and pagination (same row) -->
-    <div class="event-table-footer">
-      <div class="table-info">
-        แสดง 
-        <select v-model="pageSize" class="page-size-select">
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-        {{ eventPaginationText }}
-      </div>
-      
-      <div class="pager2">
-      <button class="arrow-btn" :disabled="page===1" @click="goToPage(page-1)">‹</button>
-      <template v-for="(it, idx) in pageItems" :key="idx">
-        <button v-if="it.type==='page'" class="page-btn" :class="{ active: it.value===page }" @click="goToPage(it.value)">
-          {{ it.value }}
-        </button>
-        <span v-else class="dots">…</span>
-      </template>
-      <button class="arrow-btn" :disabled="page===totalPages || totalPages===0" @click="goToPage(page+1)">›</button>
-      </div>
-    </div>
+    <!-- Sort -->
+    <EventSort 
+      v-model="selectedSort" 
+      :options="sortOptions" 
+      @change="onPickSort" 
+      class="mt-6" 
+    />
+    
+    <!-- Export Button -->
+    <button 
+      class="inline-flex h-11 items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-6 transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+      Export
+    </button>
+    
+    <!-- Show Data Button -->
+    <button 
+      class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-6 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6 transition-colors"
+    >
+      Show Data
+    </button>
   </div>
 
-  <!-- Summary/Graph Section - แสดงเมื่อเลือก event แล้ว -->
-  <div v-if="selectedEventId" class="card summary-card">
+  <!-- DataTable -->
+  <DataTable 
+    :rows="paged" 
+    :columns="eventTableColumns" 
+    :loading="false" 
+    :total-items="sorted.length"
+    :page-size-options="[10, 20, 50, 100]" 
+    :page="page" 
+    :pageSize="pageSize" 
+    :sortKey="sortBy"
+    :sortOrder="sortOrder" 
+    @update:page="page = $event" 
+    @update:pageSize="pageSize = $event; page = 1;" 
+    @sort="handleClientSort" 
+    row-key="id" 
+    :show-row-number="true" 
+    class="mt-4">
+    
+    <!-- Checkbox column for multi-select -->
+    <template #cell-checkbox="{ row }">
+      <input 
+        type="checkbox"
+        :checked="selectedEventIds.has(row.id || row.evn_id)"
+        @change="toggleEventSelection(row)"
+        style="cursor: pointer; width: 16px; height: 16px;"
+      />
+    </template>
+
+    <!-- Title cell (clickable) -->
+    <template #cell-evn_title="{ row, value }">
+      <span role="button" tabindex="0"
+        class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        @click="goDetails(row.id)" 
+        @keydown.enter.prevent="goDetails(row.id)"
+        @keydown.space.prevent="goDetails(row.id)" 
+        title="ดูรายละเอียด">
+        {{ value }}
+      </span>
+    </template>
+
+    <!-- Category cell (clickable) -->
+    <template #cell-cat_name="{ row, value }">
+      <span role="button" tabindex="0"
+        class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        @click="goDetails(row.id)" 
+        @keydown.enter.prevent="goDetails(row.id)"
+        @keydown.space.prevent="goDetails(row.id)">
+        {{ value }}
+      </span>
+    </template>
+
+    <!-- Invited cell (clickable) -->
+    <template #cell-evn_num_guest="{ row, value }">
+      <span role="button" tabindex="0"
+        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        @click="goDetails(row.id)" 
+        @keydown.enter.prevent="goDetails(row.id)"
+        @keydown.space.prevent="goDetails(row.id)">
+        {{ value }}
+      </span>
+    </template>
+
+    <!-- Accepted cell (clickable) -->
+    <template #cell-evn_sum_accept="{ row, value }">
+      <span role="button" tabindex="0"
+        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        @click="goDetails(row.id)" 
+        @keydown.enter.prevent="goDetails(row.id)"
+        @keydown.space.prevent="goDetails(row.id)">
+        {{ value }}
+      </span>
+    </template>
+
+    <!-- Status cell (with badge) -->
+    <template #cell-evn_status="{ row, value }">
+      <span role="button" tabindex="0"
+        class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        @click="goDetails(row.id)" 
+        @keydown.enter.prevent="goDetails(row.id)"
+        @keydown.space.prevent="goDetails(row.id)">
+        <span :class="badgeClass(value)">
+          {{ value || "N/A" }}
+        </span>
+      </span>
+    </template>
+  </DataTable>
+</section>
+
+<!-- Summary/Graph Section - แสดงเมื่อเลือก event แล้ว -->
+<div v-if="selectedEventIds.size > 0" class="card summary-card">
     <div class="summary-grid">
       <!-- Actual Attendance -->
       <div class="summary-item chart-container actual-attendance-card">
         <DonutActualAttendance 
-          :eventId="selectedEventId"
+          :eventId="Array.from(selectedEventIds)[0]"
           :attendanceData="chartData"
         />
       </div>
@@ -144,7 +167,7 @@
       <!-- Event Participation Graph -->
       <div class="summary-item chart-container event-participation-card">
         <GraphEventParticipation 
-          :eventId="selectedEventId"
+          :eventId="Array.from(selectedEventIds)[0]"
           :data="participationData"
         />
       </div>
@@ -177,7 +200,7 @@
   </div>
 
   <!-- Employee Table Section - แสดงเมื่อกดการ์ด -->
-  <div v-if="showEmployeeTable && selectedEventId" class="employee-table-container">
+  <div v-if="showEmployeeTable && selectedEventIds.size > 0" class="employee-table-container">
     <div class="employee-table-wrap">
       <table class="employee-table">
         <thead>
@@ -262,6 +285,7 @@ import Button from "../../components/Button.vue";
 import SearchBar from "../../components/SearchBar.vue";
 import EventFilter from "../../components/IndexEvent/EventFilter.vue";
 import EventSort from "../../components/IndexEvent/EventSort.vue";
+import DataTable from "@/components/DataTable.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -277,30 +301,48 @@ export default {
     Button,
     SearchBar,
     EventFilter,
-    EventSort
+    EventSort,
+    DataTable
   },
   data() {
     return {
       event: [],
       categories: [],
       catMap: {},
+      
+      searchInput: "",
       search: "",
-      sortBy: "evn_date",
+      sortBy: "evn_status",
       sortOrder: "asc",
+      selectedSort: {
+        id: "status_asc",
+        key: "evn_status",
+        order: "asc",
+        type: "custom",
+      },
+      sortOptions: [
+        { id: "title_asc", label: "ชื่องาน A–Z", key: "evn_title", order: "asc", type: "text" },
+        { id: "title_desc", label: "ชื่องาน Z–A", key: "evn_title", order: "desc", type: "text" },
+        { id: "invited_desc", label: "จำนวนคนเชิญมากสุด", key: "evn_num_guest", order: "desc", type: "number" },
+        { id: "invited_asc", label: "จำนวนคนเชิญน้อยสุด", key: "evn_num_guest", order: "asc", type: "number" },
+        { id: "accepted_desc", label: "จำนวนคนเข้าร่วมมากสุด", key: "evn_sum_accept", order: "desc", type: "number" },
+        { id: "accepted_asc", label: "จำนวนคนเข้าร่วมน้อยสุด", key: "evn_sum_accept", order: "asc", type: "number" },
+        { id: "date_desc", label: "วันที่จัดงานใหม่สุด", key: "evn_date", order: "desc", type: "date" },
+        { id: "date_asc", label: "วันที่จัดงานเก่าสุด", key: "evn_date", order: "asc", type: "date" },
+        { id: "status_asc", label: "สถานะ (Ongoing → Done)", key: "evn_status", order: "asc", type: "custom" },
+        { id: "status_desc", label: "สถานะ (Done → Ongoing)", key: "evn_status", order: "desc", type: "custom" },
+      ],
+      
       page: 1,
       pageSize: 10,
       
-      // Filter และ Sort values สำหรับ components ใหม่
-      filterValue: {
-        category: new Set(),
-        status: new Set()
-      },
-      sortValue: {
-        id: 'date_desc',
-        key: 'evn_date',
-        order: 'desc',
-        type: 'date'
-      },
+      filters: { category: [], status: [] },
+      statusOptions: [
+        { label: "Done", value: "done" },
+        { label: "Ongoing", value: "ongoing" },
+        { label: "Upcoming", value: "upcoming" },
+      ],
+      
       employees: [],
       empPage: 1,
       empPageSize: 10,
@@ -317,17 +359,17 @@ export default {
         { value: 'id_asc', label: 'รหัสพนักงาน น้อย–มาก' },
         { value: 'id_desc', label: 'รหัสพนักงาน มาก–น้อย' },
       ],
-      // Selected event for dashboard analysis
-      selectedEventId: null,
+      // Selected events for multi-select
+      selectedEventIds: new Set(),
       selectAll: false,
-      // Employee table states (replace modal)
+      // Date filter
+      selectedDate: '',
+      // Employee table states
       showEmployeeTable: false,
-      employeeTableType: null, // 'attending', 'not-attending', 'pending'
+      employeeTableType: null,
       filteredEmployeesForTable: [],
-      // Pagination for employee table
       currentPage: 1,
       itemsPerPage: 10,
-      // Team filter for chart
       selectedTeamFilter: '',
       // Data for charts
       chartData: {
@@ -357,10 +399,32 @@ export default {
   await Promise.all([this.fetchEvent(), this.fetchCategories(), this.fetchEmployees()]);
   },
   watch: {
-    search()   { this.page = 1; },
-    pageSize() { this.page = 1; },
-    event()    { this.page = 1; },
-    // Reset pagination when employee filter changes
+    search() {
+      this.page = 1;
+    },
+    pageSize() {
+      this.page = 1;
+    },
+    selectedSort: {
+      handler(v) {
+        if (!v) return;
+        this.sortBy = v.key;
+        this.sortOrder = v.order;
+        this.page = 1;
+      },
+      immediate: true,
+      deep: true,
+    },
+    page(newPage) {
+      const total = this.totalPages;
+      if (newPage < 1) this.page = 1;
+      else if (newPage > total) this.page = total;
+    },
+    pageSize() {
+      if (this.page > this.totalPages) {
+        this.page = this.totalPages;
+      }
+    },
     filteredEmployeesForTable() {
       this.currentPage = 1;
     },
@@ -384,51 +448,179 @@ export default {
       }));
     },
     filtered() {
+      let arr = [...this.normalized];
       const q = this.search.toLowerCase().trim();
-      return this.normalized.filter(e => {
-        // Status filter
-        const status = String(e.evn_status || '').toLowerCase();
-        const matchStatus = status === 'upcoming' || status === 'done';
-        
-        // Category filter
-        const categoryFilter = this.filterValue.category;
-        const matchCategory = categoryFilter.size === 0 || categoryFilter.has(String(e.evn_cat_id));
-        
-        // Status filter from component
-        const statusFilter = this.filterValue.status;
-        const matchStatusFilter = statusFilter.size === 0 || statusFilter.has(status);
-        
-        // Search text filter
-        const matchSearch = !q || 
-          e.evn_title.toLowerCase().includes(q) ||
-          (e.evn_name && e.evn_name.toLowerCase().includes(q)) ||
-          (e.cat_name && e.cat_name.toLowerCase().includes(q)) ||
-          (e.evn_date && e.evn_date.toLowerCase().includes(q));
-        
-        return matchStatus && matchCategory && matchStatusFilter && matchSearch;
-      });
-    },
-    sorted() {
-      const key = this.sortBy;
-      const order = this.sortOrder;
-      const arr = [...this.filtered];
-      const parseVal = v => {
-        if (key.includes('date')) return new Date(v || 0).getTime();
-        if (['evn_num_guest','evn_sum_accept'].includes(key)) return Number(v) || 0;
-        return (v ?? '').toString().toLowerCase();
-      };
-      arr.sort((a,b) => {
-        const va = parseVal(a[key]), vb = parseVal(b[key]);
-        if (va < vb) return order === "asc" ? -1 : 1;
-        if (va > vb) return order === "asc" ?  1 : -1;
-        return 0;
-      });
+
+      // Search filter
+      if (q) {
+        arr = arr.filter((e) =>
+          `${e.evn_title} ${e.cat_name} ${e.evn_date} ${e.evn_status}`
+            .toLowerCase()
+            .includes(q)
+        );
+      }
+
+      // Category filter
+      if (this.filters.category.length > 0) {
+        arr = arr.filter((e) =>
+          this.filters.category.includes(String(e.evn_cat_id))
+        );
+      }
+
+      // Status filter
+      if (this.filters.status.length > 0) {
+        arr = arr.filter((e) =>
+          this.filters.status.includes(
+            (e.evn_status || "").toLowerCase()
+          )
+        );
+      }
+
+      // Date filter
+      if (this.selectedDate) {
+        arr = arr.filter((e) => {
+          if (!e.evn_date) return false;
+          // Extract date part from event date (format: YYYY-MM-DD)
+          const eventDate = String(e.evn_date).split(' ')[0];
+          return eventDate === this.selectedDate;
+        });
+      }
+
       return arr;
     },
-    totalPages() { return Math.ceil(this.sorted.length / this.pageSize); },
+
+    sorted() {
+      const arr = [...this.filtered];
+      const { key, order, type } = this.selectedSort || {};
+      const dir = order === "desc" ? -1 : 1;
+
+      const statusOrder = { ongoing: 1, upcoming: 2, done: 3 };
+
+      const parseDate = (val) => {
+        if (!val) return 0;
+        if (typeof val !== "string")
+          return new Date(val).getTime() || 0;
+        const s = val.trim();
+        if (/^\d{4}-\d{2}-\d{2}/.test(s))
+          return new Date(s).getTime() || 0;
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+          let [d, m, y] = s.split("/").map((n) => parseInt(n, 10));
+          if (y >= 2400) y -= 543;
+          return new Date(y, m - 1, d).getTime();
+        }
+        return new Date(s).getTime() || 0;
+      };
+
+      const getVal = (row) => {
+        if (type === "date") return parseDate(row[key]);
+        if (type === "number") return Number(row[key] ?? 0);
+        if (type === "text")
+          return String(row[key] ?? "").toLowerCase();
+        if (type === "custom" && key === "evn_status")
+          return (
+            statusOrder[(row.evn_status || "").toLowerCase()] ?? 99
+          );
+        return row[key];
+      };
+
+      arr.sort((a, b) => {
+        if (type === "custom" && key === "evn_status") {
+          const sa = (a.evn_status || "").toLowerCase();
+          const sb = (b.evn_status || "").toLowerCase();
+          const oa = statusOrder[sa] ?? 99;
+          const ob = statusOrder[sb] ?? 99;
+          if (oa !== ob) return (oa - ob) * dir;
+
+          const da = parseDate(a.evn_date);
+          const db = parseDate(b.evn_date);
+          if (sa === "done") return db - da;
+          return da - db;
+        }
+
+        const va = getVal(a);
+        const vb = getVal(b);
+
+        if (type === "text") {
+          const cmp = va.localeCompare(vb);
+          if (cmp !== 0) return cmp * dir;
+        } else {
+          if (va < vb) return -1 * dir;
+          if (va > vb) return 1 * dir;
+        }
+
+        const da = parseDate(a.evn_date);
+        const db = parseDate(b.evn_date);
+        return da - db;
+      });
+
+      return arr;
+    },
+    totalPages() {
+      return Math.ceil(this.sorted.length / this.pageSize) || 1;
+    },
+
     paged() {
       const start = (this.page - 1) * this.pageSize;
       return this.sorted.slice(start, start + this.pageSize);
+    },
+
+    eventTableColumns() {
+      return [
+        {
+          key: "checkbox",
+          label: "",
+          class: "w-12 text-center",
+          headerClass: "w-12",
+        },
+        {
+          key: "evn_title",
+          label: "Event",
+          class: "text-left",
+          headerClass: "w-[450px]",
+          cellClass: "pl-3 text-slate-800 font-medium truncate",
+          sortable: true,
+        },
+        {
+          key: "cat_name",
+          label: "Category",
+          class: "text-left",
+          headerClass: "pl-2",
+          cellClass: "pl-3",
+          sortable: true,
+        },
+        {
+          key: "evn_date",
+          label: "Date (D/M/Y)",
+          class: "w-[120px] text-center whitespace-nowrap",
+          format: this.formatDate,
+          sortable: true,
+        },
+        {
+          key: "evn_timestart",
+          label: "Time",
+          class: "w-[110px] text-center whitespace-nowrap justify-center",
+          cellClass: "justify-center",
+          format: (v, r) => this.timeText(v, r.evn_timeend),
+        },
+        {
+          key: "evn_num_guest",
+          label: "Invited",
+          class: "w-20 text-center",
+          sortable: true,
+        },
+        {
+          key: "evn_sum_accept",
+          label: "Accepted",
+          class: "w-20 text-center",
+          sortable: true,
+        },
+        {
+          key: "evn_status",
+          label: "Status",
+          class: "text-center",
+          sortable: true,
+        },
+      ];
     },
     pageItems() {
       const total = this.totalPages || 1;
@@ -523,10 +715,11 @@ export default {
       return arr.slice(start, start + this.empPageSize);
     },
 
-    // Get selected event data
+    // Get selected event data (first selected event)
     selectedEventData() {
-      if (!this.selectedEventId) return null;
-      return this.normalized.find(event => (event.id || event.evn_id) == this.selectedEventId);
+      if (this.selectedEventIds.size === 0) return null;
+      const firstEventId = Array.from(this.selectedEventIds)[0];
+      return this.normalized.find(event => (event.id || event.evn_id) == firstEventId);
     },
   },
   methods: {
@@ -636,32 +829,34 @@ export default {
     },
     async fetchEvent() {
       try {
-        const res = await axios.get("/get-event", {
-          params: {
-            page: this.page,
-            per_page: this.pageSize,
-            search: this.search
-          }
-        });
-        let allEvents = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-        this.event = allEvents.filter(ev => {
-          const status = String(ev.evn_status || ev.status || '').toLowerCase();
-          return status === 'upcoming' || status === 'done';
-        });
-        this.eventTotal = res.data.total || this.event.length;
-      } catch (err) { 
-        console.error("fetchEvent error", err); 
-        this.event = []; 
-        this.eventTotal = 0;
+        const res = await axios.get("/get-event");
+        this.event = Array.isArray(res.data)
+          ? res.data
+          : res.data?.data || [];
+      } catch (err) {
+        console.error("fetchEvent error", err);
+        this.event = [];
       }
     },
     async fetchCategories() {
       try {
         const res = await axios.get("/event-info");
         const cats = res.data?.categories || [];
-        this.categories = cats;
-        this.catMap = Object.fromEntries(cats.map(c => [String(c.id), c.cat_name]));
-      } catch (err) { console.error("fetchCategories error", err); this.categories = []; this.catMap = {}; }
+        
+        // Map to required format for EventFilter
+        this.categories = cats.map(c => ({
+          id: String(c.id),
+          cat_name: c.cat_name
+        }));
+        
+        this.catMap = Object.fromEntries(
+          cats.map(c => [String(c.id), c.cat_name])
+        );
+      } catch (err) {
+        console.error("fetchCategories error", err);
+        this.categories = [];
+        this.catMap = {};
+      }
     },
 
     goToPage(p) {
@@ -711,8 +906,120 @@ export default {
       console.log('Add Event clicked!');
       alert('Add Event button clicked! 🎉');
     },
+    
+    // Date filter method
+    filterByDate() {
+      // Date filter is handled automatically by the filtered computed property
+      // Reset to page 1 when filter changes
+      this.page = 1;
+    },
 
-    // Event selection methods
+    // Multi-select checkbox methods
+    toggleEventSelection(event) {
+      const eventId = event.id || event.evn_id;
+      if (!eventId) {
+        console.error('No event ID found in:', event);
+        return;
+      }
+      
+      if (this.selectedEventIds.has(eventId)) {
+        this.selectedEventIds.delete(eventId);
+      } else {
+        this.selectedEventIds.add(eventId);
+      }
+      
+      // Update select-all checkbox state
+      this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
+      
+      console.log('Updated selected events:', Array.from(this.selectedEventIds));
+    },
+
+    selectAllEvents() {
+      if (this.selectAll) {
+        // Select all events in sorted list
+        this.selectedEventIds = new Set(this.sorted.map(e => e.id || e.evn_id));
+      } else {
+        // Deselect all
+        this.selectedEventIds.clear();
+      }
+      console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
+    },
+
+    // Filter & Sort handlers
+    applySearch() {
+      this.search = this.searchInput;
+      this.page = 1;
+    },
+
+    applyFilter() {
+      this.page = 1;
+    },
+
+    onPickSort(opt) {
+      if (!opt) return;
+      this.selectedSort = opt;
+      this.sortBy = opt.key;
+      this.sortOrder = opt.order;
+      this.page = 1;
+    },
+
+    handleClientSort({ key, order }) {
+      this.sortBy = key;
+      this.sortOrder = order;
+      this.page = 1;
+      this.selectedSort =
+        this.sortOptions.find(
+          (opt) => opt.key === key && opt.order === order
+        ) || this.selectedSort;
+    },
+
+    // Formatting methods
+    formatDate(val) {
+      if (!val) return "N/A";
+      try {
+        const d = new Date(val);
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      } catch {
+        return "Invalid Date";
+      }
+    },
+
+    timeText(startTime, endTime) {
+      const format = (t) => (t ? String(t).slice(0, 5) : "??:??");
+      return `${format(startTime)}-${format(endTime)}`;
+    },
+
+    badgeClass(status) {
+      const base =
+        "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
+      switch ((status || "").toLowerCase()) {
+        case "done":
+          return `${base} bg-[#DCFCE7] text-[#00A73D]`;
+        case "upcoming":
+          return `${base} bg-[#FFF9C2] text-[#FDC800]`;
+        case "ongoing":
+          return `${base} bg-[#DFF3FE] text-[#0084D1]`;
+        default:
+          return `${base} bg-slate-100 text-slate-700`;
+      }
+    },
+
+    // Navigation
+    goDetails(id) {
+      try {
+        this.$router.push({
+          name: "events.show",
+          params: { id: String(id) },
+        });
+      } catch (_) {
+        this.$router.push({ path: `/events/${id}` });
+      }
+    },
+
+    // Deprecated - kept for reference, use toggleEventSelection instead
     onEventSelect(event) {
       console.log('Event selected:', event);
       console.log('Event keys:', Object.keys(event));
@@ -725,8 +1032,10 @@ export default {
         return;
       }
       
-      this.selectedEventId = eventId;
-      this.loadEventStatistics(eventId);
+      this.toggleEventSelection(event);
+      if (this.selectedEventIds.size > 0) {
+        this.loadEventStatistics(eventId);
+      }
     },
 
     async loadEventStatistics(eventId) {
@@ -779,18 +1088,19 @@ export default {
 
     // Employee table methods (replace modal methods)
     async showEmployeesByStatus(status) {
-      if (!this.selectedEventId) {
+      if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมก่อน');
         return;
       }
 
+      const selectedEventId = Array.from(this.selectedEventIds)[0];
       console.log('showEmployeesByStatus called with status:', status);
       this.employeeTableType = status;
       this.showEmployeeTable = true;
       
       try {
         // Fetch employees for selected event and status from our API
-        const response = await axios.get(`/api/event/${this.selectedEventId}/participants`);
+        const response = await axios.get(`/api/event/${selectedEventId}/participants`);
         
         console.log('API response for participants:', response.data);
         
@@ -846,11 +1156,6 @@ export default {
       return statusMap[status] || 'invalid';
     },
 
-    selectAllEvents() {
-      // Implementation for select all checkbox if needed
-      console.log('Select all events');
-    },
-
     // Button testing methods
     testClick(buttonType) {
       console.log(`Button clicked: ${buttonType}`);
@@ -869,13 +1174,39 @@ export default {
 </script>
 
 <style>
+/* Event Card Styling - Clean and minimal like EventPage */
+.event-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.event-card .toolbar--pill {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.event-card .toolbar--pill > div:first-child {
+  flex: 1;
+}
+
+.event-card .export-label {
+  display: none; /* Hide the label */
+}
+
 /* Event Table Styling - Similar to Employee Table */
 .event-table-wrap {
   overflow-x: auto;
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 1rem;
+  background: #fff;
 }
 
 .event-table {
@@ -883,56 +1214,54 @@ export default {
   border-collapse: collapse;
   border-spacing: 0;
   background: #ffffff;
+  font-size: 14px;
 }
 
 /* Event Table Header */
 .event-th {
-  background: #f8fafc;
+  background: #ffffff;
   color: #374151;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
-  padding: 16px 12px;
-  border-bottom: 2px solid #e5e7eb;
-  border-right: none;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 1;
+  white-space: nowrap;
 }
 
 /* Event Table Data */
 .event-td {
-  padding: 14px 12px;
+  padding: 12px 16px;
   text-align: center;
-  border-bottom: 1px solid #f1f5f9;
-  border-right: none;
-  font-size: 14px;
+  border-bottom: 1px solid #e5e7eb;
   color: #374151;
   vertical-align: middle;
 }
 
 /* Event Table Rows */
-.event-row:nth-child(even) {
-  background-color: #f9fafb;
-}
-
 .event-row:nth-child(odd) {
   background-color: #ffffff;
 }
 
+.event-row:nth-child(even) {
+  background-color: #ffffff;
+}
+
 .event-row:hover {
-  background-color: #f3f4f6;
+  background-color: #f9fafb;
   transition: background-color 0.2s ease;
 }
 
 /* Selected Row Styling */
 .event-row.selected-row {
-  background-color: #fee2e2 !important;
-  border-left: 4px solid #dc2626;
+  background-color: #fef2f2 !important;
 }
 
 .event-row.selected-row:hover {
-  background-color: #fecaca !important;
+  background-color: #fee2e2 !important;
 }
 
 /* No Data Row for Event Table */
@@ -942,47 +1271,6 @@ export default {
   font-style: italic;
   padding: 24px;
   background-color: #f9fafb;
-}
-
-/* Event Table Column Widths */
-.evt-col-idx {
-  width: 60px;
-  min-width: 60px;
-}
-
-.evt-col-id {
-  width: 80px;
-  min-width: 80px;
-}
-
-.evt-col-title {
-  width: 200px;
-  min-width: 200px;
-}
-
-.evt-col-cat {
-  width: 140px;
-  min-width: 140px;
-}
-
-.evt-col-date {
-  width: 120px;
-  min-width: 120px;
-}
-
-.evt-col-time {
-  width: 140px;
-  min-width: 140px;
-}
-
-.evt-col-num {
-  width: 80px;
-  min-width: 80px;
-}
-
-.evt-col-status {
-  width: 110px;
-  min-width: 110px;
 }
 
 /* Employee Table Styling */
@@ -1292,10 +1580,10 @@ export default {
 /* Card สำหรับ Event */
 .event-card {
   background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-  padding: 2rem 2rem 1.5rem 2rem;
-  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
 }
 /* Card สำหรับ Summary/Graph */
 .summary-card {
@@ -1723,7 +2011,13 @@ input[type="checkbox"]:hover {
   transform: translateY(-2px) scale(1.03);
 }
 /* ตัวช่วย layout */
-.toolbar--pill { display:flex; align-items:center; gap:16px; margin-top:12px; }
+.toolbar--pill { 
+  display: flex; 
+  align-items: center; 
+  gap: 1rem; 
+  margin-top: 0;
+  flex-wrap: wrap;
+}
 
 /* ปุ่ม + Add New เป็น pill และชิดขวา */
 .pill-add {
@@ -2177,6 +2471,400 @@ tbody tr.selected-row:hover {
 
 .attendance-text {
   font-weight: 500;
+}
+
+/* ========================================
+   Dashboard Reference UI Styling
+   ======================================== */
+
+.dashboard-container {
+  padding: 24px;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px 0;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Search Section */
+.search-section {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.search-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #dc2626;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.clear-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.search-btn {
+  height: 42px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.search-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  height: 38px;
+  padding: 0 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.action-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.show-data-btn {
+  height: 38px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.show-data-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.event-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.event-table thead {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.event-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.event-table th.col-checkbox {
+  width: 50px;
+  text-align: center;
+}
+
+.event-table th.col-number {
+  width: 60px;
+  text-align: center;
+}
+
+.event-table th.col-event {
+  min-width: 200px;
+}
+
+.event-table th.col-category {
+  width: 140px;
+}
+
+.event-table th.col-date {
+  width: 120px;
+}
+
+.event-table th.col-time {
+  width: 130px;
+}
+
+.event-table th.col-invited,
+.event-table th.col-accepted {
+  width: 100px;
+  text-align: center;
+}
+
+.event-table th.col-status {
+  width: 120px;
+  text-align: center;
+}
+
+.event-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.event-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.event-table tbody tr.selected-row {
+  background: #fee2e2 !important;
+}
+
+.event-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.event-table td:nth-child(1),
+.event-table td:nth-child(2) {
+  text-align: center;
+}
+
+.event-table td:nth-child(7),
+.event-table td:nth-child(8),
+.event-table td:nth-child(9) {
+  text-align: center;
+}
+
+/* Checkbox */
+.table-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #dc2626;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-ongoing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-upcoming {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-done {
+  background: #d1fae5;
+  color: #059669;
+}
+
+/* No Data */
+.no-data {
+  padding: 48px 24px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Pagination */
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.page-size-select {
+  height: 36px;
+  padding: 0 32px 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-arrow {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-arrow:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.page-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-number {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-number:hover:not(.active) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.page-number.active {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.page-dots {
+  padding: 0 8px;
+  color: #9ca3af;
+  font-weight: 600;
 }
 
 </style>
