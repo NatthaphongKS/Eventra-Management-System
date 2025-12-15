@@ -8,21 +8,17 @@ use Illuminate\Validation\Rule;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Team;
+use App\Models\Position; // เพิ่ม Use Position
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
-use App\Models\Position;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-
 
 class EmployeeController extends Controller
 {
     /**
      * แสดงรายการพนักงาน (หน้า Table)
-     * - ใช้ Eloquent + with() เพื่อ eager load ความสัมพันธ์ (position/department/team)
-     * - กรองเฉพาะพนักงานที่ยังไม่ถูกลบ: emp_delete_status = 'active' หรือค่าว่าง/NULL
-     * - คืนข้อมูลเป็น array แบน โดย map ชื่อทีม/ตำแหน่ง/แผนกเป็น *_name
      */
     public function index()
     {
@@ -52,10 +48,9 @@ class EmployeeController extends Controller
                 'emp_team_id',
                 'emp_permission',
                 'emp_delete_status',
-                'emp_create_at', // ถ้ามีคอลัมน์นี้จริง
+                'emp_create_at',
             ]);
 
-        // แปลงเป็นโครงสร้างเดิม (มี *_name แทนที่จะเป็น nested relation)
         $rows = $employees->map(function (Employee $e) {
             return [
                 'id' => $e->id,
@@ -83,13 +78,16 @@ class EmployeeController extends Controller
 
     /**
      * อ่านข้อมูลพนักงานรายคน (ใช้สำหรับหน้าแก้ไข)
-     * - with() โหลดความสัมพันธ์เพื่อเอาชื่อมาแสดง
-     * - คืนรูปแบบแบนเหมือน index
+     * [แก้ไข] รองรับทั้ง ID (1,2,3) และ emp_id (Test001)
      */
     public function show($id)
     {
+        // ค้นหาด้วย id หรือ emp_id
         $e = Employee::with(['position:id,pst_name', 'department:id,dpm_name', 'team:id,tm_name'])
-            ->findOrFail($id, [
+            ->where(function ($query) use ($id) {
+                $query->where('id', $id)->orWhere('emp_id', $id);
+            })
+            ->first([
                 'id',
                 'emp_id',
                 'emp_prefix',
@@ -104,6 +102,10 @@ class EmployeeController extends Controller
                 'emp_permission',
                 'emp_delete_status',
             ]);
+
+        if (!$e) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
 
         $row = [
             'id' => $e->id,
@@ -128,20 +130,19 @@ class EmployeeController extends Controller
     }
 
     /**
-     * ดึงเมทาดาต้าสำหรับ dropdown (ตำแหน่ง/แผนก/ทีม)
-     * - ใช้โมเดลโดยตรง + where active
+     * ดึงเมทาดาต้าสำหรับ dropdown
      */
     public function meta()
     {
         $prefixes = collect();
 
         $columns = DB::select("
-    SELECT COLUMN_TYPE
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'ems_employees'
-      AND COLUMN_NAME = 'emp_prefix'
-");
+            SELECT COLUMN_TYPE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'ems_employees'
+            AND COLUMN_NAME = 'emp_prefix'
+        ");
 
         if (!empty($columns)) {
             preg_match("/^enum\((.*)\)$/", $columns[0]->COLUMN_TYPE, $matches);
@@ -150,9 +151,9 @@ class EmployeeController extends Controller
                 $prefixes = collect(
                     str_getcsv($matches[1], ',', "'")
                 )->values()->map(fn($p, $i) => [
-                        'value' => $i + 1,
-                        'label' => $p,
-                    ]);
+                    'value' => $i + 1,
+                    'label' => $p,
+                ]);
             }
         }
 
@@ -185,9 +186,6 @@ class EmployeeController extends Controller
 
     /**
      * บันทึกพนักงานใหม่
-     * - validate ฟิลด์ที่จำเป็น
-     * - hash รหัสผ่านก่อนเก็บ
-     * - map emp_status -> emp_permission
      */
     public function store(Request $request)
     {
@@ -239,14 +237,16 @@ class EmployeeController extends Controller
 
     /**
      * อัปเดตข้อมูลพนักงาน
-     * - validate แบบบางฟิลด์ (sometimes)
-     * - บังคับ unique ของ email/phone โดย ignore แถวเดิม
-     * - แปลง emp_status -> emp_permission ถ้าส่งมา
-     * - hash รหัสผ่านเมื่อส่งมาใหม่
+     * [แก้ไข] รองรับทั้ง ID และ emp_id เพื่อแก้ 404
      */
     public function update(Request $request, $id)
     {
-        $emp = Employee::findOrFail($id);
+        // ค้นหาพนักงานจาก ID หรือ emp_id
+        $emp = Employee::where('id', $id)->orWhere('emp_id', $id)->first();
+
+        if (!$emp) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
 
         $validated = $request->validate([
             'emp_id' => ['sometimes', 'required'],
@@ -258,7 +258,7 @@ class EmployeeController extends Controller
                 'sometimes',
                 'nullable',
                 'email',
-                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id)
+                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id) // ใช้ ID จริงที่หาเจอ
             ],
             'emp_phone' => [
                 'sometimes',
@@ -266,13 +266,13 @@ class EmployeeController extends Controller
                 'regex:/^[0-9]+$/',
                 'min:10',
                 'max:10',
-                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id)
+                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id) // ใช้ ID จริงที่หาเจอ
             ],
             'emp_position_id' => ['sometimes', 'nullable', 'exists:ems_position,id'],
             'emp_department_id' => ['sometimes', 'nullable', 'exists:ems_department,id'],
             'emp_team_id' => ['sometimes', 'nullable', 'exists:ems_team,id'],
             'emp_permission' => ['sometimes', 'nullable', 'string', 'max:50'],
-            'emp_status' => ['sometimes', 'nullable', 'string', 'max:50'], // alias
+            'emp_status' => ['sometimes', 'nullable', 'string', 'max:50'],
             'emp_password' => ['sometimes', 'nullable', 'min:6'],
         ]);
 
@@ -297,28 +297,35 @@ class EmployeeController extends Controller
     }
 
     /**
-     * ลบแบบ soft (ปรับสถานะเป็น inactive)
+     * ลบแบบ soft (Standard)
+     * [แก้ไข] รองรับทั้ง ID และ emp_id
      */
     public function destroy($id)
     {
-        $emp = Employee::findOrFail($id);
+        $emp = Employee::where('id', $id)->orWhere('emp_id', $id)->first();
+
+        if (!$emp) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
         $emp->emp_delete_status = 'inactive';
         $emp->save();
 
         return response()->json(['message' => 'Deleted successfully']);
     }
 
-public function softDelete($id)
+    /**
+     * ลบแบบ soft (Custom Route)
+     */
+    public function softDelete($id)
     {
-        // แก้ไข: ค้นหาจาก column 'emp_id' แทนการใช้ find()
-        $emp = Employee::where('emp_id', $id)->first();
+        // ค้นหาทั้ง ID และ emp_id เพื่อความยืดหยุ่น
+        $emp = Employee::where('id', $id)->orWhere('emp_id', $id)->first();
 
         if (!$emp) {
-            // ถ้าหาไม่เจอ ให้แจ้ง error กลับไป
-            return response()->json(['message' => 'Employee not found (emp_id: ' . $id . ')'], 404);
+            return response()->json(['message' => 'Employee not found (id: ' . $id . ')'], 404);
         }
 
-        // อัปเดตข้อมูล
         $emp->emp_delete_status = 'inactive';
         $emp->emp_delete_at = now();
         $emp->emp_delete_by = Auth::id();
@@ -326,6 +333,8 @@ public function softDelete($id)
 
         return response()->json(['message' => 'Employee soft deleted successfully']);
     }
+
+    // --- ส่วน Import / Helper เดิม ไม่ได้แก้ไข logic ---
 
     public function importBulk(Request $request)
     {
@@ -335,14 +344,11 @@ public function softDelete($id)
             return response()->json(['message' => 'No rows provided.'], 422);
         }
 
-        // --- Helpers Definitions ---
-
         $cleanStr = function ($v) {
             $v = is_string($v) ? trim($v) : '';
             return preg_replace('/\s+/', ' ', $v) ?? '';
         };
 
-        // Helper: Department
         $ensureDepartment = function ($name) {
             $name = trim($name);
             if ($name === '') return null;
@@ -360,7 +366,6 @@ public function softDelete($id)
             ]);
         };
 
-        // Helper: Position (แก้แล้ว: เหลือประกาศครั้งเดียว)
         $ensurePosition = function ($name) {
             $name = trim($name);
             if ($name === '') return null;
@@ -400,7 +405,9 @@ public function softDelete($id)
             $fullName = trim($fullName ?? '');
             $parts = preg_split('/\s+/', $fullName);
             $parts = $parts ?: [];
-            $emp_prefix = null; $emp_firstname = ''; $emp_lastname = '';
+            $emp_prefix = null;
+            $emp_firstname = '';
+            $emp_lastname = '';
 
             if (count($parts) >= 3) {
                 $maybePrefix = $parts[0];
@@ -421,8 +428,6 @@ public function softDelete($id)
             if (is_numeric($p)) return str_pad((string) intval($p), 10, '0', STR_PAD_LEFT);
             return preg_replace('/\D+/', '', (string) $p) ?? '';
         };
-
-        // --- End Helpers ---
 
         $created = [];
         $failed = [];
@@ -448,7 +453,6 @@ public function softDelete($id)
                 continue;
             }
 
-            // Check Duplicate
             $dup = Employee::where(function ($q) use ($emp_id, $email, $phone) {
                 $q->where('emp_id', $emp_id)->orWhere('emp_email', $email)->orWhere('emp_phone', $phone);
             })->first(['id']);
@@ -493,13 +497,6 @@ public function softDelete($id)
         ], 200);
     }
 
-
-    /**
-     * สร้าง Department ถ้ายังไม่มี
-     * ใช้ใน bulk-import / หน้า upload excel
-     * Request: { dpm_name: "Engineering" }
-     * Return: { id: 7, dpm_name: "Engineering" }
-     */
     public function saveDepartment(Request $request)
     {
         $request->validate([
@@ -515,12 +512,9 @@ public function softDelete($id)
             ], 422);
         }
 
-        // 1) หา department ที่ชื่อเหมือนกัน (ไม่สนช่องว่าง/ตัวพิมพ์)
-        $existing = Department::whereRaw('LOWER(TRIM(dpm_name)) = ?', [mb_strtolower($name)])
-            ->first();
+        $existing = Department::whereRaw('LOWER(TRIM(dpm_name)) = ?', [mb_strtolower($name)])->first();
 
         if ($existing) {
-            // ถ้าเจอแล้วแต่ยังไม่ active -> ปลุกให้ active
             if ($existing->dpm_delete_status !== 'active') {
                 $existing->dpm_delete_status = 'active';
                 $existing->save();
@@ -531,8 +525,6 @@ public function softDelete($id)
                     'status' => 'reactivated',
                 ], 200);
             }
-
-            // active อยู่แล้ว
             return response()->json([
                 'id' => $existing->id,
                 'dpm_name' => $existing->dpm_name,
@@ -540,7 +532,6 @@ public function softDelete($id)
             ], 200);
         }
 
-        // 2) ไม่มีในระบบ -> สร้างใหม่
         $dep = Department::create([
             'dpm_name' => $name,
             'dpm_delete_status' => 'active',
@@ -555,12 +546,6 @@ public function softDelete($id)
         ], 201);
     }
 
-
-    /**
-     * สร้าง Position ถ้ายังไม่มี
-     * Request: { pst_name: "Software Engineer" }
-     * Return: { id: 5, pst_name: "Software Engineer" }
-     */
     public function savePosition(Request $request)
     {
         $request->validate([
@@ -576,12 +561,9 @@ public function softDelete($id)
             ], 422);
         }
 
-        // 1) หา position เดิม (ignore case/space)
-        $existing = Position::whereRaw('LOWER(TRIM(pst_name)) = ?', [mb_strtolower($name)])
-            ->first();
+        $existing = Position::whereRaw('LOWER(TRIM(pst_name)) = ?', [mb_strtolower($name)])->first();
 
         if ($existing) {
-            // ปลุกให้ active ถ้ายังไม่ active
             if ($existing->pst_delete_status !== 'active') {
                 $existing->pst_delete_status = 'active';
                 $existing->save();
@@ -592,8 +574,6 @@ public function softDelete($id)
                     'status' => 'reactivated',
                 ], 200);
             }
-
-            // active แล้ว
             return response()->json([
                 'id' => $existing->id,
                 'pst_name' => $existing->pst_name,
@@ -601,7 +581,6 @@ public function softDelete($id)
             ], 200);
         }
 
-        // 2) ไม่มี -> สร้างใหม่
         $pos = Position::create([
             'pst_name' => $name,
             'pst_delete_status' => 'active',
@@ -616,13 +595,6 @@ public function softDelete($id)
         ], 201);
     }
 
-    /**
-     * สร้าง Team ถ้ายังไม่มี
-     * Team ปกติต้องรู้อยู่ใน department ไหน
-     *
-     * Request: { tm_name: "CodeCraft", tm_department_id: 7 }
-     * Return: { id: 9, tm_name: "CodeCraft" }
-     */
     public function saveTeam(Request $request)
     {
         $request->validate([
@@ -638,12 +610,9 @@ public function softDelete($id)
             ], 422);
         }
 
-        // หา team เดิมจากชื่ออย่างเดียว (ไม่สนแผนก)
-        $existing = Team::whereRaw('LOWER(TRIM(tm_name)) = ?', [mb_strtolower($name)])
-            ->first();
+        $existing = Team::whereRaw('LOWER(TRIM(tm_name)) = ?', [mb_strtolower($name)])->first();
 
         if ($existing) {
-            // ถ้ามีแต่ inactive -> ปลุก
             if ($existing->tm_delete_status !== 'active') {
                 $existing->tm_delete_status = 'active';
                 $existing->save();
@@ -655,7 +624,6 @@ public function softDelete($id)
                 ], 200);
             }
 
-            // active อยู่แล้ว -> ใช้เลย
             return response()->json([
                 'id' => $existing->id,
                 'tm_name' => $existing->tm_name,
@@ -663,7 +631,6 @@ public function softDelete($id)
             ], 200);
         }
 
-        // ไม่มี -> สร้างใหม่
         $team = Team::create([
             'tm_name' => $name,
             'tm_delete_status' => 'active',
@@ -677,19 +644,15 @@ public function softDelete($id)
             'status' => 'created',
         ], 201);
     }
+
     public function checkDuplicate(Request $request)
     {
-
         $emp_id = $request->input('emp_id');
         $emp_phone = $request->input('emp_phone');
         $emp_email = $request->input('emp_email');
 
         $dupFields = [];
 
-        // เราจะเช็คเฉพาะพนักงานที่ยัง active (emp_delete_status != 'inactive')
-        // เพื่อไม่ไปชนกับคนที่โดนลบแล้ว ถ้าคุณอยากนับที่ถูกลบด้วย ให้เอา where() ออก
-
-        // --- เช็ค emp_id ---
         if (!empty($emp_id)) {
             $exists = Employee::where('emp_id', $emp_id)
                 ->where(function ($q) {
@@ -704,7 +667,6 @@ public function softDelete($id)
             }
         }
 
-        // --- เช็ค emp_phone ---
         if (!empty($emp_phone)) {
             $exists = Employee::where('emp_phone', $emp_phone)
                 ->where(function ($q) {
@@ -719,7 +681,6 @@ public function softDelete($id)
             }
         }
 
-        // --- เช็ค emp_email ---
         if (!empty($emp_email)) {
             $exists = Employee::where('emp_email', $emp_email)
                 ->where(function ($q) {
@@ -734,7 +695,6 @@ public function softDelete($id)
             }
         }
 
-        // สร้าง response ตามที่ frontend รออยู่
         if (count($dupFields) > 0) {
             return response()->json([
                 'duplicate' => true,

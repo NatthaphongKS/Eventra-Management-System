@@ -68,7 +68,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
     Route::put('/employees/{id}', [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
-    
+
 
     // Route::put('/employees/{id}/soft-delete', [EmployeeController::class, 'softDelete']);
 
