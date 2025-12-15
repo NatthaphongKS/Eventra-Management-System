@@ -80,8 +80,19 @@
     @update:pageSize="pageSize = $event; page = 1;" 
     @sort="handleClientSort" 
     row-key="id" 
-    :show-row-number="true" 
+    :show-row-number="false" 
+    :row-class="getRowClass"
     class="mt-4">
+    
+    <!-- Header checkbox for select all -->
+    <template #header-checkbox>
+      <input 
+        type="checkbox"
+        :checked="selectAll"
+        @change="selectAllEvents"
+        style="cursor: pointer; width: 16px; height: 16px;"
+      />
+    </template>
     
     <!-- Checkbox column for multi-select -->
     <template #cell-checkbox="{ row }">
@@ -91,6 +102,11 @@
         @change="toggleEventSelection(row)"
         style="cursor: pointer; width: 16px; height: 16px;"
       />
+    </template>
+
+    <!-- Row number column -->
+    <template #cell-row_number="{ value }">
+      {{ value }}
     </template>
 
     <!-- Title cell (clickable) -->
@@ -153,6 +169,17 @@
   </DataTable>
 </section>
 
+<!-- No Selection Message -->
+<div v-if="selectedEventIds.size === 0" class="card summary-card">
+  <div class="flex flex-col items-center justify-center py-16">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Please select an event</h3>
+    <p class="text-gray-500">Select one or more events from the table above to view statistics and participant data</p>
+  </div>
+</div>
+
 <!-- Summary/Graph Section - แสดงเมื่อเลือก event แล้ว -->
 <div v-if="selectedEventIds.size > 0" class="card summary-card">
     <div class="summary-grid">
@@ -160,7 +187,13 @@
       <div class="summary-item chart-container actual-attendance-card">
         <DonutActualAttendance 
           :eventId="Array.from(selectedEventIds)[0]"
-          :attendanceData="chartData"
+          :attendanceData="{
+            attending: chartData.attending || 0,
+            notAttending: chartData.not_attending || 0,
+            pending: chartData.pending || 0,
+            total: chartData.total_participation || 0
+          }"
+          :loading="loadingParticipants"
         />
       </div>
 
@@ -169,6 +202,7 @@
         <GraphEventParticipation 
           :eventId="Array.from(selectedEventIds)[0]"
           :data="participationData"
+          :loading="loadingParticipants"
         />
       </div>
 
@@ -176,22 +210,22 @@
       <div class="status-cards-row">
         <AttendingCard 
           :attending="chartData.attending || 0" 
-          :total="(chartData.attending + chartData.notAttending + chartData.pending) || 0"
-          :loading="isLoading"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
           :isClickable="true"
           @showAttendingEmployees="showEmployeesByStatus('attending')"
         />
         <NotAttendingCard 
-          :notAttending="chartData.notAttending || 0" 
-          :total="(chartData.attending + chartData.notAttending + chartData.pending) || 0"
-          :loading="isLoading"
+          :notAttending="chartData.not_attending || 0" 
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
           :isClickable="true"
           @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
         />
         <PendingCard 
           :pending="chartData.pending || 0" 
-          :total="(chartData.attending + chartData.notAttending + chartData.pending) || 0"
-          :loading="isLoading"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
           :isClickable="true"
           @showPendingEmployees="showEmployeesByStatus('pending')"
         />
@@ -219,17 +253,20 @@
         <tbody>
           <tr v-for="(emp, i) in paginatedEmployees" :key="emp.id" class="employee-row">
             <td class="employee-td emp-col-idx">{{ ((currentPage - 1) * itemsPerPage) + i + 1 }}</td>
-            <td class="employee-td emp-col-id">{{ emp.emp_id }}</td>
-            <td class="employee-td emp-col-name">{{ emp.emp_firstname }}</td>
-            <td class="employee-td emp-col-nickname">{{ emp.emp_nickname }}</td>
-            <td class="employee-td emp-col-phone">{{ emp.emp_phone }}</td>
-            <td class="employee-td emp-col-department">{{ emp.department }}</td>
-            <td class="employee-td emp-col-team">{{ emp.team || 'N/A' }}</td>
-            <td class="employee-td emp-col-position">{{ emp.position }}</td>
-            <td class="employee-td emp-col-event">{{ selectedEventData?.evn_title || 'N/A' }}</td>
+            <td class="employee-td emp-col-id">{{ emp.emp_id || 'N/A' }}</td>
+            <td class="employee-td emp-col-name">{{ emp.emp_firstname || emp.name || 'N/A' }}</td>
+            <td class="employee-td emp-col-nickname">{{ emp.emp_nickname || emp.nickname || 'N/A' }}</td>
+            <td class="employee-td emp-col-phone">{{ emp.emp_phone || emp.phone || 'N/A' }}</td>
+            <td class="employee-td emp-col-department">{{ emp.department || emp.department_name || 'N/A' }}</td>
+            <td class="employee-td emp-col-team">{{ emp.team || emp.team_name || 'N/A' }}</td>
+            <td class="employee-td emp-col-position">{{ emp.position || emp.position_name || 'N/A' }}</td>
+            <td class="employee-td emp-col-event">{{ emp.event_title || getEventTitlesText() }}</td>
           </tr>
-          <tr v-if="paginatedEmployees.length === 0">
-            <td colspan="9" class="employee-td no-data">No data found</td>
+          <tr v-if="paginatedEmployees.length === 0 && !loadingParticipants">
+            <td colspan="9" class="employee-td no-data">No participants found for selected event(s)</td>
+          </tr>
+          <tr v-if="loadingParticipants">
+            <td colspan="9" class="employee-td no-data">Loading participants...</td>
           </tr>
         </tbody>
       </table>
@@ -371,28 +408,23 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       selectedTeamFilter: '',
-      // Data for charts
+      // Data for charts - will be updated based on selected events
       chartData: {
-        totalParticipation: 367,
-        attending: 61,
-        notAttending: 12,
-        pending: 31,
-        departments: [
-          { name: 'Engineering', attending: 45, notAttending: 15, pending: 25 },
-          { name: 'Mobile App Developer', attending: 25, notAttending: 20, pending: 35 },
-          { name: 'Security Engineer', attending: 70, notAttending: 10, pending: 25 },
-          { name: 'UI/UX Designer', attending: 35, notAttending: 40, pending: 90 }
-        ]
+        totalParticipation: 0,
+        attending: 0,
+        notAttending: 0,
+        pending: 0,
+        departments: []
       },
       // Button testing data
       loadingTest: false,
       // Participation data for GraphEventParticipation component
       participationData: {
-        departments: [
-          { name: 'Technology', attending: 3, notAttending: 0, pending: 0 },
-          { name: 'Administration', attending: 0, notAttending: 0, pending: 0 }
-        ]
-      }
+        departments: []
+      },
+      // Event participants data
+      eventParticipants: [],
+      loadingParticipants: false
     };
   },
   async created() {
@@ -561,7 +593,12 @@ export default {
 
     paged() {
       const start = (this.page - 1) * this.pageSize;
-      return this.sorted.slice(start, start + this.pageSize);
+      const items = this.sorted.slice(start, start + this.pageSize);
+      // Add row number to each item
+      return items.map((item, index) => ({
+        ...item,
+        row_number: start + index + 1
+      }));
     },
 
     eventTableColumns() {
@@ -569,6 +606,12 @@ export default {
         {
           key: "checkbox",
           label: "",
+          class: "w-12 text-center",
+          headerClass: "w-12",
+        },
+        {
+          key: "row_number",
+          label: "#",
           class: "w-12 text-center",
           headerClass: "w-12",
         },
@@ -645,14 +688,21 @@ export default {
       return Math.ceil(this.totalEmployees / this.itemsPerPage);
     },
     paginatedEmployees() {
+      // Always use filteredEmployeesForTable - it's populated by showEmployeesByStatus()
+      const data = this.filteredEmployeesForTable;
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
-      return this.filteredEmployeesForTable.slice(start, end);
+      return data.slice(start, end);
+    },
+    totalEmployees() {
+      // Always use filteredEmployeesForTable count
+      return this.filteredEmployeesForTable.length;
     },
     employeePaginationText() {
-      const start = this.totalEmployees > 0 ? (this.currentPage - 1) * this.itemsPerPage + 1 : 0;
-      const end = Math.min(this.currentPage * this.itemsPerPage, this.totalEmployees);
-      return `${start}-${end} จาก ${this.totalEmployees} รายการ`;
+      const total = this.totalEmployees;
+      const start = total > 0 ? (this.currentPage - 1) * this.itemsPerPage + 1 : 0;
+      const end = Math.min(this.currentPage * this.itemsPerPage, total);
+      return `${start}-${end} จาก ${total} รายการ`;
     },
     eventPaginationText() {
       const start = this.sorted.length > 0 ? (this.page - 1) * this.pageSize + 1 : 0;
@@ -914,7 +964,90 @@ export default {
       this.page = 1;
     },
 
+    // Fetch event statistics and participants for selected events
+    async fetchEventStatistics() {
+      console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
+      
+      if (this.selectedEventIds.size === 0) {
+        console.log('⚠️ No events selected, resetting data');
+        // Reset to default/empty state
+        this.chartData = {
+          total_participation: 0,
+          attending: 0,
+          not_attending: 0,
+          pending: 0,
+          departments: []
+        };
+        this.participationData = { departments: [] };
+        this.eventParticipants = [];
+        this.showEmployeeTable = false;
+        return;
+      }
+
+      this.loadingParticipants = true;
+      try {
+        const eventIds = Array.from(this.selectedEventIds);
+        
+        console.log('📤 Sending POST /event-statistics with event_ids:', eventIds);
+        
+        // Fetch statistics for selected event(s)
+        const res = await axios.post('/event-statistics', { event_ids: eventIds });
+        
+        console.log('📥 API Response:', res.data);
+        
+        if (res.data) {
+          // Update chart data with aggregated statistics
+          this.chartData = {
+            total_participation: res.data.total_participation || 0,
+            attending: res.data.attending || 0,
+            not_attending: res.data.not_attending || 0,
+            pending: res.data.pending || 0,
+            departments: res.data.departments || []
+          };
+          
+          // Update participation data for bar chart - map to correct format
+          this.participationData = {
+            departments: (res.data.departments || []).map(dept => ({
+              name: dept.name,
+              attending: dept.attending || 0,
+              notAttending: dept.notAttending || 0,
+              pending: dept.pending || 0
+            }))
+          };
+          
+          // Update participants list (remove duplicates)
+          this.eventParticipants = res.data.participants || [];
+          this.showEmployeeTable = true;
+          
+          console.log('✅ Chart data updated:', this.chartData);
+          console.log('✅ Participation data updated:', this.participationData);
+          console.log('✅ Participants count:', this.eventParticipants.length);
+        }
+      } catch (err) {
+        console.error('❌ Error fetching event statistics:', err);
+        console.error('Error response:', err.response?.data);
+        console.error('Error status:', err.response?.status);
+        // Show error message or fallback to empty data
+        this.chartData = {
+          total_participation: 0,
+          attending: 0,
+          not_attending: 0,
+          pending: 0,
+          departments: []
+        };
+        this.participationData = { departments: [] };
+        this.eventParticipants = [];
+      } finally {
+        this.loadingParticipants = false;
+      }
+    },
+
     // Multi-select checkbox methods
+    getRowClass(row) {
+      const eventId = row.id || row.evn_id;
+      return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
+    },
+    
     toggleEventSelection(event) {
       const eventId = event.id || event.evn_id;
       if (!eventId) {
@@ -932,9 +1065,15 @@ export default {
       this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
       
       console.log('Updated selected events:', Array.from(this.selectedEventIds));
+      
+      // Manually trigger fetch since Set is not reactive
+      this.fetchEventStatistics();
     },
 
-    selectAllEvents() {
+    selectAllEvents(event) {
+      // Toggle selectAll based on checkbox state
+      this.selectAll = event.target.checked;
+      
       if (this.selectAll) {
         // Select all events in sorted list
         this.selectedEventIds = new Set(this.sorted.map(e => e.id || e.evn_id));
@@ -943,6 +1082,26 @@ export default {
         this.selectedEventIds.clear();
       }
       console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
+      
+      // Manually trigger fetch since Set is not reactive
+      this.fetchEventStatistics();
+    },
+
+    // Get event titles text for display
+    getEventTitlesText() {
+      if (this.selectedEventIds.size === 0) return 'N/A';
+      
+      const selectedEvents = this.normalized.filter(event => 
+        this.selectedEventIds.has(event.id || event.evn_id)
+      );
+      
+      if (selectedEvents.length === 1) {
+        return selectedEvents[0].evn_title || 'N/A';
+      } else if (selectedEvents.length > 1) {
+        return `${selectedEvents.length} events selected`;
+      }
+      
+      return 'N/A';
     },
 
     // Filter & Sort handlers
@@ -1093,55 +1252,49 @@ export default {
         return;
       }
 
-      const selectedEventId = Array.from(this.selectedEventIds)[0];
       console.log('showEmployeesByStatus called with status:', status);
       this.employeeTableType = status;
       this.showEmployeeTable = true;
       
       try {
-        // Fetch employees for selected event and status from our API
-        const response = await axios.get(`/api/event/${selectedEventId}/participants`);
-        
-        console.log('API response for participants:', response.data);
-        
-        // Check if API call was successful
-        if (!response.data.success) {
-          throw new Error(response.data.message || 'Failed to fetch participants');
+        // Use existing eventParticipants data from fetchEventStatistics
+        if (!this.eventParticipants || this.eventParticipants.length === 0) {
+          console.warn('No participants data available');
+          this.filteredEmployeesForTable = [];
+          return;
         }
-        
-        // Get participants from API response
-        const participants = response.data.data.participants || [];
         
         // Filter participants based on status
         let filteredParticipants = [];
-        if (participants.length > 0) {
-          filteredParticipants = participants.filter(participant => {
-            const apiStatus = this.mapStatusForAPI(status);
-            return participant.con_answer === apiStatus;
-          });
-        }
+        const apiStatus = this.mapStatusForAPI(status);
+        
+        filteredParticipants = this.eventParticipants.filter(participant => {
+          return participant.status === apiStatus;
+        });
         
         // Map to our expected employee format
         this.filteredEmployeesForTable = filteredParticipants.map(participant => ({
           id: participant.id,
           emp_id: participant.emp_id,
+          emp_prefix: participant.emp_prefix,
           emp_firstname: participant.emp_firstname,
           emp_lastname: participant.emp_lastname,
           emp_nickname: participant.emp_nickname,
           emp_phone: participant.emp_phone,
-          position: participant.position_name || 'N/A',
-          department: participant.department_name || 'N/A',
-          team: participant.team_name || 'N/A',
-          emp_delete_status: participant.emp_delete_status
+          emp_email: participant.emp_email,
+          position: participant.position || 'N/A',
+          department: participant.department || 'N/A',
+          team: participant.team || 'N/A',
+          event_title: participant.event_title || 'N/A', // Add event title
+          emp_delete_status: 'active'
         }));
         
         console.log(`Loaded ${this.filteredEmployeesForTable.length} employees for status: ${status}`);
         
       } catch (error) {
         console.error('Error loading employees:', error);
-        console.error('Error details:', error.response?.data || error.message);
         
-        // Use empty array if API fails
+        // Use empty array if filter fails
         this.filteredEmployeesForTable = [];
         alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
       }
@@ -2865,6 +3018,15 @@ tbody tr.selected-row:hover {
   padding: 0 8px;
   color: #9ca3af;
   font-weight: 600;
+}
+
+/* Highlight selected rows */
+:deep(.selected-row) {
+  background-color: #fce7f3 !important; /* Pink background */
+}
+
+:deep(.selected-row):hover {
+  background-color: #fbcfe8 !important; /* Slightly darker pink on hover */
 }
 
 </style>
