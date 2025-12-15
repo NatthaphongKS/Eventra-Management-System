@@ -46,9 +46,9 @@ class LoginController extends Controller
         try {
             Auth::login($employee);
             $request->session()->regenerate();
-
+            
             $response = response()->json([
-                'redirect' => '/employee',
+                'redirect' => '/',
                 'user' => $employee, // Optional: return user info if needed
                 'message' => 'Login successful'
             ]);
@@ -71,5 +71,20 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
         return response()->json(['message' => 'Logout success'])
             ->withCookie(cookie()->forget(config('session.cookie')));
+    }
+    public function showProfile()
+    {
+        // ตรวจสอบก่อนว่ามีการ Login หรือยัง
+        if (Auth::check()) {
+            // ดึง Model Employee ของผู้ใช้ที่ Login อยู่
+            $employee = Auth::user(); 
+            
+            return response()->json( [
+                'employee' => $employee 
+            ]);
+        }
+        
+        // ถ้ายังไม่ได้ Login ก็ให้ Redirect ไปหน้า Login
+        return redirect('/login');
     }
 }
