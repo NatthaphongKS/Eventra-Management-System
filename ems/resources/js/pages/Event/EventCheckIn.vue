@@ -509,9 +509,9 @@ async function handleCheckin({ keys, checked }) {
     }
 }
 
-async function handleCheckAllOnPage() {
+async function handleCheckAllOnPage() { 
     //ฟังก์ชันสำหรับจัดการการกด Check in all
-    res = await axios
+    const res = await axios
         .put(`/updateEmployeeAttendanceAll/eveId/${eveId.value}`)
         .then((response) => {
             console.log(response.data);
