@@ -81,101 +81,31 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
-      actualAttendance: 0,
-      totalInvited: 0,
-      apiAttendanceData: null
+      isLoading: false
     };
   },
   computed: {
     circumference() {
-      return 2 * Math.PI * 65; // Updated radius to 65
+      return 2 * Math.PI * 65;
     },
     attendancePercentage() {
       if (!this.displayTotal || this.displayTotal === 0) return 0;
-      return Math.round((this.displayAttendance / this.displayTotal) * 100);
+      return (this.displayAttendance / this.displayTotal) * 100;
     },
     strokeDashoffset() {
       const percentage = this.attendancePercentage;
       return this.circumference - (percentage / 100) * this.circumference;
     },
     displayAttendance() {
-      // ใช้ข้อมูลจาก API ถ้ามี หรือจาก props
-      return this.actualAttendance || (this.attendanceData?.attending) || 0;
+      // Use props data directly
+      return this.attendanceData?.attending || 0;
     },
     displayTotal() {
-      // ใช้ข้อมูลจาก API ถ้ามี หรือจาก props
-      return this.totalInvited || (this.attendanceData?.total) || 0;
+      // Use props data directly
+      return this.attendanceData?.total || 0;
     }
   },
-  watch: {
-    eventId: {
-      immediate: true,
-      handler(newEventId) {
-        if (newEventId) {
-          this.fetchAttendanceData();
-        }
-      }
-    }
-  },
-  methods: {
-    async fetchAttendanceData() {
-      if (!this.eventId) return;
-      
-      this.isLoading = true;
-      console.log('🔄 [DonutActualAttendance] Fetching attendance data for event ID:', this.eventId);
-      
-      try {
-        const response = await axios.get(`/event/${this.eventId}/participants`);
-        
-        if (response.data && response.data.success && response.data.statistics) {
-          const stats = response.data.statistics;
-          this.actualAttendance = stats.attending || 0;
-          this.totalInvited = stats.total || 0;
-          console.log('✅ API data updated:', {
-            actualAttendance: this.actualAttendance,
-            totalInvited: this.totalInvited,
-            eventId: this.eventId
-          });
-        } else {
-          console.warn('⚠️ API response invalid, using fallback data');
-          this.setFallbackData();
-        }
-      } catch (error) {
-        console.error('❌ Error fetching attendance data:', error);
-        this.setFallbackData();
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    
-    setFallbackData() {
-      // ใช้ข้อมูลจาก props หรือข้อมูลที่รู้จากการทดสอบฐานข้อมูล
-      if (this.attendanceData && this.attendanceData.attending !== undefined) {
-        this.actualAttendance = this.attendanceData.attending;
-        this.totalInvited = this.attendanceData.total || this.attendanceData.attending + this.attendanceData.notAttending + this.attendanceData.pending;
-      } else {
-        // ข้อมูล fallback ตามที่ทดสอบจากฐานข้อมูล
-        const fallbackData = {
-          2: { attending: 3, total: 3 },
-          13: { attending: 3, total: 3 },
-          14: { attending: 1, total: 3 },
-          23: { attending: 2, total: 3 },
-          26: { attending: 2, total: 4 }
-        };
-        
-        const eventData = fallbackData[this.eventId] || { attending: 0, total: 0 };
-        this.actualAttendance = eventData.attending;
-        this.totalInvited = eventData.total;
-      }
-      
-      console.log('📊 Using fallback data:', {
-        actualAttendance: this.actualAttendance,
-        totalInvited: this.totalInvited,
-        eventId: this.eventId
-      });
-    }
-  }
+  methods: {}
 };
 </script>
 

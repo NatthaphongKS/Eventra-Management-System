@@ -727,4 +727,96 @@ class EventController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get aggregated statistics for multiple selected events
+     * POST /api/event-statistics
+     * Request body: { "event_ids": [1, 2, 3] }
+     */
+    public function eventStatistics(Request $request)
+    {
+        try {
+            $eventIds = $request->input('event_ids', []);
+            
+            if (empty($eventIds)) {
+                return response()->json([
+                    'total_participation' => 0,
+                    'attending' => 0,
+                    'not_attending' => 0,
+                    'pending' => 0,
+                    'departments' => [],
+                    'participants' => []
+                ]);
+            }
+
+            // Get aggregated statistics
+            $stats = DB::table('ems_connect')
+                ->whereIn('con_event_id', $eventIds)
+                ->where('con_delete_status', 'active')
+                ->selectRaw('
+                    COUNT(*) as total_participation,
+                    SUM(CASE WHEN con_answer = "accept" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
+                    SUM(CASE WHEN con_answer = "invalid" OR con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                ')
+                ->first();
+
+            // Get department breakdown
+            $departments = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->join('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
+                ->whereIn('ems_connect.con_event_id', $eventIds)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->groupBy('ems_department.id', 'ems_department.dpm_name')
+                ->selectRaw('
+                    ems_department.dpm_name as name,
+                    SUM(CASE WHEN ems_connect.con_answer = "accept" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+                    SUM(CASE WHEN ems_connect.con_answer = "invalid" OR ems_connect.con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                ')
+                ->get();
+
+            // Get all participants (including same person in multiple events)
+            $participants = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
+                ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+                ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
+                ->leftJoin('ems_event', 'ems_connect.con_event_id', '=', 'ems_event.id')
+                ->whereIn('ems_connect.con_event_id', $eventIds)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->select(
+                    'ems_employees.id',
+                    'ems_employees.emp_id',
+                    'ems_employees.emp_prefix',
+                    'ems_employees.emp_firstname',
+                    'ems_employees.emp_lastname',
+                    'ems_employees.emp_nickname',
+                    'ems_employees.emp_phone',
+                    'ems_employees.emp_email',
+                    'ems_department.dpm_name as department',
+                    'ems_team.tm_name as team',
+                    'ems_position.pst_name as position',
+                    'ems_event.evn_title as event_title',
+                    'ems_connect.con_answer as status'
+                )
+                ->get(); // No unique() - show all participations
+
+            return response()->json([
+                'total_participation' => $stats->total_participation ?? 0,
+                'attending' => $stats->attending ?? 0,
+                'not_attending' => $stats->not_attending ?? 0,
+                'pending' => $stats->pending ?? 0,
+                'departments' => $departments,
+                'participants' => $participants
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving event statistics',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -15,7 +15,6 @@
     <div class="bar-chart-container">
       <div class="bar-chart">
         <div class="bar-group" v-for="(department, index) in displayData.departments" :key="index">
-          <div class="bar-label">{{ department.name }}</div>
           <div class="bars">
             <div class="bar attending" 
                  :style="{ height: getBarHeight(department.attending) + '%' }"
@@ -33,6 +32,7 @@
               <span class="bar-value" v-if="department.pending > 0">{{ department.pending }}</span>
             </div>
           </div>
+          <div class="bar-label">{{ department.name }}</div>
         </div>
       </div>
     </div>
@@ -92,18 +92,22 @@ export default {
   },
   computed: {
     displayData() {
-      // ใช้ข้อมูลจาก API ถ้ามี หรือใช้ข้อมูลที่ส่งมาจาก props
-      return this.participationData.departments.length > 0 
-        ? this.participationData 
-        : this.data;
+      // Use filtered data if department is selected, otherwise use all departments from props
+      if (this.selectedDepartment && this.participationData.departments.length > 0) {
+        return this.participationData;
+      }
+      return this.data;
     }
   },
   watch: {
-    eventId: {
+    data: {
       immediate: true,
-      handler(newEventId) {
-        if (newEventId) {
-          this.fetchParticipationData();
+      deep: true,
+      handler(newData) {
+        if (newData && newData.departments) {
+          this.originalData = { departments: [...newData.departments] };
+          this.allDepartments = newData.departments.map(dept => dept.name);
+          this.participationData = { departments: [...newData.departments] };
         }
       }
     }
@@ -130,38 +134,6 @@ export default {
       return Math.max((value / maxValue) * 100, 5); // Minimum 5% height for visibility
     },
 
-    async fetchParticipationData() {
-      if (!this.eventId) return;
-      
-      this.isLoading = true;
-      
-      try {
-        const response = await axios.get(`/event/${this.eventId}/participation-by-department`);
-        
-        if (response.data && response.data.success && response.data.departments) {
-          this.originalData = {
-            departments: response.data.departments
-          };
-          this.participationData = {
-            departments: [...response.data.departments]
-          };
-          
-          // Extract all department names for dropdown
-          this.allDepartments = response.data.departments.map(dept => dept.name);
-          
-          console.log('✅ Department participation data loaded:', this.participationData);
-        } else {
-          console.warn('⚠️ Department API response invalid, using fallback data');
-          this.setFallbackData();
-        }
-      } catch (error) {
-        console.warn('GraphEventParticipation: API failed, using fallback data', error);
-        this.setFallbackData();
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
     filterByDepartment() {
       if (!this.selectedDepartment) {
         // Show all departments
@@ -174,56 +146,6 @@ export default {
           departments: this.originalData.departments.filter(dept => dept.name === this.selectedDepartment)
         };
       }
-    },
-
-    setFallbackData() {
-      // ข้อมูล fallback ตามที่ทดสอบจากฐานข้อมูล
-      const fallbackData = {
-        2: {
-          departments: [
-            { name: 'Product Development', attending: 1, notAttending: 0, pending: 0 },
-            { name: 'Artificial Intelligence', attending: 1, notAttending: 0, pending: 0 },
-            { name: 'Interactive Media', attending: 1, notAttending: 0, pending: 0 }
-          ]
-        },
-        13: {
-          departments: [
-            { name: 'Product Development', attending: 1, notAttending: 0, pending: 0 },
-            { name: 'Artificial Intelligence', attending: 1, notAttending: 0, pending: 0 },
-            { name: 'Interactive Media', attending: 1, notAttending: 0, pending: 0 }
-          ]
-        },
-        14: {
-          departments: [
-            { name: 'Product Development', attending: 0, notAttending: 1, pending: 0 },
-            { name: 'Artificial Intelligence', attending: 1, notAttending: 0, pending: 0 },
-            { name: 'Interactive Media', attending: 0, notAttending: 1, pending: 0 }
-          ]
-        },
-        23: {
-          departments: [
-            { name: 'Artificial Intelligence', attending: 2, notAttending: 0, pending: 0 },
-            { name: 'Interactive Media', attending: 0, notAttending: 1, pending: 0 }
-          ]
-        },
-        26: {
-          departments: [
-            { name: 'Product Development', attending: 0, notAttending: 0, pending: 1 },
-            { name: 'Artificial Intelligence', attending: 0, notAttending: 0, pending: 1 },
-            { name: 'Interactive Media', attending: 1, notAttending: 0, pending: 0 },
-            { name: 'Chatcone', attending: 1, notAttending: 0, pending: 0 }
-          ]
-        }
-      };
-      
-      const eventData = fallbackData[this.eventId] || {
-        departments: [
-          { name: 'No Data', attending: 0, notAttending: 0, pending: 0 }
-        ]
-      };
-      
-      this.participationData = eventData;
-      console.log('📊 Using fallback department data for event', this.eventId, ':', eventData);
     }
   }
 };
@@ -287,37 +209,61 @@ export default {
 .bar-chart-container {
   margin-bottom: 24px;
   overflow-x: auto;
+  overflow-y: hidden;
   padding: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bar-chart-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.bar-chart-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.bar-chart-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.bar-chart-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .bar-chart {
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-start;
   align-items: end;
   height: 280px;
   background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
   border-radius: 16px;
   padding: 20px;
   border: 1px solid #e2e8f0;
-  min-width: 400px;
+  min-width: max-content;
+  gap: 16px;
 }
 
 .bar-group {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  min-width: 80px;
+  gap: 8px;
+  min-width: 100px;
+  flex: 1;
 }
 
 .bar-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
   font-weight: 600;
   text-align: center;
-  word-break: break-word;
-  line-height: 1.3;
-  max-width: 70px;
+  line-height: 1.2;
+  max-width: 90px;
+  padding: 0 4px;
+  word-wrap: break-word;
+  hyphens: auto;
 }
 
 .bars {
