@@ -143,7 +143,7 @@ export default {
             page: 1,
             pageSize: 10,
             sortMenuOpen: false,
-            sortBy: { key: "created_at", order: "desc" },
+            sortBy: { key: "", order: "" },
 
             sortOptions: [
                 { key: "emp_firstname", order: "asc", label: "ชื่อพนักงาน A–Z" },
