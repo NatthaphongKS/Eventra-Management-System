@@ -251,7 +251,7 @@ export default {
                     this.form.reason
                 );
                 console.log("POST /api/store", payload); // ดูใน Console ให้มีค่าจริง
-                await axios.post("/api/store", payload, {
+                await axios.post("/store", payload, {
                     headers: { Accept: "application/json" },
                 });
                 //alert('บันทึกคำตอบเรียบร้อย ขอบคุณค่ะ')
