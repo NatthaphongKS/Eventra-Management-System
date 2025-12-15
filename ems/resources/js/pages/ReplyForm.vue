@@ -83,7 +83,6 @@
         <section v-else class="label card">
             คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
         </section>
-        <label>สถานะ : {{ form.attend }}</label>
     </div>
 </template>
 
