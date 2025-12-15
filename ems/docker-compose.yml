@@ -19,6 +19,7 @@ services:
       - appnet
     depends_on:
       - db
+      
 
   # MariaDB
   db:
