@@ -24,6 +24,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/meta', [EmployeeController::class, 'meta']); //ข้อมูลที่ใช้สร้าง employee
     Route::get('/get-employees', [EmployeeController::class, 'index']); // ข้อมูล employee
     Route::get('/employees',     [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
+    Route::get('/showProfile', [LoginController::class, 'showProfile']);
 
     // ✅ เพิ่มบรรทัดนี้ครับ (Soft Delete) - เอาไว้ก่อน Route ที่มี {id}
     Route::put('/employees/soft-delete/{id}', [EmployeeController::class, 'softDelete']);
