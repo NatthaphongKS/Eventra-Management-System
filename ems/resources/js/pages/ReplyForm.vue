@@ -182,7 +182,7 @@ export default {
                 console.log("Fetching data for evnID:", evnID, "empID:", empID),
                     (this.loading = true);
                 const { data } = await axios.get(
-                    `/api/reply/${evnID}/${empID}`,
+                    `/reply/${evnID}/${empID}`,
                     {
                         headers: { Accept: "application/json" },
                     }
