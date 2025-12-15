@@ -25,6 +25,7 @@ services:
       - appnet
     depends_on:
       - db
+      - vite
 
   db:
     image: mariadb:10.6

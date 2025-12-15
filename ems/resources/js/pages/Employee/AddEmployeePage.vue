@@ -126,11 +126,11 @@
 </template>
 
 <script setup>
-import { reactive, computed, watch, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
-import Swal from 'sweetalert2'
-import 'sweetalert2/dist/sweetalert2.min.css'
+import { reactive, computed, watch, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 /* ---------- components ---------- */
 import FormField from '../../components/Input/FormField.vue'
@@ -142,8 +142,8 @@ import CancelButton from '@/components/Button/CancelButton.vue'
 import ModalAlert from '../../components/Alert/ModalAlert.vue'
 import EmployeeCannotCreate from '../../components/Alert/Employee/EmployeeCannotCreate.vue'
 
-const router = useRouter()
-const goImport = () => router.push({ name: 'upload-file' })
+const router = useRouter();
+const goImport = () => router.push({ name: "upload-file" });
 
 /* ------- options ------- */
 const permissions = [
@@ -160,11 +160,19 @@ const loadingMeta = ref(true)
 
 /* ------- form ------- */
 const form = reactive({
-    prefix: '', firstName: '', lastName: '', nickname: '',
-    phone: '', employeeId: '',
-    department: '', team: '', position: '',
-    email: '', password: '', permission: '',
-})
+    prefix: "",
+    firstName: "",
+    lastName: "",
+    nickname: "",
+    phone: "",
+    employeeId: "",
+    department: "",
+    team: "",
+    position: "",
+    email: "",
+    password: "",
+    permission: "",
+});
 
 /* ------- validation state ------- */
 const errors = reactive({})
@@ -184,7 +192,7 @@ const loadMetaErrorMessage = ref('')
 /* ------- โหลด meta จาก backend ------- */
 onMounted(async () => {
     try {
-        const { data } = await axios.get('/meta')
+        const { data } = await axios.get("/meta");
 
         prefixes.value = (data.prefixes || []).map(p => ({
             label: p.label,
@@ -192,24 +200,24 @@ onMounted(async () => {
         }))
 
         // Department = แค่ชื่อกับ id พอ
-        departments.value = (data.departments || []).map(d => ({
+        departments.value = (data.departments || []).map((d) => ({
             label: d.dpm_name,
             value: d.id,
-        }))
+        }));
 
         // Team = ต้องมี department_id ไว้ filter
-        teams.value = (data.teams || []).map(t => ({
+        teams.value = (data.teams || []).map((t) => ({
             label: t.tm_name,
             value: t.id,
             department_id: t.tm_department_id ?? null,
-        }))
+        }));
 
         // Position
         positions.value = (data.positions || []).map(p => ({
             label: p.pst_name,
             value: p.id,
             team_id: p.pst_team_id ?? null,
-        }))
+        }));
     } catch (e) {
         showLoadMetaError.value = true
         loadMetaErrorMessage.value = 'Load failed. Please try again.'
@@ -221,43 +229,42 @@ onMounted(async () => {
 })
 
 const teamOptions = computed(() => {
-    if (!form.department) return []
-    const depId = Number(form.department)
-    return teams.value.filter(t => t.department_id === depId)
-})
+    if (!form.department) return [];
+    const depId = Number(form.department);
+    return teams.value.filter((t) => t.department_id === depId);
+});
 
 const positionOptions = computed(() => {
-    if (!form.team) return []
-    const teamId = Number(form.team)
-    return positions.value.filter(p => p.team_id === teamId)
-})
-
+    if (!form.team) return [];
+    const teamId = Number(form.team);
+    return positions.value.filter((p) => p.team_id === teamId);
+});
 
 /* ====== Validation ====== */
 const MSG = {
-    requiredSelect: 'Required Select',
-    requiredText: 'Required field only text',
-    requiredNumber: 'Required field only number',
-    requiredEmail: 'Required email, should have @ and .',
-    requiredField: 'Required field',
-}
+    requiredSelect: "Required Select",
+    requiredText: "Required field only text",
+    requiredNumber: "Required field only number",
+    requiredEmail: "Required email, should have @ and .",
+    requiredField: "Required field",
+};
 const fieldRules = {
-    prefix: ['requiredSelect'],
-    department: ['requiredSelect'],
-    team: ['requiredSelect'],
-    position: ['requiredSelect'],
-    permission: ['requiredSelect'],
-    firstName: ['requiredText'],
-    lastName: ['requiredText'],
-    nickname: ['requiredText'],
-    phone: ['requiredNumber'],
-    email: ['requiredEmail'],
-    password: ['requiredField'],
-    employeeId: ['requiredField'],
-}
+    prefix: ["requiredSelect"],
+    department: ["requiredSelect"],
+    team: ["requiredSelect"],
+    position: ["requiredSelect"],
+    permission: ["requiredSelect"],
+    firstName: ["requiredText"],
+    lastName: ["requiredText"],
+    nickname: ["requiredText"],
+    phone: ["requiredNumber"],
+    email: ["requiredEmail"],
+    password: ["requiredField"],
+    employeeId: ["requiredField"],
+};
 
 function validateField(key, value) {
-    const rules = fieldRules[key] || []
+    const rules = fieldRules[key] || [];
     for (const r of rules) {
         if (r === 'requiredSelect') {
             if (!value) return MSG.requiredSelect
@@ -281,16 +288,16 @@ function validateField(key, value) {
             if (!value) return MSG.requiredField
         }
     }
-    return ''
+    return "";
 }
 
 function validate() {
-    Object.keys(errors).forEach(k => delete errors[k])
-    Object.keys(fieldRules).forEach(k => {
-        const msg = validateField(k, form[k])
-        if (msg) errors[k] = msg
-    })
-    return Object.keys(errors).length === 0
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    Object.keys(fieldRules).forEach((k) => {
+        const msg = validateField(k, form[k]);
+        if (msg) errors[k] = msg;
+    });
+    return Object.keys(errors).length === 0;
 }
 
 // live-validate
@@ -305,24 +312,24 @@ Object.keys(fieldRules).forEach((k) => {
                 delete errors[k]
             }
         }
-    )
-})
+    );
+});
 
 watch(
     () => form.department,
     () => {
-        form.team = ''
-        form.position = ''
-        delete errors.team
-        delete errors.position
+        form.team = "";
+        form.position = "";
+        delete errors.team;
+        delete errors.position;
     }
-)
+);
 
 watch(
     () => form.team,
     () => {
-        form.position = ''
-        delete errors.position
+        form.position = "";
+        delete errors.position;
     }
 )
 
@@ -334,21 +341,21 @@ async function handleSubmit() {
     submitting.value = true
     try {
         const payload = {
-            emp_id: (form.employeeId || '').trim(),
+            emp_id: (form.employeeId || "").trim(),
             emp_prefix: Number(form.prefix),
             emp_nickname: form.nickname || null,
             emp_firstname: form.firstName,
             emp_lastname: form.lastName,
             emp_email: form.email,
-            emp_phone: String(form.phone || ''),
+            emp_phone: String(form.phone || ""),
             emp_position_id: Number(form.position),
             emp_department_id: Number(form.department),
             emp_team_id: Number(form.team),
             emp_password: form.password,
-            emp_status: Number(form.permission)
-        }
+            emp_status: Number(form.permission),
+        };
 
-        await axios.post('/save-employee', payload)
+        await axios.post("/save-employee", payload);
 
         // ล้างฟอร์ม + ล้าง error เก่า
         Object.keys(form).forEach(k => (form[k] = ''))
@@ -436,20 +443,20 @@ async function handleSubmit() {
         }
 
     } finally {
-        submitting.value = false
+        submitting.value = false;
     }
 }
 
 function onCancel() {
-    Object.keys(form).forEach(k => (form[k] = ''))
-    Object.keys(errors).forEach(k => delete errors[k])
-    router.push('/employee')
+    Object.keys(form).forEach((k) => (form[k] = ""));
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    router.push("/employee");
 }
 
 /* ---------- close modal success ---------- */
 function handleSuccessClose() {
-    showCreateSuccess.value = false
-    router.push('/employee')
+    showCreateSuccess.value = false;
+    router.push("/employee");
 }
 
 /* ---------- close modal error ---------- */

@@ -7,9 +7,17 @@ services:
     volumes:
       - .:/var/www/html
     environment:
-      APACHE_DOCUMENT_ROOT: /var/www/html/public
-    depends_on: [db,node]
-    networks: [appnet]
+      DB_CONNECTION: mysql
+      DB_HOST: 10.80.7.17
+      DB_PORT: 7333
+      DB_DATABASE: Byteforge
+      DB_USERNAME: Byteforge
+      DB_PASSWORD: Byteforge_Secret2307
+    networks:
+      - appnet
+    depends_on:
+      - db
+      
 
 
   node:
