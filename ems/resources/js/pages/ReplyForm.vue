@@ -250,7 +250,7 @@ export default {
                     this.form.attend,
                     this.form.reason
                 );
-                console.log("POST /api/store", payload); // ดูใน Console ให้มีค่าจริง
+                console.log("POST /store", payload); // ดูใน Console ให้มีค่าจริง
                 await axios.post("/store", payload, {
                     headers: { Accept: "application/json" },
                 });
