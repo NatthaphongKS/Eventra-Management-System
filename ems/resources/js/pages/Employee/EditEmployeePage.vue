@@ -147,7 +147,7 @@ const prefixes = [
 const permissions = [
   { label: 'Administrator', value: 'enabled' },
   { label: 'Human Resources', value: 'disabled' },
-  { label: 'Position1', value: 'enabled' },
+  { label: 'Employee', value: 'disabled' },
 ]
 
 const departments = ref([])
