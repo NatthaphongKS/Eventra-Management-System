@@ -36,7 +36,7 @@
                         <label class="radio">
                             <input
                                 type="radio"
-                                value="accept"
+                                value="accepted"
                                 v-model="form.attend"
                             />
                             เข้าร่วม
@@ -162,7 +162,7 @@ export default {
     watch: {
         // ถ้าเลือก "เข้าร่วม" ให้ล้างเหตุผลทันที
         "form.attend"(val) {
-            if (val === "accept") this.form.reason = "";
+            if (val === "accepted") this.form.reason = "";
         },
     },
 
