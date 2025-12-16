@@ -133,7 +133,7 @@ export default {
             // แก้ไข: จะแสดงฟอร์มก็ต่อเมื่อ 'replyStatus' ไม่ใช่ 'accept' และไม่ใช่ 'denied'
             // (คือยังอยู่ในสถานะที่ต้องตอบ เช่น 'invalid' หรือเป็นค่าว่างระหว่างโหลด)
             const status = this.replyStatus;
-            return status !== "accept" && status !== "denied";
+            return status !== "accepted" && status !== "denied";
         },
         // แสดง "30 กันยายน 2025 เวลา 13.00 - 14.00 น."
         formattedDateTime() {
