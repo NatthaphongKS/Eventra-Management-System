@@ -14,7 +14,7 @@ return new class extends Migration {
 
         Schema::create('ems_position', function (Blueprint $table) {
             $table->id();
-            $table->foreign('pst_team_id')->references('id')->on('ems_team')->onDelete('cascade');
+            $table->foreignId('pst_team_id')->constrained('ems_team')->onDelete('cascade');
             $table->string('pst_name')->unique();
             $table->enum('pst_delete_status', ['active', 'inactive'])->default('active');
         });
