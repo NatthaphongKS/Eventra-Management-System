@@ -46,7 +46,7 @@
                         : ''" :title="(!file || !!error || uploading)
                             ? 'Please upload or drop file first'
                             : ''">
-                        <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
+                        <Button variant="generate" :disabled="!file || !!error || uploading" @click="upload" />
                     </div>
                 </div>
 
@@ -120,14 +120,14 @@
         <div
             class="mx-auto w-full max-w-9xl px-4 sm:px-6 lg:px-8 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex justify-start">
-                <CancelButton @click="onCancel" />
+                <Button variant="cancel" @click="onCancel" />
             </div>
 
             <div class="flex justify-end" :class="canCreate ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'"
                 :style="canCreate ? '' : 'pointer-events: none;'" :title="canCreate
                     ? ''
                     : 'Please upload file and click Generate Data first'">
-                <CreateButton :disabled="!canCreate" @click="onCreate" />
+                <Button variant="create" :disabled="!canCreate" @click="onCreate" />
             </div>
         </div>
     </div>
@@ -150,9 +150,7 @@ import axios from 'axios'
 import Upload from '@/components/Input/Upload.vue'
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
 import EmployeeCannotCreate from '../../components/Alert/Employee/EmployeeCannotCreate.vue'
-import CancelButton from '@/components/Button/CancelButton.vue'
-import CreateButton from '@/components/Button/CreateButton.vue'
-import GenerateDataButton from '@/components/Button/GenerateDataButton.vue'
+import Button from '@/components/Button.vue'
 import DataTable from '@/components/DataTable.vue'
 
 const router = useRouter()

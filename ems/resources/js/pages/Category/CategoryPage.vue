@@ -22,9 +22,7 @@
         />
       </div>
 
-      <div class="mt-6">
-        <AddButton  @click="openAdd" />
-      </div>
+      <Button variant="add" @click="openAdd">Add Category</Button>
     </div>
 
     <!-- DataTable -->
@@ -101,12 +99,12 @@ import CategoryCreate from '@/components/Category/CategoryCreate.vue'
 import CategoryEdit from '@/components/Category/CategoryEdit.vue'
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
 import SortMenu from '@/components/SortMenu.vue'
-import AddButton from '@/components/AddButton.vue'
+import Button from '@/components/Button.vue'
 import { Icon } from '@iconify/vue'
 
 export default {
   name: 'CategoryPage',
-  components: { DataTable, SearchBar, SortMenu, CategoryCreate, CategoryEdit, ModalAlert, AddButton, Icon },
+  components: { DataTable, SearchBar, SortMenu, CategoryCreate, CategoryEdit, ModalAlert, Button, Icon },
 
   data() {
     return {
