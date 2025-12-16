@@ -11,6 +11,19 @@ return new class extends Migration {
     public function up(): void
     {
         // 1. สร้างตารางทั้งหมด (โดยยังไม่มี Foreign Key ที่อ้างอิงกันเอง)
+        // สร้างตาราง ems_department โดยนำ foreign key ที่มีปัญหาออกไปก่อน
+        Schema::create('ems_department', function (Blueprint $table) {
+            $table->id();
+            $table->string('dpm_name')->unique();
+            $table->enum('dpm_delete_status', ['active', 'inactive'])->default('active');
+        });
+
+        Schema::create('ems_team', function (Blueprint $table) {
+            $table->id();
+            $table->foreign('tm_department_id')->references('id')->on('ems_department')->onDelete('cascade');
+            $table->string('tm_name')->unique();
+            $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
+        });
 
         Schema::create('ems_position', function (Blueprint $table) {
             $table->id();
@@ -23,21 +36,6 @@ return new class extends Migration {
             $table->id();
             $table->string('com_name')->unique();
             $table->enum('com_delete_status', ['active', 'inactive'])->default('active');
-        });
-
-        // สร้างตาราง ems_department โดยนำ foreign key ที่มีปัญหาออกไปก่อน
-        Schema::create('ems_department', function (Blueprint $table) {
-            $table->id();
-            $table->string('dpm_name')->unique();
-            $table->enum('dpm_delete_status', ['active', 'inactive'])->default('active');
-        });
-
-        // สร้างตาราง ems_team โดยนำ foreign key ที่มีปัญหาออกไปก่อน
-        Schema::create('ems_team', function (Blueprint $table) {
-            $table->id();
-            $table->foreign('tm_department_id')->references('id')->on('ems_department')->onDelete('cascade');
-            $table->string('tm_name')->unique();
-            $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
         });
 
         // 2. สร้างตาราง employees และ sessions
