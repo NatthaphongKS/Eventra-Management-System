@@ -38,18 +38,19 @@
       <!-- Actions -->
       <div class="mt-6 flex justify-between">
         <div>
-        <Button variant="cancel"
+        <CancelButton
           @click="close"
           :disabled="saving"
-          class="inline-flex items-center gap-2">Cancel</Button></div>
+          class="inline-flex items-center gap-2"
+        /></div>
         <div>
-        <Button variant="create"
+        <CreateButton
           @click="submit"
           :disabled="saving || isEmpty || unchanged || showDup"
           class="inline-flex items-center gap-2 "
         >
           Edit
-        </Button></div>
+        </CreateButton></div>
       </div>
     </div>
   </div>
@@ -57,7 +58,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import Button from "../Button.vue";
+import CancelButton from "../../components/CancelButton.vue";
+import CreateButton from "../CreateButton.vue";
 
 type Row = {
   id: number;
