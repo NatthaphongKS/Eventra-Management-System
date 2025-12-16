@@ -1,6 +1,7 @@
 <!-- HistoryCategory.vue -->
 <template>
     <section class="p-0">
+        <h1>test</h1>
         <!-- Toolbar -->
         <div class="flex items-center gap-3">
             <SearchBar
