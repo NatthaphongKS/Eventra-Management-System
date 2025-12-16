@@ -174,9 +174,12 @@ class EventController extends Controller
                 foreach ($request->file('attachments') as $file) {
                     $path = $file->store("events/{$event->id}", 'public');
                     DB::table('ems_event_files')->insert([
-                        'file_event_id' => $event->id, 'file_name' => $file->getClientOriginalName(),
-                        'file_path' => $path, 'file_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(), 'uploaded_at' => now(),
+                        'file_event_id' => $event->id,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'uploaded_at' => now(),
                     ]);
                 }
             }
@@ -280,57 +283,6 @@ class EventController extends Controller
                 'files' => $files,
             ], 200);
         });
-    }
-
-
-
-    function eventInfo()
-    {
-        $employees = Employee::with([
-            'position:id,pst_name',
-            'department:id,dpm_name',
-            'team:id,tm_name',
-        ])
-            ->where('emp_delete_status', 'active')
-            ->orderBy('id', 'desc')
-            ->get([
-                'id',
-                'emp_id',
-                'emp_prefix',
-                'emp_firstname',
-                'emp_lastname',
-                'emp_nickname',
-                'emp_email',
-                'emp_phone',
-                'emp_position_id',
-                'emp_department_id',
-                'emp_team_id'
-            ])
-            ->map(function (Employee $e) {
-                return [
-                    'id'               => $e->id,
-                    'emp_id'           => $e->emp_id,
-                    'emp_prefix'       => $e->emp_prefix,
-                    'emp_firstname'    => $e->emp_firstname,
-                    'emp_lastname'     => $e->emp_lastname,
-                    'emp_nickname'     => $e->emp_nickname,
-                    'emp_email'        => $e->emp_email,
-                    'emp_phone'        => $e->emp_phone,
-                    'emp_position_id'  => $e->emp_position_id,
-                    'emp_department_id' => $e->emp_department_id,
-                    'emp_team_id'      => $e->emp_team_id,
-                    'position_name'    => optional($e->position)->pst_name,
-                    'department_name'  => optional($e->department)->dpm_name,
-                    'team_name'        => optional($e->team)->tm_name,
-                ];
-            });
-
-        $categories = Category::select('id', 'cat_name')->where('cat_delete_status', 'active')->orderBy('cat_name')->get();
-        $positions = Position::select('id', 'pst_name')->where('pst_delete_status', 'active')->orderBy('pst_name')->get();
-        $departments = Department::select('id', 'dpm_name')->where('dpm_delete_status', 'active')->orderBy('dpm_name')->get();
-        $teams = Team::select('id', 'tm_name')->where('tm_delete_status', 'active')->orderBy('tm_name')->get();
-
-        return response()->json(compact('categories', 'employees', 'positions', 'departments', 'teams'));
     }
 
     /**
@@ -551,11 +503,309 @@ class EventController extends Controller
             ]);
 
             return response()->json(['message' => 'Event deleted and notifications sent successfully']);
-
         } catch (Exception $e) {
-            // Log error เพื่อดูปัญหาถ้าส่งเมลไม่ผ่าน
+            //Log error เพื่อดูปัญหาถ้าส่งเมลไม่ผ่าน
             Log::error("Delete Event Error: " . $e->getMessage());
             return response()->json(['message' => 'Event deleted failed'], 500);
         }
     }
+    
+    public function getEventParticipants($eventId)
+    {
+        try {
+            // ดึงข้อมูลสถิติการเข้าร่วม
+            $statistics = DB::table('ems_connect')
+                ->where('con_event_id', $eventId)
+                ->where('con_delete_status', 'active')
+                ->selectRaw('
+                    COUNT(*) as total,
+                    SUM(CASE WHEN con_answer = "accept" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
+                    SUM(CASE WHEN con_answer = "invalid" THEN 1 ELSE 0 END) as pending
+                ')
+                ->first();
+
+            return response()->json($statistics);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function eventInfo()
+    {
+        $employees = Employee::with([
+            'position:id,pst_name',
+            'department:id,dpm_name',
+            'team:id,tm_name',
+        ])
+            ->where('emp_delete_status', 'active')
+            ->orderBy('id', 'desc')
+            ->get([
+                'id',
+                'emp_id',
+                'emp_prefix',
+                'emp_firstname',
+                'emp_lastname',
+                'emp_nickname',
+                'emp_email',
+                'emp_phone',
+                'emp_position_id',
+                'emp_department_id',
+                'emp_team_id'
+            ])
+            ->map(function (Employee $e) {
+                return [
+                    'id'               => $e->id,
+                    'emp_id'           => $e->emp_id,
+                    'emp_prefix'       => $e->emp_prefix,
+                    'emp_firstname'    => $e->emp_firstname,
+                    'emp_lastname'     => $e->emp_lastname,
+                    'emp_nickname'     => $e->emp_nickname,
+                    'emp_email'        => $e->emp_email,
+                    'emp_phone'        => $e->emp_phone,
+                    'emp_position_id'  => $e->emp_position_id,
+                    'emp_department_id' => $e->emp_department_id,
+                    'emp_team_id'      => $e->emp_team_id,
+                    'position_name'    => optional($e->position)->pst_name,
+                    'department_name'  => optional($e->department)->dpm_name,
+                    'team_name'        => optional($e->team)->tm_name,
+                ];
+            });
+
+        $categories = Category::select('id', 'cat_name')->where('cat_delete_status', 'active')->orderBy('cat_name')->get();
+        $positions = Position::select('id', 'pst_name')->where('pst_delete_status', 'active')->orderBy('pst_name')->get();
+        $departments = Department::select('id', 'dpm_name')->where('dpm_delete_status', 'active')->orderBy('dpm_name')->get();
+        $teams = Team::select('id', 'tm_name')->where('tm_delete_status', 'active')->orderBy('tm_name')->get();
+
+        return response()->json(compact('categories', 'employees', 'positions', 'departments', 'teams'));
+    }
+
+    public function getParticipants($id, Request $request)
+    {
+        try {
+            // ตรวจสอบว่า event มีอยู่จริง
+            $event = Event::find($id);
+            if (!$event) {
+                return response()->json(['message' => 'Event not found'], 404);
+            }
+
+            $statusFilter = $request->get('status'); // accepted, declined, pending
+
+            // ดึงข้อมูล participants จาก ems_connect และ join กับ employees
+            $query = DB::table('ems_connect as c')
+                ->join('ems_employees as e', 'c.con_employee_id', '=', 'e.id')
+                ->leftJoin('ems_position as p', 'e.emp_position_id', '=', 'p.id')
+                ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
+                ->leftJoin('ems_team as t', 'e.emp_team_id', '=', 't.id')
+                ->where('c.con_event_id', $id)
+                ->where(function($q) {
+                    $q->where('c.con_delete_status', 'active');
+                })
+                ->select([
+                    'e.id',
+                    'e.emp_id',
+                    'e.emp_prefix',
+                    'e.emp_firstname',
+                    'e.emp_lastname',
+                    'e.emp_nickname',
+                    'e.emp_email',
+                    'e.emp_phone',
+                    'p.pst_name as position',
+                    'd.dpm_name as department',
+                    't.tm_name as team',
+                    'c.con_answer as status'
+                ]);
+
+            // กรองตาม status ถ้ามี
+            if ($statusFilter) {
+                if ($statusFilter === 'pending') {
+                    $query->where('c.con_answer', 'invalid');
+                } elseif ($statusFilter === 'accepted') {
+                    $query->where('c.con_answer', 'accept');
+                } elseif ($statusFilter === 'declined') {
+                    $query->where('c.con_answer', 'denied');
+                }
+            }
+
+            $participants = $query->orderBy('e.emp_firstname')->get();
+
+            // นับสถิติ - แก้ไขให้ตรงกับ database จริง
+            $totalCount = $participants->count();
+            $attendingCount = $participants->where('status', 'accept')->count();
+            $notAttendingCount = $participants->where('status', 'denied')->count();
+            $pendingCount = $participants->where('status', 'invalid')->count();
+
+            \Log::info("Event $id participants stats:", [
+                'total' => $totalCount,
+                'attending' => $attendingCount,
+                'not_attending' => $notAttendingCount,
+                'pending' => $pendingCount,
+                'participants_sample' => $participants->take(3)->toArray()
+            ]);
+
+            $statistics = [
+                'total' => $totalCount,
+                'attending' => $attendingCount,
+                'not_attending' => $notAttendingCount,
+                'pending' => $pendingCount
+            ];
+
+            return response()->json([
+                'participants' => $participants,
+                'statistics' => $statistics,
+                'event' => [
+                    'id' => $event->id,
+                    'title' => $event->evn_title,
+                    'date' => $event->evn_date,
+                    'status' => $event->evn_status
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Error in getParticipants for event $id: " . $e->getMessage());
+            return response()->json([
+                'message' => 'Error retrieving participants',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getAttendanceData($eventId)
+    {
+        try {
+            // ตรวจสอบว่ามี event นี้หรือไม่
+            $event = Event::find($eventId);
+            if (!$event) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Event not found'
+                ], 404);
+            }
+
+            // ดึงข้อมูลการตอบรับจาก ems_connect table
+            $attendanceStats = DB::table('ems_connect')
+                ->where('con_event_id', $eventId)
+                ->where(function($query) {
+                    $query->whereNull('con_delete_status')
+                          ->orWhere('con_delete_status', '')
+                          ->orWhere('con_delete_status', 'active');
+                })
+                ->selectRaw('
+                    COUNT(CASE WHEN con_answer = "accept" THEN 1 END) as actual_attendance,
+                    COUNT(CASE WHEN con_answer = "decline" THEN 1 END) as declined,
+                    COUNT(CASE WHEN con_answer IS NULL OR con_answer = "" OR con_answer = "pending" THEN 1 END) as pending,
+                    COUNT(*) as total_invited
+                ')
+                ->first();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'event_id' => $eventId,
+                    'event_title' => $event->evn_title,
+                    'actual_attendance' => $attendanceStats->actual_attendance ?? 0,
+                    'declined' => $attendanceStats->declined ?? 0,
+                    'pending' => $attendanceStats->pending ?? 0,
+                    'total_invited' => $attendanceStats->total_invited ?? 0,
+                    'attendance_percentage' => $attendanceStats->total_invited > 0 
+                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2) 
+                        : 0
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving attendance data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function eventStatistics(Request $request)
+    {
+        try {
+            $eventIds = $request->input('event_ids', []);
+            
+            if (empty($eventIds)) {
+                return response()->json([
+                    'total_participation' => 0,
+                    'attending' => 0,
+                    'not_attending' => 0,
+                    'pending' => 0,
+                    'departments' => [],
+                    'participants' => []
+                ]);
+            }
+
+            // Get aggregated statistics
+            $stats = DB::table('ems_connect')
+                ->whereIn('con_event_id', $eventIds)
+                ->where('con_delete_status', 'active')
+                ->selectRaw('
+                    COUNT(*) as total_participation,
+                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
+                    SUM(CASE WHEN con_answer = "invalid" OR con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                ')
+                ->first();
+
+            // Get department breakdown
+            $departments = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->join('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
+                ->whereIn('ems_connect.con_event_id', $eventIds)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->groupBy('ems_department.id', 'ems_department.dpm_name')
+                ->selectRaw('
+                    ems_department.dpm_name as name,
+                    SUM(CASE WHEN ems_connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+                    SUM(CASE WHEN ems_connect.con_answer = "invalid" OR ems_connect.con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                ')
+                ->get();
+
+            // Get all participants (including same person in multiple events)
+            $participants = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
+                ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+                ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
+                ->leftJoin('ems_event', 'ems_connect.con_event_id', '=', 'ems_event.id')
+                ->whereIn('ems_connect.con_event_id', $eventIds)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->select(
+                    'ems_employees.id',
+                    'ems_employees.emp_id',
+                    'ems_employees.emp_prefix',
+                    'ems_employees.emp_firstname',
+                    'ems_employees.emp_lastname',
+                    'ems_employees.emp_nickname',
+                    'ems_employees.emp_phone',
+                    'ems_employees.emp_email',
+                    'ems_department.dpm_name as department',
+                    'ems_team.tm_name as team',
+                    'ems_position.pst_name as position',
+                    'ems_event.evn_title as event_title',
+                    'ems_connect.con_answer as status'
+                )
+                ->get(); // No unique() - show all participations
+
+            return response()->json([
+                'total_participation' => $stats->total_participation ?? 0,
+                'attending' => $stats->attending ?? 0,
+                'not_attending' => $stats->not_attending ?? 0,
+                'pending' => $stats->pending ?? 0,
+                'departments' => $departments,
+                'participants' => $participants
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving event statistics',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
