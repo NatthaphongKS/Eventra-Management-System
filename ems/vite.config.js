@@ -16,7 +16,7 @@ export default defineConfig({
         host: "0.0.0.0", // ให้ container เปิดพอร์ตออกมาได้
         port: 7222,
         strictPort: true,
-        hmr: { host: "10.80.7.17", port: 7222 }, // ให้เบราว์เซอร์ยิงกลับ localhost
+        hmr: { protocol: 'ws', host: "10.80.7.17", port: 7222 }, // ให้เบราว์เซอร์ยิงกลับ localhost
         proxy: {
             "/api": {
                 target: "http://dekdee2.informatics.buu.ac.th:7111",
