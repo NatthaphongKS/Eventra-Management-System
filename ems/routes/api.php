@@ -46,7 +46,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/import-employees', [EmployeeController::class, 'importBulk']);
 
     // === Event ===
-    Route::get('/event-info', [EventController::class, 'eventInfo']);
+    Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']);
+    Route::post('/event-statistics', [EventController::class, 'eventStatistics']); // ดึงสถิติของ event ที่เลือก
     Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
     // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
@@ -86,6 +87,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
     Route::get('/history/categories', [HistoryCategoryController::class, 'index']);
+
+    Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']); // ดึงข้อมูลการเช็คอินพนักงาน
+    Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendance']);
+    Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendanceAll']);
 });
 
 
@@ -94,6 +99,3 @@ Route::middleware(['web', 'auth'])->group(function () {
 Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']); // ดึงข้อมูลพนักงานกับอีเว้น
 Route::post('/store', [ReplyController::class, 'store']);//บันทึกข้อมูลการตอบกลับ
 
-Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']); // ดึงข้อมูลการเช็คอินพนักงาน
-Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendance']);
-Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendanceAll']);
