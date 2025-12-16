@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Team;
-use App\Models\Position; // เพิ่ม Use Position
+use App\Models\Position;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
