@@ -136,6 +136,8 @@
     <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success" type="success"
         @confirm="handleSuccessClose" />
     <EmployeeCannotCreate :open="showCannotCreate" :message="errorMessage" @close="showCannotCreate = false" />
+    <EmployeeCannotCreate :open="showCannotCreate" title="ERROR!" :message="createErrorMessage"
+        @close="showCannotCreate = false" />
 </template>
 
 
@@ -506,160 +508,157 @@ async function onCreate() {
                 }
             }
 
-                // กำหนดข้อความ Error และแสดง Modal
-                errorMessage.value = errText
-                showCannotCreate.value = true
-                creating.value = false
-                return
-            }
-
-            const { dep, team, pos } = resolved
-
-            // แตกชื่อ prefix / first / last
-            let emp_prefix = 1
-            let emp_firstname = ''
-            let emp_lastname = ''
-
-            const parts = (row.name || '').trim().split(/\s+/)
-            if (parts.length >= 3) {
-                emp_prefix = prefixMap[parts[0]] ?? 1
-                emp_firstname = parts[1] ?? ''
-                emp_lastname = parts.slice(2).join(' ')
-            } else if (parts.length === 2) {
-                emp_firstname = parts[0] ?? ''
-                emp_lastname = parts[1] ?? ''
-            } else if (parts.length === 1 && parts[0]) {
-                emp_firstname = parts[0]
-            }
-
-            // ถ้ามาถึงตรงนี้ แปลว่า dept/team/position ถูกต้องแน่นอน
-            preparedRows.push({
-                row,
-                payload: {
-                    emp_id: (row.employeeId || '').trim(),
-                    emp_prefix,
-                    emp_nickname: row.nickname || null,
-                    emp_firstname,
-                    emp_lastname,
-                    emp_email: (row.email || '').trim(),
-                    emp_phone: (row.phone || '').trim(),
-                    emp_position_id: pos.id,
-                    emp_department_id: dep.id,
-                    emp_team_id: team.id,
-                    emp_password: 'Password123',
-                    emp_status: 2,
-                }
-            })
+            // กำหนดข้อความ Error และแสดง Modal
+            errorMessage.value = errText
+            showCannotCreate.value = true
+            creating.value = false
+            return
         }
+
+        const { dep, team, pos } = resolved
+
+        // แตกชื่อ prefix / first / last
+        let emp_prefix = 1
+        let emp_firstname = ''
+        let emp_lastname = ''
+
+        const parts = (row.name || '').trim().split(/\s+/)
+        if (parts.length >= 3) {
+            emp_prefix = prefixMap[parts[0]] ?? 1
+            emp_firstname = parts[1] ?? ''
+            emp_lastname = parts.slice(2).join(' ')
+        } else if (parts.length === 2) {
+            emp_firstname = parts[0] ?? ''
+            emp_lastname = parts[1] ?? ''
+        } else if (parts.length === 1 && parts[0]) {
+            emp_firstname = parts[0]
+        }
+
+        // ถ้ามาถึงตรงนี้ แปลว่า dept/team/position ถูกต้องแน่นอน
+        preparedRows.push({
+            row,
+            payload: {
+                emp_id: (row.employeeId || '').trim(),
+                emp_prefix,
+                emp_nickname: row.nickname || null,
+                emp_firstname,
+                emp_lastname,
+                emp_email: (row.email || '').trim(),
+                emp_phone: (row.phone || '').trim(),
+                emp_position_id: pos.id,
+                emp_department_id: dep.id,
+                emp_team_id: team.id,
+                emp_password: 'Password123',
+                emp_status: 2,
+            }
+        })
+    }
 
         // ถ้าไม่มีใครพร้อมสร้างเลย (เช่น บรรทัดว่างทั้งไฟล์)
         if (preparedRows.length === 0) {
-            showCreateSuccess.value = false
-            showCannotCreate.value = true
-            return
-        }
+        showCreateSuccess.value = false
+        showCannotCreate.value = true
+        return
+    }
 
-        // ---------------------------------
-        // STEP 2: ตรวจซ้ำกับระบบ (เบอร์ / อีเมล / employeeId)
-        // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch
-        // ---------------------------------
-        let foundDuplicateInSystem = false
-        let duplicateInfo = [] // เก็บรายชื่อฟิลด์ที่ซ้ำ
-        let duplicatePayload = null // เก็บชุดข้อมูลที่ซ้ำเพื่อเอาค่ามาแสดง
+    // ---------------------------------
+    // STEP 2: ตรวจซ้ำกับระบบ (เบอร์ / อีเมล / employeeId)
+    // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch
+    // ---------------------------------
+    let foundDuplicateInSystem = false
+    let duplicateInfo = [] // เก็บรายชื่อฟิลด์ที่ซ้ำ
+    let duplicatePayload = null // เก็บชุดข้อมูลที่ซ้ำเพื่อเอาค่ามาแสดง
 
-        for (const { payload } of preparedRows) {
-            const checkBody = {}
-            if (payload.emp_id) checkBody.emp_id = payload.emp_id
-            if (payload.emp_phone) checkBody.emp_phone = payload.emp_phone
-            if (payload.emp_email) checkBody.emp_email = payload.emp_email
+    for (const { payload } of preparedRows) {
+        const checkBody = {}
+        if (payload.emp_id) checkBody.emp_id = payload.emp_id
+        if (payload.emp_phone) checkBody.emp_phone = payload.emp_phone
+        if (payload.emp_email) checkBody.emp_email = payload.emp_email
 
-            try {
-                const dupResp = await axios.post('/check-employee-duplicate', checkBody)
+        try {
+            const dupResp = await axios.post('/check-employee-duplicate', checkBody)
 
-                if (dupResp.data?.duplicate === true) {
-                    foundDuplicateInSystem = true
-                    duplicateInfo = dupResp.data?.fields || []
-                    duplicatePayload = payload // จำค่า payload ที่ซ้ำไว้
-                    break
-                }
-            } catch (dupErr) {
-                console.error('API Check Duplicate Failed:', dupErr)
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'System Error',
-                    text: 'ไม่สามารถตรวจสอบข้อมูลซ้ำได้ (API Error)',
-                })
-                return
+            if (dupResp.data?.duplicate === true) {
+                foundDuplicateInSystem = true
+                duplicateInfo = dupResp.data?.fields || []
+                duplicatePayload = payload // จำค่า payload ที่ซ้ำไว้
+                break
             }
-        }
-
-        if (foundDuplicateInSystem) {
-            // Map ชื่อฟิลด์ให้เป็นภาษาอังกฤษที่เข้าใจง่าย
-            const labelMap = {
-                emp_id: 'Employee ID',
-                emp_phone: 'Phone Number',
-                emp_email: 'Email'
-            }
-
-            // สร้างข้อความระบุว่าอะไรซ้ำ และค่าคืออะไร
-            // ตัวอย่าง output: "Employee ID (12345), Email (test@mail.com)"
-            const duplicateDetails = duplicateInfo.map(field => {
-                const label = labelMap[field] || field
-                const value = duplicatePayload ? duplicatePayload[field] : ''
-                return `${label} "${value}"`
-            }).join(', ')
-
-            // กรณีพบข้อมูลซ้ำ แจ้งเตือนพร้อมระบุค่าที่ซ้ำ
-            errorMessage.value = `Sorry, There are some data are already in the system.`
-            //errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
-
-
-            showCreateSuccess.value = false
-            showCannotCreate.value = true
-            return
-        }
-
-        // ---------------------------------
-        // STEP 3: ไม่มีซ้ำ -> insert ทุกคน
-        // ---------------------------------
-        let createdCount = 0
-
-        for (const { payload } of preparedRows) {
-            try {
-                await axios.post('/save-employee', payload)
-                createdCount++
-            } catch (err) {
-                console.error(
-                    'save-employee failed for',
-                    payload.emp_id,
-                    err.response?.data || err.message
-                )
-            }
-        }
-
-        if (createdCount === 0) {
-            // กรณี Save ไม่ผ่านสักคนเลย
+        } catch (dupErr) {
+            console.error('API Check Duplicate Failed:', dupErr)
             await Swal.fire({
                 icon: 'error',
-                title: 'Save Failed',
-                text: 'เกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้',
+                title: 'System Error',
+                text: 'ไม่สามารถตรวจสอบข้อมูลซ้ำได้ (API Error)',
             })
             return
         }
-
-        // ---------------------------------
-        // STEP 4: success -> ล้างหน้าจอ และโชว์ modal success
-        // ---------------------------------
-        displayRows.value = []
-        file.value = null
-        error.value = ''
-        page.value = 1
-
-        showCannotCreate.value = false
-        showCreateSuccess.value = true
-    } finally {
-        creating.value = false
     }
+
+    if (foundDuplicateInSystem) {
+        // Map ชื่อฟิลด์ให้เป็นภาษาอังกฤษที่เข้าใจง่าย
+        const labelMap = {
+            emp_id: 'Employee ID',
+            emp_phone: 'Phone Number',
+            emp_email: 'Email'
+        }
+
+        // สร้างข้อความระบุว่าอะไรซ้ำ และค่าคืออะไร
+        // ตัวอย่าง output: "Employee ID (12345), Email (test@mail.com)"
+        const duplicateDetails = duplicateInfo.map(field => {
+            const label = labelMap[field] || field
+            const value = duplicatePayload ? duplicatePayload[field] : ''
+            return `${label} "${value}"`
+        }).join(', ')
+
+        // กรณีพบข้อมูลซ้ำ แจ้งเตือนพร้อมระบุค่าที่ซ้ำ
+        errorMessage.value = `Sorry, There are some data are already in the system.`
+        //errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
+
+
+        showCreateSuccess.value = false
+        showCannotCreate.value = true
+        return
+    }
+
+    // ---------------------------------
+    // STEP 3: ไม่มีซ้ำ -> insert ทุกคน
+    // ---------------------------------
+    let createdCount = 0
+
+    for (const { payload } of preparedRows) {
+        try {
+            await axios.post('/save-employee', payload)
+            createdCount++
+        } catch (err) {
+            console.error(
+                'save-employee failed for',
+                payload.emp_id,
+                err.response?.data || err.message
+            )
+        }
+    }
+
+    if (createdCount === 0) {
+        // กรณี Save ไม่ผ่านสักคนเลย
+        // เปลี่ยนจาก Swal เป็นการเปิด Component EmployeeCannotCreate แทน
+        createErrorMessage.value = 'Sorry, Please try again later'
+        showCannotCreate.value = true
+        return
+    }
+
+    // ---------------------------------
+    // STEP 4: success -> ล้างหน้าจอ และโชว์ modal success
+    // ---------------------------------
+    displayRows.value = []
+    file.value = null
+    error.value = ''
+    page.value = 1
+
+    showCannotCreate.value = false
+    showCreateSuccess.value = true
+} finally {
+    creating.value = false
 }
 
 /* ---------- modal success close ---------- */
