@@ -136,7 +136,7 @@ import "sweetalert2/dist/sweetalert2.min.css";
 import FormField from '../../components/Input/FormField.vue'
 import InputPill from '../../components/Input/InputPill.vue'
 import DropdownPill from '../../components/Input/DropdownPill.vue'
-import ImportButton from '@/components/Button/ImportButton.vue'
+import ImportButton from '../../components/Button/ImportButton.vue'
 import CreateButton from '@/components/Button/CreateButton.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
 import ModalAlert from '../../components/Alert/ModalAlert.vue'
