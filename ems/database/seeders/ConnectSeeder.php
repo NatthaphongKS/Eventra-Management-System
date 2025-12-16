@@ -21,7 +21,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 1,
                 'con_employee_id' => 2,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -29,7 +29,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 2,
                 'con_employee_id' => 3,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 0,
@@ -46,7 +46,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 4,
                 'con_employee_id' => 4,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -54,7 +54,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 4,
                 'con_employee_id' => 5,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -70,7 +70,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 5,
                 'con_employee_id' => 7,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -78,7 +78,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 5,
                 'con_employee_id' => 8,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 0,
@@ -94,7 +94,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 6,
                 'con_employee_id' => 10,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -102,7 +102,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 7,
                 'con_employee_id' => 11,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 0,
@@ -118,7 +118,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 8,
                 'con_employee_id' => 13,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -126,7 +126,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 1,
                 'con_employee_id' => 12,
-                'con_answer' => 'invalid',
+                'con_answer' => 'pending',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 0,
@@ -134,7 +134,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 9,
                 'con_employee_id' => 3,
-                'con_answer' => 'accept',
+                'con_answer' => 'pending',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -150,7 +150,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 11,
                 'con_employee_id' => 2,
-                'con_answer' => 'accept',
+                'con_answer' => 'accepted',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 1,
@@ -158,7 +158,7 @@ class ConnectSeeder extends Seeder
             [
                 'con_event_id' => 12,
                 'con_employee_id' => 4,
-                'con_answer' => 'invalid',
+                'con_answer' => 'pending',
                 'con_reason' => null,
                 'con_delete_status' => 'active',
                 'con_checkin_status' => 0,

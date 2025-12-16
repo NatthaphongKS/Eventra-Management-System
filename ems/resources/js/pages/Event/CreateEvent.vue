@@ -343,7 +343,9 @@
         </div>
 
         <div class="mt-8 px-6 w-full flex justify-between items-center">
-            <Button variant="cancel" :disabled="saving" @click="onCancel" />
+            <CancelButton size="md" :disabled="saving" @click="onCancel">
+                Cancel
+            </CancelButton>
 
             <button
                 type="button"
@@ -376,7 +378,7 @@ import InputPill from "@/components/Input/InputPill.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import { Icon } from "@iconify/vue";
 import DataTable from "@/components/DataTable.vue";
-import Button from "@/components/Button.vue";
+import CancelButton from "@/components/Button/CancelButton.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
 
 export default {
@@ -385,7 +387,7 @@ export default {
         Icon,
         SearchBar,
         DataTable,
-        Button,
+        CancelButton,
         ModalAlert,
     },
     data() {

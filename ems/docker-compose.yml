@@ -1,49 +1,60 @@
 services:
-  # 1. App (Laravel + Apache + Vue)
   app:
-    build: .
-    container_name: ems_app
-    restart: unless-stopped
-    ports:
-      - "7080:80"
+    image: php:8.2-apache
+    container_name: ems_app2
+    ports: ["7111:80"]
+    working_dir: /var/www/html
     volumes:
-      - ./.env:/var/www/html/.env
-    # ตั้งค่าให้ App รู้จัก Database ตัวข้างล่างนี้
+      - .:/var/www/html
     environment:
       DB_CONNECTION: mysql
-      DB_HOST: db                  # ใช้ชื่อ service 'db' ในการคุยกันภายใน
-      DB_PORT: 3306               # ภายในคุยกันที่ port มาตรฐาน
-      DB_DATABASE: Byteforge       # ชื่อ DB ที่คุณต้องการ
-      DB_USERNAME: Byteforge       # User ที่คุณต้องการ
-      DB_PASSWORD: Byteforge_Secret2307 # Password ที่คุณต้องการ
+      DB_HOST: 10.80.7.17
+      DB_PORT: 7333
+      DB_DATABASE: Byteforge
+      DB_USERNAME: Byteforge
+      DB_PASSWORD: Byteforge_Secret2307
     networks:
       - appnet
     depends_on:
       - db
+      
 
-  # 2. Database (สร้างขึ้นมาใหม่ตามสเปคคุณ)
-  db:
-    image: mariadb:10.6
-    container_name: ems_db
-    restart: unless-stopped
-    # เปิด Port 7306 ตามที่คุณต้องการ (เข้าผ่าน 10.80.7.17:7306 ได้ถ้าเครื่องนี้คือ IP นั้น)
-    ports:
-      - "7306:3306"
-    # ตั้งค่ารหัสผ่านตอนสร้างครั้งแรก
+
+  node:
+    image: node:20
+    container_name: ems_vite_dev2
+    working_dir: /app
+    command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 7222"
+    ports: ["7222:7222"]
     environment:
-      MYSQL_DATABASE: Byteforge
-      MYSQL_USER: Byteforge
-      MYSQL_PASSWORD: Byteforge_Secret2307
-      MYSQL_ROOT_PASSWORD: Byteforge_Secret2307
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+    networks: [appnet]
+
+  db:
+    image: mariadb:10.11
+    container_name: ems_db2
+    environment:
+      MARIADB_DATABASE: Byteforge
+      MARIADB_USER: Byteforge
+      MARIADB_PASSWORD: Byteforge_Secret2307
+      MARIADB_ROOT_PASSWORD: Byteforge_Secret2307
+    ports: ["7333:3306"]
     volumes:
       - dbdata:/var/lib/mysql
-    networks:
-      - appnet
+    networks: [appnet]
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ems_pma2
+    ports: ["7444:80"]
+    environment:
+      PMA_HOST: db
+    depends_on: [db]
+    networks: [appnet]
 
 networks:
   appnet:
-    driver: bridge
 
 volumes:
   dbdata:
-    driver: local

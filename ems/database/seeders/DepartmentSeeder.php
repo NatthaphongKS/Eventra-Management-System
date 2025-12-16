@@ -13,30 +13,31 @@ class DepartmentSeeder extends Seeder
     public function run(): void
     {
         $departments = [
-            'Product Development',
-            'Graphic',
-            'SMS',
-            'Management',
-            'Software Project',
-            'System Engineer',
-            'IT Support',
-            'System Integration',
-            'SALE',
-            'Artificial Intelligence',
-            'Interactive Media',
-            'MakeWebEasy',
-            'Chatcone',
-            'Developer',
-            'Team Leader', // 15
-            'Development', //16
-            'Quality', //17
-            'Support', //18
-            'Planning', //19
+            ['Product Development', 1],
+            ['Graphic', 2],
+            ['SMS', 3],
+            ['Management', 4],
+            ['Software Project', 5],
+            ['System Engineer', 6],
+            ['IT Support', 7],
+            ['System Integration', 8],
+            ['SALE', 9],
+            ['Artificial Intelligence', 10],
+            ['Interactive Media', 11],
+            ['MakeWebEasy', 12],
+            ['Chatcone', 13],
+            ['Developer', 14],
+            ['Team Leader', 15],
+            ['Development', 16],
+            ['Quality', 17],
+            ['Support', 18],
+            ['Planning', 19],
         ];
 
         foreach ($departments as $name) {
             DB::table('ems_department')->insert([
-                'dpm_name' => $name,
+                'id' => $name[1],
+                'dpm_name' => $name[0],
                 'dpm_delete_status' => 'active',
             ]);
         }
