@@ -130,7 +130,6 @@ import FormField from '@/components/Input/FormField.vue'
 import InputPill from '@/components/Input/InputPill.vue'
 import DropdownPill from '@/components/Input/DropdownPill.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
-// นำเข้า ModalAlert แทนตัวเก่า
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
 
 const router = useRouter()
@@ -178,10 +177,10 @@ const saving = ref(false)
 const saveError = ref("")
 const noChange = ref(false)
 
-/* ------- Alert State (เลียนแบบ Edit Event) ------- */
+/* ------- Alert State ------- */
 const alert = reactive({
     open: false,
-    type: 'confirm', // success | error | warning | confirm
+    type: 'confirm',
     title: '',
     message: '',
     showCancel: false,
@@ -193,11 +192,9 @@ const alert = reactive({
 
 /* ------- Helper Function เปิด Alert ------- */
 function openAlert(cfg = {}) {
-    // รีเซ็ต handler เก่า
     alert.onConfirm = null
     alert.onCancel = null
 
-    // รวมค่า config
     Object.assign(alert, {
         open: true,
         type: 'success',
@@ -259,7 +256,7 @@ onMounted(async () => {
   }
 })
 
-/* ====== Validation (Logic เดิม) ====== */
+/* ====== Validation ====== */
 const MSG = {
     requiredSelect: 'Required Select',
     requiredText: 'Required field only text',
@@ -321,14 +318,13 @@ Object.keys(fieldRules).forEach((k) => {
 watch(() => form.emp_department_id, (n, o) => { if(o && n!==o) { form.emp_team_id=''; form.emp_position_id='' } })
 watch(() => form.emp_team_id, (n, o) => { if(o && n!==o) { form.emp_position_id='' } })
 
-/* ------- Logic การบันทึก แบบใหม่ (ใช้ OpenAlert) ------- */
+/* ------- Logic การบันทึก ------- */
 function openConfirmSave() {
     noChange.value = false
     saveError.value = ""
 
     if (!validate()) return
 
-    // Check changes logic
     const current = { ...form }
     const prev = { ...original }
     if (!current.password) delete current.password
@@ -339,7 +335,6 @@ function openConfirmSave() {
         return
     }
 
-    // เรียก Popup Confirm แบบเดียวกับ Event
     openAlert({
         type: 'confirm',
         title: 'ARE YOU SURE TO EDIT?',
@@ -353,10 +348,13 @@ function openConfirmSave() {
     })
 }
 
-// ฟังก์ชันบันทึกจริง (ถูกเรียกจาก callback onConfirm)
+// ฟังก์ชันบันทึกที่แก้ไขข้อความ Error ตามต้องการ
 async function confirmSaveProcess() {
     saving.value = true
     saveError.value = ""
+
+    // 1. เคลียร์ Error แดงๆ อันเก่าออกก่อนให้หมด
+    Object.keys(errors).forEach(k => delete errors[k])
 
     try {
         const payload = { ...form }
@@ -364,11 +362,10 @@ async function confirmSaveProcess() {
 
         await axios.put(`/employees/${employeeId}`, payload)
 
-        // Update original
+        /* --- Success --- */
         original = JSON.parse(JSON.stringify(form))
         original.password = ''
 
-        // Success Alert
         openAlert({
             type: 'success',
             title: 'EDIT SUCCESS!',
@@ -381,10 +378,68 @@ async function confirmSaveProcess() {
 
     } catch (err) {
         console.error(err)
-        const msg = err.response?.data?.message || 'Failed to update employee'
-        saveError.value = msg
 
-        // Error Alert
+        let hasValidationError = false
+        const res = err.response
+        const msg = res?.data?.message || err.message || ''
+
+        // -------------------------------------------------------------
+        // Case A: 422 Validation Error (Backend ส่งมา)
+        // -------------------------------------------------------------
+        if (res && res.status === 422 && res.data.errors) {
+            const apiErrors = res.data.errors
+
+            // เช็ค Phone
+            if (apiErrors.emp_phone) {
+                errors.emp_phone = 'This phone number is already in use.'
+                hasValidationError = true
+            }
+
+            // เช็ค Email
+            if (apiErrors.emp_email) {
+                errors.emp_email = 'This email is already in use.'
+                hasValidationError = true
+            }
+
+            // เช็ค ID
+            if (apiErrors.emp_id) {
+                errors.emp_id = 'This employee ID is already in use.'
+                hasValidationError = true
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Case B: SQL Error (Fallback กรณี Backend ไม่ได้ Validate)
+        // -------------------------------------------------------------
+        else if (msg.includes('Duplicate entry')) {
+             hasValidationError = true
+
+             if (msg.includes('phone')) {
+                 errors.emp_phone = 'This phone number is already in use.'
+             }
+             else if (msg.includes('email')) {
+                 errors.emp_email = 'This email is already in use.'
+             }
+             else if (msg.includes('emp_id') || msg.includes('employee') || msg.includes('CN')) {
+                 errors.emp_id = 'This employee ID is already in use.'
+             }
+             else {
+                 hasValidationError = false
+             }
+        }
+
+        // -------------------------------------------------------------
+        // ถ้าเจอ Error ที่เรารู้จัก ให้โชว์ตัวแดงแล้วจบฟังก์ชัน
+        // -------------------------------------------------------------
+        if (hasValidationError) {
+            saving.value = false
+            return
+        }
+
+        // -------------------------------------------------------------
+        // Case C: Error อื่นๆ ให้โชว์ Pop-up
+        // -------------------------------------------------------------
+        saveError.value = msg
         openAlert({
             type: 'error',
             title: 'EDIT FAILED!',
@@ -397,13 +452,11 @@ async function confirmSaveProcess() {
 
 function onCancel() {
     if (saving.value) return
-    // เช็คหน่อยว่ามีการแก้ไขค้างไหม (optional)
     const current = { ...form }
     const prev = { ...original }
     if (!current.password) delete current.password
     delete prev.password
 
-    // ถ้ามีการแก้ไข ให้ถามยืนยันก่อนออก
     if (JSON.stringify(current) !== JSON.stringify(prev) || form.password) {
         if(!confirm('Discard changes?')) return
     }
