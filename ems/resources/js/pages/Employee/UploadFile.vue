@@ -494,16 +494,17 @@ async function onCreate() {
 
             if (!resolved.ok) {
                 // ถ้าแถวไหนไม่ตรง -> block ทั้ง batch และแสดง EmployeeCannotCreate
-                let errText = 'โครงสร้างข้อมูลไม่ถูกต้อง'
+                let errText = 'Invalid data structure.'
 
                 if (resolved.reason === 'notFound') {
                     const target = resolved.target || 'Item'
-                    errText = `ไม่พบข้อมูล ${target} "${target === 'Department' ? row.department : target === 'Team' ? row.team : row.position}" ในระบบ`
+                    errText = `${target} "${target === 'Department' ? row.department : target === 'Team' ? row.team : row.position}" not found in the system.`
                 } else if (resolved.reason === 'teamNotInDepartment') {
-                    errText = `ทีม "${row.team}" ไม่ได้อยู่ในแผนก "${row.department}"`
+                    errText = `The Team "${row.team}" does not belong to the Department "${row.department}".`
                 } else if (resolved.reason === 'positionNotInTeam') {
-                    errText = `ตำแหน่ง "${row.position}" ไม่ได้อยู่ในทีม "${row.team}"`
+                    errText = `The Position "${row.position}" does not belong to the Team "${row.team}".`
                 }
+            }
 
                 // กำหนดข้อความ Error และแสดง Modal
                 errorMessage.value = errText
@@ -609,7 +610,9 @@ async function onCreate() {
             }).join(', ')
 
             // กรณีพบข้อมูลซ้ำ แจ้งเตือนพร้อมระบุค่าที่ซ้ำ
-            errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
+            errorMessage.value = `Sorry, There are some data are already in the system.`
+            //errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
+
 
             showCreateSuccess.value = false
             showCannotCreate.value = true
