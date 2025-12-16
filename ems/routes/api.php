@@ -58,7 +58,6 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/edit-event', [EventController::class, 'Update']); // บันทึกการแก้ไขอีเว้น
     Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']); // ข้อมูลอีเว้นนั้นๆ อ้างอิงจาก id
     Route::get('/events', [EventController::class, 'index']);
-    Route::post('/event-statistics', [EventController::class, 'eventStatistics']); // ดึงสถิติของ event ที่เลือก
 
     Route::post('categories', [CategoryController::class, 'store']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
