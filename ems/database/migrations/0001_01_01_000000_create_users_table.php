@@ -14,6 +14,7 @@ return new class extends Migration {
 
         Schema::create('ems_position', function (Blueprint $table) {
             $table->id();
+            $table->foreign('pst_team_id')->references('id')->on('ems_team')->onDelete('cascade');
             $table->string('pst_name')->unique();
             $table->enum('pst_delete_status', ['active', 'inactive'])->default('active');
         });
@@ -27,7 +28,6 @@ return new class extends Migration {
         // สร้างตาราง ems_department โดยนำ foreign key ที่มีปัญหาออกไปก่อน
         Schema::create('ems_department', function (Blueprint $table) {
             $table->id();
-            // *** ลบ $table->foreignId('pst_team_id')->constrained('ems_team')->onDelete('cascade'); ออกไปก่อน
             $table->string('dpm_name')->unique();
             $table->enum('dpm_delete_status', ['active', 'inactive'])->default('active');
         });
@@ -35,8 +35,7 @@ return new class extends Migration {
         // สร้างตาราง ems_team โดยนำ foreign key ที่มีปัญหาออกไปก่อน
         Schema::create('ems_team', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tm_department_id')->nullable(); // ต้องอนุญาตให้เป็น Nullable ชั่วคราว หรือใช้คำสั่ง add foreign key
-            // *** ลบ $table->foreignId('tm_department_id')->constrained('ems_department')->onDelete('cascade'); ออกไปก่อน
+            $table->foreign('tm_department_id')->references('id')->on('ems_department')->onDelete('cascade');
             $table->string('tm_name')->unique();
             $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
         });
@@ -73,16 +72,6 @@ return new class extends Migration {
             $table->text('user_agent')->nullable();
             $table->longText('payload');
             $table->integer('last_activity')->index();
-        });
-
-        // 3. เพิ่ม Foreign Key ที่เป็นปัญหา (แก้ไข circular dependency)
-        Schema::table('ems_department', function (Blueprint $table) {
-            $table->foreignId('pst_team_id')->constrained('ems_team')->onDelete('cascade');
-        });
-
-        Schema::table('ems_team', function (Blueprint $table) {
-            // หากไม่ได้ประกาศ tm_department_id ไว้ในขั้นตอนที่ 1 ให้ประกาศที่นี่
-            $table->foreign('tm_department_id')->references('id')->on('ems_department')->onDelete('cascade');
         });
     }
 
