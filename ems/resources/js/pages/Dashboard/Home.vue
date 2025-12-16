@@ -313,11 +313,11 @@ import axios from "axios";
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
 // Import dashboard components
-import AttendingCard from '../../components/dashboard/AttendingCard.vue';
-import NotAttendingCard from '../../components/dashboard/NotAttendingCard.vue';
-import PendingCard from '../../components/dashboard/PendingCard.vue';
-import DonutActualAttendance from '../../components/dashboard/DonutActualAttendance.vue';
-import GraphEventParticipation from '../../components/dashboard/GraphEventParticipation.vue';
+import AttendingCard from '../../components/Dashboard/AttendingCard.vue';
+import NotAttendingCard from '../../components/Dashboard/NotAttendingCard.vue';
+import PendingCard from '../../components/Dashboard/PendingCard.vue';
+import DonutActualAttendance from '../../components/Dashboard/DonutActualAttendance.vue';
+import GraphEventParticipation from '../../components/Dashboard/GraphEventParticipation.vue';
 import Button from "../../components/Button.vue";
 import SearchBar from "../../components/SearchBar.vue";
 import EventFilter from "../../components/IndexEvent/EventFilter.vue";
