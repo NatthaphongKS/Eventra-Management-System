@@ -113,6 +113,7 @@
 import ModalAlert from "../../components/Alert/ModalAlert.vue";
 import axios from "axios";
 import DataTable from "@/components/DataTable.vue";
+import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
@@ -132,6 +133,7 @@ export default {
         MagnifyingGlassIcon,
         PencilIcon,
         TrashIcon,
+        Filter,
         EventSort,
         DataTable,
         EventFilter,

@@ -31,18 +31,18 @@
       </div>
 
       <div class="mt-6 flex justify-between">
-        <div><Button variant="cancel"
+        <div><CancelButton 
           @click="close" 
-          class="inline-flex items-center gap-2">Cancel</Button>
+          class="inline-flex items-center gap-2" />
         </div>
         <div>
-        <Button variant="create"
+        <CreateButton
           @click="submit"
           :disabled="invalid"
           class="inline-flex items-center gap-2"
         >
           Create
-        </Button></div>
+        </CreateButton></div>
       </div>
     </div>
   </div>
@@ -50,7 +50,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import Button from "../Button.vue";
+import CancelButton from "../CancelButton.vue";
+import CreateButton from "../CreateButton.vue";
 
 const props = defineProps<{
   open: boolean;
