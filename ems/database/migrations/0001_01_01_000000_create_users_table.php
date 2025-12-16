@@ -20,7 +20,7 @@ return new class extends Migration {
 
         Schema::create('ems_team', function (Blueprint $table) {
             $table->id();
-            $table->foreign('tm_department_id')->references('id')->on('ems_department')->onDelete('cascade');
+            $table->foreignId('tm_department_id')->references('id')->on('ems_department')->onDelete('cascade');
             $table->string('tm_name')->unique();
             $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
         });
