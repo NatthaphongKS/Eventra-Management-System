@@ -104,7 +104,7 @@ class PositionSeeder extends Seeder
             DB::table('ems_position')->insert([
                 'id' => $name[1],
                 'pst_name' => $name[0],
-                'pst_department_id' => $name[2],
+                'pst_team_id' => $name[2],
                 'pst_delete_status' => 'active',
             ]);
         }
