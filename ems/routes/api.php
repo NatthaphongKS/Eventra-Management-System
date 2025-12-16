@@ -8,6 +8,8 @@ use App\Http\Controllers\HistoryEmployeeController;
 use App\Http\Controllers\HistoryEventController;
 use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\HistoryCategoryController;
+
 
 // API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
@@ -63,6 +65,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']); // (ซ้ำ)
     Route::get('/history/events', [HistoryEventController::class, 'eventInfo']); //ประวัติการลบ อีเว้น
     Route::get('/history/event/{id}', [HistoryEventController::class, 'show']);
+    Route::get('/history/categories', [HistoryCategoryController::class, 'index']); // ประวัติการลบ หมวดหมู่
     //Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
     Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
@@ -77,11 +80,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/event', [EventController::class, 'index']);
 
     // Category
-    // Route::get   ('/categories',        [CategoryController::class, 'index']);
-    Route::post  ('/categories',        [CategoryController::class, 'store']);
-    Route::put   ('/categories/{id}',   [CategoryController::class, 'update']);
-    Route::delete('/categories/{id}',   [CategoryController::class, 'destroy']);
-    Route::get   ('/categoriesAll',        [CategoryController::class, 'details']);
+    Route::middleware(['web', 'auth'])->group(function () {
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+    Route::get('/history/categories', [HistoryCategoryController::class, 'index']);
+});
+
 
 });
 
