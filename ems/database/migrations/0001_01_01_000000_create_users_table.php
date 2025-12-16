@@ -18,11 +18,13 @@ return new class extends Migration
         });
         Schema::create('ems_department', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pst_team_id')->constrained('ems_team')->onDelete('cascade');
             $table->string('dpm_name')->unique();
             $table->enum('dpm_delete_status', ['active', 'inactive'])->default('active');
         });
         Schema::create('ems_team', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tm_department_id')->constrained('ems_department')->onDelete('cascade');
             $table->string('tm_name')->unique();
             $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
         });
