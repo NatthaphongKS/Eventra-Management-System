@@ -243,7 +243,7 @@ onMounted(async () => {
     form.emp_team_id = userData.emp_team_id
     form.emp_position_id = userData.emp_position_id
     form.emp_email = userData.emp_email
-    form.emp_permission = userData.emp_status
+    form.emp_permission = userData.emp_permission || userData.emp_role;
     form.password = ''
 
     original = JSON.parse(JSON.stringify(form))
