@@ -301,9 +301,9 @@
     <div class="mt-6 w-full flex justify-between items-center">
         <!-- ปุ่มยกเลิก (ซ้าย) -->
         <div>
-            <CancelButton size="md" :disabled="saving" @click="onCancel">
+            <Button variant="cancel" :disabled="saving" @click="onCancel">
                 Cancel
-            </CancelButton>
+            </Button>
         </div>
         <div>
             <!-- ปุ่มบันทึก (ขวา) -->
@@ -330,12 +330,12 @@ import SearchBar from "@/components/SearchBar.vue";
 import { Icon } from '@iconify/vue'
 import DropdownPill from '@/components/Input/DropdownPill.vue'
 import DataTable from '@/components/DataTable.vue'
-import CancelButton from '@/components/Button/CancelButton.vue'
+import Button from '@/components/Button.vue'
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
 
 
 export default {
-    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert },
+    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, Button, ModalAlert },
     data() { // เก็บ state ของฟอร์มไว้ใน component
         return {
 
