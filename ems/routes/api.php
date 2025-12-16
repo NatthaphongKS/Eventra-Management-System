@@ -1,4 +1,3 @@
-
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
@@ -9,29 +8,37 @@ use App\Http\Controllers\HistoryEmployeeController;
 use App\Http\Controllers\HistoryEventController;
 use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\HistoryCategoryController;
 
 
 // API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
-Route::middleware(['web', 'auth'])->group(function () {
+// Public Open Route for Debugging
+Route::get('/get-event', [EventController::class, 'Eventtable']);
+Route::get('/get-employees', [EmployeeController::class, 'index']); // For EmployeePage.vue
+Route::get('/categories', [CategoryController::class, 'index']);    // For CategoryPage.vue
 
+Route::middleware(['web', 'auth'])->group(function () {
 
     Route::post('/logout', [LoginController::class, 'logout']); // ล็อคเอ้าท์
 
     // === Employee ===
-    Route::get('/meta', [EmployeeController::class, 'meta']); //ข้อมูลvที่ใช้สร้าง employee
+    Route::get('/meta', [EmployeeController::class, 'meta']); //ข้อมูลที่ใช้สร้าง employee
     Route::get('/get-employees', [EmployeeController::class, 'index']); // ข้อมูล employee
     Route::get('/employees',     [EmployeeController::class, 'index']);  // alias เผื่อเรียกสั้น ๆ
+    Route::get('/showProfile', [LoginController::class, 'showProfile']);
+
+    // ✅ เพิ่มบรรทัดนี้ครับ (Soft Delete) - เอาไว้ก่อน Route ที่มี {id}
+    Route::put('/employees/soft-delete/{id}', [EmployeeController::class, 'softDelete']);
+
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']); // soft delete employee
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
     Route::get('/event-info', [EventController::class, 'index']); // ข้อมูล event
-    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+    // Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']); //
     Route::get('/event/{id}',   [EventController::class, 'show']);
     Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
 
-
-
-    Route::post('/check-employee-duplicate', action: [EmployeeController::class, 'checkDuplicate']);
+    Route::post('/check-employee-duplicate', [EmployeeController::class, 'checkDuplicate']);
     Route::post('/save-employee', [EmployeeController::class, 'store']); //บันทึก employee
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']); // บันทึก แผนก
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);// บันทึก ตำแหน่ง
@@ -53,36 +60,41 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/events', [EventController::class, 'index']);
     Route::post('/event-statistics', [EventController::class, 'eventStatistics']); // ดึงสถิติของ event ที่เลือก
 
-
     Route::post('categories', [CategoryController::class, 'store']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
     Route::get('/history/employees', [HistoryEmployeeController::class, 'index']); //ประวัติการลบ พนักงาน
-    Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    // Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']); // (ซ้ำ)
     Route::get('/history/events', [HistoryEventController::class, 'eventInfo']); //ประวัติการลบ อีเว้น
+    Route::get('/history/event/{id}', [HistoryEventController::class, 'show']);
+    Route::get('/history/categories', [HistoryCategoryController::class, 'index']); // ประวัติการลบ หมวดหมู่
     //Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
     Route::get('/employees/{employee}', [EmployeeController::class, 'show']);
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
-
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);    // อ่านพนักงานรายคน
     Route::put('/employees/{id}', [EmployeeController::class, 'update']);  // อัปเดตพนักงาน
-    Route::put('/employees/{id}/soft-delete', [EmployeeController::class, 'softDelete']); // ลบพนักงานแบบซอฟต์ดีลีท
+
+
+    // Route::put('/employees/{id}/soft-delete', [EmployeeController::class, 'softDelete']);
+
     Route::get('/employees-meta', [EmployeeController::class, 'meta']);    // รายการตำแหน่ง/แผนก/ทีม
-    Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
+    // Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']); // (ซ้ำ)
     Route::get('/event', [EventController::class, 'index']);
 
     // Category
-    Route::get   ('/categories',        [CategoryController::class, 'index']);
-    Route::post  ('/categories',        [CategoryController::class, 'store']);
-    Route::put   ('/categories/{id}',   [CategoryController::class, 'update']); // หรือ Route::patch(...)
-    Route::delete('/categories/{id}',   [CategoryController::class, 'destroy']);
-    Route::get   ('/categoriesAll',        [CategoryController::class, 'details']);
+    Route::middleware(['web', 'auth'])->group(function () {
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+    Route::get('/history/categories', [HistoryCategoryController::class, 'index']);
+});
 
 
 });
-
 
 Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']); // ดึงข้อมูลพนักงานกับอีเว้น
 Route::post('/store', [ReplyController::class, 'store']);//บันทึกข้อมูลการตอบกลับ
 
 Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']); // ดึงข้อมูลการเช็คอินพนักงาน
 Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendance']);
+Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendanceAll']);

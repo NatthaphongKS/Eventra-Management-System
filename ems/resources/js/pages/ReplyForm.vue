@@ -3,12 +3,10 @@
     <div class="page">
         <section class="card head">
             <h1>แบบฟอร์มเชิญเข้าร่วมกิจกรรม</h1>
-            <p><strong>หัวข้อ:</strong> {{ title || '-' }}</p>
-            <p><strong>วันที่:</strong> {{ formattedDateTime || '-' }}</p>
-            <p><strong>สถานที่:</strong> {{ location || '-' }}</p>
+            <p><strong>หัวข้อ:</strong> {{ title || "-" }}</p>
+            <p><strong>วันที่:</strong> {{ formattedDateTime || "-" }}</p>
+            <p><strong>สถานที่:</strong> {{ location || "-" }}</p>
         </section>
-
-
 
         <section v-if="show" class="card form">
             <form @submit.prevent="onSubmit">
@@ -20,7 +18,11 @@
 
                 <div class="field">
                     <label>Email</label>
-                    <input type="email" :placeholder="empEmail || '—'" readonly />
+                    <input
+                        type="email"
+                        :placeholder="empEmail || '—'"
+                        readonly
+                    />
                 </div>
 
                 <div class="field">
@@ -32,40 +34,63 @@
                     <label>เข้าร่วมหรือไม่</label>
                     <div class="radio-row">
                         <label class="radio">
-                            <input type="radio" value="accept" v-model="form.attend" /> เข้าร่วม
+                            <input
+                                type="radio"
+                                value="accepted"
+                                v-model="form.attend"
+                            />
+                            เข้าร่วม
                         </label>
                         <label class="radio">
-                            <input type="radio" value="denied" v-model="form.attend" /> ไม่เข้าร่วม
+                            <input
+                                type="radio"
+                                value="denied"
+                                v-model="form.attend"
+                            />
+                            ไม่เข้าร่วม
                         </label>
                     </div>
-                    <small v-if="errors.attend" class="error">{{ errors.attend }}</small>
+                    <small v-if="errors.attend" class="error">{{
+                        errors.attend
+                    }}</small>
                 </div>
 
                 <div class="field" :class="{ disabled: form.attend !== 'no' }">
                     <label>หมายเหตุ (กรณีไม่เข้าร่วม)</label>
-                    <textarea v-model.trim="form.reason" :disabled="form.attend !== 'denied'" rows="3"
-                        placeholder="ระบุเหตุผลสั้น ๆ ค่ะ" />
-                    <small v-if="errors.reason" class="error">{{ errors.reason }}</small>
+                    <textarea
+                        v-model.trim="form.reason"
+                        :disabled="form.attend !== 'denied'"
+                        rows="3"
+                        placeholder="ระบุเหตุผลสั้น ๆ ค่ะ"
+                    />
+                    <small v-if="errors.reason" class="error">{{
+                        errors.reason
+                    }}</small>
                 </div>
 
                 <div class="actions">
-                    <button type="submit" class="primary" :disabled="submitting">
+                    <button
+                        type="submit"
+                        class="primary"
+                        :disabled="submitting"
+                    >
                         {{ submitting ? "กำลังส่ง…" : "ส่งคำตอบ" }}
                     </button>
                 </div>
             </form>
         </section>
 
-        <section v-else class="label card">คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว</section>
-        <label>สถานะ : {{ form.attend  }}</label>
+        <section v-else class="label card">
+            คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
+        </section>
     </div>
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
 
 export default {
-    name: 'ReplyForm',
+    name: "ReplyForm",
     data() {
         return {
             // จาก URL
@@ -73,151 +98,177 @@ export default {
             empID: null,
 
             // จาก API (event + employee)
-            title: '',
-            date: '',         // "2025-09-30T00:00:00.000000Z"
-            timeStart: '',   // "13:00:00"
-            timeEnd: '',     // "14:00:00"
-            location: '',
-            empName: '',
-            empEmail: '',
-            empPhone: '',
+            title: "",
+            date: "", // "2025-09-30T00:00:00.000000Z"
+            timeStart: "", // "13:00:00"
+            timeEnd: "", // "14:00:00"
+            location: "",
+            empName: "",
+            empEmail: "",
+            empPhone: "",
 
-            replyStatus: '',
+            replyStatus: "",
 
             // ฟอร์มที่ให้ผู้ใช้กรอกจริง ๆ
             form: {
-                attend: '',   // 'yes' | 'no'
-                reason: '',   // กรอกได้เฉพาะตอน 'no'
+                attend: "", // 'yes' | 'no'
+                reason: "", // กรอกได้เฉพาะตอน 'no'
             },
 
             // state อื่น ๆ
-            errors: { attend: '', reason: '' },
+            errors: { attend: "", reason: "" },
             loading: false,
             submitting: false,
-            error: '',
-
-        }
+            error: "",
+        };
     },
 
     created() {
-        const { evnID, empID } = this.resolveIds()
-        this.fetchFromApi(evnID, empID)
+        const { evnID, empID } = this.resolveIds();
+        this.fetchFromApi(evnID, empID);
     },
 
     computed: {
-        
         show() {
-            //console.log('replyStatus (Show):', this.replyStatus === 'invalid')
-            return this.replyStatus === 'invalid'
+            // แก้ไข: จะแสดงฟอร์มก็ต่อเมื่อ 'replyStatus' ไม่ใช่ 'accept' และไม่ใช่ 'denied'
+            // (คือยังอยู่ในสถานะที่ต้องตอบ เช่น 'invalid' หรือเป็นค่าว่างระหว่างโหลด)
+            const status = this.replyStatus;
+            return status !== "accepted" && status !== "denied";
         },
         // แสดง "30 กันยายน 2025 เวลา 13.00 - 14.00 น."
         formattedDateTime() {
-            if (!this.date) return ''
-            const d = new Date(this.date)
+            if (!this.date) return "";
+            const d = new Date(this.date);
             const dateStr = new Intl.DateTimeFormat(
-                'th-TH-u-nu-latn-ca-gregory',
-                { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Bangkok' }
-            ).format(d)
+                "th-TH-u-nu-latn-ca-gregory",
+                {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    timeZone: "Asia/Bangkok",
+                }
+            ).format(d);
 
-            const hhmmDot = t => (t ? t.slice(0, 5).replace(':', '.') : '')
-            const s = hhmmDot(this.timeStart)
-            const e = hhmmDot(this.timeEnd)
+            const hhmmDot = (t) => (t ? t.slice(0, 5).replace(":", ".") : "");
+            const s = hhmmDot(this.timeStart);
+            const e = hhmmDot(this.timeEnd);
 
-            if (s && e) return `${dateStr} เวลา ${s} - ${e} น.`
-            if (s) return `${dateStr} เวลา ${s} น.`
-            return dateStr
+            if (s && e) return `${dateStr} เวลา ${s} - ${e} น.`;
+            if (s) return `${dateStr} เวลา ${s} น.`;
+            return dateStr;
         },
     },
 
     watch: {
         // ถ้าเลือก "เข้าร่วม" ให้ล้างเหตุผลทันที
-        'form.attend'(val) {
-            if (val === 'accept') this.form.reason = ''
+        "form.attend"(val) {
+            if (val === "accepted") this.form.reason = "";
         },
     },
 
     methods: {
         // รองรับทั้ง /reply/1/2 และกรณีมี path นำหน้า
         resolveIds() {
-            const m = window.location.pathname.match(/\/reply\/(\d+)\/(\d+)(?:\/|$)/)
-            if (!m) throw new Error('ไม่พบ evnID/empID ใน URL')
-            return { evnID: m[1], empID: m[2] } // d เล็กทั้งคู่
+            const m = window.location.pathname.match(
+                /\/reply\/(\d+)\/(\d+)(?:\/|$)/
+            );
+            if (!m) throw new Error("ไม่พบ evnID/empID ใน URL");
+            return { evnID: m[1], empID: m[2] }; // d เล็กทั้งคู่
         },
 
         async fetchFromApi(evnID, empID) {
             try {
-            console.log('Fetching data for evnID:', evnID, 'empID:', empID),
-                this.loading = true
-                const { data } = await axios.get(`/api/reply/${evnID}/${empID}`, {
-                    headers: { Accept: 'application/json' }
-                })
+                console.log("Fetching data for evnID:", evnID, "empID:", empID),
+                    (this.loading = true);
+                const { data } = await axios.get(
+                    `/reply/${evnID}/${empID}`,
+                    {
+                        headers: { Accept: "application/json" },
+                    }
+                );
 
                 // เก็บ id ไว้ใช้ตอนส่ง
-                this.evnID = evnID
-                this.empID = empID
-                this.replyStatus = data.connect.con_answer
-                console.log('data.connect:', data.connect.con_answer)
+                this.evnID = evnID;
+                this.empID = empID;
+                this.replyStatus = data.connect.con_answer;
+                console.log("data.connect:", data.connect.con_answer);
 
                 // event
-                this.title = data.event?.evn_title || ''
-                this.date = data.event?.evn_date || ''
-                this.timeStart = data.event?.evn_timestart || ''
-                this.timeEnd = data.event?.evn_timeend || ''
-                this.location = data.event?.evn_location || ''
+                this.title = data.event?.evn_title || "";
+                this.date = data.event?.evn_date || "";
+                this.timeStart = data.event?.evn_timestart || "";
+                this.timeEnd = data.event?.evn_timeend || "";
+                this.location = data.event?.evn_location || "";
 
                 // employee
-                this.empName = `${data.employee?.emp_firstname || ''} ${data.employee?.emp_lastname || ''}`.trim()
-                this.empEmail = data.employee?.emp_email || ''
-                this.empPhone = data.employee?.emp_phone || ''
+                this.empName = `${data.employee?.emp_firstname || ""} ${
+                    data.employee?.emp_lastname || ""
+                }`.trim();
+                this.empEmail = data.employee?.emp_email || "";
+                this.empPhone = data.employee?.emp_phone || "";
 
-                this.conne
+                this.conne;
             } catch (e) {
-                this.error = e.response?.data?.message ?? e.message ?? 'โหลดข้อมูลไม่สำเร็จ'
+                this.error =
+                    e.response?.data?.message ??
+                    e.message ??
+                    "โหลดข้อมูลไม่สำเร็จ";
             } finally {
-                this.loading = false
+                this.loading = false;
             }
         },
 
         validate() {
-            this.errors.attend = this.form.attend ? '' : 'กรุณาเลือกว่าจะเข้าร่วมหรือไม่'
+            this.errors.attend = this.form.attend
+                ? ""
+                : "กรุณาเลือกว่าจะเข้าร่วมหรือไม่";
             this.errors.reason =
-                this.form.attend === 'denied' && !this.form.reason ? 'กรุณาระบุเหตุผลสั้น ๆ' : ''
-            return !Object.values(this.errors).some(Boolean)
+                this.form.attend === "denied" && !this.form.reason
+                    ? "กรุณาระบุเหตุผลสั้น ๆ"
+                    : "";
+            return !Object.values(this.errors).some(Boolean);
         },
 
         async onSubmit() {
-            if (!this.validate()) return
-            this.submitting = true
+            if (!this.validate()) return;
+            this.submitting = true;
             try {
                 const payload = {
                     evnID: this.evnID,
                     empID: this.empID,
                     // คำตอบฟอร์มจริง
                     attend: this.form.attend,
-                    reason: this.form.reason ,
-                }
-                console.log('payload:', payload)
-                console.log('evnID:', this.evnID, 'empID:', this.empID, this.form.attend, this.form.reason)
-                console.log('POST /api/store', payload)   // ดูใน Console ให้มีค่าจริง
-                await axios.post('/api/store', payload, { headers: { Accept: 'application/json' } })
+                    reason: this.form.reason,
+                };
+                console.log("payload:", payload);
+                console.log(
+                    "evnID:",
+                    this.evnID,
+                    "empID:",
+                    this.empID,
+                    this.form.attend,
+                    this.form.reason
+                );
+                console.log("POST /store", payload); // ดูใน Console ให้มีค่าจริง
+                await axios.post("/store", payload, {
+                    headers: { Accept: "application/json" },
+                });
                 //alert('บันทึกคำตอบเรียบร้อย ขอบคุณค่ะ')
                 //รีเฟรชหน้าใหม่
-                window.location.reload()
+                window.location.reload();
 
                 // รีเซ็ตเฉพาะส่วนที่ผู้ใช้กรอก
-                this.form = { attend: '', reason: '' }
+                this.form = { attend: "", reason: "" };
             } catch (e) {
-                console.error(e)
-                alert('ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้งนะคะ')
+                console.error(e);
+                alert("ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้งนะคะ");
             } finally {
-                this.submitting = false
+                this.submitting = false;
             }
         },
     },
-}
+};
 </script>
-
-
 
 <style scoped>
 /* โทนอ่อนแบบภาพตัวอย่าง */
@@ -228,7 +279,7 @@ export default {
     padding: 32px 16px 64px;
     /* display: grid; */
     gap: 24px;
-    place-items: start center ;
+    place-items: start center;
 }
 
 .card {
@@ -270,7 +321,6 @@ label {
     font-weight: 700;
     margin-bottom: 8px;
 }
-
 
 input,
 textarea {
@@ -337,6 +387,4 @@ button.primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
-
-
 </style>

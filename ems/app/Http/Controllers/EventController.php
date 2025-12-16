@@ -303,7 +303,8 @@ class EventController extends Controller
         }
     }
 
-    public function eventInfo()
+
+    function eventInfo()
     {
         $employees = Employee::with([
             'position:id,pst_name',

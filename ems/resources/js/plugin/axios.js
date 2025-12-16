@@ -1,8 +1,15 @@
-// resources/js/plugins/axios.js
 import axios from 'axios'
 
-// axios.defaults.baseURL = '/api'             // ใช้ proxy จาก vite.config.js
+axios.defaults.baseURL = '/api'
 axios.defaults.headers.common['Accept'] = 'application/json'
-axios.defaults.withCredentials = true       // เผื่อใช้ cookie auth หรือ Sanctum
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+
+// ถ้า FE วิ่งคนละพอร์ต/คนละโดเมนกับ API ต้องเปิดอันนี้
+axios.defaults.withCredentials = true
+
+const token = document.querySelector('meta[name="csrf-token"]')?.content
+if (token) {
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = token
+}
 
 export default axios

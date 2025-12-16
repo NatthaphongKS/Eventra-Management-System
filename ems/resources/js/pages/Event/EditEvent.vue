@@ -1,3 +1,11 @@
+<!-- /**
+ * ชื่อไฟล์: HistoryEvent.vue
+ * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
+ * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
+ * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
+ * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
+ * วันที่จัดทำ/แก้ไข: 2025-12-14
+ */ -->
 <!-- pages/edit_event.vue -->
 <template>
     <div class="text-neutral-800 font-semibold font-[Poppins] text-3xl mb-4">
@@ -87,22 +95,32 @@
                     </label>
                     <div class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 shadow-sm px-5 py-4"
                         :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd) }">
+                    <!-- Time Start -->
+                    <div class="flex items-center justify-center">
+                        <input
+                            type="time"
+                            v-model="eventTimeStart"
+                            step="300"
+                            class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                            @click="$event.target.showPicker()"
+                        />
+                        <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                    </div>
 
-                        <div class="flex items-center justify-center">
-                            <input type="time" v-model="eventTimeStart" step="300"
-                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center" />
-                            <span class="text-[15px] font-medium text-neutral-800 ml-1"></span>
-                        </div>
+                    <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
+                    <!-- Time End -->
+                    <div class="flex items-center justify-center">
+                        <input
+                            type="time"
+                            v-model="eventTimeEnd"
+                            step="300"
+                            class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                            @click="$event.target.showPicker()"
+                        />
+                        <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                    </div>
 
-                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
-
-                        <div class="flex items-center justify-center">
-                            <input type="time" v-model="eventTimeEnd" step="300"
-                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center" />
-                            <span class="text-[15px] font-medium text-neutral-800 ml-1"></span>
-                        </div>
-
-                        <Icon icon="iconamoon:clock-light" class="w-6 h-6 text-rose-400 shrink-0 ml-2" />
+                        <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-rose-400 shrink-0 ml-2" />
 
                     </div>
 
@@ -878,6 +896,7 @@ export default {
 <style scoped>
 /* ทำให้ input type="time" ดู “เรียบ” และกลืนกับกล่องพิล */
 .time-input::-webkit-calendar-picker-indicator {
+    /* opacity: 0; */
     display: none;
 }
 
