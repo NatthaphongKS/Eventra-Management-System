@@ -10,9 +10,6 @@
 </template>
 
 <script>
-import { RouterView } from 'vue-router'
 import Layout from './components/layout.vue'
-export default { 
-  components: { Layout, RouterView } 
-}
+export default { components: { Layout } }
 </script>
