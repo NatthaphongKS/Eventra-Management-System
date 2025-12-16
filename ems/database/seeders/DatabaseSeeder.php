@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
     {
         // ===== Seeder ย่อย (สร้างข้อมูลพื้นฐานก่อน) =====
         $this->call([
-            PositionSeeder::class,
             DepartmentSeeder::class,
             TeamSeeder::class,
+            PositionSeeder::class,
             CompanySeeder::class,
             EmployeeSeeder::class,
             CategorySeeder::class,
