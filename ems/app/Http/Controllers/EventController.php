@@ -291,99 +291,98 @@ class EventController extends Controller
      * - ใช้ความสัมพันธ์ของ Eloquent: $event->files()->create(), $event->connects()->createMany()
      * - แนบไฟล์ใน Mailable จาก path ที่อัปโหลด
      */
+    // POST /event-save
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'event_title'        => 'required|string|max:255',
-            'event_category_id'  => 'required|exists:ems_categories,id',
-            'event_description'  => 'nullable|string',
-            'event_date'         => 'required|date',
-            'event_timestart'    => 'required|date_format:H:i',
-            'event_timeend'      => 'required|date_format:H:i',
-            'event_duration'     => 'required|integer|min:0', // นาที
-            'event_location'     => 'required|string|max:255',
+        DB::beginTransaction(); // เริ่ม Transaction เพื่อความปลอดภัย
 
-            'attachments' => 'array',
-            'attachments.*' => 'file|max:51200|mimes:pdf,txt,doc,docx,jpg,jpeg,png,xlsx,xls',
+        try {
+            // 1. สร้าง Event
+            $event = new Event();
+            $event->evn_title       = $request->event_title;
+            $event->evn_description = $request->event_description;
+            $event->evn_category_id = $request->event_category_id;
+            $event->evn_date        = $request->event_date;
+            $event->evn_timestart   = $request->event_timestart;
+            $event->evn_timeend     = $request->event_timeend;
+            $event->evn_duration    = $request->event_duration;
+            $event->evn_location    = $request->event_location;
 
-            'employee_ids' => 'required|array|min:1',
-            'employee_ids.*' => 'integer|exists:ems_employees,id',
-        ]);
+            // ค่า Default
+            $event->evn_create_by   = Auth::id() ?? 1;
+            $event->evn_created_at  = Carbon::now();
+            $event->evn_status      = 1; // Active
+            $event->save();
 
-
-        return DB::transaction(function () use ($request, $data) {
-
-            // 1) สร้างกิจกรรม
-            $event = Event::create([
-                'evn_title'        => $data['event_title'],
-                'evn_category_id'  => $data['event_category_id'],
-                'evn_description'  => $data['event_description'] ?? null,
-                'evn_date'         => $data['event_date'],
-                'evn_timestart'    => $data['event_timestart'],
-                'evn_timeend'      => $data['event_timeend'],
-                'evn_duration'     => $data['event_duration'],
-                'evn_location'     => $data['event_location'],
-                'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
-                'evn_create_by'    => Auth::id(),
-                'evn_status'       => 'upcoming',
-            ]);
-
-            // 2) อัปโหลดไฟล์ + บันทึกผ่านความสัมพันธ์ files()
-            $savedFiles = [];
+            // 2. จัดการไฟล์แนบ (Upload Logic)
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
-                    $path = $file->store("events/{$event->id}", 'public');
+                    if ($file->isValid()) {
+                        // ตั้งชื่อไฟล์ใหม่: timestamp_random.extension
+                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-                    $fileRow = $event->files()->create([
-                        'file_name'   => $file->getClientOriginalName(),
-                        'file_path'   => $path,
-                        'file_type'   => $file->getClientMimeType(),
-                        'file_size'   => $file->getSize(),
-                        'uploaded_at' => now(),
-                    ]);
+                        // บันทึกลง Storage (อย่าลืม php artisan storage:link)
+                        $path = $file->storeAs('uploads/events', $filename, 'public');
 
-                    $savedFiles[] = [
-                        'file_name' => $fileRow->file_name,
-                        'file_path' => $fileRow->file_path,
-                        'file_type' => $fileRow->file_type,
-                        'file_size' => $fileRow->file_size,
+                        // บันทึกลงตาราง File (Table: ems_file)
+                        // ต้องแน่ใจว่า import App\Models\File แล้ว
+                        $fileRecord = new File();
+                        $fileRecord->file_name      = $file->getClientOriginalName(); // ชื่อเดิม
+                        $fileRecord->file_path      = $path;                          // path ที่เก็บ
+                        $fileRecord->file_event_id  = $event->id;                     // ID กิจกรรม
+                        $fileRecord->file_type      = $file->getMimeType(); // เพิ่ม: file_type
+                        $fileRecord->file_size      = $file->getSize();     // เพิ่ม: file_size (จำเป็น)
+                        $fileRecord->save();
+                    }
+                }
+            }
+
+            // 3. จัดการผู้เข้าร่วม (Guest Logic)
+            $employeeIds = $request->input('employee_ids');
+
+            // [แก้] เช็คว่ามีค่าส่งมาไหม ถ้าไม่มีก็ข้ามไปเลย ไม่ Error
+            if (!empty($employeeIds) && is_array($employeeIds)) {
+
+                // เตรียมข้อมูลสำหรับ Pivot Table (ems_connect)
+                $pivotData = [];
+                foreach ($employeeIds as $empId) {
+                    // ป้องกันค่าว่างหรือ null
+                    if(!$empId) continue;
+
+                    $pivotData[$empId] = [
+                        'con_answer' => 'pending',
+                        'con_delete_status' => 'active'
                     ];
                 }
-            }
 
-            // 3) ผูกผู้เข้าร่วม (ems_connect) ผ่านความสัมพันธ์ connects()
-            $connectRows = collect($data['employee_ids'])
-                ->unique()
-                ->map(fn($eid) => [
-                    // 'con_event_id' จะถูกใส่อัตโนมัติจากความสัมพันธ์
-                    'con_employee_id'   => $eid,
-                    'con_answer'        => 'invalid',
-                    'con_reason'        => null,
-                    'con_delete_status' => 'active',
-                ])
-                ->values()
-                ->all();
-
-            $event->connects()->createMany($connectRows);
-
-            // 4) ส่งอีเมลเชิญ
-            $employees = Employee::whereIn('id', $data['employee_ids'])
-                ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
-
-            foreach ($employees as $emp) {
-                if (!$emp->emp_email) {
-                    continue;
+                // ใช้ attach บันทึกทีเดียว (เร็วกว่า loop create)
+                if (!empty($pivotData)) {
+                    $event->employees()->attach($pivotData);
                 }
-                Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles));
-                // หรือใช้คิว: Mail::to(...)->queue(new EventInvitationMail(...));
+
+                // ตรงนี้สามารถใส่ Logic ส่ง Email Invitation ได้
+                // Mail::to(...)->send(new EventInvitationMail($event));
             }
+
+            DB::commit(); // บันทึกข้อมูลทั้งหมดเมื่อไม่มี Error
 
             return response()->json([
-                'message'  => 'สร้างกิจกรรมและส่งอีเมลเชิญแล้ว',
-                'event'    => $event,
-                'redirect' => '/event',
+                'success' => true,
+                'message' => 'Event created successfully',
+                'event_id' => $event->id
             ], 201);
-        });
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // ย้อนกลับข้อมูลทั้งหมดถ้ามี Error
+
+            // Log Error ไว้ดู
+            \Illuminate\Support\Facades\Log::error('Create Event Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create event: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -509,7 +508,7 @@ class EventController extends Controller
             return response()->json(['message' => 'Event deleted failed'], 500);
         }
     }
-    
+
     public function getEventParticipants($eventId)
     {
         try {
@@ -707,8 +706,8 @@ class EventController extends Controller
                     'declined' => $attendanceStats->declined ?? 0,
                     'pending' => $attendanceStats->pending ?? 0,
                     'total_invited' => $attendanceStats->total_invited ?? 0,
-                    'attendance_percentage' => $attendanceStats->total_invited > 0 
-                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2) 
+                    'attendance_percentage' => $attendanceStats->total_invited > 0
+                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2)
                         : 0
                 ]
             ]);
@@ -725,7 +724,7 @@ class EventController extends Controller
     {
         try {
             $eventIds = $request->input('event_ids', []);
-            
+
             if (empty($eventIds)) {
                 return response()->json([
                     'total_participation' => 0,
