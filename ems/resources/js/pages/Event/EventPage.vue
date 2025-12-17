@@ -71,13 +71,21 @@
             </template>
 
             <template #actions="{ row }">
-                <button @click="canDelete(row) ? openDelete(row.id) : null" :disabled="!canDelete(row)"
+
+                <!-- ปุ่มโย -->
+                <!-- <button @click="canDelete(row) ? openDelete(row.id) : null" :disabled="!canDelete(row)"
                     class="rounded-lg p-1.5" :class="[
                         canDelete(row)
                             ? 'hover:bg-slate-100 cursor-pointer'
                             : 'opacity-30 cursor-not-allowed'
                     ]" title="Delete">
                     <TrashIcon class="h-5 w-5" :class="canDelete(row) ? 'text-neutral-800' : 'text-neutral-400'" />
+                </button> -->
+
+                <!-- ปุ่มชั่วคราว -->
+                <button @click="openDelete(row.id)"
+                    class="rounded-lg p-1.5" title="Delete">
+                    <TrashIcon class="h-5 w-5" />
                 </button>
 
                 <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
