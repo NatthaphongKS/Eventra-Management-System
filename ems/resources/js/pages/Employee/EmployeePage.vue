@@ -5,17 +5,19 @@
                 v-model="searchInput"
                 placeholder="Search ID, Name, Nickname..."
                 @search="onSearchText"
+                
             />
 
-            <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="flex items-end gap-2 flex-shrink-0">
 
                 <FilterEmployees
                     ref="filterDropdown"
                     v-model="filters"
                     :options="optionsMap"
+                    class="mt-6"
                 />
 
-                <div class="relative z-[60]" ref="sortWrap">
+                <div class="relative z-[60] mt-6" ref="sortWrap">
                     <SortMenu
                         :is-open="sortMenuOpen"
                         :options="sortOptions"
@@ -23,10 +25,11 @@
                         :sort-order="sortBy.order"
                         @toggle="sortMenuOpen = !sortMenuOpen"
                         @choose="onSortChoose"
+                        
                     />
                 </div>
 
-                <AddButton @click="goAdd" />
+                <AddButton @click="goAdd" class="mt-6"/>
             </div>
         </div>
 
@@ -143,7 +146,7 @@ export default {
             page: 1,
             pageSize: 10,
             sortMenuOpen: false,
-            sortBy: { key: "created_at", order: "desc" },
+            sortBy: { key: "", order: "" },
 
             sortOptions: [
                 { key: "emp_firstname", order: "asc", label: "ชื่อพนักงาน A–Z" },

@@ -15,7 +15,7 @@ import UploadFile from '../pages/Employee/UploadFile.vue'
 import History_Employee from '../pages/History/HistoryEmployee.vue'
 import History_Event from '../pages/History/HistoryEvent.vue'
 import HistoryDetailsEvent from '../pages/History/HistoryDetailsEvent.vue'
-import HistoryCategory from '../components/History/DataTableHistoryCategory.vue'
+import HistoryCategory from '../pages/History/HistoryCategory.vue'
 // [เพิ่ม] หน้าแก้ไข
 import EditEvent from '../pages/Event/EditEvent.vue'
 import EditEmployee from '../pages/Employee/EditEmployeePage.vue'
@@ -27,7 +27,7 @@ const routes = [
 
   { path: '/', component: Home, meta: { title: 'Dashboard' } },
   { path: '/login', component: Login, meta: { blank: true, title: 'Login' } },
-  
+
   // [เพิ่ม] เส้นทาง Forgot Password (ใส่ blank: true เพื่อให้ไม่มี Sidebar)
   { path: '/forgot-password', component: ForgotPassword, meta: { blank: true, title: 'Forgot Password' } },
 
@@ -36,19 +36,20 @@ const routes = [
   { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
-  { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event' } },
+  { path: '/add-event' , component: CreateEvent, meta: { title: 'Create Event' } },
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
   { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
   { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
-  { 
-    path: '/history/event/:id', 
+  {
+    path: '/history/event/:id',
     name: 'history-event-detail', // ตั้งชื่อเพื่อให้เรียกใช้ง่ายๆ
-    component: HistoryDetailsEvent, 
+    component: HistoryDetailsEvent,
     props: true, // เปิดรับ id เป็น props
-    meta: { title: 'History Event Details' } 
+    meta: { title: 'History Event Details' }
   },
+
   { path: '/history-category', component: HistoryCategory, meta: { title: 'History Category'}},
 
 
