@@ -36,7 +36,7 @@ const routes = [
   { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' } },
-  { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event' } },
+  { path: '/add-event' , component: CreateEvent, meta: { title: 'Create Event' } },
   { path: '/employee', component: Employees, meta: { title: 'Employee' } },
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category' } },
