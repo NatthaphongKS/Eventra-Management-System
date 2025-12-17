@@ -52,9 +52,9 @@
                 "
                 @click="setStatus('accepted')"
             >
-                <!-- <span
+                <span
                     class="inline-flex h-2 w-2 rounded-full bg-emerald-500"
-                ></span> -->
+                ></span>
                 <span class="ml-2"
                     >{{ counts.accepted }}/{{ totals.accepted }} Accepted</span
                 >
@@ -65,11 +65,11 @@
                 :class="statusFilter === 'denied' ? 'ring-2 ring-rose-300' : ''"
                 @click="setStatus('denied')"
             >
-                <!-- <span
+                <span
                     class="inline-flex h-2 w-2 rounded-full bg-rose-500"
-                ></span> -->
+                ></span>
                 <span class="ml-2"
-                    >{{ counts.denied }}/{{ totals.denied }} Declined</span
+                    >{{ counts.denied }}/{{ totals.denied }} Denied</span
                 >
             </button>
 
@@ -80,9 +80,9 @@
                 "
                 @click="setStatus('pending')"
             >
-                <!-- <span
+                <span
                     class="inline-flex h-2 w-2 rounded-full bg-amber-500"
-                ></span> -->
+                ></span>
                 <span class="ml-2"
                     >{{ counts.pending }}/{{ totals.pending }} Pending</span
                 >
@@ -95,9 +95,9 @@
                 "
                 @click="setStatus('notInvited')"
             >
-                <!-- <span
+                <span
                     class="inline-flex h-2 w-2 rounded-full bg-slate-400"
-                ></span> -->
+                ></span>
                 <span class="ml-2"
                     >{{ counts.notInvited }}/{{ totals.notInvited }} Not
                     Invited</span
@@ -110,21 +110,6 @@
                 @click="setStatus('all')"
             >
                 {{ filteredBase.length }}/{{ rows.length }} All
-            </button>
-
-            <button
-                class="status-pill bg-violet-600 text-white hover:bg-violet-700"
-                :class="statusFilter === 'Attended' ? 'ring-2 ring-emerald-500' : ''"
-                @click="setStatus('Attended')"
-            >
-                {{ filteredBase.length }}/{{ rows.length }} Attended
-            </button>
-            <button
-                class="status-pill bg-violet-600 text-white hover:bg-violet-700"
-                :class="statusFilter === 'Not Attended' ? 'ring-2 ring-rose-500' : ''"
-                @click="setStatus('Not Attended')"
-            >
-                {{ filteredBase.length }}/{{ rows.length }} Not Attended
             </button>
         </div>
 
@@ -168,9 +153,6 @@
                 </span>
             </template>
         </DataTable>
-        <span class="inline-block">
-            <BackButton @click="handleBack">Back</BackButton>
-        </span>
 
         <!-- ===== Error Bar ===== -->
         <p
@@ -193,9 +175,6 @@ import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import DataTable from "@/components/DataTable.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
-import BackButton from "@/components/BackButton.vue";
-import { useRouter } from "vue-router";
-const router = useRouter();
 import axios from "axios";
 
 /* ===== Routing / Params ===== */
@@ -263,7 +242,7 @@ function normalize(list) {
         eveTitle: r.eveTitle ?? "",
         empId: r.empId, // ใช้เป็น rowKey หลัก
         empFullId: r.empFullId ?? "",
-        empCompanyId: r.empCompanyId,
+        empCompanyId: r.empCompanyId ,
         empFullname: r.empFullname ?? "",
         empNickname: r.empNickname ?? "",
         empDepartment: r.empDepartment ?? "",
@@ -336,7 +315,7 @@ function statusLabel(key) {
     //กำหนดคำสำหรับแสดงแต่ละสถานะ
     return {
         accepted: "Accepted",
-        denied: "Declined",
+        denied: "Denied",
         pending: "Pending",
         notInvited: "Not Invited",
     }[key];
@@ -530,7 +509,7 @@ async function handleCheckin({ keys, checked }) {
     }
 }
 
-async function handleCheckAllOnPage() {
+async function handleCheckAllOnPage() { 
     //ฟังก์ชันสำหรับจัดการการกด Check in all
     const res = await axios
         .put(`/updateEmployeeAttendanceAll/eveId/${eveId.value}`)
@@ -552,10 +531,6 @@ watch(rows, (list) => {
         .filter((r) => Number(r.empCheckinStatus) === 1)
         .map((r) => r.empId);
 });
-
-const handleBack = () => {
-    router.push('/event');
-};
 </script>
 
 <style scoped>
