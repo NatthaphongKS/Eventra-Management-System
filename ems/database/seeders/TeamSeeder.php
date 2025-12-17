@@ -44,6 +44,6 @@ class TeamSeeder extends Seeder
             ['id' => 29, 'tm_name' => 'Developer', 'tm_department_id' => 14],
         ];
 
-        DB::table('teams')->insert($teams);
+        DB::table('ems_team')->insert($teams);
     }
 }
