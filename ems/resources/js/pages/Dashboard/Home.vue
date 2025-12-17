@@ -1326,7 +1326,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 /* Event Card Styling - Clean and minimal like EventPage */
 .event-card {
   background: #fff;
