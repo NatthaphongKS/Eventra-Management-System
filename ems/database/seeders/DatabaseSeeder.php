@@ -77,7 +77,7 @@ class DatabaseSeeder extends Seeder
         );
 
         Employee::firstOrCreate(
-            ['emp_email' => '66160100@go.buu.ac.th'],
+            ['emp_email' => '66160101@go.buu.ac.th'],
             [
                 'emp_id' => 'CN0002',
                 'emp_company_id' => 1,
