@@ -8,12 +8,13 @@ use Illuminate\Validation\Rule;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Team;
-use App\Models\Position; // เพิ่ม Use Position
+use App\Models\Position;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+
 
 class EmployeeController extends Controller
 {
@@ -78,7 +79,7 @@ class EmployeeController extends Controller
 
     /**
      * อ่านข้อมูลพนักงานรายคน (ใช้สำหรับหน้าแก้ไข)
-     * [แก้ไข] รองรับทั้ง ID (1,2,3) และ emp_id (Test001)
+     * รองรับทั้ง ID (1,2,3) และ emp_id (Test001)
      */
     public function show($id)
     {
@@ -151,9 +152,9 @@ class EmployeeController extends Controller
                 $prefixes = collect(
                     str_getcsv($matches[1], ',', "'")
                 )->values()->map(fn($p, $i) => [
-                    'value' => $i + 1,
-                    'label' => $p,
-                ]);
+                        'value' => $i + 1,
+                        'label' => $p,
+                    ]);
             }
         }
 
@@ -189,13 +190,86 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
+        // 1. เช็คก่อนว่ามี emp_id นี้ที่สถานะเป็น 'inactive' มั้ย
+        $existingInactiveEmp = Employee::where('emp_id', $request->emp_id)
+            ->where('emp_delete_status', 'inactive')
+            ->first();
+
+        // --- กรณี A: พบข้อมูลเก่าที่ถูกลบไปแล้ว (Inactive) -> ให้ทำการ Update และ Reactivate ---
+        if ($existingInactiveEmp) {
+
+            // Validate ข้อมูลอื่น ๆ (เช่น Email, Phone) ว่าต้องไม่ซ้ำกับคนอื่นที่ Active อยู่
+            // (ใช้ ignore เพื่อข้ามการเช็คตัวเอง)
+            $request->validate([
+                'emp_id' => ['required'], // ไม่ต้องเช็ค unique แล้วเพราะเราเจอตัวตนเขาแล้ว
+                'emp_prefix' => ['required', 'integer'],
+                'emp_firstname' => ['required'],
+                'emp_lastname' => ['required'],
+                // Email ต้องไม่ซ้ำกับคนอื่น (ยกเว้นตัวเอง)
+                'emp_email' => ['required', 'email', Rule::unique('ems_employees')->ignore($existingInactiveEmp->id)],
+                // Phone ต้องไม่ซ้ำกับคนอื่น (ยกเว้นตัวเอง)
+                'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10', Rule::unique('ems_employees')->ignore($existingInactiveEmp->id)],
+                'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
+                'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
+                'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
+                'emp_password' => ['required', 'min:6'],
+                'emp_status' => ['required', 'integer'],
+            ]);
+
+            try {
+                // อัปเดตข้อมูลทับของเดิม
+                $existingInactiveEmp->update([
+                    'emp_company_id' => $request->emp_company_id ?? (auth()->user()->emp_company_id ?? 1),
+                    'emp_prefix' => $request->emp_prefix,
+                    'emp_firstname' => $request->emp_firstname,
+                    'emp_lastname' => $request->emp_lastname,
+                    'emp_nickname' => $request->emp_nickname,
+                    'emp_email' => $request->emp_email,
+                    'emp_phone' => $request->emp_phone,
+                    'emp_position_id' => $request->emp_position_id,
+                    'emp_department_id' => $request->emp_department_id,
+                    'emp_team_id' => $request->emp_team_id,
+                    'emp_password' => Hash::make($request->emp_password),
+                    'emp_permission' => $request->emp_status,
+
+                    // **จุดสำคัญ: เปลี่ยนสถานะกลับมาเป็น active**
+                    'emp_delete_status' => 'active',
+                    'emp_delete_at' => null, // เคลียร์วันที่ลบ
+                    'emp_delete_by' => null, // เคลียร์คนลบ
+
+                ]);
+
+                return response()->json(['message' => 'Employee reactivated successfully', 'data' => $existingInactiveEmp], 201);
+
+            } catch (QueryException $e) {
+                Log::error('EMP_REACTIVATE_FAIL', ['msg' => $e->getMessage()]);
+                return response()->json(['error' => 'DB_ERROR', 'message' => $e->getMessage()], 500);
+            }
+        }
+
+        // --- กรณี B: ไม่พบข้อมูลเก่า (เป็นพนักงานใหม่จริงๆ) -> สร้างใหม่ตามปกติ ---
+
+        // Validate โดยระบุเงื่อนไขว่าต้องไม่ซ้ำกับคนที่มีสถานะ active เท่านั้น
         $request->validate([
-            'emp_id' => ['required', 'unique:ems_employees,emp_id'],
+            'emp_id' => [
+                'required',
+                // เช็ค unique เฉพาะ record ที่ active (เผื่อกรณีสร้าง id ใหม่ซ้ำกับ id เก่าที่ inactive แต่เราเลือกจะไม่ restore)
+                Rule::unique('ems_employees')->where(fn($query) => $query->where('emp_delete_status', 'active'))
+            ],
             'emp_prefix' => ['required', 'integer'],
             'emp_firstname' => ['required'],
             'emp_lastname' => ['required'],
-            'emp_email' => ['required', 'email', 'unique:ems_employees,emp_email'],
-            'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10', 'unique:ems_employees,emp_phone'],
+            'emp_email' => [
+                'required',
+                'email',
+                Rule::unique('ems_employees')->where(fn($query) => $query->where('emp_delete_status', 'active'))
+            ],
+            'emp_phone' => [
+                'required',
+                'regex:/^[0-9]+$/',
+                'size:10',
+                Rule::unique('ems_employees')->where(fn($query) => $query->where('emp_delete_status', 'active'))
+            ],
             'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
             'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
             'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
@@ -237,7 +311,6 @@ class EmployeeController extends Controller
 
     /**
      * อัปเดตข้อมูลพนักงาน
-     * [แก้ไข] รองรับทั้ง ID และ emp_id เพื่อแก้ 404
      */
     public function update(Request $request, $id)
     {
@@ -249,7 +322,13 @@ class EmployeeController extends Controller
         }
 
         $validated = $request->validate([
-            'emp_id' => ['sometimes', 'required'],
+            // --- [แก้ไข] เพิ่ม Rule::unique สำหรับ emp_id ---
+            'emp_id' => [
+                'sometimes',
+                'required',
+                Rule::unique('ems_employees', 'emp_id')->ignore($emp->id) // ห้ามซ้ำ ยกเว้นของตัวเอง
+            ],
+            // ---------------------------------------------
             'emp_prefix' => ['sometimes', 'required'],
             'emp_firstname' => ['sometimes', 'required'],
             'emp_lastname' => ['sometimes', 'required'],
@@ -298,7 +377,6 @@ class EmployeeController extends Controller
 
     /**
      * ลบแบบ soft (Standard)
-     * [แก้ไข] รองรับทั้ง ID และ emp_id
      */
     public function destroy($id)
     {
@@ -351,7 +429,8 @@ class EmployeeController extends Controller
 
         $ensureDepartment = function ($name) {
             $name = trim($name);
-            if ($name === '') return null;
+            if ($name === '')
+                return null;
             $dep = Department::whereRaw('LOWER(TRIM(dpm_name)) = ?', [mb_strtolower($name)])->first();
             if ($dep) {
                 if ($dep->dpm_delete_status !== 'active') {
@@ -361,14 +440,17 @@ class EmployeeController extends Controller
                 return $dep;
             }
             return Department::create([
-                'dpm_name' => $name, 'dpm_delete_status' => 'active',
-                'dpm_create_at' => Carbon::now(), 'dpm_create_by' => Auth::id(),
+                'dpm_name' => $name,
+                'dpm_delete_status' => 'active',
+                'dpm_create_at' => Carbon::now(),
+                'dpm_create_by' => Auth::id(),
             ]);
         };
 
         $ensurePosition = function ($name) {
             $name = trim($name);
-            if ($name === '') return null;
+            if ($name === '')
+                return null;
             $pos = Position::whereRaw('LOWER(TRIM(pst_name)) = ?', [mb_strtolower($name)])->first();
             if ($pos) {
                 if ($pos->pst_delete_status !== 'active') {
@@ -378,14 +460,17 @@ class EmployeeController extends Controller
                 return $pos;
             }
             return Position::create([
-                'pst_name' => $name, 'pst_delete_status' => 'active',
-                'pst_create_at' => Carbon::now(), 'pst_create_by' => Auth::id(),
+                'pst_name' => $name,
+                'pst_delete_status' => 'active',
+                'pst_create_at' => Carbon::now(),
+                'pst_create_by' => Auth::id(),
             ]);
         };
 
         $ensureTeam = function ($name) {
             $name = trim($name);
-            if ($name === '') return null;
+            if ($name === '')
+                return null;
             $team = Team::whereRaw('LOWER(TRIM(tm_name)) = ?', [mb_strtolower($name)])->first();
             if ($team) {
                 if ($team->tm_delete_status !== 'active') {
@@ -395,8 +480,10 @@ class EmployeeController extends Controller
                 return $team;
             }
             return Team::create([
-                'tm_name' => $name, 'tm_delete_status' => 'active',
-                'tm_create_at' => Carbon::now(), 'tm_create_by' => Auth::id(),
+                'tm_name' => $name,
+                'tm_delete_status' => 'active',
+                'tm_create_at' => Carbon::now(),
+                'tm_create_by' => Auth::id(),
             ]);
         };
 
@@ -424,8 +511,10 @@ class EmployeeController extends Controller
         };
 
         $normPhone = function ($p) {
-            if ($p === null) return '';
-            if (is_numeric($p)) return str_pad((string) intval($p), 10, '0', STR_PAD_LEFT);
+            if ($p === null)
+                return '';
+            if (is_numeric($p))
+                return str_pad((string) intval($p), 10, '0', STR_PAD_LEFT);
             return preg_replace('/\D+/', '', (string) $p) ?? '';
         };
 
