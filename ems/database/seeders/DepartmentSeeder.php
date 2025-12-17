@@ -30,6 +30,6 @@ class DepartmentSeeder extends Seeder
             ['id' => 15, 'name' => 'Byteforge Project'],
         ];
 
-        DB::table('departments')->insert($departments);
+        DB::table('department')->insert($departments);
     }
 }
