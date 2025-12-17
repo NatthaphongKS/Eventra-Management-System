@@ -1,4 +1,4 @@
-+<template>
+<template>
     <section class="p-0">
         <div class="mt-3 mb-1 flex items-center gap-4">
             <!-- ✅ SearchBar -->
@@ -12,10 +12,7 @@
                 @update:modelValue="applyFilter" class="mt-6" />
             <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort" class="mt-6" />
             <!-- ✅ Add Button -->
-            <router-link to="/add-event"
-                class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6">
-                + Add
-            </router-link>
+            <AddButton @click="$router.push('/add-event')" />
         </div>
 
         <!-- ตาราง -->
@@ -117,6 +114,7 @@ import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
+import AddButton from '@/components/AddButton.vue'
 
 import {
     MagnifyingGlassIcon,
@@ -138,6 +136,7 @@ export default {
         DataTable,
         EventFilter,
         SearchBar,
+        AddButton,
         ModalAlert,
     },
 
