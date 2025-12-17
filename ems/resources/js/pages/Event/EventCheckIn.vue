@@ -242,7 +242,7 @@ function normalize(list) {
         eveTitle: r.eveTitle ?? "",
         empId: r.empId, // ใช้เป็น rowKey หลัก
         empFullId: r.empFullId ?? "",
-        empCompanyId: r.empFullId ,
+        empCompanyId: r.empCompanyId ,
         empFullname: r.empFullname ?? "",
         empNickname: r.empNickname ?? "",
         empDepartment: r.empDepartment ?? "",
@@ -394,7 +394,7 @@ const counts = computed(() => {
 /* ===== Table Columns ===== */
 const columns = [
     {
-        key: "empCompanyId",
+        key: "empFullId",
         label: "ID",
         sortable: true,
         class: "min-w-[120px] text-left",
