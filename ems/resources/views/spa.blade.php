@@ -9,7 +9,7 @@
 
     <meta charset="UTF-8">
     @vite(['resources/js/app.js'])
-    <title>Laravel Vue SPA</title>
+    <title>Eventra</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
