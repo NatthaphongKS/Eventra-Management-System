@@ -578,12 +578,13 @@ const showCreateSuccess = ref(false);
 const showCannotCreate = ref(false);
 
 /* ---------- bulk create employees (partial success logic) ---------- */
+/* ---------- bulk create employees (partial success logic) ---------- */
 async function onCreate() {
-    // ถ้าไม่มีข้อมูลในตาราง หรือกำลังประมวลผลอยู่แล้ว ก็ไม่ต้องทำซ้ำ
     if (!displayRows.value.length || creating.value) return;
     creating.value = true;
 
-    // รีเซ็ต modal state รอบก่อน
+    // ✅ 1. ประกาศตัวแปรไว้ด้านบนสุดเพื่อให้ทุก Step เข้าถึงได้
+    const preparedRows = []; 
     showCreateSuccess.value = false;
     showCannotCreate.value = false;
     errorMessage.value = "";
@@ -592,185 +593,128 @@ async function onCreate() {
 
     try {
         // ---------------------------------
-        // STEP 1: เตรียม payload สำหรับทุกแถว และเช็กโครงสร้าง Dept/Team/Position
+        // STEP 1: เตรียม payload และเช็กความถูกต้อง
         // ---------------------------------
-        const preparedRows = []; // เก็บ { row, payload }
-
         for (const row of displayRows.value) {
-            // เช็กว่า department / team / position ตรงตาม master หรือไม่
             const resolved = resolveMasterForRow(row);
 
             if (!resolved.ok) {
-                // ถ้าแถวไหนไม่ตรง -> block ทั้ง batch และแสดง EmployeeCannotCreate
                 let errText = "Invalid data structure.";
-
                 if (resolved.reason === "notFound") {
                     const target = resolved.target || "Item";
-                    errText = `${target} "${
-                        target === "Department"
-                            ? row.department
-                            : target === "Team"
-                            ? row.team
-                            : row.position
-                    }" not found in the system.`;
+                    errText = `${target} "${target === "Department" ? row.department : target === "Team" ? row.team : row.position}" not found in the system.`;
                 } else if (resolved.reason === "teamNotInDepartment") {
                     errText = `The Team "${row.team}" does not belong to the Department "${row.department}".`;
                 } else if (resolved.reason === "positionNotInTeam") {
                     errText = `The Position "${row.position}" does not belong to the Team "${row.team}".`;
                 }
+                
+                errorMessage.value = errText;
+                showCannotCreate.value = true;
+                creating.value = false;
+                return; // หยุดทันทีถ้าข้อมูลโครงสร้างผิด
             }
 
-            // กำหนดข้อความ Error และแสดง Modal
-            errorMessage.value = errText;
+            const { dep, team, pos } = resolved;
+            let emp_prefix = 1;
+            let emp_firstname = "";
+            let emp_lastname = "";
+
+            const parts = (row.name || "").trim().split(/\s+/);
+            if (parts.length >= 3) {
+                emp_prefix = prefixMap[parts[0]] ?? 1;
+                emp_firstname = parts[1] ?? "";
+                emp_lastname = parts.slice(2).join(" ");
+            } else if (parts.length === 2) {
+                emp_firstname = parts[0] ?? "";
+                emp_lastname = parts[1] ?? "";
+            } else if (parts.length === 1 && parts[0]) {
+                emp_firstname = parts[0];
+            }
+
+            preparedRows.push({
+                row,
+                payload: {
+                    emp_id: (row.employeeId || "").trim(),
+                    emp_prefix,
+                    emp_nickname: row.nickname || null,
+                    emp_firstname,
+                    emp_lastname,
+                    emp_email: (row.email || "").trim(),
+                    emp_phone: (row.phone || "").trim(),
+                    emp_position_id: pos.id,
+                    emp_department_id: dep.id,
+                    emp_team_id: team.id,
+                    emp_password: "Password123",
+                    emp_status: 2,
+                    emp_company_id: 1 // อย่าลืมใส่ Company ID ที่ถูกต้องตาม Error SQL ก่อนหน้านี้
+                },
+            });
+        }
+
+        if (preparedRows.length === 0) {
             showCannotCreate.value = true;
             creating.value = false;
             return;
         }
 
-        const { dep, team, pos } = resolved;
+        // ---------------------------------
+        // STEP 2: ตรวจซ้ำกับระบบ
+        // ---------------------------------
+        let foundDuplicateInSystem = false;
+        for (const { payload } of preparedRows) {
+            const checkBody = {
+                emp_id: payload.emp_id,
+                emp_phone: payload.emp_phone,
+                emp_email: payload.emp_email
+            };
 
-        // แตกชื่อ prefix / first / last
-        let emp_prefix = 1;
-        let emp_firstname = "";
-        let emp_lastname = "";
-
-        const parts = (row.name || "").trim().split(/\s+/);
-        if (parts.length >= 3) {
-            emp_prefix = prefixMap[parts[0]] ?? 1;
-            emp_firstname = parts[1] ?? "";
-            emp_lastname = parts.slice(2).join(" ");
-        } else if (parts.length === 2) {
-            emp_firstname = parts[0] ?? "";
-            emp_lastname = parts[1] ?? "";
-        } else if (parts.length === 1 && parts[0]) {
-            emp_firstname = parts[0];
-        }
-
-        // ถ้ามาถึงตรงนี้ แปลว่า dept/team/position ถูกต้องแน่นอน
-        preparedRows.push({
-            row,
-            payload: {
-                emp_id: (row.employeeId || "").trim(),
-                emp_prefix,
-                emp_nickname: row.nickname || null,
-                emp_firstname,
-                emp_lastname,
-                emp_email: (row.email || "").trim(),
-                emp_phone: (row.phone || "").trim(),
-                emp_position_id: pos.id,
-                emp_department_id: dep.id,
-                emp_team_id: team.id,
-                emp_password: "Password123",
-                emp_status: 2,
-            },
-        });
-    } catch (Exception) {
-        console.log("UploadFile Components Error!");
-    }
-
-    // ถ้าไม่มีใครพร้อมสร้างเลย (เช่น บรรทัดว่างทั้งไฟล์)
-    if (preparedRows.length === 0) {
-        showCreateSuccess.value = false;
-        showCannotCreate.value = true;
-        return;
-    }
-
-    // ---------------------------------
-    // STEP 2: ตรวจซ้ำกับระบบ (เบอร์ / อีเมล / employeeId)
-    // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch
-    // ---------------------------------
-    let foundDuplicateInSystem = false;
-    let duplicateInfo = []; // เก็บรายชื่อฟิลด์ที่ซ้ำ
-    let duplicatePayload = null; // เก็บชุดข้อมูลที่ซ้ำเพื่อเอาค่ามาแสดง
-
-    for (const { payload } of preparedRows) {
-        const checkBody = {};
-        if (payload.emp_id) checkBody.emp_id = payload.emp_id;
-        if (payload.emp_phone) checkBody.emp_phone = payload.emp_phone;
-        if (payload.emp_email) checkBody.emp_email = payload.emp_email;
-
-        try {
-            const dupResp = await axios.post(
-                "/check-employee-duplicate",
-                checkBody
-            );
-
-            if (dupResp.data?.duplicate === true) {
-                foundDuplicateInSystem = true;
-                duplicateInfo = dupResp.data?.fields || [];
-                duplicatePayload = payload; // จำค่า payload ที่ซ้ำไว้
-                break;
+            try {
+                const dupResp = await axios.post("/check-employee-duplicate", checkBody);
+                if (dupResp.data?.duplicate === true) {
+                    foundDuplicateInSystem = true;
+                    break;
+                }
+            } catch (dupErr) {
+                console.error("API Check Duplicate Failed:", dupErr);
+                creating.value = false;
+                return;
             }
-        } catch (dupErr) {
-            console.error("API Check Duplicate Failed:", dupErr);
-            return;
         }
-    }
 
-    if (foundDuplicateInSystem) {
-        // Map ชื่อฟิลด์ให้เป็นภาษาอังกฤษที่เข้าใจง่าย
-        const labelMap = {
-            emp_id: "Employee ID",
-            emp_phone: "Phone Number",
-            emp_email: "Email",
-        };
-
-        // สร้างข้อความระบุว่าอะไรซ้ำ และค่าคืออะไร
-        // ตัวอย่าง output: "Employee ID (12345), Email (test@mail.com)"
-        const duplicateDetails = duplicateInfo
-            .map((field) => {
-                const label = labelMap[field] || field;
-                const value = duplicatePayload ? duplicatePayload[field] : "";
-                return `${label} "${value}"`;
-            })
-            .join(", ");
-
-        // กรณีพบข้อมูลซ้ำ แจ้งเตือนพร้อมระบุค่าที่ซ้ำ
-        errorMessage.value = `Sorry, There are some data are already in the system.`;
-        //errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
-
-        showCreateSuccess.value = false;
-        showCannotCreate.value = true;
-        return;
-    }
-
-    // ---------------------------------
-    // STEP 3: ไม่มีซ้ำ -> insert ทุกคน
-    // ---------------------------------
-    let createdCount = 0;
-
-    for (const { payload } of preparedRows) {
-        try {
-            await axios.post("/save-employee", payload);
-            createdCount++;
-        } catch (err) {
-            console.error(
-                "save-employee failed for",
-                payload.emp_id,
-                err.response?.data || err.message
-            );
-        }
-    }
-
-    try {
-        if (createdCount === 0) {
-            // กรณี Save ไม่ผ่านสักคนเลย
-            // เปลี่ยนจาก Swal เป็นการเปิด Component EmployeeCannotCreate แทน
-            createErrorMessage.value = "Sorry, Please try again later";
+        if (foundDuplicateInSystem) {
+            errorMessage.value = `Sorry, There are some data are already in the system.`;
             showCannotCreate.value = true;
+            creating.value = false;
             return;
         }
 
         // ---------------------------------
-        // STEP 4: success -> ล้างหน้าจอ และโชว์ modal success
+        // STEP 3: ไม่มีซ้ำ -> insert
         // ---------------------------------
-        displayRows.value = [];
-        file.value = null;
-        error.value = "";
-        page.value = 1;
+        let createdCount = 0;
+        for (const { payload } of preparedRows) {
+            try {
+                await axios.post("/save-employee", payload);
+                createdCount++;
+            } catch (err) {
+                console.error("save-employee failed", err);
+            }
+        }
 
-        showCannotCreate.value = false;
-        showCreateSuccess.value = true;
+        if (createdCount === 0) {
+            errorMessage.value = "Sorry, Please try again later";
+            showCannotCreate.value = true;
+        } else {
+            displayRows.value = [];
+            file.value = null;
+            error.value = "";
+            page.value = 1;
+            showCreateSuccess.value = true;
+        }
+
+    } catch (error) {
+        console.error("Global Error:", error);
     } finally {
         creating.value = false;
     }
