@@ -523,7 +523,7 @@ export default {
         async fetchInfo() {
             try {
                 this.loadingEmployees = true;
-                const res = await axios.get("/event-info"); // ใช้ endpoint นี้เพื่อดึง metadata ทั้งหมด
+                const res = await axios.get("/event-info-dashboard"); // ใช้ endpoint นี้เพื่อดึง metadata ทั้งหมด
                 const data = res.data || {};
 
                 this.selectCategory = data.categories || [];
