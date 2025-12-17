@@ -272,93 +272,49 @@
                     @search="applySearch"
                 />
 
-                <!-- Company ID -->
-                <div class="mt-5 relative">
-                    <select
-                        v-model="filtersDraft.empId"
-                        @change="applySearch"
-                        class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white"
-                    >
-                        <option value="">Company ID</option>
-                        <option
-                            v-for="team in empIdOptions"
-                            :key="team"
-                            :value="team"
-                        >
-                            {{ team }}
-                        </option>
-                    </select>
+                <select
+                    v-model="filtersDraft.empId"
+                    @change="applySearch"
+                    class="filter-select w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 outline-none"
+                >
+                    <option value="">Company ID</option>
+                    <option v-for="id in empIdOptions" :key="id" :value="id">
+                        {{ id }}
+                    </option>
+                </select>
 
-                    <Icon
-                        icon="iconamoon:arrow-down-2-light"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none"
-                    />
-                </div>
+                <select
+                    v-model="filtersDraft.department"
+                    @change="applySearch"
+                    class="filter-select w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 outline-none"
+                >
+                    <option value="">Department</option>
+                    <option v-for="d in departments" :key="d" :value="d">
+                        {{ d }}
+                    </option>
+                </select>
 
-                <!-- Department -->
-                <div class="mt-5 relative">
-                    <select
-                        v-model="filtersDraft.department"
-                        @change="applySearch"
-                        class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white"
-                    >
-                        <option value="">department</option>
-                        <option
-                            v-for="team in departments"
-                            :key="team"
-                            :value="team"
-                        >
-                            {{ team }}
-                        </option>
-                    </select>
+                <select
+                    v-model="filtersDraft.team"
+                    @change="applySearch"
+                    class="filter-select w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 outline-none"
+                >
+                    <option value="">Team</option>
+                    <option v-for="t in teams" :key="t" :value="t">
+                        {{ t }}
+                    </option>
+                </select>
 
-                    <Icon
-                        icon="iconamoon:arrow-down-2-light"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none"
-                    />
-                </div>
-
-                <!-- Team -->
-                <div class="mt-5 relative">
-                    <select
-                        v-model="filtersDraft.team"
-                        @change="applySearch"
-                        class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white"
-                    >
-                        <option value="">Team</option>
-                        <option v-for="team in teams" :key="team" :value="team">
-                            {{ team }}
-                        </option>
-                    </select>
-
-                    <Icon
-                        icon="iconamoon:arrow-down-2-light"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none"
-                    />
-                </div>
-
-                <!-- Position -->
-                <div class="mt-5 relative">
-                    <select
-                        v-model="filtersDraft.position"
-                        @change="applySearch"
-                        class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white"
-                    >
-                        <option value="">Position</option>
-                        <option
-                            v-for="position in positions"
-                            :key="position"
-                            :value="position"
-                        >
-                            {{ position }}
-                        </option>
-                    </select>
-
-                    <Icon
-                        icon="iconamoon:arrow-down-2-light"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none"
-                    />
-                </div>
+                <select
+                    v-model="filtersDraft.position"
+                    @change="applySearch"
+                    class="filter-select w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 outline-none"
+                >
+                    <option value="">Position</option>
+                    <option v-for="p in positions" :key="p" :value="p">
+                        {{ p }}
+                    </option>
+                </select>
             </div>
 
             <DataTable
@@ -387,23 +343,19 @@
         </div>
 
         <div class="mt-8 px-6 w-full flex justify-between items-center">
-            <div>
-                <CancelButton size="md" :disabled="saving" @click="onCancel" >
-                    Cancel
-                </CancelButton>
-            </div>
+            <CancelButton size="md" :disabled="saving" @click="onCancel">
+                Cancel
+            </CancelButton>
 
-            <div class="mt-8">
-                <button
-                    type="button"
-                    @click="saveEvent"
-                    :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-6 py-2 bg-green-600 text-white font-semibold hover:bg-green-700 h-[45px] min-w-[140px] transition shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                    <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
-                    <span>{{ saving ? "Saving..." : "Create" }}</span>
-                </button>
-            </div>
+            <button
+                type="button"
+                @click="saveEvent"
+                :disabled="saving"
+                class="inline-flex items-center justify-center gap-2 rounded-[20px] px-6 py-2 bg-green-600 text-white font-semibold hover:bg-green-700 h-[45px] min-w-[140px] transition shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
+                <span>{{ saving ? "Saving..." : "Create" }}</span>
+            </button>
         </div>
 
         <ModalAlert

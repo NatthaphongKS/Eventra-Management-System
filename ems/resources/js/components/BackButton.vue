@@ -1,4 +1,4 @@
-
+<!-- src/components/Button/CancelButton.vue -->
 <template>
   <header class="max-w-6xl mx-auto px-6 pt-6">
     <link
