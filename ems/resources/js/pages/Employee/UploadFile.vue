@@ -136,6 +136,8 @@
     <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success" type="success"
         @confirm="handleSuccessClose" />
     <EmployeeCannotCreate :open="showCannotCreate" :message="errorMessage" @close="showCannotCreate = false" />
+    <EmployeeCannotCreate :open="showCannotCreate" title="ERROR!" :message="createErrorMessage"
+        @close="showCannotCreate = false" />
 </template>
 
 
@@ -494,153 +496,155 @@ async function onCreate() {
 
             if (!resolved.ok) {
                 // ถ้าแถวไหนไม่ตรง -> block ทั้ง batch และแสดง EmployeeCannotCreate
-                let errText = 'โครงสร้างข้อมูลไม่ถูกต้อง'
+                let errText = 'Invalid data structure.'
 
                 if (resolved.reason === 'notFound') {
                     const target = resolved.target || 'Item'
-                    errText = `ไม่พบข้อมูล ${target} "${target === 'Department' ? row.department : target === 'Team' ? row.team : row.position}" ในระบบ`
+                    errText = `${target} "${target === 'Department' ? row.department : target === 'Team' ? row.team : row.position}" not found in the system.`
                 } else if (resolved.reason === 'teamNotInDepartment') {
-                    errText = `ทีม "${row.team}" ไม่ได้อยู่ในแผนก "${row.department}"`
+                    errText = `The Team "${row.team}" does not belong to the Department "${row.department}".`
                 } else if (resolved.reason === 'positionNotInTeam') {
-                    errText = `ตำแหน่ง "${row.position}" ไม่ได้อยู่ในทีม "${row.team}"`
+                    errText = `The Position "${row.position}" does not belong to the Team "${row.team}".`
                 }
-
-                // กำหนดข้อความ Error และแสดง Modal
-                errorMessage.value = errText
-                showCannotCreate.value = true
-                creating.value = false
-                return
             }
 
-            const { dep, team, pos } = resolved
-
-            // แตกชื่อ prefix / first / last
-            let emp_prefix = 1
-            let emp_firstname = ''
-            let emp_lastname = ''
-
-            const parts = (row.name || '').trim().split(/\s+/)
-            if (parts.length >= 3) {
-                emp_prefix = prefixMap[parts[0]] ?? 1
-                emp_firstname = parts[1] ?? ''
-                emp_lastname = parts.slice(2).join(' ')
-            } else if (parts.length === 2) {
-                emp_firstname = parts[0] ?? ''
-                emp_lastname = parts[1] ?? ''
-            } else if (parts.length === 1 && parts[0]) {
-                emp_firstname = parts[0]
-            }
-
-            // ถ้ามาถึงตรงนี้ แปลว่า dept/team/position ถูกต้องแน่นอน
-            preparedRows.push({
-                row,
-                payload: {
-                    emp_id: (row.employeeId || '').trim(),
-                    emp_prefix,
-                    emp_nickname: row.nickname || null,
-                    emp_firstname,
-                    emp_lastname,
-                    emp_email: (row.email || '').trim(),
-                    emp_phone: (row.phone || '').trim(),
-                    emp_position_id: pos.id,
-                    emp_department_id: dep.id,
-                    emp_team_id: team.id,
-                    emp_password: 'Password123',
-                    emp_status: 2,
-                }
-            })
+            // กำหนดข้อความ Error และแสดง Modal
+            errorMessage.value = errText
+            showCannotCreate.value = true
+            creating.value = false
+            return
         }
+
+        const { dep, team, pos } = resolved
+
+        // แตกชื่อ prefix / first / last
+        let emp_prefix = 1
+        let emp_firstname = ''
+        let emp_lastname = ''
+
+        const parts = (row.name || '').trim().split(/\s+/)
+        if (parts.length >= 3) {
+            emp_prefix = prefixMap[parts[0]] ?? 1
+            emp_firstname = parts[1] ?? ''
+            emp_lastname = parts.slice(2).join(' ')
+        } else if (parts.length === 2) {
+            emp_firstname = parts[0] ?? ''
+            emp_lastname = parts[1] ?? ''
+        } else if (parts.length === 1 && parts[0]) {
+            emp_firstname = parts[0]
+        }
+
+        // ถ้ามาถึงตรงนี้ แปลว่า dept/team/position ถูกต้องแน่นอน
+        preparedRows.push({
+            row,
+            payload: {
+                emp_id: (row.employeeId || '').trim(),
+                emp_prefix,
+                emp_nickname: row.nickname || null,
+                emp_firstname,
+                emp_lastname,
+                emp_email: (row.email || '').trim(),
+                emp_phone: (row.phone || '').trim(),
+                emp_position_id: pos.id,
+                emp_department_id: dep.id,
+                emp_team_id: team.id,
+                emp_password: 'Password123',
+                emp_status: 2,
+            }
+        })
+    }
 
         // ถ้าไม่มีใครพร้อมสร้างเลย (เช่น บรรทัดว่างทั้งไฟล์)
         if (preparedRows.length === 0) {
-            showCreateSuccess.value = false
-            showCannotCreate.value = true
-            return
-        }
+        showCreateSuccess.value = false
+        showCannotCreate.value = true
+        return
+    }
 
-        // ---------------------------------
-        // STEP 2: ตรวจซ้ำกับระบบ (เบอร์ / อีเมล / employeeId)
-        // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch
-        // ---------------------------------
-        let foundDuplicateInSystem = false
-        let duplicateInfo = [] // เก็บรายชื่อฟิลด์ที่ซ้ำ
-        let duplicatePayload = null // เก็บชุดข้อมูลที่ซ้ำเพื่อเอาค่ามาแสดง
+    // ---------------------------------
+    // STEP 2: ตรวจซ้ำกับระบบ (เบอร์ / อีเมล / employeeId)
+    // ถ้าพบว่ามีซ้ำในระบบแม้แต่คนเดียว -> block ทั้ง batch
+    // ---------------------------------
+    let foundDuplicateInSystem = false
+    let duplicateInfo = [] // เก็บรายชื่อฟิลด์ที่ซ้ำ
+    let duplicatePayload = null // เก็บชุดข้อมูลที่ซ้ำเพื่อเอาค่ามาแสดง
 
-        for (const { payload } of preparedRows) {
-            const checkBody = {}
-            if (payload.emp_id) checkBody.emp_id = payload.emp_id
-            if (payload.emp_phone) checkBody.emp_phone = payload.emp_phone
-            if (payload.emp_email) checkBody.emp_email = payload.emp_email
+    for (const { payload } of preparedRows) {
+        const checkBody = {}
+        if (payload.emp_id) checkBody.emp_id = payload.emp_id
+        if (payload.emp_phone) checkBody.emp_phone = payload.emp_phone
+        if (payload.emp_email) checkBody.emp_email = payload.emp_email
 
-            try {
-                const dupResp = await axios.post('/check-employee-duplicate', checkBody)
+        try {
+            const dupResp = await axios.post('/check-employee-duplicate', checkBody)
 
-                if (dupResp.data?.duplicate === true) {
-                    foundDuplicateInSystem = true
-                    duplicateInfo = dupResp.data?.fields || []
-                    duplicatePayload = payload // จำค่า payload ที่ซ้ำไว้
-                    break
-                }
-            } catch (dupErr) {
-                console.error('API Check Duplicate Failed:', dupErr)
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'System Error',
-                    text: 'ไม่สามารถตรวจสอบข้อมูลซ้ำได้ (API Error)',
-                })
-                return
+            if (dupResp.data?.duplicate === true) {
+                foundDuplicateInSystem = true
+                duplicateInfo = dupResp.data?.fields || []
+                duplicatePayload = payload // จำค่า payload ที่ซ้ำไว้
+                break
             }
-        }
-
-        if (foundDuplicateInSystem) {
-            // Map ชื่อฟิลด์ให้เป็นภาษาอังกฤษที่เข้าใจง่าย
-            const labelMap = {
-                emp_id: 'Employee ID',
-                emp_phone: 'Phone Number',
-                emp_email: 'Email'
-            }
-
-            // สร้างข้อความระบุว่าอะไรซ้ำ และค่าคืออะไร
-            // ตัวอย่าง output: "Employee ID (12345), Email (test@mail.com)"
-            const duplicateDetails = duplicateInfo.map(field => {
-                const label = labelMap[field] || field
-                const value = duplicatePayload ? duplicatePayload[field] : ''
-                return `${label} "${value}"`
-            }).join(', ')
-
-            // กรณีพบข้อมูลซ้ำ แจ้งเตือนพร้อมระบุค่าที่ซ้ำ
-            errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
-
-            showCreateSuccess.value = false
-            showCannotCreate.value = true
-            return
-        }
-
-        // ---------------------------------
-        // STEP 3: ไม่มีซ้ำ -> insert ทุกคน
-        // ---------------------------------
-        let createdCount = 0
-
-        for (const { payload } of preparedRows) {
-            try {
-                await axios.post('/save-employee', payload)
-                createdCount++
-            } catch (err) {
-                console.error(
-                    'save-employee failed for',
-                    payload.emp_id,
-                    err.response?.data || err.message
-                )
-            }
-        }
-
-        if (createdCount === 0) {
-            // กรณี Save ไม่ผ่านสักคนเลย
+        } catch (dupErr) {
+            console.error('API Check Duplicate Failed:', dupErr)
             await Swal.fire({
                 icon: 'error',
-                title: 'Save Failed',
-                text: 'เกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้',
+                title: 'System Error',
+                text: 'ไม่สามารถตรวจสอบข้อมูลซ้ำได้ (API Error)',
             })
+            return
+        }
+    }
+
+    if (foundDuplicateInSystem) {
+        // Map ชื่อฟิลด์ให้เป็นภาษาอังกฤษที่เข้าใจง่าย
+        const labelMap = {
+            emp_id: 'Employee ID',
+            emp_phone: 'Phone Number',
+            emp_email: 'Email'
+        }
+
+        // สร้างข้อความระบุว่าอะไรซ้ำ และค่าคืออะไร
+        // ตัวอย่าง output: "Employee ID (12345), Email (test@mail.com)"
+        const duplicateDetails = duplicateInfo.map(field => {
+            const label = labelMap[field] || field
+            const value = duplicatePayload ? duplicatePayload[field] : ''
+            return `${label} "${value}"`
+        }).join(', ')
+
+        // กรณีพบข้อมูลซ้ำ แจ้งเตือนพร้อมระบุค่าที่ซ้ำ
+        errorMessage.value = `Sorry, There are some data are already in the system.`
+        //errorMessage.value = `One or more users in this file already exist in the system.\n(Duplicate: ${duplicateDetails})`
+
+
+        showCreateSuccess.value = false
+        showCannotCreate.value = true
+        return
+    }
+
+    // ---------------------------------
+    // STEP 3: ไม่มีซ้ำ -> insert ทุกคน
+    // ---------------------------------
+    let createdCount = 0
+
+    for (const { payload } of preparedRows) {
+        try {
+            await axios.post('/save-employee', payload)
+            createdCount++
+        } catch (err) {
+            console.error(
+                'save-employee failed for',
+                payload.emp_id,
+                err.response?.data || err.message
+            )
+        }
+    }
+
+    try {
+        if (createdCount === 0) {
+            // กรณี Save ไม่ผ่านสักคนเลย
+            // เปลี่ยนจาก Swal เป็นการเปิด Component EmployeeCannotCreate แทน
+            createErrorMessage.value = 'Sorry, Please try again later'
+            showCannotCreate.value = true
             return
         }
 
@@ -657,226 +661,225 @@ async function onCreate() {
     } finally {
         creating.value = false
     }
-}
 
-/* ---------- modal success close ---------- */
-function handleSuccessClose() {
-    showCreateSuccess.value = false
-    router.push('/employee')
-}
-
-async function downloadTemplate() {
-    if (!departments.value.length && !teams.value.length && !positions.value.length) {
-        try {
-            await loadMeta()
-        } catch (e) {
-            console.error('loadMeta in downloadTemplate failed', e)
-        }
+    /* ---------- modal success close ---------- */
+    function handleSuccessClose() {
+        showCreateSuccess.value = false
+        router.push('/employee')
     }
 
-    const wb = XLSX.utils.book_new()
-
-    // 1. Data Prep
-    const depMap = new Map((departments.value || []).map(d => [d.id, d.dpm_name]))
-    const teamMap = new Map((teams.value || []).map(t => [t.id, t]))
-
-    const relationRows = []
-        ; (positions.value || []).forEach(p => {
-            const team = teamMap.get(p.pst_team_id)
-            if (!team) return
-            const depName = depMap.get(team.tm_department_id) || ''
-
-            relationRows.push({ d: depName, t: team.tm_name, p: p.pst_name })
-        })
-
-    relationRows.sort((a, b) => {
-        return a.d.localeCompare(b.d) || a.t.localeCompare(b.t) || a.p.localeCompare(b.p)
-    })
-
-    const distinctDeps = [...new Set(relationRows.map(x => x.d).filter(Boolean))].sort()
-    const distinctTeams = [...new Set(relationRows.map(x => x.t).filter(Boolean))].sort()
-    const distinctPositions = [...new Set(relationRows.map(x => x.p).filter(Boolean))].sort()
-
-    // 2. Reference Sheet
-    const refHeader = ['Department', 'Team', 'Position', '', '', '', '', '']
-    const refSheetData = [refHeader]
-
-    const maxRow = Math.max(relationRows.length, distinctDeps.length, distinctTeams.length, distinctPositions.length)
-
-    for (let i = 0; i < maxRow; i++) {
-        const rel = relationRows[i] || {}
-        refSheetData.push([
-            rel.d || '', rel.t || '', rel.p || '', '', '',
-            distinctDeps[i] || '', distinctTeams[i] || '', distinctPositions[i] || ''
-        ])
-    }
-
-    const wsRef = XLSX.utils.aoa_to_sheet(refSheetData)
-
-    const refRange = XLSX.utils.decode_range(wsRef['!ref'])
-    // AutoFilter
-    wsRef['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: refRange.e.r, c: 2 } }) };
-    // Cols
-    wsRef['!cols'] = [
-        { wch: 25 }, { wch: 25 }, { wch: 35 },
-        { wch: 5, hidden: true }, { wch: 5, hidden: true },
-        { wch: 20, hidden: true }, { wch: 20, hidden: true }, { wch: 20, hidden: true }
-    ]
-
-    // 3. UploadTemplate Sheet
-    const header = [
-        'Company', 'Employee ID', 'ชื่อเล่น', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ID',
-        'Department', 'Team', 'Position', 'Phone', 'Email', 'Date Add'
-    ]
-
-    const validSample = relationRows.length > 0 ? relationRows[0] : { d: '', t: '', p: '' }
-    const sampleRow = [
-        'CN', 'Test001', 'มด', 'นาย', 'สมปอง', 'แซ่บสุด', '—',
-        validSample.d, validSample.t, validSample.p,
-        "0918231678", 'employee@example.com', '20/08/2025', ''
-    ]
-
-    const wsTemplate = XLSX.utils.aoa_to_sheet([header, sampleRow])
-
-    // AutoFilter
-    const tRange = XLSX.utils.decode_range(wsTemplate['!ref'])
-    wsTemplate['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: tRange.e.r, c: tRange.e.c } }) }
-
-    // Warning Text (Keep text, remove style)
-    const noteCell = XLSX.utils.encode_cell({ r: 0, c: 13 })
-    wsTemplate[noteCell] = {
-        v: '*กรอกเบอร์ไม่ต้องกรอก 0 นำหน้า ระบบจะเพิ่ม 0 ให้อัตโนมัติ',
-        t: 's'
-    }
-
-    // Apply Formats (Only Format, no visual style)
-    for (let R = tRange.s.r; R <= tRange.e.r; ++R) {
-        for (let C = tRange.s.c; C <= tRange.e.c; ++C) {
-            const cellAddr = XLSX.utils.encode_cell({ r: R, c: C })
-            if (!wsTemplate[cellAddr]) continue
-
-            // Formats
-            if (C === 1 || C === 10) {
-                wsTemplate[cellAddr].z = '@'; wsTemplate[cellAddr].t = 's'
-            } else if (C === 12) {
-                wsTemplate[cellAddr].z = 'dd/mm/yyyy'
+    async function downloadTemplate() {
+        if (!departments.value.length && !teams.value.length && !positions.value.length) {
+            try {
+                await loadMeta()
+            } catch (e) {
+                console.error('loadMeta in downloadTemplate failed', e)
             }
         }
+
+        const wb = XLSX.utils.book_new()
+
+        // 1. Data Prep
+        const depMap = new Map((departments.value || []).map(d => [d.id, d.dpm_name]))
+        const teamMap = new Map((teams.value || []).map(t => [t.id, t]))
+
+        const relationRows = []
+            ; (positions.value || []).forEach(p => {
+                const team = teamMap.get(p.pst_team_id)
+                if (!team) return
+                const depName = depMap.get(team.tm_department_id) || ''
+
+                relationRows.push({ d: depName, t: team.tm_name, p: p.pst_name })
+            })
+
+        relationRows.sort((a, b) => {
+            return a.d.localeCompare(b.d) || a.t.localeCompare(b.t) || a.p.localeCompare(b.p)
+        })
+
+        const distinctDeps = [...new Set(relationRows.map(x => x.d).filter(Boolean))].sort()
+        const distinctTeams = [...new Set(relationRows.map(x => x.t).filter(Boolean))].sort()
+        const distinctPositions = [...new Set(relationRows.map(x => x.p).filter(Boolean))].sort()
+
+        // 2. Reference Sheet
+        const refHeader = ['Department', 'Team', 'Position', '', '', '', '', '']
+        const refSheetData = [refHeader]
+
+        const maxRow = Math.max(relationRows.length, distinctDeps.length, distinctTeams.length, distinctPositions.length)
+
+        for (let i = 0; i < maxRow; i++) {
+            const rel = relationRows[i] || {}
+            refSheetData.push([
+                rel.d || '', rel.t || '', rel.p || '', '', '',
+                distinctDeps[i] || '', distinctTeams[i] || '', distinctPositions[i] || ''
+            ])
+        }
+
+        const wsRef = XLSX.utils.aoa_to_sheet(refSheetData)
+
+        const refRange = XLSX.utils.decode_range(wsRef['!ref'])
+        // AutoFilter
+        wsRef['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: refRange.e.r, c: 2 } }) };
+        // Cols
+        wsRef['!cols'] = [
+            { wch: 25 }, { wch: 25 }, { wch: 35 },
+            { wch: 5, hidden: true }, { wch: 5, hidden: true },
+            { wch: 20, hidden: true }, { wch: 20, hidden: true }, { wch: 20, hidden: true }
+        ]
+
+        // 3. UploadTemplate Sheet
+        const header = [
+            'Company', 'Employee ID', 'ชื่อเล่น', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ID',
+            'Department', 'Team', 'Position', 'Phone', 'Email', 'Date Add'
+        ]
+
+        const validSample = relationRows.length > 0 ? relationRows[0] : { d: '', t: '', p: '' }
+        const sampleRow = [
+            'CN', 'Test001', 'มด', 'นาย', 'สมปอง', 'แซ่บสุด', '—',
+            validSample.d, validSample.t, validSample.p,
+            "0918231678", 'employee@example.com', '20/08/2025', ''
+        ]
+
+        const wsTemplate = XLSX.utils.aoa_to_sheet([header, sampleRow])
+
+        // AutoFilter
+        const tRange = XLSX.utils.decode_range(wsTemplate['!ref'])
+        wsTemplate['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: tRange.e.r, c: tRange.e.c } }) }
+
+        // Warning Text (Keep text, remove style)
+        const noteCell = XLSX.utils.encode_cell({ r: 0, c: 13 })
+        wsTemplate[noteCell] = {
+            v: '*กรอกเบอร์ไม่ต้องกรอก 0 นำหน้า ระบบจะเพิ่ม 0 ให้อัตโนมัติ',
+            t: 's'
+        }
+
+        // Apply Formats (Only Format, no visual style)
+        for (let R = tRange.s.r; R <= tRange.e.r; ++R) {
+            for (let C = tRange.s.c; C <= tRange.e.c; ++C) {
+                const cellAddr = XLSX.utils.encode_cell({ r: R, c: C })
+                if (!wsTemplate[cellAddr]) continue
+
+                // Formats
+                if (C === 1 || C === 10) {
+                    wsTemplate[cellAddr].z = '@'; wsTemplate[cellAddr].t = 's'
+                } else if (C === 12) {
+                    wsTemplate[cellAddr].z = 'dd/mm/yyyy'
+                }
+            }
+        }
+
+        // Cols
+        const colWidths = header.map(h => {
+            if (h === 'Email') return { wch: 28 }
+            if (h === 'Date Add') return { wch: 15 }
+            return { wch: Math.max(12, String(h).length + 5) }
+        })
+        colWidths.push({ wch: 60 })
+        wsTemplate['!cols'] = colWidths
+
+        // Data Validation
+        const rowsBuffer = 1000
+        const listDeptRef = `Reference!$F$2:$F$${Math.max(2, distinctDeps.length + 1)}`
+        const listTeamRef = `Reference!$G$2:$G$${Math.max(2, distinctTeams.length + 1)}`
+        const listPosRef = `Reference!$H$2:$H$${Math.max(2, distinctPositions.length + 1)}`
+
+        wsTemplate['!dataValidation'] = [
+            {
+                sqref: `H2:H${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctDeps.length ? listDeptRef : '"No Data"',
+                showErrorMessage: true, error: 'กรุณาเลือกแผนกจากรายการ'
+            },
+            {
+                sqref: `I2:I${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctTeams.length ? listTeamRef : '"No Data"',
+                showErrorMessage: true, error: 'กรุณาเลือกทีมจากรายการ'
+            },
+            {
+                sqref: `J2:J${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctPositions.length ? listPosRef : '"No Data"',
+                showErrorMessage: true, error: 'กรุณาเลือกตำแหน่งจากรายการ'
+            },
+            {
+                sqref: `M2:M${rowsBuffer}`, type: 'date', operator: 'between', formula1: '1', formula2: '73415',
+                showInputMessage: true, promptTitle: 'Date Format', prompt: 'กรุณากรอกวันที่ในรูปแบบ วว/ดด/ปปปป (เช่น 20/08/2025)',
+                showErrorMessage: true, error: 'กรุณากรอกวันที่ให้ถูกต้องตามรูปแบบ'
+            }
+        ]
+
+        // Save
+        XLSX.utils.book_append_sheet(wb, wsTemplate, 'UploadTemplate')
+        XLSX.utils.book_append_sheet(wb, wsRef, 'Reference')
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) // Remove cellStyles: true
+        const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'employee-template.xlsx'
+        a.click()
+        URL.revokeObjectURL(url)
     }
 
-    // Cols
-    const colWidths = header.map(h => {
-        if (h === 'Email') return { wch: 28 }
-        if (h === 'Date Add') return { wch: 15 }
-        return { wch: Math.max(12, String(h).length + 5) }
-    })
-    colWidths.push({ wch: 60 })
-    wsTemplate['!cols'] = colWidths
+    /* ---------- cancel button ---------- */
+    function onCancel() {
+        displayRows.value = []
+        file.value = null
+        error.value = ''
+        page.value = 1
+        router.push('/add-employee')
+    }
 
-    // Data Validation
-    const rowsBuffer = 1000
-    const listDeptRef = `Reference!$F$2:$F$${Math.max(2, distinctDeps.length + 1)}`
-    const listTeamRef = `Reference!$G$2:$G$${Math.max(2, distinctTeams.length + 1)}`
-    const listPosRef = `Reference!$H$2:$H$${Math.max(2, distinctPositions.length + 1)}`
-
-    wsTemplate['!dataValidation'] = [
+    /* ---------- columns for DataTable ---------- */
+    const tableColumns = [
         {
-            sqref: `H2:H${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctDeps.length ? listDeptRef : '"No Data"',
-            showErrorMessage: true, error: 'กรุณาเลือกแผนกจากรายการ'
+            key: 'index',
+            label: '#',
+            class: 'text-left w-[72px] whitespace-nowrap'
         },
         {
-            sqref: `I2:I${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctTeams.length ? listTeamRef : '"No Data"',
-            showErrorMessage: true, error: 'กรุณาเลือกทีมจากรายการ'
+            key: 'employeeId',
+            label: 'ID',
+            class: 'text-left w-[140px] whitespace-nowrap'
         },
         {
-            sqref: `J2:J${rowsBuffer}`, type: 'list', operator: 'between', formula1: distinctPositions.length ? listPosRef : '"No Data"',
-            showErrorMessage: true, error: 'กรุณาเลือกตำแหน่งจากรายการ'
+            key: 'name',
+            label: 'Name',
+            class: 'text-left w-[240px] whitespace-nowrap'
         },
         {
-            sqref: `M2:M${rowsBuffer}`, type: 'date', operator: 'between', formula1: '1', formula2: '73415',
-            showInputMessage: true, promptTitle: 'Date Format', prompt: 'กรุณากรอกวันที่ในรูปแบบ วว/ดด/ปปปป (เช่น 20/08/2025)',
-            showErrorMessage: true, error: 'กรุณากรอกวันที่ให้ถูกต้องตามรูปแบบ'
+            key: 'nickname',
+            label: 'Nickname',
+            class: 'text-left w-[120px] whitespace-nowrap'
+        },
+        {
+            key: 'phone',
+            label: 'Phone',
+            class: 'text-left w-[140px] whitespace-nowrap'
+        },
+        {
+            key: 'department',
+            label: 'Department',
+            class: 'text-left w-[180px] whitespace-nowrap'
+        },
+        {
+            key: 'team',
+            label: 'Team',
+            class: 'text-left w-[160px] whitespace-nowrap'
+        },
+        {
+            key: 'position',
+            label: 'Position',
+            class: 'text-left w-[180px] whitespace-nowrap'
+        },
+        {
+            key: 'email',
+            label: 'Email',
+            class: 'text-left w-[220px] whitespace-nowrap'
+        },
+        {
+            key: 'dateAdd',
+            label: 'Date Add (D/M/Y)',
+            class: 'text-center w-[140px] whitespace-nowrap'
         }
     ]
 
-    // Save
-    XLSX.utils.book_append_sheet(wb, wsTemplate, 'UploadTemplate')
-    XLSX.utils.book_append_sheet(wb, wsRef, 'Reference')
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) // Remove cellStyles: true
-    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'employee-template.xlsx'
-    a.click()
-    URL.revokeObjectURL(url)
-}
-
-/* ---------- cancel button ---------- */
-function onCancel() {
-    displayRows.value = []
-    file.value = null
-    error.value = ''
-    page.value = 1
-    router.push('/add-employee')
-}
-
-/* ---------- columns for DataTable ---------- */
-const tableColumns = [
-    {
-        key: 'index',
-        label: '#',
-        class: 'text-left w-[72px] whitespace-nowrap'
-    },
-    {
-        key: 'employeeId',
-        label: 'ID',
-        class: 'text-left w-[140px] whitespace-nowrap'
-    },
-    {
-        key: 'name',
-        label: 'Name',
-        class: 'text-left w-[240px] whitespace-nowrap'
-    },
-    {
-        key: 'nickname',
-        label: 'Nickname',
-        class: 'text-left w-[120px] whitespace-nowrap'
-    },
-    {
-        key: 'phone',
-        label: 'Phone',
-        class: 'text-left w-[140px] whitespace-nowrap'
-    },
-    {
-        key: 'department',
-        label: 'Department',
-        class: 'text-left w-[180px] whitespace-nowrap'
-    },
-    {
-        key: 'team',
-        label: 'Team',
-        class: 'text-left w-[160px] whitespace-nowrap'
-    },
-    {
-        key: 'position',
-        label: 'Position',
-        class: 'text-left w-[180px] whitespace-nowrap'
-    },
-    {
-        key: 'email',
-        label: 'Email',
-        class: 'text-left w-[220px] whitespace-nowrap'
-    },
-    {
-        key: 'dateAdd',
-        label: 'Date Add (D/M/Y)',
-        class: 'text-center w-[140px] whitespace-nowrap'
-    }
-]
-
-/* ---------- enable/disable ปุ่ม Create ---------- */
-const canCreate = computed(() => {
-    return displayRows.value.length > 0 && !creating.value && !uploading.value
-})
+    /* ---------- enable/disable ปุ่ม Create ---------- */
+    const canCreate = computed(() => {
+        return displayRows.value.length > 0 && !creating.value && !uploading.value
+    })
 </script>
