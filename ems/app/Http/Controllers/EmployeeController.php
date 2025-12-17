@@ -15,6 +15,7 @@ use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+
 class EmployeeController extends Controller
 {
     /**
@@ -78,7 +79,7 @@ class EmployeeController extends Controller
 
     /**
      * อ่านข้อมูลพนักงานรายคน (ใช้สำหรับหน้าแก้ไข)
-     * [แก้ไข] รองรับทั้ง ID (1,2,3) และ emp_id (Test001)
+     * รองรับทั้ง ID (1,2,3) และ emp_id (Test001)
      */
     public function show($id)
     {
@@ -310,7 +311,6 @@ class EmployeeController extends Controller
 
     /**
      * อัปเดตข้อมูลพนักงาน
-     * [แก้ไข] รองรับทั้ง ID และ emp_id เพื่อแก้ 404
      */
     public function update(Request $request, $id)
     {
@@ -322,7 +322,13 @@ class EmployeeController extends Controller
         }
 
         $validated = $request->validate([
-            'emp_id' => ['sometimes', 'required'],
+            // --- [แก้ไข] เพิ่ม Rule::unique สำหรับ emp_id ---
+            'emp_id' => [
+                'sometimes',
+                'required',
+                Rule::unique('ems_employees', 'emp_id')->ignore($emp->id) // ห้ามซ้ำ ยกเว้นของตัวเอง
+            ],
+            // ---------------------------------------------
             'emp_prefix' => ['sometimes', 'required'],
             'emp_firstname' => ['sometimes', 'required'],
             'emp_lastname' => ['sometimes', 'required'],
@@ -371,7 +377,6 @@ class EmployeeController extends Controller
 
     /**
      * ลบแบบ soft (Standard)
-     * [แก้ไข] รองรับทั้ง ID และ emp_id
      */
     public function destroy($id)
     {
