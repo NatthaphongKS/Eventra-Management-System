@@ -415,7 +415,7 @@ class EventController extends Controller
             ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
             ->where('con_delete_status', 'active');
 
-        // สร้าง subquery สำหรับนับที่ตอบรับ (active + accept)
+        // สร้าง subquery สำหรับนับที่ตอบรับ (active + accepted)
         $subAccept = DB::table('ems_connect')
             ->selectRaw('COUNT(*)')
             ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
@@ -516,9 +516,9 @@ class EventController extends Controller
                 ->where('con_delete_status', 'active')
                 ->selectRaw('
                     COUNT(*) as total,
-                    SUM(CASE WHEN con_answer = "accept" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
-                    SUM(CASE WHEN con_answer = "invalid" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN con_answer IN ("pending", "invalid") OR con_answer IS NULL THEN 1 ELSE 0 END) as pending
                 ')
                 ->first();
 
@@ -616,9 +616,9 @@ class EventController extends Controller
             // กรองตาม status ถ้ามี
             if ($statusFilter) {
                 if ($statusFilter === 'pending') {
-                    $query->where('c.con_answer', 'invalid');
+                    $query->whereIn('c.con_answer', ['pending', 'invalid']);
                 } elseif ($statusFilter === 'accepted') {
-                    $query->where('c.con_answer', 'accept');
+                    $query->where('c.con_answer', 'accepted');
                 } elseif ($statusFilter === 'declined') {
                     $query->where('c.con_answer', 'denied');
                 }
@@ -628,9 +628,9 @@ class EventController extends Controller
 
             // นับสถิติ - แก้ไขให้ตรงกับ database จริง
             $totalCount = $participants->count();
-            $attendingCount = $participants->where('status', 'accept')->count();
+            $attendingCount = $participants->where('status', 'accepted')->count();
             $notAttendingCount = $participants->where('status', 'denied')->count();
-            $pendingCount = $participants->where('status', 'invalid')->count();
+            $pendingCount = $participants->whereIn('status', ['pending', 'invalid'])->count();
 
             \Log::info("Event $id participants stats:", [
                 'total' => $totalCount,
@@ -687,9 +687,9 @@ class EventController extends Controller
                         ->orWhere('con_delete_status', 'active');
                 })
                 ->selectRaw('
-                    COUNT(CASE WHEN con_answer = "accept" THEN 1 END) as actual_attendance,
-                    COUNT(CASE WHEN con_answer = "decline" THEN 1 END) as declined,
-                    COUNT(CASE WHEN con_answer IS NULL OR con_answer = "" OR con_answer = "pending" THEN 1 END) as pending,
+                    COUNT(CASE WHEN con_answer = "accepted" THEN 1 END) as actual_attendance,
+                    COUNT(CASE WHEN con_answer = "denied" THEN 1 END) as declined,
+                    COUNT(CASE WHEN con_answer IN ("pending", "invalid") OR con_answer IS NULL OR con_answer = "" THEN 1 END) as pending,
                     COUNT(*) as total_invited
                 ')
                 ->first();
@@ -738,9 +738,9 @@ class EventController extends Controller
                 ->where('con_delete_status', 'active')
                 ->selectRaw('
                     COUNT(*) as total_participation,
-                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
-                    SUM(CASE WHEN con_answer = "invalid" OR con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN con_answer = "pending" OR con_answer = "invalid" OR con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
                 ')
                 ->first();
 
@@ -753,9 +753,9 @@ class EventController extends Controller
                 ->groupBy('ems_department.id', 'ems_department.dpm_name')
                 ->selectRaw('
                     ems_department.dpm_name as name,
-                    SUM(CASE WHEN ems_connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_answer = "invalid" OR ems_connect.con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_answer = "pending" OR ems_connect.con_answer = "invalid" OR ems_connect.con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
