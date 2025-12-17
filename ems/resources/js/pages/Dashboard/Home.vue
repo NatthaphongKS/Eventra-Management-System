@@ -1266,11 +1266,18 @@ export default {
         
         // Filter participants based on status
         let filteredParticipants = [];
-        const apiStatus = this.mapStatusForAPI(status);
         
-        filteredParticipants = this.eventParticipants.filter(participant => {
-          return participant.status === apiStatus;
-        });
+        if (status === 'pending') {
+          // For pending, include both 'pending' and 'invalid' statuses
+          filteredParticipants = this.eventParticipants.filter(participant => {
+            return participant.status === 'pending' || participant.status === 'invalid';
+          });
+        } else {
+          const apiStatus = this.mapStatusForAPI(status);
+          filteredParticipants = this.eventParticipants.filter(participant => {
+            return participant.status === apiStatus;
+          });
+        }
         
         // Map to our expected employee format
         this.filteredEmployeesForTable = filteredParticipants.map(participant => ({
@@ -1302,11 +1309,11 @@ export default {
 
     mapStatusForAPI(status) {
       const statusMap = {
-        'attending': 'accept',
+        'attending': 'accepted',
         'not-attending': 'denied', 
-        'pending': 'invalid'
+        'pending': 'pending'
       };
-      return statusMap[status] || 'invalid';
+      return statusMap[status] || 'pending';
     },
 
     // Button testing methods
