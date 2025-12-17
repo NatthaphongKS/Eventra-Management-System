@@ -49,6 +49,7 @@ const routes = [
     props: true, // เปิดรับ id เป็น props
     meta: { title: 'History Event Details' }
   },
+
   { path: '/history-category', component: HistoryCategory, meta: { title: 'History Category'}},
 
 
