@@ -15,6 +15,7 @@ use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+
 class EmployeeController extends Controller
 {
     /**
