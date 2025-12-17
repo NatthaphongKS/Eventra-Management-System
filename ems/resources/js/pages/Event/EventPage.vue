@@ -1,21 +1,24 @@
-+<template>
+<template>
     <section class="p-0">
-        <div class="mt-3 mb-1 flex items-center gap-4">
-            <!-- ✅ SearchBar -->
-            <div class="flex flex-1">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
+            <!-- Search -->
+            <div class="flex-1">
                 <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch"
-                    class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5" />
+                    class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5 w-full" />
             </div>
 
             <!-- ✅ Filter / Sort -->
-            <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                @update:modelValue="applyFilter" class="mt-6" />
-            <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort" class="mt-6" />
-            <!-- ✅ Add Button -->
-            <router-link to="/add-event"
-                class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6">
-                + Add
-            </router-link>
+            <div class="flex items-stretch gap-2 flex-shrink-0 mt-[30px]">
+                <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
+                    @update:modelValue="applyFilter" class="[&_button]:h-full" />
+                <!-- ✅ Sort -->
+                <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
+                    class="[&_button]:h-full" />
+
+                <!-- ✅ Add Button -->
+                <AddButton @click="$router.push('/add-event')"
+                    class="h-full w-[44px] flex items-center justify-center" />
+            </div>
         </div>
 
         <!-- ตาราง -->
@@ -74,17 +77,32 @@
             </template>
 
             <template #actions="{ row }">
-                <button @click="canDelete(row) ? openDelete(row.id) : null" :disabled="!canDelete(row)"
+
+                <!-- ปุ่มโย -->
+                <!-- <button @click="canDelete(row) ? openDelete(row.id) : null" :disabled="!canDelete(row)"
                     class="rounded-lg p-1.5" :class="[
                         canDelete(row)
                             ? 'hover:bg-slate-100 cursor-pointer'
                             : 'opacity-30 cursor-not-allowed'
                     ]" title="Delete">
                     <TrashIcon class="h-5 w-5" :class="canDelete(row) ? 'text-neutral-800' : 'text-neutral-400'" />
+                </button> -->
+
+                <!-- ปุ่มชั่วคราว -->
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" title="Delete">
+                    <TrashIcon class="h-5 w-5" />
                 </button>
 
-                <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
-                    <PencilIcon class="h-5 w-5 text-neutral-800" />
+                <!-- ปุ่มแก้ไข (disabled ถ้า ongoing ในทุกกรณี) -->
+                <button @click="row.evn_status !== 'ongoing' && editEvent(row.id)"
+                    :disabled="row.evn_status === 'ongoing'" class="rounded-lg p-1.5" :class="row.evn_status === 'ongoing'
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'hover:bg-slate-100 cursor-pointer'" :title="row.evn_status === 'ongoing'
+                            ? 'Cannot edit ongoing event'
+                            : 'Edit'">
+                    <PencilIcon class="h-5 w-5" :class="row.evn_status === 'ongoing'
+                        ? 'text-neutral-400'
+                        : 'text-neutral-800'" />
                 </button>
 
                 <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
@@ -117,6 +135,7 @@ import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
+import AddButton from '@/components/AddButton.vue'
 
 import {
     MagnifyingGlassIcon,
@@ -138,6 +157,7 @@ export default {
         DataTable,
         EventFilter,
         SearchBar,
+        AddButton,
         ModalAlert,
     },
 
