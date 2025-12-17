@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Connect;
 use App\Models\Employee;
 use App\Models\Event;
@@ -14,6 +15,28 @@ class CheckInController extends Controller
 
     function getEmployeeForCheckin($eveId)
     {
+        $emps = Employee::where('emp_delete_status', 'active')->get();
+
+        try {
+            foreach ($emps as $emp) {
+                // หาว่ามีข้อมูลหรือยัง ถ้าไม่มีให้สร้างใหม่ (Create) ด้วยค่าที่กำหนด
+                Connect::firstOrCreate(
+                    [
+                        'con_employee_id' => $emp->id,
+                        'con_event_id'    => $eveId,
+                    ],
+                    [
+                        'con_checkin_status' => 0,
+                        'con_answer'         => 'not_invite',
+                        'con_reason'         => null,
+                        'con_delete_status'  => 'active',
+                    ]
+                );
+            }
+        } catch (\Exception $e) { 
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
+        }
+
         //ข้อมูลพนักงานทั้งหมด (Employees)
         $employees = Employee::with('department', 'position', 'team', 'company')
             ->where('emp_delete_status', 'active')
@@ -46,7 +69,7 @@ class CheckInController extends Controller
             ->Where('con_event_id', $eveId)
             ->first();
         if ($connect) {
-            return $connect->con_answer; // 'accept', 'denied', 'invalid'
+            return $connect->con_answer; // 'accepted', 'denied', 'invalid','not_invited'
         } else {
             return 'not_invited'; // กรณีพนักงานไม่ได้รับเชิญ
         }
@@ -78,7 +101,7 @@ class CheckInController extends Controller
             $record->con_employee_id = $empId;
             $record->con_event_id = $eveId;
             $record->con_checkin_status = 1; // หรือค่าเริ่มต้นที่ต้องการ
-            $record->con_answer = 'invalid';
+            $record->con_answer = 'not_invited';
             $record->con_reason = null;
             $record->con_delete_status = 'active';
             $record->save();
@@ -100,61 +123,40 @@ class CheckInController extends Controller
         ], 200);
     }
 
-    public function updateEmployeeAttendanceAll($eveId)
+    public function updateEmployeeAttendanceAll(Request $request, $eveId)
     {
-        $records = Connect::where('con_event_id', $eveId)->get();
-        $checkIn = false;
-        $nonCheckIn = false;
-        foreach ($records as $record) {
-            if ($record->con_checkin_status == 1) {
-                $checkIn = true;
-            } else if ($record->con_checkin_status == 0) {
-                $nonCheckIn = true;
-            }
-            if ($checkIn && $nonCheckIn) {
-                break;
+        $notCheckin = true;
+        $employeeIds = $request->input('employeeIds');
+        foreach ($employeeIds as $empId) {
+            $record = Connect::where('con_employee_id', $empId)->where('con_event_id', $eveId)->first();
+            if ($record && $record->con_checkin_status == 0) {
+                $notCheckin = false;
             }
         }
 
-        if (!$checkIn && $nonCheckIn) {
-            // ถ้า con_checkin_status เป็น 0 ให้เปลี่ยนเป็น 1 ทั้งหมด
-            foreach ($records as $record) {
-                $record->con_checkin_status = 1;
-                $record->save();
+        if (!$notCheckin) {
+            // ถ้ามีอย่างน้อยหนึ่งรายการที่ con_checkin_status เป็น 0 ให้ตั้งค่าเป็น 1 ทั้งหมด
+            foreach ($employeeIds as $empId) {
+                $record = Connect::where('con_employee_id', $empId)->where('con_event_id', $eveId)->first();
+                if ($record) {
+                    $record->con_checkin_status = 1;
+                    $record->save();
+                }
             }
-
-            return response()->json([
-                'message' => 'All records updated to checked in',
-                'data' => $records
-            ], 200);
-        } else if ($checkIn && !$nonCheckIn) {
-            // ถ้า con_checkin_status เป็น 1 ให้เปลี่ยนเป็น 0 ทั้งหมด
-            foreach ($records as $record) {
-                $record->con_checkin_status = 0;
-                $record->save();
-            }
-
-            return response()->json([
-                'message' => 'All records updated to not checked in',
-                'data' => $records
-            ], 200);
         } else {
-            //ถถ้าอย่างอื่นให้ เปลี่ยนเป็น 1 ทั้งหมด
-            foreach ($records as $record) {
-                $record->con_checkin_status = 1;
-                $record->save();
+            // ถ้าทุกรายการเป็น 1 ให้ตั้งค่าเป็น 0 ทั้งหมด
+            foreach ($employeeIds as $empId) {
+                $record = Connect::where('con_employee_id', $empId)->where('con_event_id', $eveId)->first();
+                if ($record) {
+                    $record->con_checkin_status = 0;
+                    $record->save();
+                }
             }
-
-            foreach ($records as $record) {
-                // toggle con_checkin_status สำหรับแต่ละ record
-                $record->con_checkin_status = $record->con_checkin_status ? 0 : 1;
-                $record->save();
-            }
-
-            return response()->json([
-                'message' => 'All records updated',
-                'data' => $records
-            ], 200);
         }
+
+        return response()->json([
+            'message' => 'All records updated',
+            'data' => $eveId
+        ], 200);
     }
 }
