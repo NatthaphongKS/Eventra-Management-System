@@ -1019,12 +1019,12 @@ export default {
           this.eventParticipants = res.data.participants || [];
           this.showEmployeeTable = true;
           
-          console.log('✅ Chart data updated:', this.chartData);
-          console.log('✅ Participation data updated:', this.participationData);
-          console.log('✅ Participants count:', this.eventParticipants.length);
+          console.log('Chart data updated:', this.chartData);
+          console.log('Participation data updated:', this.participationData);
+          console.log('Participants count:', this.eventParticipants.length);
         }
       } catch (err) {
-        console.error('❌ Error fetching event statistics:', err);
+        console.error('Error fetching event statistics:', err);
         console.error('Error response:', err.response?.data);
         console.error('Error status:', err.response?.status);
         // Show error message or fallback to empty data
