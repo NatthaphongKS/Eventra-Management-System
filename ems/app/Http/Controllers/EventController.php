@@ -743,9 +743,9 @@ class EventController extends Controller
                 ->where('con_delete_status', 'active')
                 ->selectRaw('
                     COUNT(*) as total_participation,
-                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
-                    SUM(CASE WHEN con_answer IN ("pending", "invalid") OR con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN con_answer = "pending" OR con_answer = "invalid" OR con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
                 ')
                 ->first();
 
@@ -758,9 +758,9 @@ class EventController extends Controller
                 ->groupBy('ems_department.id', 'ems_department.dpm_name')
                 ->selectRaw('
                     ems_department.dpm_name as name,
-                    SUM(CASE WHEN ems_connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_answer IN ("pending", "invalid") OR ems_connect.con_answer IS NULL THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_answer = "pending" OR ems_connect.con_answer = "invalid" OR ems_connect.con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
