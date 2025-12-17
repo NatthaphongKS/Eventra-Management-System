@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;      // ใช้เฉพาะ transaction
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Event;
 use App\Models\Employee;
@@ -108,9 +109,6 @@ class EventController extends Controller
             'guest_ids' => $guestIds,
         ]);
     }
-
-
-
 
     public function Update(Request $request)
     {
@@ -423,7 +421,7 @@ class EventController extends Controller
             ->selectRaw('COUNT(*)')
             ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
             ->where('con_delete_status', 'active')
-            ->where('con_answer', 'accept');
+            ->where('con_answer', 'accepted');
 
         $rows = Event::query()
             ->leftJoin('ems_categories as c', 'c.id', '=', 'ems_event.evn_category_id')
@@ -509,7 +507,7 @@ class EventController extends Controller
             return response()->json(['message' => 'Event deleted failed'], 500);
         }
     }
-    
+
     public function getEventParticipants($eventId)
     {
         try {
@@ -598,7 +596,7 @@ class EventController extends Controller
                 ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
                 ->leftJoin('ems_team as t', 'e.emp_team_id', '=', 't.id')
                 ->where('c.con_event_id', $id)
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->where('c.con_delete_status', 'active');
                 })
                 ->select([
@@ -660,7 +658,6 @@ class EventController extends Controller
                     'status' => $event->evn_status
                 ]
             ]);
-
         } catch (\Exception $e) {
             \Log::error("Error in getParticipants for event $id: " . $e->getMessage());
             return response()->json([
@@ -685,10 +682,10 @@ class EventController extends Controller
             // ดึงข้อมูลการตอบรับจาก ems_connect table
             $attendanceStats = DB::table('ems_connect')
                 ->where('con_event_id', $eventId)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNull('con_delete_status')
-                          ->orWhere('con_delete_status', '')
-                          ->orWhere('con_delete_status', 'active');
+                        ->orWhere('con_delete_status', '')
+                        ->orWhere('con_delete_status', 'active');
                 })
                 ->selectRaw('
                     COUNT(CASE WHEN con_answer = "accept" THEN 1 END) as actual_attendance,
@@ -707,12 +704,11 @@ class EventController extends Controller
                     'declined' => $attendanceStats->declined ?? 0,
                     'pending' => $attendanceStats->pending ?? 0,
                     'total_invited' => $attendanceStats->total_invited ?? 0,
-                    'attendance_percentage' => $attendanceStats->total_invited > 0 
-                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2) 
+                    'attendance_percentage' => $attendanceStats->total_invited > 0
+                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2)
                         : 0
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -725,7 +721,7 @@ class EventController extends Controller
     {
         try {
             $eventIds = $request->input('event_ids', []);
-            
+
             if (empty($eventIds)) {
                 return response()->json([
                     'total_participation' => 0,
@@ -798,7 +794,6 @@ class EventController extends Controller
                 'departments' => $departments,
                 'participants' => $participants
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -807,5 +802,4 @@ class EventController extends Controller
             ], 500);
         }
     }
-
 }
