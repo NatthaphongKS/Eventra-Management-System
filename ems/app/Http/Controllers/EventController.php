@@ -348,7 +348,7 @@ class EventController extends Controller
                     if(!$empId) continue;
 
                     $pivotData[$empId] = [
-                        'con_answer' => 'pending',
+                        'con_answer' => 'invalid',
                         'con_delete_status' => 'active'
                     ];
                 }
