@@ -78,20 +78,17 @@
 
             <template #actions="{ row }">
 
-                <!-- ปุ่มโย -->
-                <!-- <button @click="canDelete(row) ? openDelete(row.id) : null" :disabled="!canDelete(row)"
-                    class="rounded-lg p-1.5" :class="[
-                        canDelete(row)
-                            ? 'hover:bg-slate-100 cursor-pointer'
-                            : 'opacity-30 cursor-not-allowed'
-                    ]" title="Delete">
-                    <TrashIcon class="h-5 w-5" :class="canDelete(row) ? 'text-neutral-800' : 'text-neutral-400'" />
-                </button> -->
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)"
+                    :class="!canDelete(row) ? 'cursor-not-allowed opacity-40' : 'hover:bg-slate-100 cursor-pointer'"
+                    :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
+                    <TrashIcon class="h-5 w-5" />
+                </button>
 
-                <!-- ปุ่มชั่วคราว -->
+                <!-- ปุ่มชั่วคราว
                 <button @click="openDelete(row.id)" class="rounded-lg p-1.5" title="Delete">
                     <TrashIcon class="h-5 w-5" />
                 </button>
+                -->
 
                 <!-- ปุ่มแก้ไข (disabled ถ้า ongoing ในทุกกรณี) -->
                 <button @click="row.evn_status !== 'ongoing' && editEvent(row.id)"
@@ -165,6 +162,10 @@ export default {
         return {
             showModalBlockedDone: false,
             showModalBlockedOngoing: false,
+            empPermission: "disabled", // default กันพลาด
+            showModalBlockedPermission: false,
+            blockMessage: "",
+            deleteId: null,
 
             event: [],
             categories: [],
@@ -323,7 +324,7 @@ export default {
     ],
 
     async created() {
-        await Promise.all([this.fetchEvent(), this.fetchCategories()]);
+        await Promise.all([this.fetchMe(), this.fetchEvent(), this.fetchCategories()]);
     },
 
     computed: {
@@ -530,7 +531,16 @@ export default {
 
         canDelete(row) {
             const status = (row.evn_status || "").toLowerCase();
-            return !(status === "done" || status === "ongoing");
+            const perm = (this.empPermission || "disabled").toLowerCase();
+
+            // ongoing ห้ามลบทุกกรณี
+            if (status === "ongoing") return false;
+
+            // enabled ลบได้ upcoming + done
+            if (perm === "enabled") return status === "upcoming" || status === "done";
+
+            // disabled ลบได้แค่ upcoming
+            return status === "upcoming";
         },
 
         async fetchEvent() {
@@ -563,6 +573,17 @@ export default {
                 console.error("fetchCategories error", err);
                 this.categories = [];
                 this.catMap = {};
+            }
+        },
+
+        async fetchMe() {
+            try {
+                const res = await axios.get("/me");
+                // ตัวอย่าง response: { emp_permission: "enabled" }
+                this.empPermission = (res.data?.emp_permission || "disabled").toLowerCase();
+            } catch (err) {
+                console.error("fetchMe error", err);
+                this.empPermission = "disabled"; // กันพลาด
             }
         },
 

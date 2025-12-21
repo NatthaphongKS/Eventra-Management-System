@@ -466,18 +466,73 @@ class EventController extends Controller
         return response()->json($rows);
     }
 
+    public function me()
+    {
+        $userId = Auth::id();
+        if (!$userId) return response()->json(['message' => 'Unauthenticated'], 401);
+
+        $emp = Employee::find($userId);
+        if (!$emp) return response()->json(['message' => 'Employee not found'], 404);
+
+        return response()->json([
+            'id' => $emp->id,
+            'emp_permission' => strtolower((string) $emp->emp_permission),
+        ]);
+    }
 
     public function deleted($id)
     {
         try {
-            // 1. ค้นหา Event ก่อน (ถ้าใช้ update เลยเราจะไม่ได้ object มาส่งเมล)
-            $event = Event::find($id);
+            // หน้า Event ไม่ได้เก็บข้อมูลผู้ใช้
 
+            // 1. ผู้ใช้ต้อง login
+            $userId = Auth::id();
+            if (!$userId) {
+                return response()->json(['message' => 'Unauthenticated'], 401);
+            }
+
+            // 2. หา event
+            $event = Event::find($id);
             if (!$event) {
                 return response()->json(['message' => 'Event not found'], 404);
             }
 
-            // 2. หาคนที่จะส่งเมลหา (คนที่มีสถานะ active ใน event นี้ทั้งหมด)
+            $status = strtolower((string) $event->evn_status);
+
+            // กันลบซ้ำ/กันสถานะ deleted
+            if ($status === 'deleted') {
+                return response()->json(['message' => 'Event already deleted'], 409);
+            }
+
+            // 3. ongoing ห้ามลบทุกกรณี
+            if ($status === 'ongoing') {
+                return response()->json(['message' => 'Ongoing event cannot be deleted'], 403);
+            }
+
+            // 4. ดึง emp_permission ของคนที่ลบ
+            // *** สำคัญ: สมมติ Auth::id() = id ในตาราง ems_employees (ตามที่ใช้ evn_create_by = Auth::id())
+            $emp = Employee::find($userId);
+            if (!$emp) {
+                return response()->json(['message' => 'Employee not found'], 404);
+            }
+
+            $perm = strtolower((string) $emp->emp_permission); // enabled / disabled
+
+            // 5. เช็คสิทธิ์
+            $canDelete = false;
+
+            if ($perm === 'enabled') {
+                $canDelete = in_array($status, ['upcoming', 'done'], true);
+            } else {
+                // disabled หรือค่าอื่นๆ ถือว่าเหมือน disabled
+                $canDelete = ($status === 'upcoming');
+            }
+
+            if (!$canDelete) {
+                return response()->json(['message' => 'You have no permission to delete this event'], 403);
+            }
+
+            //  6. ส่งอีเมลยกเลิกให้ผู้เข้าร่วม (active)
             $participantIds = DB::table('ems_connect')
                 ->where('con_event_id', $event->id)
                 ->where('con_delete_status', 'active') // เอาเฉพาะคนที่ยังไม่ถูกลบออกจากลิสต์
@@ -486,18 +541,27 @@ class EventController extends Controller
             // 3. ดึงข้อมูล Employee และส่งอีเมล
             $employees = Employee::whereIn('id', $participantIds)->get();
 
+            /*
             foreach ($employees as $emp) {
                 if ($emp->emp_email) {
                     // ส่งอีเมลแจ้งยกเลิก
                     Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
                 }
             }
+            */
 
-            // 4. ทำการ Soft Delete (อัปเดตสถานะใน DB)
+            foreach ($employees as $empItem) {
+                if ($empItem->emp_email) {
+                    // ส่งอีเมลแจ้งยกเลิก
+                    Mail::to($empItem->emp_email)->send(new EventCancellationMail($empItem, $event));
+                }
+            }
+
+            // 7. Soft delete
             $event->update([
                 'evn_status'     => 'deleted',
                 'evn_deleted_at' => Carbon::now(),
-                'evn_deleted_by' => Auth::id(),
+                'evn_deleted_by' => $userId,
             ]);
 
             return response()->json(['message' => 'Event deleted and notifications sent successfully']);
