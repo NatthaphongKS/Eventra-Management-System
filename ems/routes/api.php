@@ -51,7 +51,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
     // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
     // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
-    Route::get('/me', [EventController::class, 'me']);
+    // Route::get('/me', [EventController::class, 'me']);
+    Route::get('/permission', [EventController::class, 'permission']);
     Route::patch('/event/{id}/deleted',     [EventController::class, 'deleted'])->whereNumber('id');
     Route::post('/event-save', [EventController::class, 'store']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);

@@ -466,7 +466,7 @@ class EventController extends Controller
         return response()->json($rows);
     }
 
-    public function me()
+    public function permission()
     {
         $userId = Auth::id();
         if (!$userId) return response()->json(['message' => 'Unauthenticated'], 401);
@@ -475,7 +475,6 @@ class EventController extends Controller
         if (!$emp) return response()->json(['message' => 'Employee not found'], 404);
 
         return response()->json([
-            'id' => $emp->id,
             'emp_permission' => strtolower((string) $emp->emp_permission),
         ]);
     }

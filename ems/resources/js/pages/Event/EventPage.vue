@@ -324,7 +324,7 @@ export default {
     ],
 
     async created() {
-        await Promise.all([this.fetchMe(), this.fetchEvent(), this.fetchCategories()]);
+        await Promise.all([this.fetchPermission(), this.fetchEvent(), this.fetchCategories()]);
     },
 
     computed: {
@@ -576,14 +576,14 @@ export default {
             }
         },
 
-        async fetchMe() {
+        async fetchPermission() {
             try {
-                const res = await axios.get("/me");
+                const res = await axios.get("/permission");
                 // ตัวอย่าง response: { emp_permission: "enabled" }
                 this.empPermission = (res.data?.emp_permission || "disabled").toLowerCase();
             } catch (err) {
-                console.error("fetchMe error", err);
-                this.empPermission = "disabled"; // กันพลาด
+                console.error("fetchPermission error", err);
+                this.empPermission = "disabled";
             }
         },
 
