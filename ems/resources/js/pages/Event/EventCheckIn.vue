@@ -144,7 +144,7 @@
                 @click="setStatus('CheckIn')"
             >
                 <span class="ml-2"
-                    >{{ totals.checkIn }}/{{ rows.length }} Attended</span
+                    >{{ totals.checkIn }} Attended</span
                 >
             </button>
 
@@ -158,7 +158,7 @@
                 @click="setStatus('notCheckIn')"
             >
                 <span class="ml-2"
-                    >{{ totals.notCheckIn }}/{{ rows.length }} Not
+                    >{{ totals.notCheckIn }} Not
                     Attended</span
                 >
             </button>
