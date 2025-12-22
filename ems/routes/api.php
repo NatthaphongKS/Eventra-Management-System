@@ -75,6 +75,8 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // === Check-in ===
     Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']);
+    Route::get('/getEmployeeInviteStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeInviteStatus']);
+    Route::get('/getEmployeeCheckinStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeCheckinStatus']);
     Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}', [CheckInController::class, 'updateEmployeeAttendance']);
     Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}', [CheckInController::class, 'updateEmployeeAttendanceAll']);
 
