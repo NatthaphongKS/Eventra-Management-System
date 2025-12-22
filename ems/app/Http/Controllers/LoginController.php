@@ -50,7 +50,7 @@ class LoginController extends Controller
             $response = response()->json([
                 'redirect' => '/',
                 'user' => $employee, // Optional: return user info if needed
-                'message' => 'Login successful'
+                'message' => 'Login successful',
             ]);
 
             return $response;
