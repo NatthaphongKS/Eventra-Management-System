@@ -55,9 +55,11 @@
 
         <div class="mb-4 flex flex-wrap items-center gap-2">
             <button
-                class="status-pill"
+                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
-                    statusFilter === 'accepted' ? 'ring-2 ring-emerald-300' : ''
+                    statusFilter === 'accepted'
+                        ? 'bg-[#00A73D] text-white border-[#00A73D] shadow-lg'
+                        : 'bg-[#F1FDF4] text-[#00A73D] border-[#E9E9E9] hover:bg-[#E2FBE9]'
                 "
                 @click="setStatus('accepted')"
             >
@@ -70,8 +72,12 @@
             </button>
 
             <button
-                class="status-pill"
-                :class="statusFilter === 'denied' ? 'ring-2 ring-rose-300' : ''"
+                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                :class="
+                    statusFilter === 'denied'
+                        ? 'bg-[#E11D48] text-white border-[#E11D48] shadow-lg'
+                        : 'bg-[#FFF1F2] text-[#E11D48] border-[#E9E9E9] hover:bg-[#FFE4E6]'
+                "
                 @click="setStatus('denied')"
             >
                 <span class="ml-2"
@@ -83,9 +89,11 @@
             </button>
 
             <button
-                class="status-pill"
+                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
-                    statusFilter === 'pending' ? 'ring-2 ring-amber-300' : ''
+                    statusFilter === 'pending'
+                        ? 'bg-[#F59E0B] text-white border-[#F59E0B] shadow-lg'
+                        : 'bg-[#FFFBEB] text-[#D97706] border-[#E9E9E9] hover:bg-[#FEF3C7]'
                 "
                 @click="setStatus('pending')"
             >
@@ -98,9 +106,11 @@
             </button>
 
             <button
-                class="status-pill"
+                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
-                    statusFilter === 'notInvited' ? 'ring-2 ring-slate-300' : ''
+                    statusFilter === 'notInvited'
+                        ? 'bg-[#475569] text-white border-[#475569] shadow-lg'
+                        : 'bg-[#F8FAFC] text-[#475569] border-[#E9E9E9] hover:bg-[#F1F5F9]'
                 "
                 @click="setStatus('notInvited')"
             >
@@ -111,11 +121,46 @@
             </button>
 
             <button
-                class="status-pill bg-violet-600 text-white hover:bg-violet-700"
-                :class="statusFilter === 'all' ? 'ring-2 ring-violet-300' : ''"
+                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                :class="
+                    statusFilter === 'all'
+                        ? 'bg-[#1E293B] text-white border-[#1E293B] shadow-lg'
+                        : 'bg-white text-[#1E293B] border-[#E9E9E9] hover:bg-[#F1F5F9]'
+                "
                 @click="setStatus('all')"
             >
-                {{ checkinStats.total }}/{{ rows.length }} All
+                <span class="ml-2"
+                    >{{ rows.length }}/{{ rows.length }} All</span
+                >
+            </button>
+
+            <button
+                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                :class="
+                    statusFilter === 'CheckIn'
+                        ? 'bg-[#059669] text-white border-[#059669] shadow-lg'
+                        : 'bg-[#ECFDF5] text-[#059669] border-[#E9E9E9] hover:bg-[#D1FAE5]'
+                "
+                @click="setStatus('CheckIn')"
+            >
+                <span class="ml-2"
+                    >{{ totals.checkIn }}/{{ rows.length }} Attended</span
+                >
+            </button>
+
+            <button
+                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                :class="
+                    statusFilter === 'notCheckIn'
+                        ? 'bg-[#BE123C] text-white border-[#BE123C] shadow-lg'
+                        : 'bg-[#FFF1F2] text-[#BE123C] border-[#E9E9E9] hover:bg-[#FFE4E6]'
+                "
+                @click="setStatus('notCheckIn')"
+            >
+                <span class="ml-2"
+                    >{{ totals.notCheckIn }}/{{ rows.length }} Not
+                    Attended</span
+                >
             </button>
         </div>
 
@@ -303,12 +348,22 @@ function mapInvite(ans) {
     return "notInvited";
 }
 
+function mapCheckIn(ans) {
+    const a = String(ans || "").toLowerCase();
+    if (a.includes("accept")) return "accepted";
+    if (a.includes("denied")) return "denied";
+    if (a.includes("invalid")) return "pending";
+    return "notInvited";
+}
+
 const statusLabel = (key) =>
     ({
         accepted: "Accepted",
         denied: "Declined",
         pending: "Pending",
         notInvited: "Not Invited",
+        checkIn: "Attended",
+        notCheckIn: "Not Attended",
     }[key]);
 const statusClass = (key) =>
     ({
@@ -316,6 +371,8 @@ const statusClass = (key) =>
         denied: "bg-rose-100 text-rose-700",
         pending: "bg-amber-100 text-amber-700",
         notInvited: "bg-slate-100 text-slate-600",
+        checkIn: "",
+        notCheckIn: "",
     }[key]);
 
 const setStatus = (s) => {
@@ -325,13 +382,39 @@ const setStatus = (s) => {
 
 /* ===== Statistics ===== */
 const totals = computed(() => {
-    const t = { accepted: 0, denied: 0, pending: 0, notInvited: 0 };
-    rows.value.forEach((r) => t[mapInvite(r.empInviteStatus)]++);
+    const t = {
+        accepted: 0,
+        denied: 0,
+        pending: 0,
+        notInvited: 0,
+        checkIn: 0,
+        notCheckIn: 0,
+    };
+
+    rows.value.forEach((r) => {
+        // นับตาม Invite Status
+        t[mapInvite(r.empInviteStatus)]++;
+
+        // นับตามการมาเข้าร่วมจริง (Check-in Status)
+        if (Number(r.empCheckinStatus) === 1) {
+            t.checkIn++;
+        } else {
+            t.notCheckIn++;
+        }
+    });
     return t;
 });
 
 const checkinStats = computed(() => {
-    const s = { accepted: 0, denied: 0, pending: 0, notInvited: 0, total: 0 };
+    const s = {
+        accepted: 0,
+        denied: 0,
+        pending: 0,
+        notInvited: 0,
+        total: 0,
+        checkIn: 0,
+        notCheckIn: 0,
+    };
     rows.value.forEach((r) => {
         if (Number(r.empCheckinStatus) === 1) {
             s[mapInvite(r.empInviteStatus)]++;
@@ -354,11 +437,14 @@ const filteredBase = computed(() => {
         );
     }
 
-    if (statusFilter.value === "Attended") {
+    if (statusFilter.value === "CheckIn") {
+        // กรองเฉพาะคนที่ Check-in แล้ว (status = 1)
         list = list.filter((r) => Number(r.empCheckinStatus) === 1);
-    } else if (statusFilter.value === "Not Attended") {
+    } else if (statusFilter.value === "notCheckIn") {
+        // กรองคนที่ยังไม่ได้ Check-in (status = 0)
         list = list.filter((r) => Number(r.empCheckinStatus) === 0);
     } else if (statusFilter.value !== "all") {
+        // กรองตาม Invite Status (Accepted, Denied, etc.)
         list = list.filter(
             (r) => mapInvite(r.empInviteStatus) === statusFilter.value
         );
@@ -509,8 +595,4 @@ const columns = [
 ];
 </script>
 
-<style scoped>
-.status-pill {
-    @apply inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-all;
-}
-</style>
+<style scoped></style>
