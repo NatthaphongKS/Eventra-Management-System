@@ -130,7 +130,7 @@
                 @click="setStatus('all')"
             >
                 <span class="ml-2"
-                    >{{ rows.length }}/{{ rows.length }} All</span
+                    >{{ checkinStats.notInvited + checkinStats.denied + checkinStats.pending + checkinStats.accepted }}/{{ rows.length }} All</span
                 >
             </button>
 
