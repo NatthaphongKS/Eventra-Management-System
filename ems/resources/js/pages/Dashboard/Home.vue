@@ -313,11 +313,11 @@ import axios from "axios";
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
 // Import dashboard components
-import AttendingCard from '../../components/dashboard/AttendingCard.vue';
-import NotAttendingCard from '../../components/dashboard/NotAttendingCard.vue';
-import PendingCard from '../../components/dashboard/PendingCard.vue';
-import DonutActualAttendance from '../../components/dashboard/DonutActualAttendance.vue';
-import GraphEventParticipation from '../../components/dashboard/GraphEventParticipation.vue';
+import AttendingCard from '../../components/Dashboard/AttendingCard.vue';
+import NotAttendingCard from '../../components/Dashboard/NotAttendingCard.vue';
+import PendingCard from '../../components/Dashboard/PendingCard.vue';
+import DonutActualAttendance from '../../components/Dashboard/DonutActualAttendance.vue';
+import GraphEventParticipation from '../../components/Dashboard/GraphEventParticipation.vue';
 import Button from "../../components/Button.vue";
 import SearchBar from "../../components/SearchBar.vue";
 import EventFilter from "../../components/IndexEvent/EventFilter.vue";
@@ -1019,12 +1019,12 @@ export default {
           this.eventParticipants = res.data.participants || [];
           this.showEmployeeTable = true;
           
-          console.log('✅ Chart data updated:', this.chartData);
-          console.log('✅ Participation data updated:', this.participationData);
-          console.log('✅ Participants count:', this.eventParticipants.length);
+          console.log('Chart data updated:', this.chartData);
+          console.log('Participation data updated:', this.participationData);
+          console.log('Participants count:', this.eventParticipants.length);
         }
       } catch (err) {
-        console.error('❌ Error fetching event statistics:', err);
+        console.error('Error fetching event statistics:', err);
         console.error('Error response:', err.response?.data);
         console.error('Error status:', err.response?.status);
         // Show error message or fallback to empty data
@@ -1266,11 +1266,18 @@ export default {
         
         // Filter participants based on status
         let filteredParticipants = [];
-        const apiStatus = this.mapStatusForAPI(status);
         
-        filteredParticipants = this.eventParticipants.filter(participant => {
-          return participant.status === apiStatus;
-        });
+        if (status === 'pending') {
+          // For pending, include both 'pending' and 'invalid' statuses
+          filteredParticipants = this.eventParticipants.filter(participant => {
+            return participant.status === 'pending' || participant.status === 'invalid';
+          });
+        } else {
+          const apiStatus = this.mapStatusForAPI(status);
+          filteredParticipants = this.eventParticipants.filter(participant => {
+            return participant.status === apiStatus;
+          });
+        }
         
         // Map to our expected employee format
         this.filteredEmployeesForTable = filteredParticipants.map(participant => ({
@@ -1302,11 +1309,11 @@ export default {
 
     mapStatusForAPI(status) {
       const statusMap = {
-        'attending': 'accept',
+        'attending': 'accepted',
         'not-attending': 'denied', 
-        'pending': 'invalid'
+        'pending': 'pending'
       };
-      return statusMap[status] || 'invalid';
+      return statusMap[status] || 'pending';
     },
 
     // Button testing methods

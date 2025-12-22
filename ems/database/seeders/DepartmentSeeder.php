@@ -13,33 +13,23 @@ class DepartmentSeeder extends Seeder
     public function run(): void
     {
         $departments = [
-            ['Product Development', 1],
-            ['Graphic', 2],
-            ['SMS', 3],
-            ['Management', 4],
-            ['Software Project', 5],
-            ['System Engineer', 6],
-            ['IT Support', 7],
-            ['System Integration', 8],
-            ['SALE', 9],
-            ['Artificial Intelligence', 10],
-            ['Interactive Media', 11],
-            ['MakeWebEasy', 12],
-            ['Chatcone', 13],
-            ['Developer', 14],
-            ['Team Leader', 15],
-            ['Development', 16],
-            ['Quality', 17],
-            ['Support', 18],
-            ['Planning', 19],
+            ['id' => 1, 'dpm_name' => 'Artificial Intelligence'],
+            ['id' => 2, 'dpm_name' => 'Chatcone'],
+            ['id' => 3, 'dpm_name' => 'Developer'],
+            ['id' => 4, 'dpm_name' => 'Graphic'],
+            ['id' => 5, 'dpm_name' => 'IT Support'],
+            ['id' => 6, 'dpm_name' => 'Interactive Media'],
+            ['id' => 7, 'dpm_name' => 'MakeWebEasy'],
+            ['id' => 8, 'dpm_name' => 'Management'],
+            ['id' => 9, 'dpm_name' => 'Product Development'],
+            ['id' => 10, 'dpm_name' => 'SALE'],
+            ['id' => 11, 'dpm_name' => 'SMS'],
+            ['id' => 12, 'dpm_name' => 'Software Project'],
+            ['id' => 13, 'dpm_name' => 'System Engineer'],
+            ['id' => 14, 'dpm_name' => 'System Integration'],
+            ['id' => 15, 'dpm_name' => 'Byteforge Project'],
         ];
 
-        foreach ($departments as $name) {
-            DB::table('ems_department')->insert([
-                'id' => $name[1],
-                'dpm_name' => $name[0],
-                'dpm_delete_status' => 'active',
-            ]);
-        }
+        DB::table('ems_department')->insert($departments);
     }
 }
