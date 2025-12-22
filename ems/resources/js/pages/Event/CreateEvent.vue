@@ -267,7 +267,7 @@
                             v-model="search"
                             placeholder="Search ID / Name / Nickname"
                             @search="() => (page = 1)"
-                            class="!w-full [&_input]:h-[48px] [&_input]:text-base [&_input]:rounded-2xl [&_button]:h-12 [&_button]:w-12 [&_button]:bg-rose-700 [&_button]:hover:opacity-90 [&_svg]:w-6 [&_svg]:h-6"
+                            class=""
                         />
                     </div>
 
