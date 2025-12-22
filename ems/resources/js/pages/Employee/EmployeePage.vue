@@ -1,23 +1,26 @@
 <template>
     <section class="p-0">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 w-full">
-            <SearchBar
-                v-model="searchInput"
-                placeholder="Search ID, Name, Nickname..."
-                @search="onSearchText"
-                
-            />
+        <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3"
+        >
+            <div class="flex-1">
+                <SearchBar
+                    v-model="searchInput"
+                    placeholder="Search ID, Name, Nickname..."
+                    @search="onSearchText"
+                    class=""
+                />
+            </div>
 
-            <div class="flex items-end gap-2 flex-shrink-0">
-
+            <div class="flex items-stretch gap-2 flex-shrink-0 mt-[30px]">
                 <FilterEmployees
                     ref="filterDropdown"
                     v-model="filters"
                     :options="optionsMap"
-                    class="mt-6"
+                    class="[&_button]:h-full"
                 />
 
-                <div class="relative z-[60] mt-6" ref="sortWrap">
+                <div class="relative z-[60]" ref="sortWrap">
                     <SortMenu
                         :is-open="sortMenuOpen"
                         :options="sortOptions"
@@ -25,11 +28,14 @@
                         :sort-order="sortBy.order"
                         @toggle="sortMenuOpen = !sortMenuOpen"
                         @choose="onSortChoose"
-                        
+                        class="[&_button]:h-full"
                     />
                 </div>
 
-                <AddButton @click="goAdd" class="mt-6"/>
+                <AddButton
+                    @click="goAdd"
+                    class="h-full w-[44px] flex items-center justify-center"
+                />
             </div>
         </div>
 
@@ -41,7 +47,12 @@
             :total-items="sorted.length"
             :page-size-options="[10, 20, 50, 100]"
             @update:page="page = $event"
-            @update:pageSize="(s) => { pageSize = s; page = 1; }"
+            @update:pageSize="
+                (s) => {
+                    pageSize = s;
+                    page = 1;
+                }
+            "
             class="mt-4"
         >
             <template #actions="{ row }">
@@ -51,7 +62,11 @@
                     title="Edit"
                     aria-label="edit"
                 >
-                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
+                    <Icon
+                        icon="material-symbols:edit-rounded"
+                        width="20"
+                        height="20"
+                    />
                 </button>
 
                 <button
@@ -60,7 +75,11 @@
                     title="Delete"
                     aria-label="delete"
                 >
-                    <Icon icon="fluent:delete-12-filled" width="20" height="20" />
+                    <Icon
+                        icon="fluent:delete-12-filled"
+                        width="20"
+                        height="20"
+                    />
                 </button>
             </template>
 
@@ -100,7 +119,6 @@
             okText="OK"
             @confirm="onConfirmFail"
         />
-
     </section>
 </template>
 
@@ -149,30 +167,71 @@ export default {
             sortBy: { key: "", order: "" },
 
             sortOptions: [
-                { key: "emp_firstname", order: "asc", label: "ชื่อพนักงาน A–Z" },
-                { key: "emp_firstname", order: "desc", label: "ชื่อพนักงาน Z–A" },
+                {
+                    key: "emp_firstname",
+                    order: "asc",
+                    label: "ชื่อพนักงาน A–Z",
+                },
+                {
+                    key: "emp_firstname",
+                    order: "desc",
+                    label: "ชื่อพนักงาน Z–A",
+                },
                 { key: "department_name", order: "asc", label: "แผนก A–Z" },
                 { key: "department_name", order: "desc", label: "แผนก Z–A" },
                 { key: "team_name", order: "asc", label: "ทีม A–Z" },
                 { key: "team_name", order: "desc", label: "ทีม Z–A" },
                 { key: "position_name", order: "asc", label: "ตำแหน่ง A–Z" },
                 { key: "position_name", order: "desc", label: "ตำแหน่ง Z–A" },
-                { key: "created_at", order: "desc", label: "วันที่เพิ่มใหม่สุด" },
-                { key: "created_at", order: "asc", label: "วันที่เพิ่มเก่าสุด" },
+                {
+                    key: "created_at",
+                    order: "desc",
+                    label: "วันที่เพิ่มใหม่สุด",
+                },
+                {
+                    key: "created_at",
+                    order: "asc",
+                    label: "วันที่เพิ่มเก่าสุด",
+                },
             ],
             EmployeeTableColumns: [
                 { key: "emp_id", label: "ID", class: "text-left w-[100px]" },
-                { key: "emp_fullname", label: "Name", class: "text-left w-[180px]" },
-                { key: "emp_nickname", label: "Nickname", class: "text-left w-[120px]" },
-                { key: "emp_phone", label: "Phone", class: "text-left w-[140px]" },
-                { key: "department_name", label: "Department", class: "text-left w-[140px]" },
-                { key: "team_name", label: "Team", class: "text-left w-[140px]" },
-                { key: "position_name", label: "Position", class: "text-left w-[140px]" },
+                {
+                    key: "emp_fullname",
+                    label: "Name",
+                    class: "text-left w-[180px]",
+                },
+                {
+                    key: "emp_nickname",
+                    label: "Nickname",
+                    class: "text-left w-[120px]",
+                },
+                {
+                    key: "emp_phone",
+                    label: "Phone",
+                    class: "text-left w-[140px]",
+                },
+                {
+                    key: "department_name",
+                    label: "Department",
+                    class: "text-left w-[140px]",
+                },
+                {
+                    key: "team_name",
+                    label: "Team",
+                    class: "text-left w-[140px]",
+                },
+                {
+                    key: "position_name",
+                    label: "Position",
+                    class: "text-left w-[140px]",
+                },
                 {
                     key: "created_at",
                     label: "Created date (D/M/Y)",
                     class: "text-center w-[160px]",
-                    format: (v) => (v ? new Date(v).toLocaleDateString("en-GB") : "-"),
+                    format: (v) =>
+                        v ? new Date(v).toLocaleDateString("en-GB") : "-",
                 },
             ],
         };
@@ -182,8 +241,8 @@ export default {
             handler() {
                 this.page = 1;
             },
-            deep: true
-        }
+            deep: true,
+        },
     },
     async created() {
         await this.fetchEmployees();
@@ -198,11 +257,23 @@ export default {
         optionsMap() {
             return {
                 department: [
-                    ...new Set(this.employees.map((e) => e.department_name).filter(Boolean)),
+                    ...new Set(
+                        this.employees
+                            .map((e) => e.department_name)
+                            .filter(Boolean)
+                    ),
                 ],
-                team: [...new Set(this.employees.map((e) => e.team_name).filter(Boolean))],
+                team: [
+                    ...new Set(
+                        this.employees.map((e) => e.team_name).filter(Boolean)
+                    ),
+                ],
                 position: [
-                    ...new Set(this.employees.map((e) => e.position_name).filter(Boolean)),
+                    ...new Set(
+                        this.employees
+                            .map((e) => e.position_name)
+                            .filter(Boolean)
+                    ),
                 ],
             };
         },
@@ -213,20 +284,32 @@ export default {
             if (this.search) {
                 const q = this.search.toLowerCase();
                 result = result.filter((e) => {
-                    const fullName = `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""}`.toLowerCase();
+                    const fullName = `${e.emp_firstname ?? ""} ${
+                        e.emp_lastname ?? ""
+                    }`.toLowerCase();
                     const nickname = (e.emp_nickname ?? "").toLowerCase();
                     const empId = (e.emp_id ?? "").toString().toLowerCase();
-                    return empId.includes(q) || fullName.includes(q) || nickname.includes(q);
+                    return (
+                        empId.includes(q) ||
+                        fullName.includes(q) ||
+                        nickname.includes(q)
+                    );
                 });
             }
 
             // Dropdown Filters
             if (this.filters.department !== "all")
-                result = result.filter((e) => e.department_name === this.filters.department);
+                result = result.filter(
+                    (e) => e.department_name === this.filters.department
+                );
             if (this.filters.team !== "all")
-                result = result.filter((e) => e.team_name === this.filters.team);
+                result = result.filter(
+                    (e) => e.team_name === this.filters.team
+                );
             if (this.filters.position !== "all")
-                result = result.filter((e) => e.position_name === this.filters.position);
+                result = result.filter(
+                    (e) => e.position_name === this.filters.position
+                );
 
             return result;
         },
@@ -249,7 +332,10 @@ export default {
             });
         },
         paged() {
-            return this.sorted.slice((this.page - 1) * this.pageSize, this.page * this.pageSize);
+            return this.sorted.slice(
+                (this.page - 1) * this.pageSize,
+                this.page * this.pageSize
+            );
         },
     },
     methods: {
@@ -257,12 +343,17 @@ export default {
             try {
                 // อย่าลืมแก้ API ฝั่งหลังบ้านให้ Select มาเฉพาะ status = 'active'
                 const res = await axios.get("/get-employees");
-                const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+                const data = Array.isArray(res.data)
+                    ? res.data
+                    : res.data?.data || [];
                 this.employees = data.map((e) => ({
                     ...e,
-                    emp_fullname: `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""}`.trim(),
+                    emp_fullname: `${e.emp_firstname ?? ""} ${
+                        e.emp_lastname ?? ""
+                    }`.trim(),
                     emp_phone: e.emp_phone ?? e.phone ?? "-",
-                    created_at: e.emp_create_at ?? e.created_at ?? e.createdAt ?? null,
+                    created_at:
+                        e.emp_create_at ?? e.created_at ?? e.createdAt ?? null,
                 }));
             } catch (err) {
                 console.error("Error fetching employees", err);
@@ -273,7 +364,10 @@ export default {
         },
         onSortChoose(option) {
             if (!option || !option.key || !option.order) return;
-            if (this.sortBy.key === option.key && this.sortBy.order === option.order) {
+            if (
+                this.sortBy.key === option.key &&
+                this.sortBy.order === option.order
+            ) {
                 this.sortBy = { key: "", order: "" };
             } else {
                 this.sortBy = { key: option.key, order: option.order };
@@ -311,7 +405,7 @@ export default {
 
             // 1. ดึง ID ของคนที่ Login อยู่ (Admin)
             // ⚠️ เช็ค: คุณเก็บใน localStorage ชื่อ 'userData' ใช่ไหม?
-            const userStorage = localStorage.getItem('userData');
+            const userStorage = localStorage.getItem("userData");
             const currentUser = userStorage ? JSON.parse(userStorage) : {};
             const myId = currentUser.emp_id; // ID คนลบ
 
@@ -319,7 +413,7 @@ export default {
                 // 2. ใช้ PUT แทน DELETE และส่งข้อมูลคนลบไปด้วย
                 await axios.put(`/employees/soft-delete/${id}`, {
                     emp_delete_by: myId,
-                    emp_delete_status: 'deleted'
+                    emp_delete_status: "deleted",
                 });
 
                 this.showModalAsk = false;
@@ -344,7 +438,7 @@ export default {
         },
         onConfirmFail() {
             this.showModalFail = false;
-        }
+        },
     },
 };
 </script>

@@ -4,11 +4,11 @@
             <!-- Search -->
             <div class="flex-1">
                 <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch"
-                    class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5 w-full" />
+                    class="" />
             </div>
 
             <!-- ✅ Filter / Sort -->
-            <div class="flex items-stretch gap-2 flex-shrink-0 mt-[30px]">
+            <div class="flex gap-2 flex-shrink-0 mt-[30px]">
                 <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
                     @update:modelValue="applyFilter" class="[&_button]:h-full" />
                 <!-- ✅ Sort -->
