@@ -470,6 +470,11 @@ class EventController extends Controller
 
     private function syncEventStatus(): void
     {
+        $lock = Cache::lock('events:sync-status', 30); // ล็อก 30 วินาที
+
+        if (!$lock->get()) {
+            return; // มีคนอื่นเพิ่ง sync ไปแล้ว
+        }
 
         $now = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
