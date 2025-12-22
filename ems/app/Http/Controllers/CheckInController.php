@@ -40,6 +40,7 @@ class CheckInController extends Controller
         //ข้อมูลพนักงานทั้งหมด (Employees)
         $employees = Employee::with('department', 'position', 'team', 'company')
             ->where('emp_delete_status', 'active')
+            ->orderBy('emp_id', 'asc')
             ->get();
         $event = Event::find($eveId);
 
