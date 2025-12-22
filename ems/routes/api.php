@@ -58,6 +58,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/events', [EventController::class, 'index']);
     Route::get('/get-event', [EventController::class, 'Eventtable']);
     Route::get('/event-info', [EventController::class, 'eventInfo']);
+    Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
+    // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
+    // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
+    // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
+    // Route::get('/me', [EventController::class, 'me']);
+    Route::get('/permission', [EventController::class, 'permission']);
     Route::get('/event/{id}', [EventController::class, 'show']);
     Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']);
     Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
