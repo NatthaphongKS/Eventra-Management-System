@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;      // ใช้เฉพาะ transaction
@@ -393,6 +394,7 @@ class EventController extends Controller
      */
     public function Eventtable(Request $request)
     {
+        $this->syncEventStatus();
         // อนุญาตให้ sort ตามชื่อคอลัมน์/alias ที่ select มา
         $allowSort = [
             'evn_title'      => 'ems_event.evn_title',
@@ -466,6 +468,38 @@ class EventController extends Controller
         return response()->json($rows);
     }
 
+    private function syncEventStatus(): void
+    {
+
+        $now = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+
+        DB::table('ems_event')
+            ->where(function ($q) {
+                $q->whereNull('evn_status')
+                    ->orWhereNotIn('evn_status', ['done', 'deleted']);
+            })
+            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) <= ?", [$now])
+            ->update(['evn_status' => 'done']);
+
+        DB::table('ems_event')
+            ->where(function ($q) {
+                $q->whereNull('evn_status')
+                    ->orWhereNotIn('evn_status', ['ongoing', 'done', 'deleted']);
+            })
+            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) <= ?", [$now])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) > ?", [$now])
+            ->update(['evn_status' => 'ongoing']);
+
+        DB::table('ems_event')
+            ->where(function ($q) {
+                $q->whereNull('evn_status')
+                    ->orWhereNotIn('evn_status', ['upcoming', 'deleted']);
+            })
+            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) > ?", [$now])
+            ->update(['evn_status' => 'upcoming']);
+    }
+
+    // ดึงสิทธิ์ของผู้ใช้ปัจจุบัน
     public function permission()
     {
         $userId = Auth::id();
