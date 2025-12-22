@@ -75,8 +75,8 @@
                 class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
                     statusFilter === 'denied'
-                        ? 'bg-[#E11D48] text-white border-[#E11D48] shadow-lg'
-                        : 'bg-[#FFF1F2] text-[#E11D48] border-[#E9E9E9] hover:bg-[#FFE4E6]'
+                        ? 'bg-[#C91C23] text-white border-[#C91C23] shadow-lg'
+                        : 'bg-[#FFF8F8] text-[#C91C23] border-[#E9E9E9] hover:bg-[#FFD4D4]'
                 "
                 @click="setStatus('denied')"
             >
@@ -92,8 +92,8 @@
                 class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
                     statusFilter === 'pending'
-                        ? 'bg-[#F59E0B] text-white border-[#F59E0B] shadow-lg'
-                        : 'bg-[#FFFBEB] text-[#D97706] border-[#E9E9E9] hover:bg-[#FEF3C7]'
+                        ? 'bg-[#389FDC] text-white border-[#389FDC] shadow-lg'
+                        : 'bg-[#F0F9FF] text-[#389FDC] border-[#E9E9E9] hover:bg-[#CEEBFF]'
                 "
                 @click="setStatus('pending')"
             >
@@ -109,8 +109,8 @@
                 class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
                     statusFilter === 'notInvited'
-                        ? 'bg-[#475569] text-white border-[#475569] shadow-lg'
-                        : 'bg-[#F8FAFC] text-[#475569] border-[#E9E9E9] hover:bg-[#F1F5F9]'
+                        ? 'bg-[#696969] text-white border-[#696969] shadow-lg'
+                        : 'bg-[#F5F5F5] text-[#696969] border-[#E9E9E9] hover:bg-[#E3E0E0]'
                 "
                 @click="setStatus('notInvited')"
             >
@@ -124,8 +124,8 @@
                 class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
                     statusFilter === 'all'
-                        ? 'bg-[#1E293B] text-white border-[#1E293B] shadow-lg'
-                        : 'bg-white text-[#1E293B] border-[#E9E9E9] hover:bg-[#F1F5F9]'
+                        ? 'bg-[#7107E7] text-white border-[#7107E7] shadow-lg'
+                        : 'bg-[#F5F3FF] text-[#7107E7] border-[#E9E9E9] hover:bg-[#E9E4FF]'
                 "
                 @click="setStatus('all')"
             >
@@ -138,8 +138,8 @@
                 class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
                     statusFilter === 'CheckIn'
-                        ? 'bg-[#059669] text-white border-[#059669] shadow-lg'
-                        : 'bg-[#ECFDF5] text-[#059669] border-[#E9E9E9] hover:bg-[#D1FAE5]'
+                        ? 'bg-[#007A56] text-white border-[#007A56] shadow-lg'
+                        : 'bg-[#ECFEF6] text-[#007A56] border-[#E9E9E9] hover:bg-[#D1FAE5]'
                 "
                 @click="setStatus('CheckIn')"
             >
@@ -152,8 +152,8 @@
                 class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                 :class="
                     statusFilter === 'notCheckIn'
-                        ? 'bg-[#BE123C] text-white border-[#BE123C] shadow-lg'
-                        : 'bg-[#FFF1F2] text-[#BE123C] border-[#E9E9E9] hover:bg-[#FFE4E6]'
+                        ? 'bg-[#C70036] text-white border-[#C70036] shadow-lg'
+                        : 'bg-[#FFF2F2] text-[#C70036] border-[#E9E9E9] hover:bg-[#FFE4E6]'
                 "
                 @click="setStatus('notCheckIn')"
             >
@@ -367,12 +367,10 @@ const statusLabel = (key) =>
     }[key]);
 const statusClass = (key) =>
     ({
-        accepted: "bg-emerald-100 text-emerald-700",
-        denied: "bg-rose-100 text-rose-700",
-        pending: "bg-amber-100 text-amber-700",
-        notInvited: "bg-slate-100 text-slate-600",
-        checkIn: "",
-        notCheckIn: "",
+        accepted: "bg-[#F1FDF4] text-[#00A73D] border-[#E9E9E9] ",
+        denied: "bg-[#FFF8F8] text-[#C91C23] border-[#E9E9E9] ",
+        pending: "bg-[#F0F9FF] text-[#389FDC] border-[#E9E9E9] ",
+        notInvited: "bg-[#F5F5F5] text-[#696969] border-[#E9E9E9] ",
     }[key]);
 
 const setStatus = (s) => {
@@ -552,15 +550,15 @@ const search = ref("");
 const columns = [
     {
         key: "empFullId",
-        label: "ID",
+        label: "Employee ID",
         sortable: true,
-        class: "min-w-[120px] text-left",
+        class: "min-w-[125px] text-left",
     },
     {
         key: "fullName",
         label: "Name",
         sortable: true,
-        class: "min-w-[220px] text-left",
+        class: "min-w-[215px] text-left",
     },
     {
         key: "empNickname",
