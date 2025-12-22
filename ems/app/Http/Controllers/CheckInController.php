@@ -16,7 +16,7 @@ class CheckInController extends Controller
     function getEmployeeForCheckin($eveId)
     {
         $emps = Employee::where('emp_delete_status', 'active')->get();
-
+        
         try {
             foreach ($emps as $emp) {
                 // หาว่ามีข้อมูลหรือยัง ถ้าไม่มีให้สร้างใหม่ (Create) ด้วยค่าที่กำหนด
@@ -46,24 +46,24 @@ class CheckInController extends Controller
 
         foreach ($employees as $employee) {
             $employeesData[] = [
-                'eveId' => $event->id,
-                'eveTitle' => $event->evn_title,
                 'empId' => $employee->id,
                 'empFullId' => $employee->emp_id,
                 'empCompanyId' => $employee->company->com_name,
-                'empCheckinStatus' => $this->getCheckinStatus($employee->id, $eveId),
                 'empFullname' => $employee->emp_prefix . $employee->emp_firstname . ' ' . $employee->emp_lastname,
                 'empNickname' => $employee->emp_nickname,
-                'empDepartment' => ($employee->department)->dpm_name,
                 'empTeam' => ($employee->team)->tm_name,
+                'empDepartment' => ($employee->department)->dpm_name,
                 'empPosition' => ($employee->position)->pst_name,
-                'empInviteStatus' => $this->getInviteStatus($employee->id, $eveId),
+                'eveId' => $event->id,
+                'eveTitle' => $event->evn_title,
+                'empInviteStatus' => $this->getEmployeeInviteStatus($employee->id, $eveId),
+                'empCheckinStatus' => $this->getEmployeeCheckinStatus($employee->id, $eveId),
             ];
         }
         return $employeesData;
     }
 
-    function getInviteStatus($empId, $eveId)
+    function getEmployeeInviteStatus($empId, $eveId)
     {
         $connect = Connect::Where('con_employee_id', $empId)
             ->Where('con_event_id', $eveId)
@@ -75,7 +75,7 @@ class CheckInController extends Controller
         }
     }
 
-    function getCheckinStatus($empId, $eveId)
+    function getEmployeeCheckinStatus($empId, $eveId)
     {
         $connect = Connect::Where('con_employee_id', $empId)
             ->Where('con_event_id', $eveId)
@@ -83,7 +83,7 @@ class CheckInController extends Controller
         if ($connect) {
             return $connect->con_checkin_status; // 0 หรือ 1
         } else {
-            return 0; // กรณีพนักงานไม่ได้รับเชิญ
+            return response()->json(['error' => 'Error : getEmployeeCheckinStatus funtion failed', 500 ]);
         }
     }
 

@@ -14,11 +14,11 @@ use App\Http\Controllers\HistoryCategoryController;
 // API ที่ต้อง login
 // ถ้า "ทุกหน้า" ต้องล็อกอิน คงไว้ใน group เดิมก็ได้
 // Public Open Route for Debugging
-Route::get('/get-event', [EventController::class, 'Eventtable']);
-Route::get('/get-employees', [EmployeeController::class, 'index']); // For EmployeePage.vue
-Route::get('/categories', [CategoryController::class, 'index']);    // For CategoryPage.vue
 
 Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/get-event', [EventController::class, 'Eventtable']);
+    Route::get('/get-employees', [EmployeeController::class, 'index']); // For EmployeePage.vue
+    Route::get('/categories', [CategoryController::class, 'index']);    // For CategoryPage.vue
 
     Route::post('/logout', [LoginController::class, 'logout']); // ล็อคเอ้าท์
 
@@ -86,6 +86,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
     Route::get('/history/categories', [HistoryCategoryController::class, 'index']);
+
+    //Check-in 
+    Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']); // ดึงข้อมูลการเช็คอินพนักงาน
+    Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendance']);
+    Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendanceAll']);
+    // Route::get('')
 });
 
 
@@ -94,6 +100,3 @@ Route::middleware(['web', 'auth'])->group(function () {
 Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']); // ดึงข้อมูลพนักงานกับอีเว้น
 Route::post('/store', [ReplyController::class, 'store']);//บันทึกข้อมูลการตอบกลับ
 
-Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']); // ดึงข้อมูลการเช็คอินพนักงาน
-Route::put('/updateEmployeeAttendance/empId/{empId}/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendance']);
-Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}',[CheckInController::class, 'updateEmployeeAttendanceAll']);
