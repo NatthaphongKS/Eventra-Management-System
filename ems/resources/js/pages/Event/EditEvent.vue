@@ -3,8 +3,8 @@
  * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
  * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
  * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
- * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
- * วันที่จัดทำ/แก้ไข: 2025-12-14
+ * ชื่อผู้เขียน/แก้ไข: 
+ * วันที่จัดทำ/แก้ไข: 
  */ -->
 <!-- pages/edit_event.vue -->
 <template>
@@ -23,7 +23,8 @@
                         <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
                             Event Title <span class="text-red-500">*</span>
                         </label><br />
-                        <InputPill v-model="eventTitle" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5"
+                        <InputPill v-model="eventTitle"
+                            class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5"
                             :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventTitle }" />
 
                         <p v-if="submitted && formErrors.eventTitle" class="mt-1 text-xs text-red-600 font-medium">
@@ -35,23 +36,23 @@
                             Event Category <span class="text-red-500">*</span>
                         </label><br />
                         <div class="relative w-full">
-                        <select
-                            class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white"
-                            v-model="eventCategoryId"
-                            :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventCategoryId }">
+                            <select
+                                class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white"
+                                v-model="eventCategoryId"
+                                :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventCategoryId }">
 
-                            <option :value="eventCategoryId" hidden>
-                                {{ eventCategoryName }}
-                            </option>
+                                <option :value="eventCategoryId" hidden>
+                                    {{ eventCategoryName }}
+                                </option>
 
-                            <option v-for="cat in selectCategory" :value="cat.id">
-                                {{ cat.cat_name }}
-                            </option>
-                        </select>
+                                <option v-for="cat in selectCategory" :value="cat.id">
+                                    {{ cat.cat_name }}
+                                </option>
+                            </select>
 
-                        <Icon icon="iconamoon:arrow-down-2-light"
-                            class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-red-600 pointer-events-none" />
-                    </div>
+                            <Icon icon="iconamoon:arrow-down-2-light"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-red-600 pointer-events-none" />
+                        </div>
 
                         <p v-if="submitted && formErrors.eventCategoryId" class="mt-1 text-xs text-red-600 font-medium">
                             Required Select
@@ -66,8 +67,7 @@
                 </label><br />
                 <textarea
                     class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition px-5 py-4"
-                    v-model.trim="eventDescription"
-                    placeholder="Write some description... (255 words)"
+                    v-model.trim="eventDescription" placeholder="Write some description... (255 words)"
                     :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDescription }"></textarea>
 
                 <p v-if="submitted && formErrors.eventDescription" class="mt-1 text-xs text-red-600 font-medium">
@@ -82,11 +82,11 @@
                     </label><br>
                     <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
                         focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition
-                        px-5 py-4" type="date" v-model="eventDate"
+                        px-5 py-4" type="date" v-model="eventDate" :min="minDate"
                         :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }">
 
                     <p v-if="submitted && formErrors.eventDate" class="mt-1 text-xs text-red-600 font-medium">
-                        Required date
+                        'Required date'
                     </p>
                 </div>
                 <div class="">
@@ -95,36 +95,29 @@
                     </label>
                     <div class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 shadow-sm px-5 py-4"
                         :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd) }">
-                    <!-- Time Start -->
-                    <div class="flex items-center justify-center">
-                        <input
-                            type="time"
-                            v-model="eventTimeStart"
-                            step="300"
-                            class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
-                            @click="$event.target.showPicker()"
-                        />
-                        <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
-                    </div>
+                        <!-- Time Start -->
+                        <div class="flex items-center justify-center">
+                            <input type="time" v-model="eventTimeStart" step="300"
+                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                                @click="$event.target.showPicker()" />
+                            <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                        </div>
 
-                    <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
-                    <!-- Time End -->
-                    <div class="flex items-center justify-center">
-                        <input
-                            type="time"
-                            v-model="eventTimeEnd"
-                            step="300"
-                            class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
-                            @click="$event.target.showPicker()"
-                        />
-                        <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
-                    </div>
+                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
+                        <!-- Time End -->
+                        <div class="flex items-center justify-center">
+                            <input type="time" v-model="eventTimeEnd" step="300"
+                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                                @click="$event.target.showPicker()" />
+                            <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                        </div>
 
                         <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-rose-400 shrink-0 ml-2" />
 
                     </div>
 
-                    <p v-if="submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd)" class="mt-1 text-xs text-red-600 font-medium">
+                    <p v-if="submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd)"
+                        class="mt-1 text-xs text-red-600 font-medium">
                         {{ formErrors.timeMsg || 'Require Time' }}
                     </p>
 
@@ -134,9 +127,10 @@
                     <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Duration</label>
                     <div
                         class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
-                        <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled v-model="eventDuration" placeholder="Auto fill Hour"></input>
+                        <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
+                            v-model="eventDuration" placeholder="Auto fill Hour"></input>
                         <Icon icon="iconamoon:clock-light" class="w-6 h-6  text-neutral-400" />
-                        </div>
+                    </div>
                 </div>
             </div>
             <div class="mt-4">
@@ -145,7 +139,7 @@
                 </label><br>
                 <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
              border border-neutral-200 rounded-[20px] px-5"
-             :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventLocation }"/>
+                    :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventLocation }" />
 
                 <p v-if="submitted && formErrors.eventLocation" class="mt-1 text-xs text-red-600 font-medium">
                     Required field
@@ -178,12 +172,12 @@
                                     {{ item.name }}
                                 </a>
                                 <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                    }})</span>
+                                }})</span>
                             </template>
                             <template v-else>
                                 <span class="truncate text-[15px] text-neutral-800">{{ item.name }}</span>
                                 <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                    }})</span>
+                                }})</span>
                             </template>
                         </div>
 
@@ -220,7 +214,7 @@
                     accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
             </div>
 
-            </div>
+        </div>
     </div>
     <h3 class="text-neutral-800 font-semibold font-[Poppins] text-3xl m-4">Add Guest</h3>
 
@@ -240,7 +234,7 @@
             </select>
 
             <Icon icon="iconamoon:arrow-down-2-light"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
 
         <!-- Department -->
@@ -252,7 +246,7 @@
             </select>
 
             <Icon icon="iconamoon:arrow-down-2-light"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
 
         <!-- Team -->
@@ -264,7 +258,7 @@
             </select>
 
             <Icon icon="iconamoon:arrow-down-2-light"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
 
         <!-- Position -->
@@ -276,7 +270,7 @@
             </select>
 
             <Icon icon="iconamoon:arrow-down-2-light"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
     </div>
 
@@ -591,27 +585,40 @@ export default {
         validateForm() {
             const errors = {};
 
-                if (!this.eventTitle?.trim()) errors.eventTitle = true;
-                if (!this.eventCategoryId) errors.eventCategoryId = true;
-                if (!this.eventDescription?.trim()) errors.eventDescription = true;
-                if (!this.eventDate) errors.eventDate = true;
+            if (!this.eventTitle?.trim()) errors.eventTitle = true;
+            if (!this.eventCategoryId) errors.eventCategoryId = true;
+            if (!this.eventDescription?.trim()) errors.eventDescription = true;
+            if (!this.eventDate) errors.eventDate = true;
 
-                // Check Required
-                if (!this.eventTimeStart) errors.eventTimeStart = true;
-                if (!this.eventTimeEnd) errors.eventTimeEnd = true;
-                if (!this.eventLocation?.trim()) errors.eventLocation = true;
+            // // 2. [เพิ่มใหม่] ตรวจสอบวันที่ (Date Logic)
+            // if (!this.eventDate) {
+            //     errors.eventDate = true;
+            // } else {
+            //     // Debug: ดูค่าใน Console (กด F12) ว่าค่าที่เลือก vs ค่าต่ำสุด เป็นเท่าไหร่
+            //     console.log('Selected:', this.eventDate, 'MinDate:', this.minDate);
 
-                // [Earth (Suphanut) 2025-12-06] Logic Check: Time
-                // ถ้ามีการกรอกเวลาครบทั้งคู่ แต่ Logic ไม่ผ่าน (End <= Start)
-                if (this.eventTimeStart && this.eventTimeEnd && !this.isValidTimeLogic) {
-                    // ให้ขึ้นตัวแดงทั้งคู่ หรือแค่ตัวจบก็ได้ (ในที่นี้ให้แดงที่กรอบใหญ่ตาม Template)
-                    errors.eventTimeEnd = true;
-                    // เพิ่ม message พิเศษสำหรับเคสนี้ (Template จะดึงไปแสดง)
-                    errors.timeMsg = 'End time must be after Start time';
-                }
+            //     // เช็คว่า วันที่เลือก (eventDate) น้อยกว่า วันปัจจุบัน (minDate) หรือไม่
+            //     if (this.eventDate < this.minDate) {
+            //         errors.eventDate = true;
+            //     }
+            // }
 
-                this.formErrors = errors;
-                return Object.keys(errors).length === 0;
+            // Check Required
+            if (!this.eventTimeStart) errors.eventTimeStart = true;
+            if (!this.eventTimeEnd) errors.eventTimeEnd = true;
+            if (!this.eventLocation?.trim()) errors.eventLocation = true;
+
+            // [Earth (Suphanut) 2025-12-06] Logic Check: Time
+            // ถ้ามีการกรอกเวลาครบทั้งคู่ แต่ Logic ไม่ผ่าน (End <= Start)
+            if (this.eventTimeStart && this.eventTimeEnd && !this.isValidTimeLogic) {
+                // ให้ขึ้นตัวแดงทั้งคู่ หรือแค่ตัวจบก็ได้ (ในที่นี้ให้แดงที่กรอบใหญ่ตาม Template)
+                errors.eventTimeEnd = true;
+                // เพิ่ม message พิเศษสำหรับเคสนี้ (Template จะดึงไปแสดง)
+                errors.timeMsg = 'End time must be after Start time';
+            }
+
+            this.formErrors = errors;
+            return Object.keys(errors).length === 0;
         },
 
         async saveEvent() {
@@ -672,6 +679,25 @@ export default {
                         const res = await axios.post('/edit-event', formData, {
                             headers: { 'Accept': 'application/json' },
                         })
+                        // เช็คว่ามี Warning เรื่องเมลไหม?
+                        if (res.data.mail_warning) {
+                             this.openAlert({
+                                type: 'warning', // เปลี่ยนเป็นสีเหลือง
+                                title: 'บันทึกสำเร็จ (แต่ส่งเมลไม่ได้)',
+                                message: 'ข้อมูลถูกบันทึกแล้ว แต่ระบบส่งอีเมลขัดข้อง: ' + res.data.mail_warning,
+                                okText: 'OK',
+                                onConfirm: () => this.$router.back(),
+                            })
+                        } else {
+                            // กรณีปกติ (สีเขียว)
+                            this.openAlert({
+                                type: 'success',
+                                title: 'EDIT SUCCESS!',
+                                message: 'This event has been successfully edited.',
+                                okText: 'OK',
+                                onConfirm: () => this.$router.back(),
+                            })
+                        }
 
                         this.openAlert({
                             type: 'success',
@@ -874,6 +900,21 @@ export default {
 
             //หน้านี้มี 10 คน แต่เลือกไว้ 8 → return false
             //เพื่อถ้าติ๊กหมด เป็น true จะเอาค่าไปบอกให้ checkboxall จะติ๊กด้วย
+        },
+
+        /**
+         * ชื่อฟังก์ชัน: minDate
+        * คำอธิบาย: คำนวณวันที่ปัจจุบันในรูปแบบ YYYY-MM-DD เพื่อใช้กำหนดค่าต่ำสุด (min) ของ input type date
+        * Output: String (Date Format)
+        * ชื่อผู้เขียน/แก้ไข: Suphanut
+        * วันที่แก้ไข: 2025-12-21
+         */
+        minDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         },
     },
 
