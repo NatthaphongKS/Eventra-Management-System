@@ -536,7 +536,7 @@ class EventController extends Controller
             'team:id,tm_name',
         ])
             ->where('emp_delete_status', 'active')
-            ->orderBy('id', 'desc')
+            ->orderBy('id', 'asc')
             ->get([
                 'id',
                 'emp_id',
