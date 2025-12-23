@@ -312,7 +312,7 @@
 import axios from "axios";
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
-// Import dashboard components
+// นำเข้า Component สำหรับ Dashboard
 import AttendingCard from '../../components/Dashboard/AttendingCard.vue';
 import NotAttendingCard from '../../components/Dashboard/NotAttendingCard.vue';
 import PendingCard from '../../components/Dashboard/PendingCard.vue';
@@ -396,19 +396,19 @@ export default {
         { value: 'id_asc', label: 'รหัสพนักงาน น้อย–มาก' },
         { value: 'id_desc', label: 'รหัสพนักงาน มาก–น้อย' },
       ],
-      // Selected events for multi-select
+      // Event ที่เลือกสำหรับแสดงสถิติ
       selectedEventIds: new Set(),
       selectAll: false,
-      // Date filter
+      // กรองตามวันที่
       selectedDate: '',
-      // Employee table states
+      // สถานะตารางพนักงาน
       showEmployeeTable: false,
       employeeTableType: null,
       filteredEmployeesForTable: [],
       currentPage: 1,
       itemsPerPage: 10,
       selectedTeamFilter: '',
-      // Data for charts - will be updated based on selected events
+      // ข้อมูลสำหรับกราฟ - อัพเดตตาม event ที่เลือก
       chartData: {
         total_participation: 0,
         attending: 0,
@@ -416,13 +416,13 @@ export default {
         pending: 0,
         departments: []
       },
-      // Button testing data
+      // ข้อมูลทดสอบปุ่ม
       loadingTest: false,
-      // Participation data for GraphEventParticipation component
+      // ข้อมูลสำหรับกราฟแท่ง (Bar Chart)
       participationData: {
         departments: []
       },
-      // Event participants data
+      // รายชื่อผู้เข้าร่วมทั้งหมด
       eventParticipants: [],
       loadingParticipants: false
     };
@@ -483,7 +483,7 @@ export default {
       let arr = [...this.normalized];
       const q = this.search.toLowerCase().trim();
 
-      // Search filter
+      // ตัวกรองการค้นหา
       if (q) {
         arr = arr.filter((e) =>
           `${e.evn_title} ${e.cat_name} ${e.evn_date} ${e.evn_status}`
@@ -492,14 +492,14 @@ export default {
         );
       }
 
-      // Category filter
+      // ตัวกรองหมวดหมู่
       if (this.filters.category.length > 0) {
         arr = arr.filter((e) =>
           this.filters.category.includes(String(e.evn_cat_id))
         );
       }
 
-      // Status filter
+      // ตัวกรองสถานะ
       if (this.filters.status.length > 0) {
         arr = arr.filter((e) =>
           this.filters.status.includes(
@@ -508,11 +508,11 @@ export default {
         );
       }
 
-      // Date filter
+      // ตัวกรองวันที่
       if (this.selectedDate) {
         arr = arr.filter((e) => {
           if (!e.evn_date) return false;
-          // Extract date part from event date (format: YYYY-MM-DD)
+          // ดึงส่วนวันที่จากวันที่ของอีเวนต์ (รูปแบบ: YYYY-MM-DD)
           const eventDate = String(e.evn_date).split(' ')[0];
           return eventDate === this.selectedDate;
         });
@@ -594,7 +594,7 @@ export default {
     paged() {
       const start = (this.page - 1) * this.pageSize;
       const items = this.sorted.slice(start, start + this.pageSize);
-      // Add row number to each item
+      // เพิ่มหมายเลขแถวให้แต่ละรายการ
       return items.map((item, index) => ({
         ...item,
         row_number: start + index + 1
@@ -680,7 +680,7 @@ export default {
       addPage(total);
       return items;
     },
-    // Employee table pagination
+    // การแบ่งหน้าในตารางพนักงาน
     totalEmployees() {
       return this.filteredEmployeesForTable.length;
     },
@@ -688,14 +688,14 @@ export default {
       return Math.ceil(this.totalEmployees / this.itemsPerPage);
     },
     paginatedEmployees() {
-      // Always use filteredEmployeesForTable - it's populated by showEmployeesByStatus()
+      // ใช้ filteredEmployeesForTable เสมอ - ซึ่งถูกเติมข้อมูลโดย showEmployeesByStatus()
       const data = this.filteredEmployeesForTable;
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
       return data.slice(start, end);
     },
     totalEmployees() {
-      // Always use filteredEmployeesForTable count
+      // ใช้นับจำนวน filteredEmployeesForTable เสมอ
       return this.filteredEmployeesForTable.length;
     },
     employeePaginationText() {
@@ -765,7 +765,7 @@ export default {
       return arr.slice(start, start + this.empPageSize);
     },
 
-    // Get selected event data (first selected event)
+    // ดึงข้อมูลอีเวนต์ที่เลือก (อีเวนต์ที่เลือกแรก)
     selectedEventData() {
       if (this.selectedEventIds.size === 0) return null;
       const firstEventId = Array.from(this.selectedEventIds)[0];
@@ -776,14 +776,12 @@ export default {
     // Search handling
     handleSearch(searchValue) {
       this.search = searchValue;
-      // Additional search logic if needed
     },
 
     // Filter handling
     handleFilter(filterData) {
       this.filterValue = filterData;
-      this.page = 1; // Reset to first page when filtering
-      // Additional filter logic if needed
+      this.page = 1; // รีเซ็ตกลับไปหน้าแรกเมื่อมีการกรอง
     },
 
     // Sort handling  
@@ -794,7 +792,7 @@ export default {
       this.page = 1; // Reset to first page when sorting
     },
 
-    // Chart calculation methods (moved from computed)
+    // เมธอดคำนวณข้อมูลสำหรับแสดงกราฟ (ย้ายมาจาก computed)
     getAttendingProgress() {
       if (this.chartData.totalParticipation === 0) return 0;
       return Math.round((this.chartData.attending / this.chartData.totalParticipation) * 251);
@@ -853,7 +851,7 @@ export default {
           }));
           this.empTotal = res.data.total || this.employees.length;
         } else {
-          // Handle case where res.data might not be an array
+          // กรณีที่ res.data อาจจะไม่ใช่อาเรย์
           const dataArray = Array.isArray(res.data) ? res.data : [];
           this.employees = dataArray.map(e => ({
             id: e.id,
@@ -893,7 +891,7 @@ export default {
         const res = await axios.get("/event-info-dashboard");
         const cats = res.data?.categories || [];
         
-        // Map to required format for EventFilter
+        // แปลงเป็นรูปแบบที่ EventFilter ต้องการ
         this.categories = cats.map(c => ({
           id: String(c.id),
           cat_name: c.cat_name
@@ -959,18 +957,18 @@ export default {
     
     // Date filter method
     filterByDate() {
-      // Date filter is handled automatically by the filtered computed property
-      // Reset to page 1 when filter changes
+      // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
+      // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
       this.page = 1;
     },
 
-    // Fetch event statistics and participants for selected events
+    // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
     async fetchEventStatistics() {
       console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
       
       if (this.selectedEventIds.size === 0) {
-        console.log('⚠️ No events selected, resetting data');
-        // Reset to default/empty state
+        console.log('No events selected, resetting data');
+        // รีเซ็ตเป็นค่าว่าง
         this.chartData = {
           total_participation: 0,
           attending: 0,
@@ -988,15 +986,15 @@ export default {
       try {
         const eventIds = Array.from(this.selectedEventIds);
         
-        console.log('📤 Sending POST /event-statistics with event_ids:', eventIds);
+        console.log('Sending POST /event-statistics with event_ids:', eventIds);
         
-        // Fetch statistics for selected event(s)
+        // ดึงสถิติจาก API
         const res = await axios.post('/event-statistics', { event_ids: eventIds });
         
-        console.log('📥 API Response:', res.data);
+        console.log('API Response:', res.data);
         
         if (res.data) {
-          // Update chart data with aggregated statistics
+          // อัพเดตข้อมูลกราฟ
           this.chartData = {
             total_participation: res.data.total_participation || 0,
             attending: res.data.attending || 0,
@@ -1005,7 +1003,7 @@ export default {
             departments: res.data.departments || []
           };
           
-          // Update participation data for bar chart - map to correct format
+          // อัพเดตข้อมูลกราฟแท่ง
           this.participationData = {
             departments: (res.data.departments || []).map(dept => ({
               name: dept.name,
@@ -1015,7 +1013,7 @@ export default {
             }))
           };
           
-          // Update participants list (remove duplicates)
+          // อัพเดตรายชื่อผู้เข้าร่วม
           this.eventParticipants = res.data.participants || [];
           this.showEmployeeTable = true;
           
@@ -1027,7 +1025,7 @@ export default {
         console.error('Error fetching event statistics:', err);
         console.error('Error response:', err.response?.data);
         console.error('Error status:', err.response?.status);
-        // Show error message or fallback to empty data
+        // เกิดข้อผิดพลาด - รีเซ็ตเป็นค่าว่าง
         this.chartData = {
           total_participation: 0,
           attending: 0,
@@ -1042,7 +1040,7 @@ export default {
       }
     },
 
-    // Multi-select checkbox methods
+    // ฟังก์ชันจัดการ checkbox เลือกหลาย event
     getRowClass(row) {
       const eventId = row.id || row.evn_id;
       return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
@@ -1061,33 +1059,33 @@ export default {
         this.selectedEventIds.add(eventId);
       }
       
-      // Update select-all checkbox state
+      // อัพเดตสถานะ select-all checkbox
       this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
       
       console.log('Updated selected events:', Array.from(this.selectedEventIds));
       
-      // Manually trigger fetch since Set is not reactive
+      // ต้องเรียก fetch เอง เนื่องจาก Set ไม่รองรับ reactive
       this.fetchEventStatistics();
     },
 
     selectAllEvents(event) {
-      // Toggle selectAll based on checkbox state
+      // สลับสถานะ selectAll ตามสถานะ checkbox
       this.selectAll = event.target.checked;
       
       if (this.selectAll) {
-        // Select all events in sorted list
+        // เลือกทุกอีเวนต์ในรายการที่เรียงแล้ว
         this.selectedEventIds = new Set(this.sorted.map(e => e.id || e.evn_id));
       } else {
-        // Deselect all
+        // ยกเลิกการเลือกทั้งหมด
         this.selectedEventIds.clear();
       }
       console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
       
-      // Manually trigger fetch since Set is not reactive
+      // ต้องเรียก fetch เอง เนื่องจาก Set ไม่รองรับ reactive
       this.fetchEventStatistics();
     },
 
-    // Get event titles text for display
+    // ดึงชื่ออีเวนต์มาแสดงผล
     getEventTitlesText() {
       if (this.selectedEventIds.size === 0) return 'N/A';
       
@@ -1132,7 +1130,7 @@ export default {
         ) || this.selectedSort;
     },
 
-    // Formatting methods
+    // เมธอดสำหรับจัดรูปแบบข้อมูล
     formatDate(val) {
       if (!val) return "N/A";
       try {
@@ -1178,7 +1176,7 @@ export default {
       }
     },
 
-    // Deprecated - kept for reference, use toggleEventSelection instead
+    // ไม่ใช้แล้ว เก็บไว้เป็นตัวอย่าง ให้ใช้ toggleEventSelection แทน
     onEventSelect(event) {
       console.log('Event selected:', event);
       console.log('Event keys:', Object.keys(event));
@@ -1200,7 +1198,7 @@ export default {
     async loadEventStatistics(eventId) {
       this.isLoading = true;
       try {
-        // Fetch event participants data using correct API endpoint
+        // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
         const response = await axios.get(`/api/event/${eventId}/participants`);
         
         console.log('Event statistics response:', response.data);
@@ -1208,14 +1206,14 @@ export default {
         if (response.data.success) {
           const statistics = response.data.data.statistics;
           
-          // Update chart data with real statistics
+          // อัปเดตข้อมูลกราฟด้วยสถิติจริง
           this.chartData = {
             attending: statistics.attending || 0,
             notAttending: statistics.not_attending || 0,
             pending: statistics.pending || 0
           };
           
-          // Update participation data for chart
+          // อัพเดตกราฟ
           this.participationData = {
             labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
             datasets: [{
@@ -1245,7 +1243,7 @@ export default {
       }
     },
 
-    // Employee table methods (replace modal methods)
+    
     async showEmployeesByStatus(status) {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมก่อน');
@@ -1257,28 +1255,28 @@ export default {
       this.showEmployeeTable = true;
       
       try {
-        // Use existing eventParticipants data from fetchEventStatistics
+        //  ตรวจสอบว่ามีข้อมูล participants หรือไม่
         if (!this.eventParticipants || this.eventParticipants.length === 0) {
           console.warn('No participants data available');
           this.filteredEmployeesForTable = [];
           return;
         }
         
-        // Filter participants based on status
+        // กรองผู้เข้าร่วมตามสถานะ
         let filteredParticipants = [];
         
         if (status === 'attending') {
-          // For attending, use con_checkin_status = 1 (actual check-in)
+          // สำหรับผู้เข้าร่วม ใช้ con_checkin_status = 1 (เช็คอินจริง)
           filteredParticipants = this.eventParticipants.filter(participant => {
             return participant.con_checkin_status === 1;
           });
         } else if (status === 'not-attending') {
-          // For not-attending, use con_answer = 'denied'
+          // สำหรับไม่เข้าร่วม ใช้ con_answer = 'denied'
           filteredParticipants = this.eventParticipants.filter(participant => {
             return participant.status === 'denied';
           });
         } else if (status === 'pending') {
-          // For pending, include 'pending', 'invalid', and 'not_invite'
+          // สำหรับรอตอบกลับ รวม 'pending', 'invalid', และ 'not_invite'
           filteredParticipants = this.eventParticipants.filter(participant => {
             return participant.status === 'pending' || 
                    participant.status === 'invalid' || 
@@ -1286,7 +1284,7 @@ export default {
           });
         }
         
-        // Map to our expected employee format
+        // แปลงเป็นรูปแบบพนักงานสำหรับตาราง
         this.filteredEmployeesForTable = filteredParticipants.map(participant => ({
           id: participant.id,
           emp_id: participant.emp_id,
@@ -1309,7 +1307,7 @@ export default {
       } catch (error) {
         console.error('Error loading employees:', error);
         
-        // Use empty array if filter fails
+        // ใช้ array ว่างหากการกรองล้มเหลว
         this.filteredEmployeesForTable = [];
         alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
       }
@@ -1327,14 +1325,14 @@ export default {
     // Button testing methods
     testClick(buttonType) {
       console.log(`Button clicked: ${buttonType}`);
-      alert(`🎯 ${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
+      alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
     },
 
     testLoading() {
       this.loadingTest = true;
       setTimeout(() => {
         this.loadingTest = false;
-        alert('✅ Loading test completed!');
+        alert('Loading test completed!');
       }, 2000);
     }
   }
