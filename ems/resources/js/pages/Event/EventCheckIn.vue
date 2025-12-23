@@ -495,16 +495,8 @@ const onSort = ({ key, order }) => {
 async function handleCheckin({ keys, checked }) {
     for (const empId of keys) {
         try {
-            await fetch(
-                `/api/updateEmployeeAttendance/empId/${empId}/eveId/${eveId.value}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            await axios.put(
+                `/updateEmployeeAttendance/eveId/${eveId.value}/empId/${empId}`);
             const idx = rows.value.findIndex((r) => r.empId === empId);
             if (idx !== -1) rows.value[idx].empCheckinStatus = checked ? 1 : 0;
         } catch (err) {
