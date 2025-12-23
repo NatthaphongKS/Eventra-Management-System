@@ -811,18 +811,25 @@ class EventController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            // กรณีเกิดข้อผิดพลาดในการดึงข้อมูล
             return response()->json([
                 'success' => false,
-                'message' => 'Error retrieving attendance data',
+                'message' => 'เกิดข้อผิดพลาดในการดึงสถิติกิจกรรม',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+    /**
+     * ดึงสถิติการเข้าร่วมงานสำหรับหน้า Dashboard
+     * รองรับการเลือกหลาย events พร้อมกัน
+     * คืนค่า: สถิติรวม, แยกตามแผนก, และรายชื่อผู้เข้าร่วมทั้งหมด
+     */
     public function eventStatistics(Request $request)
     {
         try {
             $eventIds = $request->input('event_ids', []);
 
+            // ถ้าไม่ได้เลือก event ใดๆ คืนค่าว่าง
             if (empty($eventIds)) {
                 return response()->json([
                     'total_participation' => 0,
@@ -834,7 +841,7 @@ class EventController extends Controller
                 ]);
             }
 
-            // Get aggregated statistics
+            // ดึงสถิติรวมทั้งหมด
             $stats = DB::table('ems_connect')
                 ->whereIn('con_event_id', $eventIds)
                 ->where('con_delete_status', 'active')
@@ -846,7 +853,8 @@ class EventController extends Controller
                 ')
                 ->first();
 
-            // Get department breakdown
+            // ดึงสถิติแยกตามแผนก (Department Breakdown)
+            // ใช้สำหรับแสดงกราฟแท่ง (Bar Chart) ในหน้า Dashboard
             $departments = DB::table('ems_connect')
                 ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
                 ->join('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
@@ -861,7 +869,10 @@ class EventController extends Controller
                 ')
                 ->get();
 
-            // Get all participants (including same person in multiple events)
+            // ดึงข้อมูลผู้เข้าร่วมทั้งหมด (สำหรับแสดงในตารางพนักงาน)
+            // หมายเหตุ: ถ้าเลือกหลาย events พนักงานคนเดียวกันจะปรากฏหลายครั้ง
+            // (หนึ่งครั้งต่อหนึ่ง event ที่ได้รับเชิญ) จำนวนนี้จะตรงกับค่า total_participation
+            // ตัวอย่าง: พนักงาน A อยู่ใน Event 1 และ Event 2 = 2 แถวในตาราง, นับเป็น 2 participations
             $participants = DB::table('ems_connect')
                 ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
                 ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
@@ -883,10 +894,12 @@ class EventController extends Controller
                     'ems_team.tm_name as team',
                     'ems_position.pst_name as position',
                     'ems_event.evn_title as event_title',
-                    'ems_connect.con_answer as status'
+                    'ems_connect.con_answer as status',
+                    'ems_connect.con_checkin_status'
                 )
-                ->get(); // No unique() - show all participations
+                ->get(); // จงใจไม่ใช้ unique() เพื่อให้จำนวนตรงกับ total_participation
 
+            // คืนค่าสถิติทั้งหมดให้ Dashboard
             return response()->json([
                 'total_participation' => $stats->total_participation ?? 0,
                 'attending' => $stats->attending ?? 0,
@@ -896,9 +909,10 @@ class EventController extends Controller
                 'participants' => $participants
             ]);
         } catch (\Exception $e) {
+            // กรณีเกิดข้อผิดพลาดในการดึงข้อมูล
             return response()->json([
                 'success' => false,
-                'message' => 'Error retrieving event statistics',
+                'message' => 'เกิดข้อผิดพลาดในการดึงสถิติกิจกรรม',
                 'error' => $e->getMessage()
             ], 500);
         }

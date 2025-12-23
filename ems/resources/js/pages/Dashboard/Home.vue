@@ -410,9 +410,9 @@ export default {
       selectedTeamFilter: '',
       // Data for charts - will be updated based on selected events
       chartData: {
-        totalParticipation: 0,
+        total_participation: 0,
         attending: 0,
-        notAttending: 0,
+        not_attending: 0,
         pending: 0,
         departments: []
       },
@@ -1267,15 +1267,22 @@ export default {
         // Filter participants based on status
         let filteredParticipants = [];
         
-        if (status === 'pending') {
-          // For pending, include both 'pending' and 'invalid' statuses
+        if (status === 'attending') {
+          // For attending, use con_checkin_status = 1 (actual check-in)
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.status === 'pending' || participant.status === 'invalid';
+            return participant.con_checkin_status === 1;
           });
-        } else {
-          const apiStatus = this.mapStatusForAPI(status);
+        } else if (status === 'not-attending') {
+          // For not-attending, use con_answer = 'denied'
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.status === apiStatus;
+            return participant.status === 'denied';
+          });
+        } else if (status === 'pending') {
+          // For pending, include 'pending', 'invalid', and 'not_invite'
+          filteredParticipants = this.eventParticipants.filter(participant => {
+            return participant.status === 'pending' || 
+                   participant.status === 'invalid' || 
+                   participant.status === 'not_invite';
           });
         }
         
@@ -1297,6 +1304,7 @@ export default {
         }));
         
         console.log(`Loaded ${this.filteredEmployeesForTable.length} employees for status: ${status}`);
+        console.log('ตรรกะการกรอง: attending ใช้ con_checkin_status=1 ไม่ใช่ con_answer');
         
       } catch (error) {
         console.error('Error loading employees:', error);
