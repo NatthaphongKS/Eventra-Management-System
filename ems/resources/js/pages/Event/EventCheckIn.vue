@@ -429,7 +429,7 @@ const filteredBase = computed(() => {
 
     if (q) {
         list = list.filter((r) =>
-            [String(r.empCompanyId), r.empFullname, r.empNickname].some((f) =>
+            [String(r.empFullId), r.empFullname, r.empNickname].some((f) =>
                 f?.toLowerCase().includes(q)
             )
         );
