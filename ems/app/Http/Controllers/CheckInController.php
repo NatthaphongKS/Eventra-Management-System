@@ -64,7 +64,7 @@ class CheckInController extends Controller
         return $employeesData;
     }
 
-    function getEmployeeInviteStatus($empId, $eveId)
+    function getEmployeeInviteStatus($eveId, $empId)
     {
         $connect = Connect::Where('con_employee_id', $empId)
             ->Where('con_event_id', $eveId)
@@ -90,7 +90,7 @@ class CheckInController extends Controller
 
 
 
-    public function updateEmployeeAttendance($empId, $eveId)
+    public function updateEmployeeAttendance($eveId, $empId)
     {
         $record = Connect::where('con_employee_id', $empId)
             ->where('con_event_id', $eveId)
