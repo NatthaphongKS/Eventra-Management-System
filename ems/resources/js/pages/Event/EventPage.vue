@@ -3,21 +3,25 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <!-- Search -->
             <div class="flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch"
-                    class="" />
+                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch" class="" />
             </div>
 
-            <!-- ✅ Filter / Sort -->
-            <div class="flex gap-2 flex-shrink-0 mt-[30px]">
+            <!-- ✅ DatePicker / Filter / Sort -->
+            <div class="flex gap-2 flex-shrink-0 mt-[30px] items-stretch">
+                <!-- DatePicker -->
+                <div class="h-[44px]">
+                    <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
+                </div>
+
                 <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                    @update:modelValue="applyFilter" class="[&_button]:h-full" />
-                <!-- ✅ Sort -->
+                    @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
+
                 <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
-                    class="[&_button]:h-full" />
+                    class="h-[44px] [&_button]:h-full" />
 
                 <!-- ✅ Add Button -->
                 <AddButton @click="$router.push('/add-event')"
-                    class="h-full w-[44px] flex items-center justify-center" />
+                    class="h-[44px] w-[44px] flex items-center justify-center" />
             </div>
         </div>
 
@@ -90,19 +94,31 @@
                 </button>
                 -->
 
-                <!-- ปุ่มแก้ไข (disabled ถ้า ongoing ในทุกกรณี) -->
-                <button @click="row.evn_status !== 'ongoing' && editEvent(row.id)"
-                    :disabled="row.evn_status === 'ongoing'" class="rounded-lg p-1.5" :class="row.evn_status === 'ongoing'
+                <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
+                <button @click="!['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) && editEvent(row.id)"
+                    :disabled="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())"
+                    class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'cursor-not-allowed opacity-40'
-                        : 'hover:bg-slate-100 cursor-pointer'" :title="row.evn_status === 'ongoing'
-                            ? 'Cannot edit ongoing event'
-                            : 'Edit'">
-                    <PencilIcon class="h-5 w-5" :class="row.evn_status === 'ongoing'
+                        : 'hover:bg-slate-100 cursor-pointer'" :title="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
+        ? 'Cannot edit ongoing/done event'
+        : 'Edit'">
+                    <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'text-neutral-400'
                         : 'text-neutral-800'" />
                 </button>
 
-                <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                <!-- ❌ Disabled เมื่อ upcoming -->
+                <span v-if="row.evn_status === 'upcoming'" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
+                    title="not available for upcoming event">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor" class="h-5 w-5 text-neutral-400">
+                        <path
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
+                    </svg>
+                </span>
+
+                <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming -->
+                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor" class="h-5 w-5 text-neutral-800">
@@ -132,7 +148,8 @@ import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
-import AddButton from '@/components/AddButton.vue'
+import AddButton from '@/components/AddButton.vue';
+import EventDatePicker from "@/components/IndexEvent/EventDatePicker.vue";
 
 import {
     MagnifyingGlassIcon,
@@ -155,11 +172,14 @@ export default {
         EventFilter,
         SearchBar,
         AddButton,
+        EventDatePicker,
         ModalAlert,
     },
 
     data() {
         return {
+            selectedDate: { start: null, end: null },
+
             showModalBlockedDone: false,
             showModalBlockedOngoing: false,
             empPermission: "disabled", // default กันพลาด
@@ -376,13 +396,49 @@ export default {
         },
 
         filtered() {
+            // ✅ Date range filter (ใช้ selectedDate จาก EventDatePicker)
+            const { start, end } = this.selectedDate || {};
+            if (start || end) {
+                const toTime = (val) => {
+                    if (!val) return null;
+
+                    // รองรับ "YYYY-MM-DD" (ที่ API มักส่งมา)
+                    if (/^\d{4}-\d{2}-\d{2}/.test(val)) return new Date(val).getTime();
+
+                    // รองรับ "DD/MM/YYYY" (กรณีแสดงผล/ข้อมูลเก่า)
+                    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(val)) {
+                        let [d, m, y] = val.split("/").map((n) => parseInt(n, 10));
+                        if (y >= 2400) y -= 543; // เผื่อ พ.ศ.
+                        return new Date(y, m - 1, d).getTime();
+                    }
+
+                    // fallback
+                    const t = new Date(val).getTime();
+                    return Number.isFinite(t) ? t : null;
+                };
+
+                const startT = start ? toTime(start) : null;
+                const endT = end ? toTime(end) : null;
+
+                arr = arr.filter((e) => {
+                    const evT = toTime(e.evn_date);
+                    if (evT == null) return false;
+
+                    if (startT != null && endT != null) return evT >= startT && evT <= endT;
+                    if (startT != null) return evT >= startT;
+                    if (endT != null) return evT <= endT;
+                    return true;
+                });
+            }
+
             let arr = [...this.normalized];
             const q = this.search.toLowerCase().trim();
 
             // 🔍 Search filter
             if (q) {
                 arr = arr.filter((e) =>
-                    `${e.evn_title} ${e.cat_name} ${e.evn_date} ${e.evn_status}`
+                    // `${e.evn_title} `
+                    String(e.evn_title || "")
                         .toLowerCase()
                         .includes(q)
                 );
@@ -495,6 +551,12 @@ export default {
         },
         pageSize() {
             this.page = 1;
+        },
+        selectedDate: {
+            deep: true,
+            handler() {
+                this.page = 1;
+            },
         },
         selectedSort: {
             handler(v) {
