@@ -1,3 +1,11 @@
+<!-- /**
+ * ชื่อไฟล์: HistoryEvent.vue
+ * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
+ * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
+ * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
+ * ชื่อผู้เขียน/แก้ไข: 
+ * วันที่จัดทำ/แก้ไข: 
+ */ -->
 <!-- pages/edit_event.vue -->
 <template>
     <div class="text-neutral-800 font-semibold font-[Poppins] text-3xl mb-4">
@@ -10,92 +18,134 @@
             <div class="grid ">
                 <div class="mt-6 md:grid md:grid-cols-[3fr_200px] md:gap-8 items-stretch">
                     <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
-         trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
+                     trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
                     <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Event
-                            Title</label><br />
-                        <InputPill v-model="eventTitle" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
-             border border-neutral-200 rounded-[20px] px-5" />
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                            Event Title <span class="text-red-500">*</span>
+                        </label><br />
+                        <InputPill v-model="eventTitle"
+                            class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5"
+                            :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventTitle }" />
+
+                        <p v-if="submitted && formErrors.eventTitle" class="mt-1 text-xs text-red-600 font-medium">
+                            Required field
+                        </p>
                     </div>
                     <div>
-                        <!-- เลือก Category -->
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Event
-                            Category</label><br />
-                        <select
-                            class="border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition "
-                            v-model="eventCategoryId">
-                            <!-- v-model ตรงนี้จะผูกค่ากับ evn_category_id โหลดครั้งแรกจะได้ค่าเก่า + ถ้าเลืกใหม่จะได้ค่าใหม่ เวลาส่งไป save ก็จะส่งเป็น id -->
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                            Event Category <span class="text-red-500">*</span>
+                        </label><br />
+                        <div class="relative w-full">
+                            <select
+                                class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white"
+                                v-model="eventCategoryId"
+                                :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventCategoryId }">
 
-                            <!-- ถ้าหมวดเดิมเป็น inactive แต่อยากแสดงไว้ -->
-                            <option :value="eventCategoryId" hidden> <!-- เก็บ id ค่าเดิมไว้ -->
-                                {{ eventCategoryName
-                                }}<!-- แสดงตัวเลือกจากตัวแปร evn_category_name ที่ดึงมาจาก controller -->
-                            </option>
+                                <option :value="eventCategoryId" hidden>
+                                    {{ eventCategoryName }}
+                                </option>
 
-                            <option v-for="cat in selectCategory" :value="cat.id">
-                                {{ cat.cat_name }}
-                                <!-- cat เก็บข้อมูลในช่อง array ของ select_category ทุกรอบที่วน {id= 1 name=ประชุม ...}
-        cat.id เอา cat ที่เก็บข้อมูลในช่อง array แล้วดึงค่ามาแค่ name เพื่อเอาไว้แสดงค่าที่ให้เลือก -->
-                            </option>
-                        </select><br />
+                                <option v-for="cat in selectCategory" :value="cat.id">
+                                    {{ cat.cat_name }}
+                                </option>
+                            </select>
+
+                            <Icon icon="iconamoon:arrow-down-2-light"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-red-600 pointer-events-none" />
+                        </div>
+
+                        <p v-if="submitted && formErrors.eventCategoryId" class="mt-1 text-xs text-red-600 font-medium">
+                            Required Select
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- ช่องกรอกรายละเอียดอีเวนต์ -->
-            <div>
-                <!-- v-model.trim="evn_description" = ผูกค่ากับตัวแปร evn_description อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม-->
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Event
-                    Description</label><br />
+            <div class="mt-4">
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                    Event Description <span class="text-red-500">*</span>
+                </label><br />
                 <textarea
-                    class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
-                    v-model.trim="eventDescription"></textarea>
+                    class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition px-5 py-4"
+                    v-model.trim="eventDescription" placeholder="Write some description... (255 words)"
+                    :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDescription }"></textarea>
+
+                <p v-if="submitted && formErrors.eventDescription" class="mt-1 text-xs text-red-600 font-medium">
+                    Required field
+                </p>
             </div>
 
-            <div class="grid grid-cols-3">
-                <div class="pr-[10px]">
-                    <!-- วันที่ -->
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Date</label><br>
+            <div class="grid grid-cols-3 mt-4 gap-4">
+                <div class="">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                        Date <span class="text-red-500">*</span>
+                    </label><br>
                     <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
                         focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition
-                        px-[20px]" type="date" v-model="eventDate">
-                </div>
-                <!-- เวลา -->
-                <div class="mx-[10px] ">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Time</label>
-                    <div class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 shadow-sm">
-                        <input type="time" v-model="eventTimeStart" step="300"
-                            class="time-input ml-[20px] w-[105px] bg-transparent text-[15px] font-medium text-neutral-800 outline-none" />
-                        <!-- v-model จะผูกกับค่า 2 ที่คือ 1ตอนโหลดหน้า ค่ามนี้จะโหลดเอาค่าที่ส่งมาจาก controller ผ่าน method fetchData 2 ตอนเลือกค่า ใน Input
-                             ค่าก็จะเปลี่ยนไปตามที่เราเลือกแล้วส่งไปคำนวณ-->
-                        <!-- ตัวคั่น : -->
-                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
+                        px-5 py-4" type="date" v-model="eventDate" :min="minDate"
+                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }">
 
-                        <!-- เวลาสิ้นสุด -->
-                        <input type="time" v-model="eventTimeEnd" step="300"
-                            class="time-input w-[105px] bg-transparent text-[15px] font-medium text-neutral-800 outline-none" />
-                        <Icon icon="iconamoon:clock-light" class="w-10 h-10  text-rose-400" />
+                    <p v-if="submitted && formErrors.eventDate" class="mt-1 text-xs text-red-600 font-medium">
+                        'Required date'
+                    </p>
+                </div>
+                <div class="">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                        Time <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 shadow-sm px-5 py-4"
+                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd) }">
+                        <!-- Time Start -->
+                        <div class="flex items-center justify-center">
+                            <input type="time" v-model="eventTimeStart" step="300"
+                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                                @click="$event.target.showPicker()" />
+                            <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                        </div>
+
+                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
+                        <!-- Time End -->
+                        <div class="flex items-center justify-center">
+                            <input type="time" v-model="eventTimeEnd" step="300"
+                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                                @click="$event.target.showPicker()" />
+                            <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                        </div>
+
+                        <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-rose-400 shrink-0 ml-2" />
 
                     </div>
+
+                    <p v-if="submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd)"
+                        class="mt-1 text-xs text-red-600 font-medium">
+                        {{ formErrors.timeMsg || 'Require Time' }}
+                    </p>
 
                 </div>
 
                 <div>
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">duration</label>
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Duration</label>
                     <div
                         class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
-                        <!-- ส่วนแสดงช่วงเวลา -->
-
-                        <input class=" w-full h-[52px] bg-transparent" disabled v-model="eventDuration"></input>
-                        <Icon icon="iconamoon:clock-light" class="w-10 h-10  text-neutral-400" />
-                        <!-- ผูกกับ evn_duration คำนวณค่าเสร็จแล้วก็จะมาแสดงตรงนี้ -->
+                        <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
+                            v-model="eventDuration" placeholder="Auto fill Hour"></input>
+                        <Icon icon="iconamoon:clock-light" class="w-6 h-6  text-neutral-400" />
                     </div>
                 </div>
             </div>
-            <!-- ส่วนแสดงสถานที่ -->
-            <label>Location</label><br>
-            <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
-             border border-neutral-200 rounded-[20px] px-5" />
+            <div class="mt-4">
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                    Location <span class="text-red-500">*</span>
+                </label><br>
+                <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
+             border border-neutral-200 rounded-[20px] px-5"
+                    :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventLocation }" />
+
+                <p v-if="submitted && formErrors.eventLocation" class="mt-1 text-xs text-red-600 font-medium">
+                    Required field
+                </p>
+            </div>
+
         </div>
         <!-- Upload attachments -->
         <div class="col-span-4 m-5">
@@ -111,8 +161,8 @@
                     <div v-for="item in uploadItems" :key="item.key"
                         class="w-full flex items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 shadow-sm">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-md bg-red-600">
-                                <Icon icon="mdi:file" class="h-5 w-5 text-white" />
+                            <div class="flex h-8 w-8 items-center justify-center rounded-md ">
+                                <Icon icon="basil:file-solid" class="h-10 w-10 text-rose-600" />
                             </div>
 
                             <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
@@ -122,12 +172,12 @@
                                     {{ item.name }}
                                 </a>
                                 <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                    }})</span>
+                                }})</span>
                             </template>
                             <template v-else>
                                 <span class="truncate text-[15px] text-neutral-800">{{ item.name }}</span>
                                 <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                    }})</span>
+                                }})</span>
                             </template>
                         </div>
 
@@ -150,7 +200,7 @@
                 <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
                 <div class="flex justify-center mt-6">
                     <button type="button"
-                        class="inline-flex items-center rounded-[12px] border border-rose-500 px-4 py-1.5 text-sm text-rose-700 hover:bg-rose-50 active:bg-rose-100"
+                        class="inline-flex items-center rounded-[12px] border bg-white border-rose-500 px-4 py-1.5 text-sm text-rose-700 hover:bg-rose-50 active:bg-rose-100"
                         @click="pickFiles">
                         Browse files
                     </button>
@@ -164,44 +214,9 @@
                     accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
             </div>
 
-
-
-
-            <!-- ไฟล์เดิม -->
-            <!-- <div v-if="filesExisting.length > 0" class="mt-4">
-                <p class="text-sm text-neutral-600 mb-2">ไฟล์เดิม</p>
-                <ul class="space-y-2">
-                    <li v-for="oldFile in filesExisting" :key="oldFile.id"
-                        class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2">
-                        <a :href="oldFile.url" target="_blank" rel="noopener"
-                            class="truncate text-[15px] text-rose-700 hover:underline">
-                            {{ oldFile.file_name }}
-                        </a>
-                        <span class="text-xs text-neutral-500">({{ prettySize(oldFile.file_size) }})</span>
-                        <button type="button"
-                            class="ml-auto rounded-full px-2.5 py-0.5 text-sm text-neutral-600 hover:bg-neutral-100"
-                            @click="removeExisting(oldFile.id)">
-                            ✕
-                        </button>
-                    </li>
-                </ul>
-            </div> -->
-
-            <!-- รายการไฟล์ใหม่ -->
-            <!-- <ul v-if="filesNew.length > 0" class="mt-4 space-y-2">
-                <li v-for="(newFile, index) in filesNew" :key="index"
-                    class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2">
-                    <span class="truncate text-[15px] text-neutral-800">{{ newFile.name }}</span>
-                    <span class="text-xs text-neutral-500">({{ prettySize(newFile.size) }})</span>
-                    <button type="button"
-                        class="ml-auto rounded-full px-2.5 py-0.5 text-sm text-neutral-600 hover:bg-neutral-100"
-                        @click="removeFile(index)">✕
-                    </button>
-                </li>
-            </ul> -->
         </div>
     </div>
-    <h3 class="text-neutral-800 font-semibold font-[Poppins] text-[15px] m-4">Add Guest</h3>
+    <h3 class="text-neutral-800 font-semibold font-[Poppins] text-3xl m-4">Add Guest</h3>
 
     <div class="guest-toolbar grid gap-3 mt-3 mb-3 md:grid-cols-[1fr,165px,165px,165px,165px] items-center">
         <!-- Search -->
@@ -211,39 +226,51 @@
         </div>
 
         <!-- Company ID -->
-        <div class="mt-5">
+        <div class="mt-5 relative">
             <select v-model="filtersDraft.empId" @change="applySearch"
-                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
                 <option value="">Company ID</option>
                 <option v-for="team in empIdOptions" :key="team" :value="team">{{ team }}</option>
             </select>
+
+            <Icon icon="iconamoon:arrow-down-2-light"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
 
         <!-- Department -->
-        <div class="mt-5">
+        <div class="mt-5 relative">
             <select v-model="filtersDraft.department" @change="applySearch"
-                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
                 <option value="">department</option>
                 <option v-for="team in departments" :key="team" :value="team">{{ team }}</option>
             </select>
+
+            <Icon icon="iconamoon:arrow-down-2-light"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
 
         <!-- Team -->
-        <div class="mt-5">
+        <div class="mt-5 relative">
             <select v-model="filtersDraft.team" @change="applySearch"
-                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
                 <option value="">Team</option>
                 <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
             </select>
+
+            <Icon icon="iconamoon:arrow-down-2-light"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
 
         <!-- Position -->
-        <div class="mt-5">
+        <div class="mt-5 relative">
             <select v-model="filtersDraft.position" @change="applySearch"
-                class="w-full border border-neutral-300 rounded-full px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-red-300 outline-none">
+                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
                 <option value="">Position</option>
                 <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
             </select>
+
+            <Icon icon="iconamoon:arrow-down-2-light"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
         </div>
     </div>
 
@@ -275,10 +302,9 @@
         <div>
             <!-- ปุ่มบันทึก (ขวา) -->
             <button type="button" @click="saveEvent" :disabled="saving" class="inline-flex items-center justify-center gap-2
-         rounded-[20px] px-4 py-2 bg-green-600 text-white font-semibold
+         rounded-[20px] px-4 py-2 bg-[#00A73D] text-white font-semibold
          hover:bg-green-700 w-[140px] h-[45px] transition">
-                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
-                <span>บันทึก</span>
+                <span>Confirm</span>
             </button>
 
         </div>
@@ -287,9 +313,6 @@
     <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
         :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText" @confirm="alert.onConfirm"
         @cancel="alert.onCancel" />
-
-
-
 
 </template>
 
@@ -321,6 +344,10 @@ export default {
             eventLocation: '',
             saving: false,
             eventDurationMinutes: 0, // นาทีจริงที่จะส่งไป backend
+
+            // Validation state
+            formErrors: {},
+            submitted: false,
 
             // ⬇️ state สำหรับไฟล์โ
             filesExisting: [],    // ตัวแปรรับข้อมูล [{id,file_name,url,file_size,...}] จาก backend
@@ -433,7 +460,14 @@ export default {
         },
         // ซีดแถวที่ล็อกไว้
         rowClass(row) {
-            return this.lockedIds.has(row.id) ? 'opacity-60' : ''
+            // เช็คว่าถ้าเป็น id ที่ถูกล็อก (เชิญไปแล้ว)
+            if (this.lockedIds.has(row.id)) {
+                // opacity-60: ทำให้สีจางลง
+                // pointer-events-none: ปิดการคลิกทุกอย่างในแถวนั้น (รวมถึง checkbox)
+                // bg-gray-50: ถมสีพื้นหลังให้ดูว่าเป็นสถานะ disabled
+                return 'opacity-60 pointer-events-none bg-gray-50 select-none'
+            }
+            return ''
         },
 
         // รับค่าจาก DataTable เวลาเช็ค/ยกเลิกเช็ค
@@ -547,7 +581,54 @@ export default {
             this.selectedIds = select
         },
 
+        // [Earth (Suphanut) 2025-12-06] Validate form
+        validateForm() {
+            const errors = {};
+
+            if (!this.eventTitle?.trim()) errors.eventTitle = true;
+            if (!this.eventCategoryId) errors.eventCategoryId = true;
+            if (!this.eventDescription?.trim()) errors.eventDescription = true;
+            if (!this.eventDate) errors.eventDate = true;
+
+            // // 2. [เพิ่มใหม่] ตรวจสอบวันที่ (Date Logic)
+            // if (!this.eventDate) {
+            //     errors.eventDate = true;
+            // } else {
+            //     // Debug: ดูค่าใน Console (กด F12) ว่าค่าที่เลือก vs ค่าต่ำสุด เป็นเท่าไหร่
+            //     console.log('Selected:', this.eventDate, 'MinDate:', this.minDate);
+
+            //     // เช็คว่า วันที่เลือก (eventDate) น้อยกว่า วันปัจจุบัน (minDate) หรือไม่
+            //     if (this.eventDate < this.minDate) {
+            //         errors.eventDate = true;
+            //     }
+            // }
+
+            // Check Required
+            if (!this.eventTimeStart) errors.eventTimeStart = true;
+            if (!this.eventTimeEnd) errors.eventTimeEnd = true;
+            if (!this.eventLocation?.trim()) errors.eventLocation = true;
+
+            // [Earth (Suphanut) 2025-12-06] Logic Check: Time
+            // ถ้ามีการกรอกเวลาครบทั้งคู่ แต่ Logic ไม่ผ่าน (End <= Start)
+            if (this.eventTimeStart && this.eventTimeEnd && !this.isValidTimeLogic) {
+                // ให้ขึ้นตัวแดงทั้งคู่ หรือแค่ตัวจบก็ได้ (ในที่นี้ให้แดงที่กรอบใหญ่ตาม Template)
+                errors.eventTimeEnd = true;
+                // เพิ่ม message พิเศษสำหรับเคสนี้ (Template จะดึงไปแสดง)
+                errors.timeMsg = 'End time must be after Start time';
+            }
+
+            this.formErrors = errors;
+            return Object.keys(errors).length === 0;
+        },
+
         async saveEvent() {
+            this.submitted = true;
+            // [Earth (Suphanut) 2025-12-06] Check validate without alert
+            if (!this.validateForm()) {
+                // ไม่ต้องทำอะไร ปล่อยให้หน้าจอโชว์สีแดงตาม state
+                return;
+            }
+
             this.openAlert({
                 type: 'confirm',
                 title: 'ARE YOU SURE TO EDIT?',
@@ -598,6 +679,25 @@ export default {
                         const res = await axios.post('/edit-event', formData, {
                             headers: { 'Accept': 'application/json' },
                         })
+                        // เช็คว่ามี Warning เรื่องเมลไหม?
+                        if (res.data.mail_warning) {
+                             this.openAlert({
+                                type: 'warning', // เปลี่ยนเป็นสีเหลือง
+                                title: 'บันทึกสำเร็จ (แต่ส่งเมลไม่ได้)',
+                                message: 'ข้อมูลถูกบันทึกแล้ว แต่ระบบส่งอีเมลขัดข้อง: ' + res.data.mail_warning,
+                                okText: 'OK',
+                                onConfirm: () => this.$router.back(),
+                            })
+                        } else {
+                            // กรณีปกติ (สีเขียว)
+                            this.openAlert({
+                                type: 'success',
+                                title: 'EDIT SUCCESS!',
+                                message: 'This event has been successfully edited.',
+                                okText: 'OK',
+                                onConfirm: () => this.$router.back(),
+                            })
+                        }
 
                         this.openAlert({
                             type: 'success',
@@ -669,6 +769,22 @@ export default {
         },
     },
     computed: {
+        // ใน computed: { ... }
+        isValidTimeLogic() {
+            // แปลงเวลาเป็นตัวเลข (ชั่วโมง * 60 + นาที)
+            const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number);
+            const [endHour, endMinute] = (this.eventTimeEnd || '0:0').split(':').map(Number);
+
+            const sumStartMin = startHour * 60 + startMinute;
+            const sumEndMin = endHour * 60 + endMinute;
+
+            // ถ้ายังไม่ได้กรอกเวลา (หรือเป็น 00:00 ทั้งคู่ตอนโหลด) ให้ถือว่า true ไปก่อน (เดี๋ยวไปติด validate required แทน)
+            if (!this.eventTimeStart || !this.eventTimeEnd) return true;
+
+            // [Earth (Suphanut) 2025-12-06] แก้ไข Logic: ตัดการบวก 24 ชม. ออก เพื่อบังคับว่าเวลาจบต้องมากกว่าเวลาเริ่ม
+            // เช็คว่า เวลาจบ ต้องมากกว่า เวลาเริ่ม ( > ) หรือ มากกว่าเท่ากับ ( >= ) แล้วแต่ requirement (ปกติ Event ควร >)
+            return sumEndMin > sumStartMin;
+        },
         // โครงคอลัมน์ของ DataTable
         columns() {
             return [
@@ -785,6 +901,21 @@ export default {
             //หน้านี้มี 10 คน แต่เลือกไว้ 8 → return false
             //เพื่อถ้าติ๊กหมด เป็น true จะเอาค่าไปบอกให้ checkboxall จะติ๊กด้วย
         },
+
+        /**
+         * ชื่อฟังก์ชัน: minDate
+        * คำอธิบาย: คำนวณวันที่ปัจจุบันในรูปแบบ YYYY-MM-DD เพื่อใช้กำหนดค่าต่ำสุด (min) ของ input type date
+        * Output: String (Date Format)
+        * ชื่อผู้เขียน/แก้ไข: Suphanut
+        * วันที่แก้ไข: 2025-12-21
+         */
+        minDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        },
     },
 
     watch: {
@@ -805,8 +936,14 @@ export default {
 <style scoped>
 /* ทำให้ input type="time" ดู “เรียบ” และกลืนกับกล่องพิล */
 .time-input::-webkit-calendar-picker-indicator {
-    opacity: 0;
+    /* opacity: 0; */
+    display: none;
 }
+
+/* ซ่อนตัวบอก AM/PM */
+/* .time-input::-webkit-datetime-edit-ampm-field {
+    display: none;
+} */
 
 /* ซ่อนปุ่มปฏิทินเดิมของ Chrome/Safari */
 </style>

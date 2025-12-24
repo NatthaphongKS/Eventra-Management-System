@@ -16,7 +16,7 @@ class Employee extends Authenticatable
     use Notifiable;
 
     protected $table = 'ems_employees';
-    protected $primaryKey = 'emp_id';
+    protected $primaryKey = 'id';
 
     public $timestamps = false;
 

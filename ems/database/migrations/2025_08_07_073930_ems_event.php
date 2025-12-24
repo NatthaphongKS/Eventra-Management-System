@@ -43,7 +43,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('con_event_id')->constrained('ems_event')->onDelete('cascade');
             $table->foreignId('con_employee_id')->constrained('ems_employees')->onDelete('cascade');
-            $table->enum('con_answer', ['accept', 'denied', 'invalid'])->default('invalid');
+            $table->enum('con_answer', ['accepted', 'denied', 'pending', 'invalid', 'not_invite'])->default('not_invite');
             $table->text('con_reason')->nullable();
             $table->enum('con_delete_status', ['active', 'inactive'])->default('active');
         });

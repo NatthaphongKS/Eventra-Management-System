@@ -357,7 +357,7 @@ function toggleSelectAllOnPage(event) {
   });
 
   emit('update:modelValue', Array.from(next));
-  emit('checkbox-checkin', { keys: Array.from(pageRowKeys.value), checked }); // ✅ ส่งรวมทั้งหมดในหน้า
+  //emit('checkbox-checkin', { keys: Array.from(pageRowKeys.value), checked }); // ✅ ส่งรวมทั้งหมดในหน้า
   emit('check-all-page', {                           // ✅ เพิ่ม อีเวนต์ให้แม่
     action: checked ? 'check' : 'uncheck',          //    บอกประเภทการกระทำ
     pageKeys: Array.from(pageRowKeys.value),        //    คีย์ทั้งหมดบนหน้า
