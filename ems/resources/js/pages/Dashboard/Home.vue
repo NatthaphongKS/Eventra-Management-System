@@ -235,76 +235,24 @@
 
   <!-- Employee Table Section - แสดงเมื่อกดการ์ด -->
   <div v-if="showEmployeeTable && selectedEventIds.size > 0" class="employee-table-container">
-    <div class="employee-table-wrap">
-      <table class="employee-table">
-        <thead>
-          <tr>
-            <th class="employee-th emp-col-idx">#</th>
-            <th class="employee-th emp-col-id">ID</th>
-            <th class="employee-th emp-col-name">Name</th>
-            <th class="employee-th emp-col-nickname">Nickname</th>
-            <th class="employee-th emp-col-phone">Phone</th>
-            <th class="employee-th emp-col-department">Department</th>
-            <th class="employee-th emp-col-team">Team</th>
-            <th class="employee-th emp-col-position">Position</th>
-            <th class="employee-th emp-col-event">Event</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(emp, i) in paginatedEmployees" :key="emp.id" class="employee-row">
-            <td class="employee-td emp-col-idx">{{ ((currentPage - 1) * itemsPerPage) + i + 1 }}</td>
-            <td class="employee-td emp-col-id">{{ emp.emp_id || 'N/A' }}</td>
-            <td class="employee-td emp-col-name">{{ emp.emp_firstname || emp.name || 'N/A' }}</td>
-            <td class="employee-td emp-col-nickname">{{ emp.emp_nickname || emp.nickname || 'N/A' }}</td>
-            <td class="employee-td emp-col-phone">{{ emp.emp_phone || emp.phone || 'N/A' }}</td>
-            <td class="employee-td emp-col-department">{{ emp.department || emp.department_name || 'N/A' }}</td>
-            <td class="employee-td emp-col-team">{{ emp.team || emp.team_name || 'N/A' }}</td>
-            <td class="employee-td emp-col-position">{{ emp.position || emp.position_name || 'N/A' }}</td>
-            <td class="employee-td emp-col-event">{{ emp.event_title || getEventTitlesText() }}</td>
-          </tr>
-          <tr v-if="paginatedEmployees.length === 0 && !loadingParticipants">
-            <td colspan="9" class="employee-td no-data">No participants found for selected event(s)</td>
-          </tr>
-          <tr v-if="loadingParticipants">
-            <td colspan="9" class="employee-td no-data">Loading participants...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <!-- Employee table info and pagination -->
-    <div class="employee-table-footer">
-      <div class="employee-table-info">
-        แสดง 
-        <select v-model="itemsPerPage" class="employee-page-size-select">
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-        {{ employeePaginationText }}
-      </div>
-      
-      <!-- Pagination - Employee table style -->
-      <div class="pager2" v-if="empTotalPages > 1">
-      <button class="arrow-btn" :disabled="currentPage <= 1" @click="currentPage = 1">‹‹</button>
-      <button class="arrow-btn" :disabled="currentPage <= 1" @click="currentPage--">‹</button>
-      
-      <template v-for="page in visiblePages" :key="page">
-        <button 
-          v-if="page !== '...'"
-          class="page-btn"
-          :class="{ active: page === currentPage }"
-          @click="currentPage = page">
-          {{ page }}
-        </button>
-        <span v-else class="dots">...</span>
+    <DataTable
+      :rows="paginatedEmployees"
+      :columns="employeeColumns"
+      :loading="loadingParticipants"
+      v-model:page="currentPage"
+      v-model:pageSize="itemsPerPage"
+      :totalItems="totalEmployees"
+      :pageSizeOptions="[10, 25, 50, 100]"
+      rowKey="id"
+      :showRowNumber="true"
+      class="p-6"
+    >
+      <template #empty>
+        <div class="py-6 text-center text-neutral-700">
+          No participants found for selected event(s)
+        </div>
       </template>
-      
-      <button class="arrow-btn" :disabled="currentPage >= empTotalPages" @click="currentPage++">›</button>
-      <button class="arrow-btn" :disabled="currentPage >= empTotalPages" @click="currentPage = empTotalPages">››</button>
-      </div>
-    </div>
+    </DataTable>
   </div>
 </template>
 
@@ -665,6 +613,66 @@ export default {
         },
       ];
     },
+    employeeColumns() {
+      return [
+        {
+          key: "emp_id",
+          label: "ID",
+          class: "w-20 text-center",
+          cellClass: "text-center",
+          format: (v) => v || 'N/A',
+        },
+        {
+          key: "emp_firstname",
+          label: "Name",
+          class: "w-32 text-left",
+          cellClass: "text-left",
+          format: (v, row) => v || row.name || 'N/A',
+        },
+        {
+          key: "emp_nickname",
+          label: "Nickname",
+          class: "w-24 text-center",
+          cellClass: "text-center",
+          format: (v, row) => v || row.nickname || 'N/A',
+        },
+        {
+          key: "emp_phone",
+          label: "Phone",
+          class: "w-28 text-center",
+          cellClass: "text-center",
+          format: (v, row) => v || row.phone || 'N/A',
+        },
+        {
+          key: "department",
+          label: "Department",
+          class: "w-32 text-left",
+          cellClass: "text-left",
+          format: (v, row) => v || row.department_name || 'N/A',
+        },
+        {
+          key: "team",
+          label: "Team",
+          class: "w-28 text-left",
+          cellClass: "text-left",
+          format: (v, row) => v || row.team_name || 'N/A',
+        },
+        {
+          key: "position",
+          label: "Position",
+          class: "w-36 text-left",
+          cellClass: "text-left",
+          format: (v, row) => v || row.position_name || 'N/A',
+        },
+        {
+          key: "event_title",
+          label: "Event",
+          class: "w-40 text-left",
+          cellClass: "text-left",
+          format: (v) => v || this.getEventTitlesText(),
+        },
+      ];
+    },
     pageItems() {
       const total = this.totalPages || 1;
       const cur = this.page;
@@ -684,58 +692,14 @@ export default {
     totalEmployees() {
       return this.filteredEmployeesForTable.length;
     },
-    empTotalPages() {
-      return Math.ceil(this.totalEmployees / this.itemsPerPage);
-    },
     paginatedEmployees() {
-      // ใช้ filteredEmployeesForTable เสมอ - ซึ่งถูกเติมข้อมูลโดย showEmployeesByStatus()
-      const data = this.filteredEmployeesForTable;
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return data.slice(start, end);
-    },
-    totalEmployees() {
-      // ใช้นับจำนวน filteredEmployeesForTable เสมอ
-      return this.filteredEmployeesForTable.length;
-    },
-    employeePaginationText() {
-      const total = this.totalEmployees;
-      const start = total > 0 ? (this.currentPage - 1) * this.itemsPerPage + 1 : 0;
-      const end = Math.min(this.currentPage * this.itemsPerPage, total);
-      return `${start}-${end} จาก ${total} รายการ`;
+      // ส่งข้อมูลทั้งหมดให้ DataTable จัดการ pagination เอง
+      return this.filteredEmployeesForTable;
     },
     eventPaginationText() {
       const start = this.sorted.length > 0 ? (this.page - 1) * this.pageSize + 1 : 0;
       const end = Math.min(this.page * this.pageSize, this.sorted.length);
       return `${start}-${end} จาก ${this.sorted.length} รายการ`;
-    },
-    visiblePages() {
-      const pages = [];
-      const total = this.empTotalPages;
-      const current = this.currentPage;
-      
-      if (total <= 7) {
-        for (let i = 1; i <= total; i++) {
-          pages.push(i);
-        }
-      } else {
-        if (current <= 4) {
-          for (let i = 1; i <= 5; i++) pages.push(i);
-          pages.push('...');
-          pages.push(total);
-        } else if (current >= total - 3) {
-          pages.push(1);
-          pages.push('...');
-          for (let i = total - 4; i <= total; i++) pages.push(i);
-        } else {
-          pages.push(1);
-          pages.push('...');
-          for (let i = current - 1; i <= current + 1; i++) pages.push(i);
-          pages.push('...');
-          pages.push(total);
-        }
-      }
-      return pages;
     },
     empPaged() {
       let arr = [...this.employees];
