@@ -481,7 +481,7 @@ export default {
                 if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
                     let [d, m, y] = s.split("/").map((n) => parseInt(n, 10));
                     if (y >= 2400) y -= 543;
-                    return new Date(y, m - 1, d).getTime();
+                    return new Date(y, m - 1, d).getTime(); // แปลง พ.ศ. → ค.ศ.
                 }
                 return new Date(s).getTime() || 0;
             };
