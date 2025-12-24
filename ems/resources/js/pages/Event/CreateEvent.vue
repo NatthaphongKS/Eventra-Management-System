@@ -1,941 +1,789 @@
 <template>
-  <div class="page">
-    <!-- ===== Header ===== -->
-    <div class="page-head">
-      <h1>Add New Event</h1>
+    <div class="font-[Poppins]" @pointerdown.capture="onRootPointer">
+        <div class="mb-8 flex items-center gap-3">
+            <h2 class="text-2xl font-semibold text-neutral-800">
+                Create Event
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8">
+            <div class="col-span-12 lg:col-span-8">
+                <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start">
+                    <div>
+                        <label
+                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                        >
+                            Event Title <span class="text-red-600">*</span>
+                        </label>
+                        <InputPill
+                            v-model="eventTitle"
+                            placeholder="Enter event title"
+                            class="w-full h-[52px] font-medium text-[16px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                        >
+                            Category <span class="text-red-600">*</span>
+                        </label>
+                        <div class="relative">
+                            <select
+                                v-model="eventCategoryId"
+                                class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white cursor-pointer"
+                            >
+                                <option value="" disabled selected>
+                                    Select
+                                </option>
+                                <option
+                                    v-for="cat in selectCategory"
+                                    :key="cat.id"
+                                    :value="cat.id"
+                                >
+                                    {{ cat.cat_name }}
+                                </option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-500"
+                            >
+                                <Icon
+                                    icon="mdi:chevron-down"
+                                    class="h-6 w-6 text-neutral-400"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <label
+                        class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                    >
+                        Event Description
+                    </label>
+                    <textarea
+                        v-model.trim="eventDescription"
+                        placeholder="Enter description..."
+                        class="border border-neutral-200 w-full h-[160px] rounded-2xl p-5 font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition resize-none"
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div>
+                        <label
+                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                        >
+                            Date <span class="text-red-600">*</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="date"
+                                v-model="eventDate"
+                                class="border border-neutral-200 w-full h-[52px] rounded-2xl px-[20px] font-medium text-neutral-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition uppercase-date cursor-pointer"
+                                @click="$event.target.showPicker()"
+                            />
+                            <!-- <Icon icon="stash:data-date-solid" class="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 text-neutral-400 pointer-events-none" /> -->
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                        >
+                            Time <span class="text-red-600">*</span>
+                        </label>
+                        <div
+                            class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 px-3 shadow-sm bg-white focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400 transition"
+                        >
+                            <input
+                                type="time"
+                                v-model="eventTimeStart"
+                                step="300"
+                                class="time-input flex-1 bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center cursor-pointer caret-transparent"
+                                @click="$event.target.showPicker()"
+                                @keydown.prevent
+                            />
+
+                            <span class="text-[16px] font-bold text-neutral-400"
+                                >:</span
+                            >
+
+                            <input
+                                type="time"
+                                v-model="eventTimeEnd"
+                                step="300"
+                                class="time-input flex-1 bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center cursor-pointer caret-transparent"
+                                @click="$event.target.showPicker()"
+                                @keydown.prevent
+                            />
+
+                            <Icon
+                                icon="mdi:clock-outline"
+                                class="w-6 h-6 text-neutral-400 ml-1 pointer-events-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                            >Duration</label
+                        >
+                        <div
+                            class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]"
+                        >
+                            <input
+                                class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none"
+                                disabled
+                                v-model="eventDurationDisplay"
+                            />
+                            <Icon
+                                icon="lucide:clock-fading"
+                                class="w-6 h-6 text-neutral-400"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <label
+                        class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                    >
+                        Location <span class="text-red-600">*</span>
+                    </label>
+                    <InputPill
+                        v-model="eventLocation"
+                        placeholder="Enter location"
+                        class="w-full h-[52px] font-medium text-[16px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition"
+                    />
+                </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-4">
+                <label
+                    class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                >
+                    Upload attachments
+                </label>
+                <p class="text-xs text-neutral-500 mb-3">
+                    Drag and drop document to your support task
+                </p>
+
+                <div
+                    class="group relative flex flex-col min-h-[300px] rounded-[24px] border-2 border-dashed border-rose-200 bg-rose-50/50 p-5 transition-all hover:border-rose-400 hover:bg-rose-50"
+                    :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }"
+                    @dragover.prevent="dragging = true"
+                    @dragleave.prevent="dragging = false"
+                    @drop.prevent="onDrop"
+                >
+                    <div
+                        v-if="filesNew.length > 0"
+                        class="flex flex-col gap-2 mb-4"
+                    >
+                        <div
+                            v-for="(item, index) in filesNew"
+                            :key="index"
+                            class="w-full flex items-center justify-between rounded-2xl bg-white border border-rose-100 px-3 py-2.5 shadow-sm"
+                        >
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div
+                                    class="grid h-10 w-10 place-items-center rounded-xl bg-rose-100 text-rose-600"
+                                >
+                                    <Icon
+                                        icon="basil:file-solid"
+                                        class="h-6 w-6"
+                                    />
+                                </div>
+                                <div class="truncate">
+                                    <span
+                                        class="block truncate text-sm font-medium text-neutral-800"
+                                    >
+                                        {{ item.name }}
+                                    </span>
+                                    <span class="text-xs text-rose-500">
+                                        {{ prettySize(item.size) }}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                class="grid h-7 w-7 place-items-center rounded-full text-neutral-400 hover:text-red-600 hover:bg-rose-50 transition"
+                                @click="removeFile(index)"
+                                aria-label="Remove file"
+                            >
+                                <Icon icon="mdi:close" class="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        v-else
+                        class="flex flex-1 flex-col items-center justify-center text-center"
+                    >
+                        <div
+                            class="mb-3 grid h-16 w-16 place-items-center rounded-full bg-rose-100 text-rose-500"
+                        >
+                            <Icon
+                                icon="entypo:upload-to-cloud"
+                                class="h-8 w-8"
+                            />
+                        </div>
+                        <p class="text-sm font-medium text-neutral-800">
+                            Choose a file or drag &amp; drop it here
+                        </p>
+                        <p class="mt-1 text-xs text-neutral-500">
+                            pdf, txt, docx, jpeg, xlsx
+                        </p>
+                    </div>
+
+                    <div class="mt-auto flex justify-center pt-4">
+                        <button
+                            type="button"
+                            class="inline-flex items-center rounded-xl border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-50 hover:border-rose-300 transition"
+                            @click="pickFiles"
+                        >
+                            Browse files
+                        </button>
+                    </div>
+                    <input
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        class="hidden"
+                        accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls"
+                        @change="onPick"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10">
+            <h3 class="text-3xl font-semibold">Add Guest</h3>
+
+            <div class="mt-4 flex flex-col gap-3">
+                <div class="flex flex-wrap items-center gap-3 w-full">
+                    <div class="flex-1 min-w-[260px]">
+                        <SearchBar
+                            v-model="search"
+                            placeholder="Search ID / Name / Nickname"
+                            @search="() => (page = 1)"
+                            class=""
+                        />
+                    </div>
+
+                    <div
+                        class="flex flex-row flex-wrap items-center gap-2 mt-8"
+                    >
+                        <EmployeeDropdown
+                            label="Company ID"
+                            v-model="selectedCompanyIds"
+                            :options="companyIdOptions"
+                        />
+                        <EmployeeDropdown
+                            label="Department"
+                            v-model="selectedDepartmentIds"
+                            :options="departmentOptions"
+                        />
+                        <EmployeeDropdown
+                            label="Team"
+                            v-model="selectedTeamIds"
+                            :options="teamOptions"
+                        />
+                        <EmployeeDropdown
+                            label="Position"
+                            v-model="selectedPositionIds"
+                            :options="positionOptions"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <DataTable
+                    :rows="pagedEmployees"
+                    :columns="columns"
+                    :loading="loadingEmployees"
+                    :totalItems="filteredEmployees.length"
+                    v-model:page="page"
+                    v-model:pageSize="perPage"
+                    :pageSizeOptions="[10, 25, 50]"
+                    :selectable="true"
+                    :showRowNumber="true"
+                    rowKey="id"
+                    :modelValue="selectedIdsArr"
+                    @update:modelValue="onUpdateSelected"
+                >
+                    <template #cell-fullname="{ row }">
+                        {{
+                            (row.emp_firstname || "") +
+                            " " +
+                            (row.emp_lastname || "")
+                        }}
+                    </template>
+                    <template #empty>
+                        <div class="py-8 text-center text-neutral-400">
+                            ไม่พบข้อมูลพนักงาน
+                        </div>
+                    </template>
+                </DataTable>
+            </div>
+        </div>
+
+        <div class="mt-6 w-full flex justify-between items-center">
+            <!-- ปุ่มยกเลิก (ซ้าย) -->
+            <div>
+                <CancelButton size="md" :disabled="saving" @click="onCancel">
+                    Cancel
+                </CancelButton>
+            </div>
+            <div>
+                <!-- ปุ่มบันทึก (ขวา) -->
+                <button
+                    type="button"
+                    @click="saveEvent"
+                    :disabled="saving"
+                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 py-2 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[45px] transition"
+                >
+                    <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
+                    <span>Create</span>
+                </button>
+            </div>
+        </div>
+
+        <ModalAlert
+            v-model:open="alert.open"
+            :type="alert.type"
+            :title="alert.title"
+            :message="alert.message"
+            :showCancel="alert.showCancel"
+            :okText="alert.okText"
+            :cancelText="alert.cancelText"
+            @confirm="alert.onConfirm"
+            @cancel="alert.onCancel"
+        />
     </div>
-
-    <!-- ===== Card: Event form ===== -->
-    <div class="card">
-      <!-- Row: Title + Category -->
-      <div class="grid-2 gap-24">
-        <div class="field">
-          <label>Event Title <span class="req">*</span></label>
-          <div class="input">
-            <input v-model.trim="form.event_title" type="text" placeholder="Name this event" required />
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Category <span class="req">*</span></label>
-          <div class="input with-caret">
-            <select v-model="form.event_category_id" required>
-              <option disabled value="">Choose Category</option>
-              <option v-for="c in categories" :key="c.id" :value="c.id">
-                {{ c.cat_name }}
-              </option>
-            </select>
-            <svg class="caret" viewBox="0 0 20 20">
-              <path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" stroke-width="2" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row: Details + Upload -->
-      <div class="grid-2 gap-24 mt-20">
-        <div class="field">
-          <label>Event Details <span class="req">*</span></label>
-          <div class="input">
-            <textarea
-              v-model.trim="form.event_description"
-              rows="5"
-              placeholder="Write some description... (255 words)"
-              required
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Upload attachments</label>
-          <div
-            class="dropzone"
-            :class="{ dragging }"
-            @dragover.prevent="dragging = true"
-            @dragleave.prevent="dragging = false"
-            @drop.prevent="onDrop"
-          >
-            <div class="dz-icon">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M12 16V4m0 0l-4 4m4-4l4 4M4 16a4 4 0 014-4h1"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
-            <div class="dz-text">
-              <div class="dz-title">Choose a file or drag & drop it here</div>
-              <div class="dz-sub">pdf, txt, docx, jpeg, xlsx - Up to 50MB</div>
-            </div>
-            <button type="button" class="btn neutral" @click="pickFiles">Browse files</button>
-            <input
-              ref="fileInput"
-              type="file"
-              multiple
-              class="hidden-file"
-              accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls"
-              @change="onPick"
-            />
-          </div>
-
-          <ul v-if="files.length" class="file-list">
-            <li v-for="(f, i) in files" :key="i">
-              <span class="file-name">{{ f.name }}</span>
-              <span class="file-size">({{ prettySize(f.size) }})</span>
-              <button type="button" class="chip x" @click="removeFile(i)">✕</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Row: Date / Time / Duration -->
-      <div class="grid-3 gap-24 mt-20">
-        <div class="field">
-          <label>Date <span class="req">*</span></label>
-          <div class="input with-icon">
-            <svg class="icon" viewBox="0 0 24 24">
-              <path
-                d="M7 2v3M17 2v3M3 9h18M5 7h14a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-              />
-            </svg>
-            <input v-model="form.event_date" type="date" required />
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Time <span class="req">*</span></label>
-          <div class="time-row">
-            <div class="input with-icon">
-              <svg class="icon" viewBox="0 0 24 24">
-                <path
-                  d="M12 7v5l3 2"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6" />
-              </svg>
-              <input v-model="form.event_timestart" type="time" required />
-            </div>
-            <span class="colon">:</span>
-            <div class="input with-icon">
-              <svg class="icon" viewBox="0 0 24 24">
-                <path
-                  d="M12 7v5l3 2"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6" />
-              </svg>
-              <input v-model="form.event_timeend" type="time" required />
-            </div>
-            <span class="hint">→ {{ durationLabel }}</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Duration</label>
-          <div class="input">
-            <input :value="durationLabel" type="text" readonly placeholder="Auto fill (minutes)" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Row: Location -->
-      <div class="grid-1 mt-20">
-        <div class="field">
-          <label>Location <span class="req">*</span></label>
-          <div class="input with-pin">
-            <input v-model.trim="form.event_location" type="text" placeholder="Location/Building/Room Name" required />
-            <span class="pin">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 22s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z" fill="none" stroke="currentColor" stroke-width="1.6" />
-                <circle cx="12" cy="10" r="2.7" fill="none" stroke="currentColor" stroke-width="1.6" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== Card: Add Guest ===== -->
-    <div class="card mt-28">
-      <h2 class="card-title">Add Guest</h2>
-
-      <!-- Toolbar -->
-      <div class="toolbar">
-        <div class="search-wrap">
-          <input v-model.trim="searchDraft" class="search" placeholder="Search..." />
-          <button class="icon-btn" @click="applySearch" aria-label="search">
-            <svg viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
-              <path d="M20 20l-3.4-3.4" stroke="currentColor" stroke-width="2" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="chip-select">
-          <div class="chip">
-            <span class="chip-label">ID</span>
-            <select v-model="sortDir">
-              <option value="asc">↑</option>
-              <option value="desc">↓</option>
-            </select>
-          </div>
-
-          <div class="chip">
-            <span class="chip-label">Department</span>
-            <select v-model="filtersDraft.department">
-              <option value="">All</option>
-              <option v-for="d in departments" :key="d" :value="d">{{ d }}</option>
-            </select>
-          </div>
-
-          <div class="chip">
-            <span class="chip-label">Team</span>
-            <select v-model="filtersDraft.team">
-              <option value="">All</option>
-              <option v-for="t in teams" :key="t" :value="t">{{ t }}</option>
-            </select>
-          </div>
-
-          <div class="chip">
-            <span class="chip-label">Position</span>
-            <select v-model="filtersDraft.position">
-              <option value="">All</option>
-              <option v-for="p in positions" :key="p" :value="p">{{ p }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="toolbar-actions">
-          <button class="btn ghost" @click="resetSearch">Clear</button>
-        </div>
-      </div>
-
-      <!-- ✅ ใช้คอมโพเนนต์แทนตารางเดิม -->
-      <AddQuestTable
-        :rows="pagedEmployeesForComponent"
-        v-model="selectedIdsList"
-        :rowStartIndex="(page - 1) * perPage"
-      />
-
-      <!-- Footer: per-page + pagination + actions -->
-      <div class="table-footer">
-        <div class="perpage">
-          แสดง
-          <select v-model.number="perPage">
-            <option :value="10">10</option>
-            <option :value="25">25</option>
-            <option :value="50">50</option>
-          </select>
-          รายการ
-          <span class="muted">— {{ rangeText }}</span>
-        </div>
-
-        <div class="pagination">
-          <button class="pager" :disabled="page === 1" @click="gotoPage(page - 1)">‹</button>
-
-          <button
-            v-for="n in pageList"
-            :key="`p-${n.key}`"
-            class="pager"
-            :class="{ active: n.num === page, dots: n.dots }"
-            :disabled="n.dots"
-            @click="!n.dots && gotoPage(n.num)"
-          >
-            {{ n.label }}
-          </button>
-
-        <button class="pager" :disabled="page === totalPages || totalPages === 0" @click="gotoPage(page + 1)">›</button>
-        </div>
-
-        <div class="actions">
-          <button class="btn danger" @click="cancel">✕ Cancel</button>
-          <button class="btn success" :disabled="loading" @click="submitForm">
-            {{ loading ? "กำลังบันทึก..." : "＋ Create" }}
-          </button>
-        </div>
-      </div>
-
-      <p v-if="message" class="status">{{ message }}</p>
-    </div>
-  </div>
 </template>
 
 <script>
 import axios from "axios";
-axios.defaults.baseURL = "/api";
-axios.defaults.headers.common["Accept"] = "application/json";
-
-import AddQuestTable from "@/components/IndexEvent/AddQuestTable.vue";
-
-const MAX_FILE_MB = 50;
-const ALLOW_TYPES = [
-  "application/pdf","text/plain","application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "image/jpeg","image/png",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.ms-excel",
-];
+import InputPill from "@/components/Input/InputPill.vue";
+import { Icon } from "@iconify/vue";
+import DataTable from "@/components/DataTable.vue";
+import ModalAlert from "@/components/Alert/ModalAlert.vue";
+// Import Components แบบ EventCheckIn
+import SearchBar from "@/components/SearchBar.vue";
+import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
+import CancelButton from '@/components/Button/CancelButton.vue'
 
 export default {
-  components:{ AddQuestTable },
-  data() {
-    return {
-      form: {
-        event_title:"", event_description:"", event_category_id:"",
-        event_date:"", event_timestart:"", event_timeend:"", event_duration:0, event_location:""
-      },
-      categories: [],
-      files: [], dragging:false, loading:false, message:"",
-
-      employees: [], loadingEmployees:false,
-
-      // filters (draft for UI) + confirmed filters
-      search: "", filters: { department:"", team:"", position:"" },
-      searchDraft: "", filtersDraft: { department:"", team:"", position:"" },
-
-      departments: [], teams: [], positions: [],
-
-      // ✅ เก็บ state การเลือกเป็น Set (ทำ bridge เป็น array ผ่าน selectedIdsList)
-      selectedIds: new Set(),
-
-      // sorting & paging
-      sortDir:"asc", page:1, perPage:10,
-    };
-  },
-
-  async created() {
-    try {
-      const res = await axios.get("/event-info");
-      const d = res.data || {};
-
-      this.categories = d.categories || [];
-
-      // เก็บ employees แบบ internal (อ่านง่าย)
-      this.employees = (d.employees || []).map((e) => ({
-        id: e.id,
-        emp_id: e.emp_id || e.code || "",
-        emp_prefix: e.emp_prefix || "",
-        emp_firstname: e.emp_firstname || e.first_name || "",
-        emp_lastname: e.emp_lastname || e.last_name || "",
-        nickname: e.emp_nickname || "",
-        department: e.department_name || "",
-        team: e.team_name || "",
-        position: e.position_name || "",
-      }));
-
-      this.positions = (d.positions || []).map((x) => x.pst_name);
-      this.departments = (d.departments || []).map((x) => x.dpm_name);
-      this.teams = (d.teams || []).map((x) => x.tm_name);
-    } catch (err) {
-      this.message = err.response?.data?.message || "โหลดข้อมูลอ้างอิงไม่สำเร็จ";
-    }
-  },
-
-  computed: {
-    durationLabel() {
-      const m = this.form.event_duration || 0;
-      const h = Math.floor(m / 60), mm = m % 60;
-      if (!m) return "Auto fill";
-      if (h && mm) return `${h}h ${mm}m`;
-      if (h) return `${h}h`;
-      return `${mm}m`;
+    components: {
+        InputPill,
+        Icon,
+        DataTable,
+        ModalAlert,
+        SearchBar,
+        EmployeeDropdown,
+        CancelButton,
     },
+    data() {
+        return {
+            // Form Data
+            eventTitle: "",
+            eventCategoryId: "",
+            eventDescription: "",
+            eventDate: "",
+            eventTimeStart: "",
+            eventTimeEnd: "",
+            eventDurationDisplay: "",
+            eventDurationMinutes: 0,
+            eventLocation: "",
 
-    filteredEmployees() {
-      const q = this.search.toLowerCase();
-      const rows = this.employees.filter((e) => {
-        const matchText = !q || `${e.emp_id} ${e.emp_firstname} ${e.emp_lastname} ${e.nickname || ""}`.toLowerCase().includes(q);
-        const matchDept = !this.filters.department || e.department === this.filters.department;
-        const matchTeam = !this.filters.team || e.team === this.filters.team;
-        const matchPos  = !this.filters.position || e.position === this.filters.position;
-        return matchText && matchDept && matchTeam && matchPos;
-      });
+            // Metadata
+            selectCategory: [],
 
-      const dir = this.sortDir === "asc" ? 1 : -1;
-      return rows.sort((a, b) => (a.emp_id > b.emp_id ? dir : a.emp_id < b.emp_id ? -dir : 0));
+            // Files
+            filesNew: [],
+            dragging: false,
+
+            // Guests & Table
+            employees: [],
+            loadingEmployees: false,
+
+            // Search & Filter (New System)
+            search: "",
+            selectedCompanyIds: [],
+            selectedDepartmentIds: [],
+            selectedTeamIds: [],
+            selectedPositionIds: [],
+
+            // Option Arrays
+            companyIdOptions: [],
+            departmentOptions: [],
+            teamOptions: [],
+            positionOptions: [],
+
+            selectedIds: new Set(),
+            page: 1,
+            perPage: 10,
+
+            // System
+            saving: false,
+            alert: {
+                open: false,
+                type: "confirm",
+                title: "",
+                message: "",
+                showCancel: false,
+                onConfirm: null,
+            },
+        };
     },
+    computed: {
+        columns() {
+            return [
+                {
+                    key: "emp_id",
+                    label: "ID",
+                    sortable: false,
+                    class: "min-w-[100px]",
+                },
+                { key: "fullname", label: "Name", sortable: false },
+                { key: "nickname", label: "Nickname", sortable: false },
+                { key: "department", label: "Department", sortable: false },
+                { key: "team", label: "Team", sortable: false },
+                { key: "position", label: "Position", sortable: false },
+            ];
+        },
 
-    totalPages() {
-      return Math.ceil(this.filteredEmployees.length / this.perPage) || 1;
+        // --- Filtering Logic (Adapted from EventCheckIn) ---
+        filteredEmployees() {
+            const q = (this.search || "").toLowerCase().trim();
+            let list = this.employees;
+
+            // Search Filter
+            if (q) {
+                list = list.filter((e) =>
+                    [
+                        String(e.emp_id),
+                        e.emp_firstname,
+                        e.emp_lastname,
+                        e.nickname,
+                    ].some((f) => f?.toLowerCase().includes(q))
+                );
+            }
+
+            // Company Filter
+            if (this.selectedCompanyIds?.length) {
+                const needles = this.selectedCompanyIds
+                    .map((x) => String(x).trim())
+                    .filter(Boolean);
+                list = list.filter((r) => {
+                    // เช็คทั้ง companyId และ companyAbbr ถ้ามี
+                    const idStr = String(
+                        r.companyId || r.companyAbbr || ""
+                    ).trim();
+                    return needles.some((n) => idStr.includes(n));
+                });
+            }
+
+            // Department Filter
+            if (this.selectedDepartmentIds?.length) {
+                const set = new Set(this.selectedDepartmentIds);
+                list = list.filter((r) => set.has(r.department));
+            }
+
+            // Team Filter
+            if (this.selectedTeamIds?.length) {
+                const set = new Set(this.selectedTeamIds);
+                list = list.filter((r) => set.has(r.team));
+            }
+
+            // Position Filter
+            if (this.selectedPositionIds?.length) {
+                const set = new Set(this.selectedPositionIds);
+                list = list.filter((r) => set.has(r.position));
+            }
+
+            return list;
+        },
+        pagedEmployees() {
+            const start = (this.page - 1) * this.perPage;
+            return this.filteredEmployees.slice(start, start + this.perPage);
+        },
+        selectedIdsArr: {
+            get() {
+                return Array.from(this.selectedIds);
+            },
+            set(arr) {
+                this.selectedIds = new Set(arr);
+            },
+        },
     },
-
-    pagedEmployees() {
-      const start = (this.page - 1) * this.perPage;
-      return this.filteredEmployees.slice(start, start + this.perPage);
+    watch: {
+        eventTimeStart: "calDuration",
+        eventTimeEnd: "calDuration",
+        // Reset page when filters change
+        search() {
+            this.page = 1;
+        },
+        selectedCompanyIds() {
+            this.page = 1;
+        },
+        selectedDepartmentIds() {
+            this.page = 1;
+        },
+        selectedTeamIds() {
+            this.page = 1;
+        },
+        selectedPositionIds() {
+            this.page = 1;
+        },
+        perPage() {
+            this.page = 1;
+        },
     },
-
-    // ✅ map คีย์ให้ตรงกับ AddQuestTable (EmployeeTableSelect)
-    pagedEmployeesForComponent() {
-      return this.pagedEmployees.map(e => ({
-        id: e.id,
-        emp_id: e.emp_id,
-        emp_prefix: e.emp_prefix || "",
-        emp_firstname: e.emp_firstname || "",
-        emp_lastname: e.emp_lastname || "",
-        emp_nickname: e.nickname || "",          // rename
-        department_name: e.department || "",     // rename
-        team_name: e.team || "",                 // rename
-        position_name: e.position || "",         // rename
-      }));
+    mounted() {
+        this.fetchInfo();
     },
+    methods: {
+        async fetchInfo() {
+            try {
+                this.loadingEmployees = true;
+                const res = await axios.get("/event-info");
+                const data = res.data || {};
 
-    // ✅ bridge: v-model (Array) ↔ Set (state จริง)
-    selectedIdsList: {
-      get() { return Array.from(this.selectedIds); },
-      set(arr) { this.selectedIds = new Set(arr || []); }
+                this.selectCategory = data.categories || [];
+
+                this.employees = (data.employees || []).map((e) => {
+                    const rawId = String(e.emp_id || "");
+                    const rawPrefixFromId = (rawId.match(/^[A-Za-z]+/) || [
+                        "",
+                    ])[0];
+                    const companyAbbr = (rawPrefixFromId || "").toUpperCase();
+
+                    return {
+                        id: e.id,
+                        emp_id: e.emp_id || "",
+                        emp_firstname: e.emp_firstname || "",
+                        emp_lastname: e.emp_lastname || "",
+                        nickname: e.emp_nickname || "",
+                        department: e.department_name || "",
+                        team: e.team_name || "",
+                        position: e.position_name || "",
+                        companyAbbr: companyAbbr,
+                        companyId: e.company_id || companyAbbr || "", // ใช้สำหรับ filter
+                    };
+                });
+
+                // สร้างตัวเลือกสำหรับ Dropdowns
+                this.buildFilterOptions();
+            } catch (err) {
+                console.error("Error fetching info:", err);
+            } finally {
+                this.loadingEmployees = false;
+            }
+        },
+
+        // --- Helper for Options ---
+        toOptions(arr) {
+            const uniq = [...new Set(arr.filter(Boolean))].sort();
+            return uniq.map((v) => ({ label: v, value: v }));
+        },
+
+        buildFilterOptions() {
+            // Company: ใช้ companyId หรือ Abbr เป็นตัวเลือก
+            this.companyIdOptions = this.toOptions(
+                this.employees.map((r) => r.companyId)
+            );
+
+            // Other Filters
+            this.departmentOptions = this.toOptions(
+                this.employees.map((r) => r.department)
+            );
+            this.teamOptions = this.toOptions(
+                this.employees.map((r) => r.team)
+            );
+            this.positionOptions = this.toOptions(
+                this.employees.map((r) => r.position)
+            );
+        },
+
+        // --- Core Functions (No changes needed) ---
+        calDuration() {
+            if (!this.eventTimeStart || !this.eventTimeEnd) {
+                this.eventDurationDisplay = "";
+                this.eventDurationMinutes = 0;
+                return;
+            }
+            const [sh, sm] = this.eventTimeStart.split(":").map(Number);
+            const [eh, em] = this.eventTimeEnd.split(":").map(Number);
+            let diff = eh * 60 + em - (sh * 60 + sm);
+            if (diff < 0) diff += 24 * 60;
+
+            this.eventDurationMinutes = Math.max(0, diff);
+            const h = Math.floor(diff / 60);
+            const m = diff % 60;
+
+            if (m === 0) this.eventDurationDisplay = `${h} Hour`;
+            else if (h === 0) this.eventDurationDisplay = `${m} Min`;
+            else this.eventDurationDisplay = `${h} Hour ${m} Min`;
+        },
+        pickFiles() {
+            this.$refs.fileInput.click();
+        },
+        onPick(e) {
+            this.addFiles([...e.target.files]);
+            e.target.value = "";
+        },
+        onDrop(e) {
+            this.dragging = false;
+            this.addFiles([...e.dataTransfer.files]);
+        },
+        addFiles(files) {
+            const MAX_MB = 50;
+            const ALLOW = [
+                "application/pdf",
+                "text/plain",
+                "application/msword",
+                "image/jpeg",
+                "image/png",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ];
+            const errs = [];
+            files.forEach((f) => {
+                if (f.size > MAX_MB * 1024 * 1024)
+                    errs.push(`${f.name}: File too large (> ${MAX_MB}MB)`);
+                else if (!ALLOW.includes(f.type))
+                    errs.push(`${f.name}: Invalid file type`);
+                else this.filesNew.push(f);
+            });
+            if (errs.length) alert(errs.join("\n"));
+        },
+        removeFile(idx) {
+            this.filesNew.splice(idx, 1);
+        },
+        prettySize(byte) {
+            const mb = byte / (1024 * 1024);
+            return mb >= 1
+                ? `${mb.toFixed(2)} MB`
+                : `${(byte / 1024).toFixed(0)} KB`;
+        },
+        onUpdateSelected(ids) {
+            this.selectedIds = new Set(ids);
+        },
+        onCancel() {
+            if (this.filesNew.length || this.eventTitle) {
+                if (!confirm("Discard unsaved changes?")) return;
+            }
+            this.$router.back();
+        },
+        async saveEvent() {
+            if (
+                !this.eventTitle ||
+                !this.eventCategoryId ||
+                !this.eventDate ||
+                !this.eventTimeStart ||
+                !this.eventTimeEnd ||
+                !this.eventLocation
+            ) {
+                this.openAlert({
+                    type: "warning",
+                    title: "Missing Info",
+                    message: "Please fill in all required fields (*).",
+                });
+                return;
+            }
+            this.openAlert({
+                type: "confirm",
+                title: "CONFIRM CREATION",
+                message: "Are you sure you want to create this event?",
+                showCancel: true,
+                onConfirm: async () => {
+                    this.saving = true;
+                    try {
+                        const formData = new FormData();
+                        formData.append("event_title", this.eventTitle.trim());
+                        formData.append(
+                            "event_category_id",
+                            this.eventCategoryId
+                        );
+                        formData.append(
+                            "event_description",
+                            this.eventDescription || ""
+                        );
+                        formData.append("event_date", this.eventDate);
+                        formData.append("event_timestart", this.eventTimeStart);
+                        formData.append("event_timeend", this.eventTimeEnd);
+                        formData.append(
+                            "event_duration",
+                            this.eventDurationMinutes
+                        );
+                        formData.append("event_location", this.eventLocation);
+                        this.filesNew.forEach((f) =>
+                            formData.append("attachments[]", f)
+                        );
+                        this.selectedIds.forEach((id) =>
+                            formData.append("employee_ids[]", id)
+                        );
+
+                        await axios.post("/event-save", formData, {
+                            headers: { "Content-Type": "multipart/form-data" },
+                        });
+
+                        this.openAlert({
+                            type: "success",
+                            title: "CREATE SUCCESS!",
+                            message: "New event has been created.",
+                            onConfirm: () => this.$router.push("/event"),
+                        });
+                    } catch (err) {
+                        console.error(err);
+                        const msg =
+                            err.response?.data?.message ||
+                            "Failed to create event.";
+                        this.openAlert({
+                            type: "error",
+                            title: "ERROR",
+                            message: msg,
+                        });
+                    } finally {
+                        this.saving = false;
+                    }
+                },
+            });
+        },
+        openAlert(cfg) {
+            this.alert = {
+                ...this.alert,
+                open: true,
+                showCancel: false,
+                okText: "OK",
+                // [เพิ่ม] ถ้าไม่ได้ส่ง onConfirm มา ให้ใส่ฟังก์ชันปิด Modal เป็นค่าเริ่มต้น
+                onConfirm: () => {
+                    this.alert.open = false;
+                },
+                ...cfg,
+            };
+        },
+        // สำหรับปิด dropdown ในกรณีคลิกที่อื่น (ถ้า component ไม่ได้จัดการเอง)
+        onRootPointer(e) {
+            // อาจจะไม่จำเป็นต้องใช้แล้วถ้าใช้ EmployeeDropdown component ที่จัดการตัวเองได้ดี
+            // แต่ใส่ไว้เผื่อกรณีที่ยังต้องใช้
+        },
     },
-
-    rangeText() {
-      const total = this.filteredEmployees.length;
-      if (!total) return "0 รายการ";
-      const start = (this.page - 1) * this.perPage + 1;
-      const end = Math.min(this.page * this.perPage, total);
-      return `${start}-${end} จาก ${total} รายการ`;
-    },
-
-    pageList() {
-      const tp = this.totalPages;
-      const cur = this.page;
-      const nums = new Set([1, tp, cur, cur - 1, cur + 1, 2, tp - 1].filter((n) => n >= 1 && n <= tp));
-      const sorted = [...nums].sort((a, b) => a - b);
-      const out = [];
-      for (let i = 0; i < sorted.length; i++) {
-        const n = sorted[i];
-        out.push({ key: `n${n}`, num: n, label: n });
-        if (i < sorted.length - 1 && sorted[i + 1] - n > 1) {
-          out.push({ key: `d${n}`, dots: true, label: "..." });
-        }
-      }
-      return out;
-    },
-  },
-
-  watch: {
-    "form.event_timestart": "updateDuration",
-    "form.event_timeend": "updateDuration",
-    search()   { this.page = 1; },
-    filters:   { deep: true, handler() { this.page = 1; } },
-    perPage()  { this.page = 1; },
-    sortDir()  { this.page = 1; },
-  },
-
-  methods: {
-    // ===== Duration auto fill =====
-    updateDuration() {
-      const toMin = (t) => { if (!t) return null; const [h, m] = t.split(":").map(Number); return h * 60 + m; };
-      const s = toMin(this.form.event_timestart);
-      const e = toMin(this.form.event_timeend);
-      if (s == null || e == null) { this.form.event_duration = 0; return; }
-      this.form.event_duration = e >= s ? e - s : 1440 - s + e;
-    },
-
-    // ===== Search / Filter =====
-    applySearch() {
-      this.search   = this.searchDraft;
-      this.filters  = { ...this.filtersDraft };
-      this.page = 1;
-    },
-    resetSearch() {
-      this.searchDraft = "";
-      this.filtersDraft = { department: "", team: "", position: "" };
-      this.search = "";
-      this.filters = { department: "", team: "", position: "" };
-      this.page = 1;
-    },
-
-    // ===== Upload =====
-    pickFiles() { this.$refs.fileInput.click(); },
-    onPick(e)   { this.addFiles([...e.target.files]); e.target.value = ""; },
-    onDrop(e)   { this.dragging = false; this.addFiles([...e.dataTransfer.files]); },
-    addFiles(list) {
-      const errs = [];
-      list.forEach((f) => {
-        const tooBig = f.size > MAX_FILE_MB * 1024 * 1024;
-        const badType = !ALLOW_TYPES.includes(f.type);
-        if (tooBig) errs.push(`${f.name}: ไฟล์เกิน ${MAX_FILE_MB}MB`);
-        else if (badType) errs.push(`${f.name}: ประเภทไฟล์ไม่รองรับ`);
-        else this.files.push(f);
-      });
-      if (errs.length) alert(errs.join("\n"));
-    },
-    removeFile(i) { this.files.splice(i, 1); },
-    prettySize(b) {
-      const mb = b / (1024 * 1024);
-      return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(b / 1024).toFixed(0)} KB`;
-    },
-
-    // ===== Submit =====
-    async submitForm() {
-      try {
-        if (this.selectedIds.size === 0) { this.message = "กรุณาเลือกพนักงานอย่างน้อย 1 คน"; return; }
-        this.loading = true; this.message = "";
-
-        const fd = new FormData();
-        Object.entries(this.form).forEach(([k, v]) => fd.append(k, v ?? ""));
-        this.files.forEach((f) => fd.append("attachments[]", f, f.name));
-        Array.from(this.selectedIds).forEach((id) => fd.append("employee_ids[]", id));
-
-        const res = await axios.post("/event-save", fd, { headers: { "Content-Type": "multipart/form-data" } });
-        this.message = res.data.message || "บันทึกสำเร็จ";
-        this.files = [];
-        if (res.data.redirect) this.$router.push(res.data.redirect);
-      } catch (err) {
-        this.message = err.response?.data?.message || "เกิดข้อผิดพลาด";
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    // ===== Pagination & misc =====
-    gotoPage(n) { if (n >= 1 && n <= this.totalPages) this.page = n; },
-    cancel() { this.$router?.back?.() || (window.history.length ? window.history.back() : null); },
-  },
 };
 </script>
 
-
 <style scoped>
-/* ===== Theme ===== */
-:root {
-    --primary: #BA0C16;
-    --primary-200: #ffdcdc;
-    --primary-300: #ffc9c9;
-    --border: #eee;
-    --text: #333;
-    --muted: #8a8a8a;
-    --bg: #fafafa;
+.time-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
 }
-
-.page {
-    padding: 24px;
+.uppercase-date {
+    text-transform: uppercase;
 }
-
-.page-head h1 {
-    font-size: 22px;
-    font-weight: 800;
-    color: #222;
-    margin: 0 0 12px;
-}
-
-.card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-}
-
-.card-title {
-    margin: 0 0 12px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-/* ===== Layout helpers ===== */
-.grid-1 {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-}
-
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-}
-
-.gap-24 {
-    gap: 24px;
-}
-
-.mt-20 {
-    margin-top: 20px;
-}
-
-.mt-28 {
-    margin-top: 28px;
-}
-
-/* ===== Fields ===== */
-.field label {
-    display: block;
-    font-weight: 600;
-    color: #222;
-    margin-bottom: 8px;
-}
-
-.req {
-    color: var(--primary);
-}
-
-.input {
-    position: relative;
-}
-
-.input input,
-.input select,
-.input textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.6px solid var(--primary-300);
-    border-radius: 12px;
-    outline: none;
-    font-size: 14px;
-    transition: box-shadow .15s, border .15s;
-    background: #fff;
-}
-
-.input textarea {
-    resize: vertical;
-    min-height: 120px;
-}
-
-.input input:focus,
-.input select:focus,
-.input textarea:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-200);
-}
-
-/* icons inside input */
-.input.with-icon .icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    opacity: .7;
-}
-
-.input.with-icon input {
-    padding-left: 38px;
-}
-
-.with-caret select {
-    appearance: none;
-    -webkit-appearance: none;
-}
-
-.with-caret .caret {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    width: 16px;
-    height: 16px;
-    transform: translateY(-50%);
-    opacity: .7;
-    pointer-events: none;
-}
-
-.input.with-pin .pin {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    opacity: .8;
-}
-
-.time-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.colon {
-    opacity: .5;
-}
-
-.hint {
-    color: var(--muted);
-    font-size: 13px;
-}
-
-/* ===== Dropzone ===== */
-.dropzone {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    border: 2px dashed var(--primary-300);
-    border-radius: 16px;
-    background: #fff6f6;
-    padding: 24px;
-    text-align: center;
-}
-
-.dropzone.dragging {
-    background: #ffeeee;
-}
-
-.dz-icon svg {
-    width: 44px;
-    height: 44px;
-}
-
-.dz-title {
-    font-weight: 700;
-    color: #222;
-}
-
-.dz-sub {
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.hidden-file {
-    display: none;
-}
-
-.file-list {
-    list-style: none;
-    margin: 10px 0 0;
-    padding: 0;
-}
-
-.file-list li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-}
-
-.file-name {
-    font-weight: 600;
-}
-
-.file-size {
-    color: var(--muted);
-}
-
-.chip.x {
-    border: 0;
-    background: #eee;
-    padding: 4px 8px;
-    border-radius: 999px;
-    cursor: pointer;
-}
-
-/* ===== Toolbar ===== */
-.toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    margin: 8px 0 14px;
-}
-
-.search-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-}
-
-.search {
-    flex: 1;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    outline: none;
-}
-
-.icon-btn {
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: #fff;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-}
-
-.icon-btn svg {
-    width: 18px;
-    height: 18px;
-}
-
-.chip-select {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.chip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 8px 10px;
-}
-
-.chip select {
-    border: 0;
-    background: transparent;
-    outline: none;
-}
-
-.chip-label {
-    color: #444;
-    font-weight: 600;
-}
-
-.toolbar-actions .btn.ghost {
-    background: #fff;
-    border: 1px solid var(--border);
-}
-
-/* ===== Table ===== */
-.table-wrap {
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table th,
-.table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #f2f2f2;
-    text-align: left;
-}
-
-.table thead th {
-    background: #fafafa;
-    font-weight: 700;
-    color: #333;
-}
-
-/* ===== Footer & Pagination ===== */
-.table-footer {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 12px;
-    align-items: center;
-    padding: 14px 0;
-}
-
-.perpage select {
-    padding: 6px 8px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #fff;
-}
-
-.muted {
-    color: var(--muted);
-}
-
-.pagination {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-}
-
-.pager {
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: #fff;
-    cursor: pointer;
-}
-
-.pager.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-}
-
-.pager.dots {
-    cursor: default;
-}
-
-.pager:disabled {
-    opacity: .5;
-    cursor: not-allowed;
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.btn {
-    border: 0;
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.btn.neutral {
-    background: #fff;
-    border: 1px solid var(--border);
-}
-
-.btn.success {
-    background: #00b26a;
-    color: #fff;
-}
-
-.btn.danger {
-    background: #f14f4f;
-    color: #fff;
-}
-
-.btn:disabled {
-    opacity: .7;
-    cursor: not-allowed;
-}
-
-.status {
-    margin-top: 10px;
-    color: #444;
-}
-
-/* mobile */
-@media (max-width: 980px) {
-
-    .grid-2,
-    .grid-3 {
-        grid-template-columns: 1fr;
-    }
-
-    .table-footer {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
+.caret-transparent {
+    caret-color: transparent;
 }
 </style>

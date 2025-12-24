@@ -27,7 +27,7 @@ class LoginController extends Controller
         $employee = Employee::where('emp_email', $request->email)->first();
 
         // 3. Check Credentials
-        // Combine checks to prevent user enumeration if desired, 
+        // Combine checks to prevent user enumeration if desired,
         // though specific messages are helpful for legitimate users in internal apps.
         if (!$employee || !Hash::check($request->password, $employee->emp_password)) {
             return response()->json(['message' => 'Incorrect username or password. Please try again'], 401);
@@ -46,11 +46,11 @@ class LoginController extends Controller
         try {
             Auth::login($employee);
             $request->session()->regenerate();
-
+            
             $response = response()->json([
-                'redirect' => '/employee',
+                'redirect' => '/',
                 'user' => $employee, // Optional: return user info if needed
-                'message' => 'Login successful'
+                
             ]);
 
             return $response;
@@ -71,5 +71,20 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
         return response()->json(['message' => 'Logout success'])
             ->withCookie(cookie()->forget(config('session.cookie')));
+    }
+    public function showProfile()
+    {
+        // ตรวจสอบก่อนว่ามีการ Login หรือยัง
+        if (Auth::check()) {
+            // ดึง Model Employee ของผู้ใช้ที่ Login อยู่
+            $employee = Auth::user(); 
+            
+            return response()->json( [
+                'employee' => $employee 
+            ]);
+        }
+        
+        // ถ้ายังไม่ได้ Login ก็ให้ Redirect ไปหน้า Login
+        return redirect('/login');
     }
 }

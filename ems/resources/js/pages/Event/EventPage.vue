@@ -1,21 +1,24 @@
 <template>
     <section class="p-0">
-        <div class="mt-3 mb-1 flex items-center gap-4">
-            <!-- ✅ SearchBar -->
-            <div class="flex flex-1">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
+            <!-- Search -->
+            <div class="flex-1">
                 <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch"
-                    class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5" />
+                    class="" />
             </div>
 
             <!-- ✅ Filter / Sort -->
-            <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                @update:modelValue="applyFilter" class="mt-6" />
-            <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort" class="mt-6" />
-            <!-- ✅ Add Button -->
-            <router-link to="/add-event"
-                class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-4 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6">
-                + Add
-            </router-link>
+            <div class="flex gap-2 flex-shrink-0 mt-[30px]">
+                <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
+                    @update:modelValue="applyFilter" class="[&_button]:h-full" />
+                <!-- ✅ Sort -->
+                <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
+                    class="[&_button]:h-full" />
+
+                <!-- ✅ Add Button -->
+                <AddButton @click="$router.push('/add-event')"
+                    class="h-full w-[44px] flex items-center justify-center" />
+            </div>
         </div>
 
         <!-- ตาราง -->
@@ -74,12 +77,31 @@
             </template>
 
             <template #actions="{ row }">
-                <button @click="editEvent(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Edit">
-                    <PencilIcon class="h-5 w-5 text-neutral-800" />
+
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)"
+                    :class="!canDelete(row) ? 'cursor-not-allowed opacity-40' : 'hover:bg-slate-100 cursor-pointer'"
+                    :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
+                    <TrashIcon class="h-5 w-5" />
                 </button>
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5 hover:bg-slate-100" title="Delete">
-                    <TrashIcon class="h-5 w-5 text-neutral-800" />
+
+                <!-- ปุ่มชั่วคราว
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" title="Delete">
+                    <TrashIcon class="h-5 w-5" />
                 </button>
+                -->
+
+                <!-- ปุ่มแก้ไข (disabled ถ้า ongoing ในทุกกรณี) -->
+                <button @click="row.evn_status !== 'ongoing' && editEvent(row.id)"
+                    :disabled="row.evn_status === 'ongoing'" class="rounded-lg p-1.5" :class="row.evn_status === 'ongoing'
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'hover:bg-slate-100 cursor-pointer'" :title="row.evn_status === 'ongoing'
+                            ? 'Cannot edit ongoing event'
+                            : 'Edit'">
+                    <PencilIcon class="h-5 w-5" :class="row.evn_status === 'ongoing'
+                        ? 'text-neutral-400'
+                        : 'text-neutral-800'" />
+                </button>
+
                 <router-link :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -98,6 +120,7 @@
             message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
             :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
+
     </section>
 </template>
 
@@ -109,6 +132,7 @@ import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
+import AddButton from '@/components/AddButton.vue'
 
 import {
     MagnifyingGlassIcon,
@@ -130,11 +154,19 @@ export default {
         DataTable,
         EventFilter,
         SearchBar,
+        AddButton,
         ModalAlert,
     },
 
     data() {
         return {
+            showModalBlockedDone: false,
+            showModalBlockedOngoing: false,
+            empPermission: "disabled", // default กันพลาด
+            showModalBlockedPermission: false,
+            blockMessage: "",
+            deleteId: null,
+
             event: [],
             categories: [],
             catMap: {},
@@ -292,7 +324,7 @@ export default {
     ],
 
     async created() {
-        await Promise.all([this.fetchEvent(), this.fetchCategories()]);
+        await Promise.all([this.fetchPermission(), this.fetchEvent(), this.fetchCategories()]);
     },
 
     computed: {
@@ -497,6 +529,20 @@ export default {
             this.page = 1;
         },
 
+        canDelete(row) {
+            const status = (row.evn_status || "").toLowerCase();
+            const perm = (this.empPermission || "disabled").toLowerCase();
+
+            // ongoing ห้ามลบทุกกรณี
+            if (status === "ongoing") return false;
+
+            // enabled ลบได้ upcoming + done
+            if (perm === "enabled") return status === "upcoming" || status === "done";
+
+            // disabled ลบได้แค่ upcoming
+            return status === "upcoming";
+        },
+
         async fetchEvent() {
             try {
                 const res = await axios.get("/get-event");
@@ -527,6 +573,17 @@ export default {
                 console.error("fetchCategories error", err);
                 this.categories = [];
                 this.catMap = {};
+            }
+        },
+
+        async fetchPermission() {
+            try {
+                const res = await axios.get("/permission");
+                // ตัวอย่าง response: { emp_permission: "enabled" }
+                this.empPermission = (res.data?.emp_permission || "disabled").toLowerCase();
+            } catch (err) {
+                console.error("fetchPermission error", err);
+                this.empPermission = "disabled";
             }
         },
 
@@ -590,6 +647,11 @@ export default {
             }
         },
 
+        openDelete(id) {
+            this.deleteId = id;
+            this.showModalAsk = true;
+        },
+
         handleClientSort({ key, order }) {
             this.sortBy = key;
             this.sortOrder = order;
@@ -600,7 +662,7 @@ export default {
                 ) || this.selectedSort;
         },
 
-        // ✅ เพิ่ม method นี้
+        // ✅ เมื่อเลือกการเรียงลำดับจาก EventSort
         onPickSort(sort) {
             if (!sort) return;
             this.selectedSort = sort;
@@ -609,10 +671,6 @@ export default {
             this.page = 1;
         },
 
-        openDelete(id) {
-            this.deleteId = id;
-            this.showModalAsk = true;
-        },
         async onConfirmDelete() {
             const id = this.deleteId;
             this.showModal = false;
@@ -630,13 +688,16 @@ export default {
                 this.isDeleting = false;
             }
         },
+
         onCancelDelete() {
             this.showModalAsk = false;
             this.deleteId = null;
         },
+
         onConfirmSuccess() {
             this.showModalSuccess = false;
         },
+
         onConfirmFail() {
             this.showModalFail = false;
         },

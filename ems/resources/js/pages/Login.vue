@@ -16,7 +16,7 @@
       <div class="left">
         <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Sign In</h2>
         <form @submit.prevent="login">
-          
+
           <div class="mb-5">
             <input
               type="text"
@@ -69,6 +69,7 @@
   </div>
 </template>
 
+
 <script>
 import axios from "axios";
 
@@ -119,7 +120,7 @@ export default {
         if (res.data.redirect) {
           window.location.href = res.data.redirect;
         } else {
-          this.$router.push('/'); 
+          this.$router.push('/');
         }
       } catch (err) {
         if (err.response) {

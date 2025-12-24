@@ -1,13 +1,11 @@
 services:
-  # Laravel + Apache with built frontend assets
   app:
-    build: .
-    container_name: ems_app
-    restart: unless-stopped
-    ports:
-      - "7080:80"
+    image: php:8.2-apache
+    container_name: ems_app2
+    ports: ["7111:80"]
+    working_dir: /var/www/html
     volumes:
-      - ./.env:/var/www/html/.env
+      - .:/var/www/html
     environment:
       DB_CONNECTION: mysql
       DB_HOST: 10.80.7.17
@@ -19,42 +17,46 @@ services:
       - appnet
     depends_on:
       - db
+      
 
-  # MariaDB
-  db:
-    image: mariadb:10.6
-    container_name: ems_db
-    restart: unless-stopped
-    ports:
-      - "7306:3306"
+
+  node:
+    image: node:20
+    container_name: ems_vite_dev2
+    working_dir: /app
+    command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 7222"
+    ports: 
+      - "7222:7222"
+      - "7223:7223"
     environment:
-      MYSQL_DATABASE: Byteforge
-      MYSQL_USER: Byteforge
-      MYSQL_PASSWORD: Byteforge_Secret2307
-      MYSQL_ROOT_PASSWORD: Byteforge_Secret2307
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+    networks: [appnet]
+
+  db:
+    image: mariadb:10.11
+    container_name: ems_db2
+    environment:
+      MARIADB_DATABASE: Byteforge
+      MARIADB_USER: Byteforge
+      MARIADB_PASSWORD: Byteforge_Secret2307
+      MARIADB_ROOT_PASSWORD: Byteforge_Secret2307
+    ports: ["7333:3306"]
     volumes:
       - dbdata:/var/lib/mysql
-    networks:
-      - appnet
-
-  # Vite dev server so it runs under the same project/network
-  vite:
-    image: node:20
-    container_name: ems_vite
-    working_dir: /var/www/html
-    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./:/var/www/html
-    networks:
-      - appnet
+    networks: [appnet]
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ems_pma2
+    ports: ["7444:80"]
+    environment:
+      PMA_HOST: db
+    depends_on: [db]
+    networks: [appnet]
 
 networks:
   appnet:
-    name: ems_appnet
-    driver: bridge
 
 volumes:
   dbdata:
-    driver: local
