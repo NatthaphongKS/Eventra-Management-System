@@ -311,25 +311,26 @@ class EventController extends Controller
         ]);
 
 
-        return DB::transaction(function () use ($request, $data) {
+        try {
+            return DB::transaction(function () use ($request, $data) {
 
-            // 1) สร้างกิจกรรม
-            $event = Event::create([
-                'evn_title'        => $data['event_title'],
-                'evn_category_id'  => $data['event_category_id'],
-                'evn_description'  => $data['event_description'] ?? null,
-                'evn_date'         => $data['event_date'],
-                'evn_timestart'    => $data['event_timestart'],
-                'evn_timeend'      => $data['event_timeend'],
-                'evn_duration'     => $data['event_duration'],
-                'evn_location'     => $data['event_location'],
-                'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
-                'evn_create_by'    => Auth::id(),
-                'evn_status'       => 'upcoming',
-            ]);
+                // 1) สร้างกิจกรรม
+                $event = Event::create([
+                    'evn_title'        => $data['event_title'],
+                    'evn_category_id'  => $data['event_category_id'],
+                    'evn_description'  => $data['event_description'] ?? null,
+                    'evn_date'         => $data['event_date'],
+                    'evn_timestart'    => $data['event_timestart'],
+                    'evn_timeend'      => $data['event_timeend'],
+                    'evn_duration'     => $data['event_duration'],
+                    'evn_location'     => $data['event_location'],
+                    'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
+                    'evn_create_by'    => Auth::id(),
+                    'evn_status'       => 'upcoming',
+                ]);
 
-            // 2) อัปโหลดไฟล์ + บันทึกผ่านความสัมพันธ์ files()
-            $savedFiles = [];
+                // 2) อัปโหลดไฟล์ + บันทึกผ่านความสัมพันธ์ files()
+                $savedFiles = [];
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
                     $path = $file->store("events/{$event->id}", 'public');
@@ -342,12 +343,15 @@ class EventController extends Controller
                         'uploaded_at' => now(),
                     ]);
 
-                    $savedFiles[] = [
-                        'file_name' => $fileRow->file_name,
-                        'file_path' => $fileRow->file_path,
-                        'file_type' => $fileRow->file_type,
-                        'file_size' => $fileRow->file_size,
-                    ];
+                    // บันทึกลงตาราง File (Table: ems_file)
+                    // ต้องแน่ใจว่า import App\Models\File แล้ว
+                    $fileRecord = new File();
+                    $fileRecord->file_name      = $file->getClientOriginalName(); // ชื่อเดิม
+                    $fileRecord->file_path      = $path;                          // path ที่เก็บ
+                    $fileRecord->file_event_id  = $event->id;                     // ID กิจกรรม
+                    $fileRecord->file_type      = $file->getMimeType(); // เพิ่ม: file_type
+                    $fileRecord->file_size      = $file->getSize();     // เพิ่ม: file_size (จำเป็น)
+                    $fileRecord->save();
                 }
             }
 
@@ -383,7 +387,18 @@ class EventController extends Controller
                 'event'    => $event,
                 'redirect' => '/event',
             ], 201);
-        });
+            });
+        } catch (\Exception $e) {
+            DB::rollBack(); // ย้อนกลับข้อมูลทั้งหมดถ้ามี Error
+
+            // Log Error ไว้ดู
+            \Illuminate\Support\Facades\Log::error('Create Event Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create event: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -468,6 +483,71 @@ class EventController extends Controller
         return response()->json($rows);
     }
 
+    /**
+     * อัปเดตสถานะอีเวนต์ตามเวลา (upcoming / ongoing / done)
+     * - เทียบ evn_date + evn_timestart / evn_timeend กับเวลาปัจจุบัน
+     * - ใช้ Cache::lock() กันการ update ซ้ำจากหลาย request
+     * - ไม่แก้ไขอีเวนต์ที่ถูกลบแล้ว (deleted)
+     */
+    private function syncEventStatus(): void
+    {
+        // กันหลาย request อัปเดตพร้อมกัน
+        $lock = Cache::lock('events:sync-status', 30); // ล็อก 30 วินาที
+
+        if (!$lock->get()) {
+            return; // มีคนอื่นเพิ่ง sync ไปแล้ว
+        }
+
+        try {
+            // ใช้เวลาไทยเป็นมาตรฐาน
+            $now = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+
+            // done: ถึงเวลาจบแล้ว
+            DB::table('ems_event')
+                ->where(function ($q) {
+                    $q->whereNull('evn_status')
+                        ->orWhereNotIn('evn_status', ['done', 'deleted']);
+                })
+                ->whereRaw("TIMESTAMP(evn_date, evn_timeend) <= ?", [$now])
+                ->update(['evn_status' => 'done']);
+
+            // ongoing: อยู่ระหว่างเริ่ม–จบ
+            DB::table('ems_event')
+                ->where(function ($q) {
+                    $q->whereNull('evn_status')
+                        ->orWhereNotIn('evn_status', ['ongoing', 'done', 'deleted']);
+                })
+                ->whereRaw("TIMESTAMP(evn_date, evn_timestart) <= ?", [$now])
+                ->whereRaw("TIMESTAMP(evn_date, evn_timeend) > ?", [$now])
+                ->update(['evn_status' => 'ongoing']);
+
+            // upcoming: ยังไม่ถึงเวลาเริ่ม
+            DB::table('ems_event')
+                ->where(function ($q) {
+                    $q->whereNull('evn_status')
+                        ->orWhereNotIn('evn_status', ['upcoming', 'deleted']);
+                })
+                ->whereRaw("TIMESTAMP(evn_date, evn_timestart) > ?", [$now])
+                ->update(['evn_status' => 'upcoming']);
+        } finally {
+            // ปล่อย lock
+            optional($lock)->release();
+        }
+    }
+
+    // ดึงสิทธิ์ของผู้ใช้ปัจจุบัน
+    public function permission()
+    {
+        $userId = Auth::id();
+        if (!$userId) return response()->json(['message' => 'Unauthenticated'], 401);
+
+        $emp = Employee::find($userId);
+        if (!$emp) return response()->json(['message' => 'Employee not found'], 404);
+
+        return response()->json([
+            'emp_permission' => strtolower((string) $emp->emp_permission),
+        ]);
+    }
 
     public function deleted($id)
     {
