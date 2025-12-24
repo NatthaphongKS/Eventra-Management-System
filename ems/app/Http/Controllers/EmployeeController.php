@@ -158,6 +158,13 @@ class EmployeeController extends Controller
             }
         }
 
+
+        $companies = DB::table('ems_company')
+            ->select('id', 'com_name')
+            ->where('com_delete_status', 'active')
+            ->orderBy('com_name')
+            ->get();
+
         $positions = Position::query()
             ->select('id', 'pst_name', 'pst_team_id')
             ->where('pst_delete_status', 'active')
@@ -178,6 +185,7 @@ class EmployeeController extends Controller
 
         return response()->json(compact(
             'prefixes',
+            'companies',
             'positions',
             'departments',
             'teams'
@@ -191,9 +199,14 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         // 1. เช็คก่อนว่ามี emp_id นี้ที่สถานะเป็น 'inactive' มั้ย
-        $existingInactiveEmp = Employee::where('emp_id', $request->emp_id)
-            ->where('emp_delete_status', 'inactive')
+        $existingInactiveEmp = Employee::where('emp_delete_status', 'inactive')
+            ->where(function ($q) use ($request) {
+                $q->where('emp_id', $request->emp_id)
+                    ->orWhere('emp_email', $request->emp_email)
+                    ->orWhere('emp_phone', $request->emp_phone);
+            })
             ->first();
+
 
         // --- กรณี A: พบข้อมูลเก่าที่ถูกลบไปแล้ว (Inactive) -> ให้ทำการ Update และ Reactivate ---
         if ($existingInactiveEmp) {
