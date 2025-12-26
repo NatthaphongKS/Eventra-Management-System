@@ -106,14 +106,18 @@
                                         :disabled="!form.team" />
                                 </FormField>
 
-                                <FormField label="Email" required>
-                                    <InputPill v-model="form.email" type="email" placeholder="Ex.example@gmail.com"
-                                        class="mt-1 block h-11 w-full" :error="errors.email" />
+                                <FormField label="Email" :required="!isEmployeePermission">
+                                    <InputPill v-model="form.email" type="email" :placeholder="isEmployeePermission
+                                        ? 'Employee does not require email'
+                                        : 'Ex.example@gmail.com'" class="mt-1 block h-11 w-full" :error="errors.email"
+                                        :disabled="isEmployeePermission" />
                                 </FormField>
 
-                                <FormField label="Password" required>
-                                    <InputPill v-model="form.password" type="password" placeholder="Ex.Ssaw.1234"
-                                        class="mt-1 block h-11 w-full" :error="errors.password" />
+                                <FormField label="Password" :required="!isEmployeePermission">
+                                    <InputPill v-model="form.password" type="password" :placeholder="isEmployeePermission
+                                        ? 'Employee does not require password'
+                                        : 'Ex.Ssaw.1234'" class="mt-1 block h-11 w-full" :error="errors.password"
+                                        :disabled="isEmployeePermission" />
                                 </FormField>
 
                                 <FormField label="Permission" required>
@@ -170,9 +174,9 @@ const goImport = () => router.push({ name: "upload-file" })
  * 3. Static Options
  * ======================================================= */
 const permissions = [
-    { label: 'Administrator', value: 1 },
-    { label: 'Human Resources', value: 2 },
-    { label: 'Employee', value: 3 },
+    { label: 'Administrator', value: 'admin' },
+    { label: 'Human Resources', value: 'hr' },
+    { label: 'Employee', value: 'employee' },
 ]
 
 
@@ -293,6 +297,11 @@ const employeeIdCombined = computed(() => {
     return `${form.companyId}${form.employeeNumber}`
 })
 
+/**
+ * ตรวจสอบสิทธิ์เป็น Employee หรือไม่
+ */
+const isEmployeePermission = computed(() => form.permission === 'employee')
+
 
 /* =========================================================
  * 7. Validation Logic
@@ -327,6 +336,9 @@ const fieldRules = {
  * validate field เดียว
  */
 function validateField(key, value) {
+    if (isEmployeePermission.value && (key === 'email' || key === 'password')) {
+        return ""
+    }
     const rules = fieldRules[key] || []
     for (const r of rules) {
         if (r === 'requiredSelect' && !value) return MSG.requiredSelect
@@ -394,6 +406,19 @@ watch(() => form.team, () => {
     delete errors.position
 })
 
+/**
+ * ล้างค่า email / password เมื่อเปลี่ยนสิทธิ์เป็น Employee
+ */
+watch(() => form.permission, (newVal) => {
+    if (newVal === 'employee') {
+        form.email = ''
+        form.password = ''
+        delete errors.email
+        delete errors.password
+    }
+})
+
+
 
 /* =========================================================
  * 9. Submit / Actions
@@ -414,13 +439,13 @@ async function handleSubmit() {
             emp_nickname: form.nickname || null,
             emp_firstname: form.firstName,
             emp_lastname: form.lastName,
-            emp_email: form.email,
+            emp_email: isEmployeePermission.value ? null : form.email,
+            emp_password: isEmployeePermission.value ? null : form.password,
             emp_phone: String(form.phone),
             emp_position_id: Number(form.position),
             emp_department_id: Number(form.department),
             emp_team_id: Number(form.team),
-            emp_password: form.password,
-            emp_status: Number(form.permission),
+            emp_permission: (form.permission),
         })
 
         suspendValidation.value = true
