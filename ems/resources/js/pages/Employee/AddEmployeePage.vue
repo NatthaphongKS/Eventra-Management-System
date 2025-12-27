@@ -58,7 +58,7 @@
                                 </FormField>
 
                                 <FormField label="Phone" required>
-                                    <InputPill v-model="form.phone" placeholder="Ex.0988900988" inputmode="numeric"
+                                    <InputPill v-model="form.phone" placeholder="Ex.0988900988" maxlength="10"
                                         class="mt-1 block h-11 w-full" :error="errors.phone" />
                                 </FormField>
 
@@ -69,8 +69,8 @@
                                             placeholder="Company" class="h-11 w-full" :error="errors.companyId" />
 
                                         <!-- Employee Number -->
-                                        <InputPill v-model="form.employeeNumber" placeholder="Ex.0001"
-                                            inputmode="numeric" class="h-11 w-full" :error="errors.employeeNumber"
+                                        <InputPill v-model="form.employeeNumber" placeholder="Ex.0001" maxlength="4"
+                                            class="h-11 w-full" :error="errors.employeeNumber"
                                             @input="onEmployeeNumberInput" />
                                     </div>
                                 </FormField>
@@ -85,7 +85,7 @@
                             </div>
 
                             <!-- ขวา -->
-                            <div class="flex flex-col gap-5">
+                            <div class="flex flex-col gap-5 h-full">
                                 <FormField label="Department" required>
                                     <DropdownPill v-model="form.department" :options="departments"
                                         placeholder="Select Department" class="mt-1 block h-11 w-full"
@@ -106,11 +106,9 @@
                                         :disabled="!form.team" />
                                 </FormField>
 
-                                <FormField label="Email" :required="!isEmployeePermission">
-                                    <InputPill v-model="form.email" type="email" :placeholder="isEmployeePermission
-                                        ? 'Employee does not require email'
-                                        : 'Ex.example@gmail.com'" class="mt-1 block h-11 w-full" :error="errors.email"
-                                        :disabled="isEmployeePermission" />
+                                <FormField label="Email" required>
+                                    <InputPill v-model="form.email" type="email" placeholder="Ex.example@gmail.com"
+                                        class="mt-1 block h-11 w-full" :error="errors.email" />
                                 </FormField>
 
                                 <FormField label="Password" :required="!isEmployeePermission">
@@ -127,7 +125,7 @@
                                 </FormField>
 
                                 <!-- ปุ่ม Create -->
-                                <div class="pt-2 flex justify-end">
+                                <div class="mt-auto pt-2 flex justify-end">
                                     <button type="submit" :disabled="submitting" class="inline-flex disabled:opacity-50"
                                         style="all: unset; display: inline-flex;">
                                         <CreateButton :disabled="submitting" />
@@ -333,32 +331,63 @@ const fieldRules = {
 }
 
 /**
- * validate field เดียว
+ * validate field
  */
 function validateField(key, value) {
-    if (isEmployeePermission.value && (key === 'email' || key === 'password')) {
+    // ถ้าเป็น error จาก backend (already exist) ไม่ให้ถูกทับ
+    if (errors[key] && errors[key].includes('already')) {
+        return errors[key]
+    }
+
+    // employee ไม่ต้อง validate password
+    if (isEmployeePermission.value && key === 'password') {
         return ""
     }
+
     const rules = fieldRules[key] || []
+
     for (const r of rules) {
-        if (r === 'requiredSelect' && !value) return MSG.requiredSelect
-        if (r === 'requiredText') {
-            if (!value || !/^[A-Za-zก-๙ .'-]+$/u.test(value)) return MSG.requiredText
+        if (r === 'requiredSelect' && !value) {
+            return MSG.requiredSelect
         }
+
+        if (r === 'requiredText') {
+            if (!value || !/^[A-Za-zก-๙ .'-]+$/u.test(value)) {
+                return MSG.requiredText
+            }
+        }
+
         if (r === 'requiredNumber') {
             if (!value) return 'Required phone number'
-            if (!/^\d{10}$/.test(value)) return 'Phone number must be 10 digits'
+            if (!/^\d{10}$/.test(value)) {
+                return 'Phone number must be 10 digits'
+            }
         }
+
         if (r === 'requiredEmail') {
-            if (!value || !(value.includes('@') && value.includes('.'))) return MSG.requiredEmail
+            if (!value || !(value.includes('@') && value.includes('.'))) {
+                return MSG.requiredEmail
+            }
         }
-        if (r === 'requiredField' && !value) return MSG.requiredField
+
+        if (r === 'requiredField' && !value) {
+            return MSG.requiredField
+        }
     }
+
     if (key === 'employeeNumber') {
-        if (value.length !== 4) return MSG.employeeNumber4
+        if (!/^\d*$/.test(value)) {
+            return 'Only numbers are allowed'
+        }
+
+        if (value.length !== 4) {
+            return MSG.employeeNumber4
+        }
     }
+
     return ""
 }
+
 
 /**
  * validate ทั้งฟอร์ม (ตอน submit)
@@ -381,12 +410,18 @@ function validate() {
  * live validation (หยุดได้ด้วย suspendValidation)
  */
 Object.keys(fieldRules).forEach(k => {
-    watch(() => form[k], v => {
+    watch(() => form[k], () => {
         if (suspendValidation.value) return
-        const msg = validateField(k, v)
+        if (errors[k] && errors[k].includes('already exist')) {
+            delete errors[k]
+        }
+
+        const msg = validateField(k, form[k])
         msg ? errors[k] = msg : delete errors[k]
     })
 })
+
+
 
 /**
  * reset team / position เมื่อเปลี่ยน department
@@ -411,9 +446,7 @@ watch(() => form.team, () => {
  */
 watch(() => form.permission, (newVal) => {
     if (newVal === 'employee') {
-        form.email = ''
         form.password = ''
-        delete errors.email
         delete errors.password
     }
 })
@@ -439,13 +472,13 @@ async function handleSubmit() {
             emp_nickname: form.nickname || null,
             emp_firstname: form.firstName,
             emp_lastname: form.lastName,
-            emp_email: isEmployeePermission.value ? null : form.email,
+            emp_email: form.email,
             emp_password: isEmployeePermission.value ? null : form.password,
             emp_phone: String(form.phone),
             emp_position_id: Number(form.position),
             emp_department_id: Number(form.department),
             emp_team_id: Number(form.team),
-            emp_permission: (form.permission),
+            emp_permission: form.permission,
         })
 
         suspendValidation.value = true
@@ -454,16 +487,34 @@ async function handleSubmit() {
         showCreateSuccess.value = true
 
     } catch (err) {
-        createErrorMessage.value =
-            err.response?.data?.message ||
-            err.message ||
-            'Sorry, please try again later.'
+        if (err.response?.status === 422 && err.response.data.errors) {
+            const backendErrors = err.response.data.errors
+            const fieldMap = {
+                emp_email: 'email',
+                emp_phone: 'phone',
+                emp_id: 'employeeNumber',
+                emp_firstname: 'firstName',
+                emp_lastname: 'lastName',
+            }
 
-        showCreateError.value = true
+            Object.keys(backendErrors).forEach(key => {
+                const frontKey = fieldMap[key] || key
+                errors[frontKey] = Array.isArray(backendErrors[key])
+                    ? backendErrors[key][0]
+                    : backendErrors[key]
+            })
+        } else {
+            createErrorMessage.value =
+                err.response?.data?.message ||
+                err.message ||
+                'Sorry, please try again later.'
+            showCreateError.value = true
+        }
     } finally {
         submitting.value = false
     }
 }
+
 
 /**
  * cancel form
@@ -496,10 +547,17 @@ function handleLoadMetaErrorClose() {
  * 11.
  * ======================================================= */
 function onEmployeeNumberInput(e) {
-    form.employeeNumber = e.target.value
+    const rawValue = e.target.value
+    if (/[^0-9]/.test(rawValue)) {
+        errors.employeeNumber = 'Only numbers are allowed'
+    } else {
+        delete errors.employeeNumber
+    }
+    form.employeeNumber = rawValue
         .replace(/\D/g, '')
         .slice(0, 4)
 }
+
 
 </script>
 

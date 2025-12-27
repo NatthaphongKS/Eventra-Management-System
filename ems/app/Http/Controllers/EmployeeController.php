@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 
 class EmployeeController extends Controller
@@ -198,8 +199,14 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        $role = $request->emp_permission;
+        /*
+        |----------------------------------------------------------------------
+        | 1) Role & Permission
+        |----------------------------------------------------------------------
+        */
+        $role = $request->emp_permission; // admin | hr | employee
         $isEmployee = $role === 'employee';
+
         $permissionMap = [
             'admin' => 'enabled',
             'hr' => 'disabled',
@@ -208,7 +215,20 @@ class EmployeeController extends Controller
 
         $empPermission = $permissionMap[$role] ?? 'disabled';
 
-        // 1. เช็คก่อนว่ามี record inactive ที่ซ้ำ id / email / phone ไหม
+        /*
+        |----------------------------------------------------------------------
+        | 2) Normalize input
+        |----------------------------------------------------------------------
+        */
+        $firstName = trim(mb_strtolower($request->emp_firstname));
+        $lastName = trim(mb_strtolower($request->emp_lastname));
+        $empId = trim($request->emp_id); // เช่น CN001
+
+        /*
+        |----------------------------------------------------------------------
+        | 3) Check inactive duplicate (for reactivate)
+        |----------------------------------------------------------------------
+        */
         $existingInactiveEmp = Employee::where('emp_delete_status', 'inactive')
             ->where(function ($q) use ($request) {
                 $q->where('emp_id', $request->emp_id)
@@ -218,9 +238,82 @@ class EmployeeController extends Controller
             ->first();
 
         /*
-        |--------------------------------------------------------------------------
-        | A) Reactivate (inactive → active)
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
+        | 4) Custom duplicate checks (ACTIVE only)
+        |----------------------------------------------------------------------
+        */
+
+        $errors = [];
+
+        /*
+        | 4.1 Firstname + Lastname duplicate
+        */
+        $nameQuery = Employee::whereRaw('LOWER(TRIM(emp_firstname)) = ?', [$firstName])
+            ->whereRaw('LOWER(TRIM(emp_lastname)) = ?', [$lastName])
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $nameQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($nameQuery->exists()) {
+            $errors['firstName'] = 'First name and last name already exist.';
+            $errors['lastName'] = 'First name and last name already exist.';
+        }
+
+        /*
+        | 4.2 Phone duplicate
+        */
+        $phoneQuery = Employee::where('emp_phone', $request->emp_phone)
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $phoneQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($phoneQuery->exists()) {
+            $errors['emp_phone'] = 'This Phone is already use';
+        }
+
+        /*
+        | 4.3 Email duplicate
+        */
+        $emailQuery = Employee::where('emp_email', $request->emp_email)
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $emailQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($emailQuery->exists()) {
+            $errors['emp_email'] = 'This Email is already use';
+        }
+
+        /*
+        | 4.4 Employee ID duplicate (company + number)
+        */
+        $empIdQuery = Employee::where('emp_id', $empId)
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $empIdQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($empIdQuery->exists()) {
+            $errors['employeeNumber'] = 'This Employee ID is already use';
+        }
+
+        /*
+        | 4.5 Throw all errors at once
+        */
+        if (!empty($errors)) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        /*
+        |----------------------------------------------------------------------
+        | A) Reactivate employee
+        |----------------------------------------------------------------------
         */
         if ($existingInactiveEmp) {
 
@@ -229,52 +322,37 @@ class EmployeeController extends Controller
                 'emp_prefix' => ['required', 'integer'],
                 'emp_firstname' => ['required'],
                 'emp_lastname' => ['required'],
-
-                'emp_email' => [
-                    Rule::requiredIf(!$isEmployee),
-                    'nullable',
-                    'email',
-                    Rule::unique('ems_employees')->ignore($existingInactiveEmp->id),
-                ],
-
-                'emp_phone' => [
-                    'required',
-                    'regex:/^[0-9]+$/',
-                    'size:10',
-                    Rule::unique('ems_employees')->ignore($existingInactiveEmp->id),
-                ],
-
+                'emp_email' => ['required', 'email'],
+                'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10'],
                 'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
                 'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
                 'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-
                 'emp_password' => [
-                    Rule::requiredIf(!$isEmployee),
+                    \Illuminate\Validation\Rule::requiredIf(!$isEmployee),
                     'nullable',
                     'min:6',
                 ],
-
                 'emp_permission' => ['required', 'in:admin,hr,employee'],
             ]);
 
             try {
+                $companyId = $request->filled('emp_company_id')
+                    ? $request->emp_company_id
+                    : (auth()->user()->emp_company_id ?? 1);
+
                 $existingInactiveEmp->update([
-                    'emp_company_id' => $request->emp_company_id ?? (auth()->user()->emp_company_id ?? 1),
+                    'emp_company_id' => $companyId,
                     'emp_prefix' => $request->emp_prefix,
-                    'emp_firstname' => $request->emp_firstname,
-                    'emp_lastname' => $request->emp_lastname,
+                    'emp_firstname' => $firstName,
+                    'emp_lastname' => $lastName,
                     'emp_nickname' => $request->emp_nickname,
-
-                    'emp_email' => $isEmployee ? null : $request->emp_email,
+                    'emp_email' => $request->emp_email,
                     'emp_phone' => $request->emp_phone,
-
                     'emp_position_id' => $request->emp_position_id,
                     'emp_department_id' => $request->emp_department_id,
                     'emp_team_id' => $request->emp_team_id,
-
                     'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
                     'emp_permission' => $empPermission,
-
                     'emp_delete_status' => 'active',
                     'emp_delete_at' => null,
                     'emp_delete_by' => null,
@@ -282,85 +360,56 @@ class EmployeeController extends Controller
 
                 return response()->json([
                     'message' => 'Employee reactivated successfully',
-                    'data' => $existingInactiveEmp
+                    'data' => $existingInactiveEmp,
                 ], 201);
 
             } catch (QueryException $e) {
                 Log::error('EMP_REACTIVATE_FAIL', ['msg' => $e->getMessage()]);
                 return response()->json([
                     'error' => 'DB_ERROR',
-                    'message' => $e->getMessage()
+                    'message' => $e->getMessage(),
                 ], 500);
             }
         }
 
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | B) Create new employee
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
         $request->validate([
-            'emp_id' => [
-                'required',
-                Rule::unique('ems_employees')->where(
-                    fn($q) => $q->where('emp_delete_status', 'active')
-                ),
-            ],
-
+            'emp_id' => ['required'],
             'emp_prefix' => ['required', 'integer'],
             'emp_firstname' => ['required'],
             'emp_lastname' => ['required'],
-
-            'emp_email' => [
-                Rule::requiredIf(!$isEmployee),
-                'nullable',
-                'email',
-                Rule::unique('ems_employees')->where(
-                    fn($q) => $q->where('emp_delete_status', 'active')
-                ),
-            ],
-
-            'emp_phone' => [
-                'required',
-                'regex:/^[0-9]+$/',
-                'size:10',
-                Rule::unique('ems_employees')->where(
-                    fn($q) => $q->where('emp_delete_status', 'active')
-                ),
-            ],
-
+            'emp_email' => ['required', 'email'],
+            'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10'],
             'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
             'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
             'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-
             'emp_password' => [
-                Rule::requiredIf(!$isEmployee),
+                \Illuminate\Validation\Rule::requiredIf(!$isEmployee),
                 'nullable',
                 'min:6',
             ],
-
             'emp_permission' => ['required', 'in:admin,hr,employee'],
         ]);
 
         try {
             $employee = Employee::create([
                 'emp_company_id' => $request->emp_company_id ?? (auth()->user()->emp_company_id ?? 1),
-                'emp_id' => $request->emp_id,
+                'emp_id' => $empId,
                 'emp_prefix' => $request->emp_prefix,
-                'emp_firstname' => $request->emp_firstname,
-                'emp_lastname' => $request->emp_lastname,
+                'emp_firstname' => $firstName,
+                'emp_lastname' => $lastName,
                 'emp_nickname' => $request->emp_nickname,
-
-                'emp_email' => $isEmployee ? null : $request->emp_email,
+                'emp_email' => $request->emp_email,
                 'emp_phone' => $request->emp_phone,
-
                 'emp_position_id' => $request->emp_position_id,
                 'emp_department_id' => $request->emp_department_id,
                 'emp_team_id' => $request->emp_team_id,
-
                 'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
                 'emp_permission' => $empPermission,
-
                 'emp_delete_status' => 'active',
                 'emp_create_at' => Carbon::now(),
                 'emp_create_by' => Auth::id(),
@@ -368,7 +417,7 @@ class EmployeeController extends Controller
 
             return response()->json([
                 'message' => 'Employee created',
-                'data' => $employee
+                'data' => $employee,
             ], 201);
 
         } catch (QueryException $e) {
