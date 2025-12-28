@@ -3,8 +3,7 @@
     <button
       type="button"
       @click="isOpen = !isOpen"
-      class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800 hover:bg-gray-50 transition-colors duration-200 font-[Poppins]"
-      :class="{ 'bg-gray-100': isOpen }"
+      class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800  transition-colors duration-200 font-[Poppins]"
     >
       <svg
         class="w-6 h-6"
