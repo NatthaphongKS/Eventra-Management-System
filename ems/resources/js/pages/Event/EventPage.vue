@@ -14,10 +14,10 @@
                 </div>
 
                 <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                    @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
+                    @update:modelValue="applyFilter" class=" [&_button]:h-full" />
 
                 <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
-                    class="h-[44px] [&_button]:h-full" />
+                    class=" [&_button]:h-full" />
 
                 <!-- ✅ Add Button -->
                 <AddButton @click="$router.push('/add-event')"
