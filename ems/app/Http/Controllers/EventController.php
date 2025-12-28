@@ -53,7 +53,7 @@ class EventController extends Controller
     // GET /api/event/{id}
     public function show($id)
     {
-        $event = Event::find($id);
+        $event = Event::with('category')->find($id);
         if (!$event) {
             return response()->json(['message' => 'Not found'], 404);
         }

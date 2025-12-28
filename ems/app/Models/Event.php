@@ -49,7 +49,7 @@ class Event extends Model
     //เชื่อมกับตาราง category
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'event_category_id');
+        return $this->belongsTo(Category::class, 'evn_category_id');
     }
     //เชื่อมกับตาราง employee
     public function creator(): BelongsTo
