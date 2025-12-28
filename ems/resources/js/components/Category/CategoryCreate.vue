@@ -16,33 +16,37 @@
             v-model.trim="name"
             type="text"
             placeholder="Ex. สัมมนา"
-            :aria-invalid="invalid"
+            :aria-invalid="submitted && invalid"
             class="w-[653px] h-[58px] rounded-2xl border px-4 py-3 text-xl font-semibold outline-none
                    placeholder-red-300 focus:ring-2 focus:ring-red-200"
-            :class="invalid ? 'border-red-500 focus:border-red-700' : 'border-neutral-200 focus:border-red-400'"
-            @keyup.enter="submit"
+            :class="(submitted && invalid)
+              ? 'border-red-500 focus:border-red-700'
+              : 'border-neutral-200 focus:border-red-400'"
+            @keydown.enter.prevent="submit"
             autofocus
           />
 
-          <!-- ข้อความเตือน: โชว์ทันทีถ้าไม่กรอก -->
-          <p v-if="isEmpty" class="mt-1 text-sm text-red-700">Required field</p>
-          <p v-else-if="showDup" class="mt-1 text-sm text-red-700">This name is already in use!</p>
+          <!-- ✅ โชว์หลัง “กด Create/Enter” เท่านั้น -->
+          <p v-if="submitted && isEmpty" class="mt-1 text-sm text-red-700">Required field</p>
+          <p v-else-if="submitted && showDup" class="mt-1 text-sm text-red-700">
+            This name is already in use!
+          </p>
         </div>
       </div>
 
       <div class="mt-6 flex justify-between">
-        <div><CancelButton 
-          @click="close" 
-          class="inline-flex items-center gap-2" />
+        <div>
+          <CancelButton @click="close" class="inline-flex items-center gap-2" />
         </div>
         <div>
-        <CreateButton
-          @click="submit"
-          :disabled="invalid"
-          class="inline-flex items-center gap-2"
-        >
-          Create
-        </CreateButton></div>
+          <!-- ✅ ไม่ disable ตาม invalid เพื่อให้กดแล้วค่อยโชว์ validate -->
+          <CreateButton
+            @click="submit"
+            class="inline-flex items-center gap-2"
+          >
+            Create
+          </CreateButton>
+        </div>
       </div>
     </div>
   </div>
@@ -56,7 +60,6 @@ import CreateButton from "../CreateButton.vue";
 const props = defineProps<{
   open: boolean;
   userName?: string;
-  /** ฟังก์ชันตรวจชื่อซ้ำ (รับชื่อที่ trim แล้ว) */
   duplicate?: (name: string) => boolean;
 }>();
 
@@ -66,27 +69,44 @@ const emit = defineEmits<{
 }>();
 
 const name = ref("");
+const submitted = ref(false);
 
+// เปิด modal ใหม่ให้รีเซ็ต
 watch(() => props.open, (v) => {
   if (v) {
-    name.value = ""; // เปิดใหม่ รีเซ็ตฟิลด์
+    name.value = "";
+    submitted.value = false;
   }
+});
+
+// ✅ พอผู้ใช้พิมพ์หลังจากเคยกด submit แล้ว ให้ซ่อน validate ระหว่างพิมพ์
+watch(name, () => {
+  if (submitted.value) submitted.value = false;
 });
 
 const trimmed = computed(() => name.value.trim());
 const isEmpty = computed(() => trimmed.value.length === 0);
+
 const showDup = computed(() => {
-  if (isEmpty.value) return false;        // ว่างให้ขึ้น Required แทน
+  if (isEmpty.value) return false;
   return props.duplicate ? props.duplicate(trimmed.value) : false;
 });
+
 const invalid = computed(() => isEmpty.value || showDup.value);
 
 function close() {
   emit("update:open", false);
+  submitted.value = false;
 }
 
 function submit() {
-  if (invalid.value) return;              // กันกดซ้ำ
+  submitted.value = true;        // ✅ เริ่ม validate ตอนกดปุ่ม/Enter
+  if (invalid.value) return;
+
   emit("submit", { name: trimmed.value });
+  emit("update:open", false);
+
+  name.value = "";
+  submitted.value = false;
 }
 </script>

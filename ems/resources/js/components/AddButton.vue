@@ -10,8 +10,8 @@
   <button
     type="button"
     @click="$emit('click')"
-    class="inline-flex items-center gap-2.5 rounded-[17px] border border-neutral-200 bg-red-700 text-white
-           font-bold leading-none shadow-sm transition
+    class="h-[64px] inline-flex items-center gap-2.5 rounded-[17px] border border-neutral-200 bg-red-700 text-white
+           font-semibold leading-none shadow-sm transition
            hover:border-black/20 hover:shadow-md
            active:translate-y-px active:shadow-inner
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35"
@@ -24,10 +24,10 @@
   >
     <span class="inline-flex" aria-hidden="true">
       <!-- ใช้ Material Symbols ตามที่ให้มา -->
-      <span class="material-symbols-outlined text-[18px] leading-none">add</span>
+      <span class="material-symbols-outlined text-[20px] leading-none">add</span>
     </span>
 
-    <span class="inline-block">
+    <span class="inline-block text-[20px]">
       <slot>Add</slot>
     </span>
   </button>
