@@ -231,11 +231,11 @@ class EmployeeController extends Controller
         */
         $existingInactiveEmp = Employee::where('emp_delete_status', 'inactive')
             ->where(function ($q) use ($request) {
-                $q->where('emp_id', $request->emp_id)
-                    ->orWhere('emp_email', $request->emp_email)
+                $q->where('emp_email', $request->emp_email)
                     ->orWhere('emp_phone', $request->emp_phone);
             })
             ->first();
+
 
         /*
         |----------------------------------------------------------------------
@@ -342,6 +342,7 @@ class EmployeeController extends Controller
 
                 $existingInactiveEmp->update([
                     'emp_company_id' => $companyId,
+                    'emp_id' => $empId,
                     'emp_prefix' => $request->emp_prefix,
                     'emp_firstname' => $firstName,
                     'emp_lastname' => $lastName,

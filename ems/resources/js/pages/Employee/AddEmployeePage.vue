@@ -206,6 +206,7 @@ const form = reactive({
     permission: "",
     companyId: "",
     employeeNumber: "",
+    companyCode: "",
 })
 
 /* --- validation --- */
@@ -237,10 +238,12 @@ onMounted(async () => {
             value: p.value,
         }))
 
-        companies.value = (data.companies || []).map(c => ({
-            label: c.com_name, // CN, CNI, CNT
-            value: c.com_name // ใช้ชื่อ company เป็น prefix
+        companies.value = data.companies.map(c => ({
+            label: c.com_name,
+            value: c.id,
+            code: c.com_name
         }))
+
 
         departments.value = (data.departments || []).map(d => ({
             label: d.dpm_name,
@@ -291,9 +294,10 @@ const positionOptions = computed(() => {
  * รวม companyId + employeeNumber เป็น employeeId
  */
 const employeeIdCombined = computed(() => {
-    if (!form.companyId || !form.employeeNumber) return ''
-    return `${form.companyId}${form.employeeNumber}`
+    if (!form.companyCode || !form.employeeNumber) return ''
+    return `${form.companyCode}${form.employeeNumber}`
 })
+
 
 /**
  * ตรวจสอบสิทธิ์เป็น Employee หรือไม่
@@ -421,8 +425,6 @@ Object.keys(fieldRules).forEach(k => {
     })
 })
 
-
-
 /**
  * reset team / position เมื่อเปลี่ยน department
  */
@@ -451,7 +453,13 @@ watch(() => form.permission, (newVal) => {
     }
 })
 
-
+/**
+ * อัพเดท companyCode เมื่อเปลี่ยน companyId
+ */
+watch(() => form.companyId, (id) => {
+    const company = companies.value.find(c => c.value === id)
+    form.companyCode = company?.code || ""
+})
 
 /* =========================================================
  * 9. Submit / Actions
@@ -467,19 +475,21 @@ async function handleSubmit() {
     submitting.value = true
     try {
         await axios.post("/save-employee", {
-            emp_id: employeeIdCombined.value,
-            emp_prefix: Number(form.prefix),
+            emp_company_id: Number(form.companyId),
+            emp_id: employeeIdCombined.value, emp_prefix: Number(form.prefix),
             emp_nickname: form.nickname || null,
             emp_firstname: form.firstName,
             emp_lastname: form.lastName,
             emp_email: form.email,
             emp_password: isEmployeePermission.value ? null : form.password,
             emp_phone: String(form.phone),
+            emp_id: employeeIdCombined.value,
             emp_position_id: Number(form.position),
             emp_department_id: Number(form.department),
             emp_team_id: Number(form.team),
             emp_permission: form.permission,
         })
+    
 
         suspendValidation.value = true
         Object.keys(form).forEach(k => form[k] = "")
