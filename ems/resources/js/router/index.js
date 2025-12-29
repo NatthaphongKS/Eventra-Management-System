@@ -59,9 +59,9 @@ const routes = [
 
   // [เพิ่ม] เส้นทางหน้าแก้ไขพนักงาน
   { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Employee' } },
-  // ✅ หน้า Details – ใช้ชื่อ route 'event.details' และส่ง :id เป็น props
-  { path: '/events/:id', name: 'event.details', component: EventDetails, props: true, meta: { title: 'Event Details' } },
-  // ✅ เพิ่ม redirect กันพลาด (ถ้าใครไป /event/2 จะถูกส่งมาที่ /events/2)
+  // หน้า Details – ใช้ชื่อ route 'event.details' และส่ง :id เป็น props
+  { path: '/events/:id', name: 'event.details', component: EventDetails, props: true, meta: { title: 'Event' } },
+  // เพิ่ม redirect กันพลาด (ถ้าใครไป /event/2 จะถูกส่งมาที่ /events/2)
   { path: '/event/:id', redirect: to => ({ name: 'event.details', params: { id: to.params.id } }) },
 
 
