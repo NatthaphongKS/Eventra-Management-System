@@ -346,7 +346,7 @@ class EventController extends Controller
                 $pivotData = [];
                 foreach ($employeeIds as $empId) {
                     // ป้องกันค่าว่างหรือ null
-                    if(!$empId) continue;
+                    if (!$empId) continue;
 
                     $pivotData[$empId] = [
                         'con_answer' => 'invalid',
@@ -370,7 +370,6 @@ class EventController extends Controller
                 'message' => 'Event created successfully',
                 'event_id' => $event->id
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack(); // ย้อนกลับข้อมูลทั้งหมดถ้ามี Error
 
@@ -467,40 +466,56 @@ class EventController extends Controller
         return response()->json($rows);
     }
 
+    /**
+     * อัปเดตสถานะอีเวนต์ตามเวลา (upcoming / ongoing / done)
+     * - เทียบ evn_date + evn_timestart / evn_timeend กับเวลาปัจจุบัน
+     * - ใช้ Cache::lock() กันการ update ซ้ำจากหลาย request
+     * - ไม่แก้ไขอีเวนต์ที่ถูกลบแล้ว (deleted)
+     */
     private function syncEventStatus(): void
     {
+        // กันหลาย request อัปเดตพร้อมกัน
         $lock = Cache::lock('events:sync-status', 30); // ล็อก 30 วินาที
 
         if (!$lock->get()) {
             return; // มีคนอื่นเพิ่ง sync ไปแล้ว
         }
 
-        $now = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+        try {
+            // ใช้เวลาไทยเป็นมาตรฐาน
+            $now = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-        DB::table('ems_event')
-            ->where(function ($q) {
-                $q->whereNull('evn_status')
-                    ->orWhereNotIn('evn_status', ['done', 'deleted']);
-            })
-            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) <= ?", [$now])
-            ->update(['evn_status' => 'done']);
+            // done: ถึงเวลาจบแล้ว
+            DB::table('ems_event')
+                ->where(function ($q) {
+                    $q->whereNull('evn_status')
+                        ->orWhereNotIn('evn_status', ['done', 'deleted']);
+                })
+                ->whereRaw("TIMESTAMP(evn_date, evn_timeend) <= ?", [$now])
+                ->update(['evn_status' => 'done']);
 
-        DB::table('ems_event')
-            ->where(function ($q) {
-                $q->whereNull('evn_status')
-                    ->orWhereNotIn('evn_status', ['ongoing', 'done', 'deleted']);
-            })
-            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) <= ?", [$now])
-            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) > ?", [$now])
-            ->update(['evn_status' => 'ongoing']);
+            // ongoing: อยู่ระหว่างเริ่ม–จบ
+            DB::table('ems_event')
+                ->where(function ($q) {
+                    $q->whereNull('evn_status')
+                        ->orWhereNotIn('evn_status', ['ongoing', 'done', 'deleted']);
+                })
+                ->whereRaw("TIMESTAMP(evn_date, evn_timestart) <= ?", [$now])
+                ->whereRaw("TIMESTAMP(evn_date, evn_timeend) > ?", [$now])
+                ->update(['evn_status' => 'ongoing']);
 
-        DB::table('ems_event')
-            ->where(function ($q) {
-                $q->whereNull('evn_status')
-                    ->orWhereNotIn('evn_status', ['upcoming', 'deleted']);
-            })
-            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) > ?", [$now])
-            ->update(['evn_status' => 'upcoming']);
+            // upcoming: ยังไม่ถึงเวลาเริ่ม
+            DB::table('ems_event')
+                ->where(function ($q) {
+                    $q->whereNull('evn_status')
+                        ->orWhereNotIn('evn_status', ['upcoming', 'deleted']);
+                })
+                ->whereRaw("TIMESTAMP(evn_date, evn_timestart) > ?", [$now])
+                ->update(['evn_status' => 'upcoming']);
+        } finally {
+            // ปล่อย lock
+            optional($lock)->release();
+        }
     }
 
     // ดึงสิทธิ์ของผู้ใช้ปัจจุบัน
