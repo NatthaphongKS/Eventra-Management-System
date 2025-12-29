@@ -14,20 +14,12 @@
       />
     </div>
 
-    <!-- Date Icon Button -->
-    <div class="relative mt-6">
-      <input 
-        type="date" 
-        v-model="selectedDate"
-        @change="filterByDate"
-        id="dateInput"
-        class="absolute opacity-0 w-11 h-11 cursor-pointer"
-      />
-      <label for="dateInput" class="flex items-center justify-center w-11 h-11 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      </label>
+    <!-- ✅ DatePicker -->
+    <div class="flex gap-2 flex-shrink-20 mt-[30px] items-stretch">
+      <!-- DatePicker -->
+      <div class="h-[44px]">
+        <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
+      </div>
     </div>
 
     <!-- Filter -->
@@ -234,26 +226,25 @@
   </div>
 
   <!-- Employee Table Section - แสดงเมื่อกดการ์ด -->
-  <div v-if="showEmployeeTable && selectedEventIds.size > 0" class="employee-table-container">
-    <DataTable
-      :rows="paginatedEmployees"
-      :columns="employeeColumns"
-      :loading="loadingParticipants"
-      v-model:page="currentPage"
-      v-model:pageSize="itemsPerPage"
-      :totalItems="totalEmployees"
-      :pageSizeOptions="[10, 25, 50, 100]"
-      rowKey="id"
-      :showRowNumber="true"
-      class="p-6"
-    >
-      <template #empty>
-        <div class="py-6 text-center text-neutral-700">
-          No participants found for selected event(s)
-        </div>
-      </template>
-    </DataTable>
-  </div>
+  <DataTable
+    v-if="showEmployeeTable && selectedEventIds.size > 0"
+    :rows="paginatedEmployees"
+    :columns="employeeColumns"
+    :loading="loadingParticipants"
+    v-model:page="currentPage"
+    v-model:pageSize="itemsPerPage"
+    :totalItems="totalEmployees"
+    :pageSizeOptions="[10, 25, 50, 100]"
+    rowKey="id"
+    :showRowNumber="true"
+    class="mt-6"
+  >
+    <template #empty>
+      <div class="py-6 text-center text-neutral-700">
+        No participants found for selected event(s)
+      </div>
+    </template>
+  </DataTable>
 </template>
 
 <script>
@@ -271,6 +262,7 @@ import SearchBar from "../../components/SearchBar.vue";
 import EventFilter from "../../components/IndexEvent/EventFilter.vue";
 import EventSort from "../../components/IndexEvent/EventSort.vue";
 import DataTable from "@/components/DataTable.vue";
+import EventDatePicker from "../../components/IndexEvent/EventDatePicker.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -287,7 +279,8 @@ export default {
     SearchBar,
     EventFilter,
     EventSort,
-    DataTable
+    DataTable,
+    EventDatePicker
   },
   data() {
     return {
@@ -348,7 +341,7 @@ export default {
       selectedEventIds: new Set(),
       selectAll: false,
       // กรองตามวันที่
-      selectedDate: '',
+      selectedDate: { start: null, end: null },
       // สถานะตารางพนักงาน
       showEmployeeTable: false,
       employeeTableType: null,
@@ -456,13 +449,31 @@ export default {
         );
       }
 
-      // ตัวกรองวันที่
-      if (this.selectedDate) {
+      // ตัวกรองวันที่ (Date Range)
+      if (this.selectedDate?.start || this.selectedDate?.end) {
         arr = arr.filter((e) => {
           if (!e.evn_date) return false;
           // ดึงส่วนวันที่จากวันที่ของอีเวนต์ (รูปแบบ: YYYY-MM-DD)
           const eventDate = String(e.evn_date).split(' ')[0];
-          return eventDate === this.selectedDate;
+          const eventTime = new Date(eventDate).getTime();
+          
+          const startTime = this.selectedDate.start ? new Date(this.selectedDate.start).getTime() : null;
+          const endTime = this.selectedDate.end ? new Date(this.selectedDate.end).getTime() : null;
+          
+          // ถ้ามีทั้ง start และ end
+          if (startTime && endTime) {
+            return eventTime >= startTime && eventTime <= endTime;
+          }
+          // ถ้ามีแค่ start
+          if (startTime && !endTime) {
+            return eventTime >= startTime;
+          }
+          // ถ้ามีแค่ end
+          if (!startTime && endTime) {
+            return eventTime <= endTime;
+          }
+          
+          return true;
         });
       }
 
