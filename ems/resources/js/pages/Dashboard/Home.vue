@@ -41,7 +41,10 @@
     
     <!-- Export Button -->
     <button 
+      @click="exportEvents"
       class="inline-flex h-11 items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-6 transition-colors"
+      :disabled="sorted.length === 0"
+      :class="{'opacity-50 cursor-not-allowed': sorted.length === 0}"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -51,7 +54,10 @@
     
     <!-- Show Data Button -->
     <button 
+      @click="showDataHandler"
       class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-6 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6 transition-colors"
+      :disabled="selectedEventIds.size === 0"
+      :class="{'opacity-50 cursor-not-allowed': selectedEventIds.size === 0}"
     >
       Show Data
     </button>
@@ -407,30 +413,69 @@ export default {
   },
   computed: {
     normalized() {
-      return this.event.map(e => ({
-        ...e,
-        evn_title: e.evn_title ?? e.evn_name ?? "",
-        evn_cat_id: e.evn_cat_id ?? e.evn_category_id ?? "",
-        cat_name: e.cat_name ?? e.category_name ?? this.catMap[String(e.evn_cat_id)] ?? "",
-        evn_date: e.evn_date ?? "",
-        evn_timestart: e.evn_timestart ?? "",
-        evn_timeend: e.evn_timeend ?? "",
-        evn_num_guest: Number(e.evn_num_guest ?? 0),
-        evn_sum_accept: Number(e.evn_sum_accept ?? 0),
-        evn_status: e.evn_status ?? "",
-      }));
+      return this.event.map(e => {
+        // ดึง category ID ที่ถูกต้อง
+        const catId = e.evn_cat_id ?? e.evn_category_id ?? e.evn_category ?? "";
+        // ดึง category name โดยให้ความสำคัญกับข้อมูลที่มาจาก API ก่อน
+        let catName = e.cat_name ?? e.category_name ?? "";
+        
+        // ถ้ายังไม่มี category name ให้ลองหาจาก catMap
+        if (!catName && catId) {
+          catName = this.catMap[String(catId)] ?? "";
+        }
+        
+        return {
+          ...e,
+          evn_title: e.evn_title ?? e.evn_name ?? "",
+          evn_cat_id: catId,
+          cat_name: catName || "ไม่มีหมวดหมู่",
+          evn_date: e.evn_date ?? "",
+          evn_timestart: e.evn_timestart ?? "",
+          evn_timeend: e.evn_timeend ?? "",
+          evn_num_guest: Number(e.evn_num_guest ?? 0),
+          evn_sum_accept: Number(e.evn_sum_accept ?? 0),
+          evn_status: e.evn_status ?? "",
+        };
+      });
     },
     filtered() {
       let arr = [...this.normalized];
       const q = this.search.toLowerCase().trim();
 
-      // ตัวกรองการค้นหา
+      // ตัวกรองการค้นหา - แยกการค้นหาวันที่ออกมา
       if (q) {
-        arr = arr.filter((e) =>
-          `${e.evn_title} ${e.cat_name} ${e.evn_date} ${e.evn_status}`
-            .toLowerCase()
-            .includes(q)
-        );
+        // ตรวจสอบว่าเป็นตัวเลข (อาจเป็นวันที่)
+        const isNumeric = /^\d+$/.test(q);
+        
+        arr = arr.filter((e) => {
+          // ถ้าเป็นตัวเลข ให้ค้นหาเฉพาะส่วนวันที่ที่ตรงกันพอดี
+          if (isNumeric) {
+            // แปลงวันที่เป็นรูปแบบ DD/MM/YYYY
+            const formattedDate = this.formatDate(e.evn_date);
+            // แยกส่วนวัน เดือน ปี
+            const dateParts = formattedDate.split('/');
+            const day = dateParts[0];
+            const month = dateParts[1];
+            const year = dateParts[2];
+            
+            // ค้นหาแบบตรงกันพอดีกับวัน หรือ เดือน หรือ ปี
+            const matchesDay = day === q;
+            const matchesMonth = month === q;
+            const matchesYear = year === q || (year && year.endsWith(q));
+            
+            // ค้นหาใน title, category, status ด้วย
+            const matchesText = `${e.evn_title} ${e.cat_name} ${e.evn_status}`
+              .toLowerCase()
+              .includes(q);
+            
+            return matchesDay || matchesMonth || matchesYear || matchesText;
+          } else {
+            // ถ้าไม่ใช่ตัวเลข ให้ค้นหาแบบปกติ
+            return `${e.evn_title} ${e.cat_name} ${e.evn_status}`
+              .toLowerCase()
+              .includes(q);
+          }
+        });
       }
 
       // ตัวกรองหมวดหมู่
@@ -1309,6 +1354,78 @@ export default {
         this.loadingTest = false;
         alert('Loading test completed!');
       }, 2000);
+    },
+
+    // Export events to CSV
+    exportEvents() {
+      if (this.sorted.length === 0) {
+        alert('ไม่มีข้อมูลที่จะ Export');
+        return;
+      }
+
+      try {
+        // สร้าง CSV header
+        const headers = ['#', 'Event', 'Category', 'Date', 'Time', 'Invited', 'Accepted', 'Status'];
+        
+        // สร้าง CSV rows
+        const rows = this.sorted.map((event, index) => [
+          index + 1,
+          `"${(event.evn_title || '').replace(/"/g, '""')}"`,
+          `"${(event.cat_name || '').replace(/"/g, '""')}"`,
+          this.formatDate(event.evn_date),
+          this.timeText(event.evn_timestart, event.evn_timeend),
+          event.evn_num_guest,
+          event.evn_sum_accept,
+          event.evn_status || 'N/A'
+        ]);
+        
+        // รวม header และ rows
+        const csvContent = [
+          headers.join(','),
+          ...rows.map(row => row.join(','))
+        ].join('\n');
+        
+        // สร้าง Blob และ download
+        const BOM = '\uFEFF'; // UTF-8 BOM for Excel
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `events_dashboard_${dateStr}_${timeStr}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('Export completed:', this.sorted.length, 'events');
+      } catch (error) {
+        console.error('Export error:', error);
+        alert('เกิดข้อผิดพลาดในการ Export ข้อมูล');
+      }
+    },
+
+    // Show data handler - scroll to charts and fetch statistics
+    showDataHandler() {
+      if (this.selectedEventIds.size === 0) {
+        alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
+        return;
+      }
+
+      // เรียก fetch statistics
+      this.fetchEventStatistics();
+      
+      // Scroll to summary section
+      this.$nextTick(() => {
+        const summaryCard = document.querySelector('.summary-card');
+        if (summaryCard) {
+          summaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
     }
   }
 };
