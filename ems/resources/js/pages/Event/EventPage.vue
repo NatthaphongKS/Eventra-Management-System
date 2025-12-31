@@ -9,9 +9,9 @@
             <!-- ✅ DatePicker / Filter / Sort -->
             <div class="flex gap-2 flex-shrink-0 mt-[30px] items-stretch">
                 <!-- DatePicker -->
-                <div class="h-[44px]">
-                    <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
-                </div>
+
+                <EventDatePicker v-model="selectedDate" class="[&_button]:h-full" />
+
 
                 <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
                     @update:modelValue="applyFilter" class=" [&_button]:h-full" />
@@ -95,13 +95,14 @@
                 -->
 
                 <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
-                <button @click="!['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) && editEvent(row.id)"
+                <button
+                    @click="!['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) && editEvent(row.id)"
                     :disabled="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())"
                     class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'cursor-not-allowed opacity-40'
                         : 'hover:bg-slate-100 cursor-pointer'" :title="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
-        ? 'Cannot edit ongoing/done event'
-        : 'Edit'">
+                            ? 'Cannot edit ongoing/done event'
+                            : 'Edit'">
                     <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'text-neutral-400'
                         : 'text-neutral-800'" />
