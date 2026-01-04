@@ -86,18 +86,12 @@
                 </tbody>
             </table>
 
-            <div class="mt-4 flex justify-between">
+            <div class="mt-4 flex justify-center">
                 <button
                     @click="clearDateRange"
                     class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
                 >
                     Clear Filter
-                </button>
-                <button
-                    @click="showDropdown = false"
-                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-                >
-                    Done
                 </button>
             </div>
         </div>
@@ -312,7 +306,7 @@ export default {
             this.currentCalendarMonth = dayjsDate;
         },
 
-        // 🎯 LOGIC: Start Date และ End Date เป็นสีแดงเข้ม (ลบสีฟ้าออกทั้งหมด)
+        // 🎯 LOGIC: Start Date และ End Date
         dateCellClass(day) {
             let classes = 'p-1 h-8 w-8 rounded-lg cursor-pointer transition duration-150 text-xs';
 
@@ -322,9 +316,9 @@ export default {
 
             const isFullRange = this.selectedRange.start && this.selectedRange.end;
 
-            // 1. RED (เข้ม): Start Date หรือ End Date
+            // 1. RED (Start/End): แก้ไขเป็น bg-red-300 และ text-red-900
             if (day.isRangeStart || day.isRangeEnd) {
-                classes += ' bg-red-500 text-white font-semibold';
+                classes += ' bg-red-300 text-red-900 font-semibold';
 
                 if (day.isRangeStart && day.isRangeEnd) {
                     // วันเดียว
@@ -337,7 +331,7 @@ export default {
                     classes += ' rounded-r-lg rounded-l-none';
                 }
             }
-            // 2. LIGHT RED: In Range
+            // 2. LIGHT RED: In Range (คงเดิม bg-red-100)
             else if (day.isInRange) {
                 classes += ' bg-red-100 text-red-700 rounded-none';
             }
