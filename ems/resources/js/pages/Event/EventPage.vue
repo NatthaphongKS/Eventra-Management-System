@@ -1,79 +1,133 @@
 <template>
     <section class="p-0">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
+        <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3"
+        >
             <!-- Search -->
             <div class="flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch" class="" />
+                <SearchBar
+                    v-model="searchInput"
+                    placeholder="Search event..."
+                    @search="applySearch"
+                    class=""
+                />
             </div>
 
             <!-- ✅ DatePicker / Filter / Sort -->
             <div class="flex gap-2 flex-shrink-0 mt-[30px] items-stretch">
-                <!-- DatePicker -->
-                <div class="h-[44px]">
-                    <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
+                <div class="flex flex-row mt-2">
+                    <!-- DatePicker -->
+                    <div class="h-[44px]">
+                        <EventDatePicker
+                            v-model="selectedDate"
+                            class="h-full [&_button]:h-full [&_input]:h-full"
+                        />
+                    </div>
+
+                    <EventFilter
+                        v-model="filters"
+                        :categories="categories"
+                        :status-options="statusOptions"
+                        @update:modelValue="applyFilter"
+                        class="h-[44px] [&_button]:h-full"
+                    />
+
+                    <EventSort
+                        v-model="selectedSort"
+                        :options="sortOptions"
+                        @change="onPickSort"
+                        class="h-[44px] [&_button]:h-full"
+                    />
                 </div>
-
-                <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                    @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
-
-                <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
-                    class="h-[44px] [&_button]:h-full" />
-
                 <!-- ✅ Add Button -->
-                <AddButton @click="$router.push('/add-event')"
-                    class="h-[44px] w-[44px] flex items-center justify-center" />
+                <AddButton @click="$router.push('/add-event')" />
             </div>
         </div>
 
         <!-- ตาราง -->
-        <DataTable :rows="paged" :columns="eventTableColumns" :loading="false" :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
-            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="
+        <DataTable
+            :rows="paged"
+            :columns="eventTableColumns"
+            :loading="false"
+            :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]"
+            :page="page"
+            :pageSize="pageSize"
+            :sortKey="sortBy"
+            :sortOrder="sortOrder"
+            @update:page="page = $event"
+            @update:pageSize="
                 pageSize = $event;
-            page = 1;
-            " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
+                page = 1;
+            "
+            @sort="handleClientSort"
+            row-key="id"
+            :show-row-number="true"
+            class="mt-4"
+        >
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
-                <span role="button" tabindex="0"
+                <span
+                    role="button"
+                    tabindex="0"
                     class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)" title="ดูรายละเอียด">
+                    @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)"
+                    title="ดูรายละเอียด"
+                >
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-cat_name="{ row, value }">
-                <span role="button" tabindex="0"
+                <span
+                    role="button"
+                    tabindex="0"
                     class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                    @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)"
+                >
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
-                <span role="button" tabindex="0"
+                <span
+                    role="button"
+                    tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                    @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)"
+                >
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
-                <span role="button" tabindex="0"
+                <span
+                    role="button"
+                    tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                    @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)"
+                >
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_status="{ row, value }">
-                <span role="button" tabindex="0"
+                <span
+                    role="button"
+                    tabindex="0"
                     class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                    @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)"
+                >
                     <span :class="badgeClass(value)">
                         {{ value || "N/A" }}
                     </span>
@@ -81,10 +135,17 @@
             </template>
 
             <template #actions="{ row }">
-
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)"
-                    :class="!canDelete(row) ? 'cursor-not-allowed opacity-40' : 'hover:bg-slate-100 cursor-pointer'"
-                    :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
+                <button
+                    @click="openDelete(row.id)"
+                    class="rounded-lg p-1.5"
+                    :disabled="!canDelete(row)"
+                    :class="
+                        !canDelete(row)
+                            ? 'cursor-not-allowed opacity-40'
+                            : 'hover:bg-slate-100 cursor-pointer'
+                    "
+                    :title="!canDelete(row) ? 'Cannot delete' : 'Delete'"
+                >
                     <TrashIcon class="h-5 w-5" />
                 </button>
 
@@ -96,52 +157,124 @@
 
                 <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
                 <button
-                    @click="!['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) && editEvent(row.id)"
-                    :disabled="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())"
-                    class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
-                        ? 'cursor-not-allowed opacity-40'
-                        : 'hover:bg-slate-100 cursor-pointer'" :title="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
+                    @click="
+                        !['ongoing', 'done'].includes(
+                            (row.evn_status || '').toLowerCase()
+                        ) && editEvent(row.id)
+                    "
+                    :disabled="
+                        ['ongoing', 'done'].includes(
+                            (row.evn_status || '').toLowerCase()
+                        )
+                    "
+                    class="rounded-lg p-1.5"
+                    :class="
+                        ['ongoing', 'done'].includes(
+                            (row.evn_status || '').toLowerCase()
+                        )
+                            ? 'cursor-not-allowed opacity-40'
+                            : 'hover:bg-slate-100 cursor-pointer'
+                    "
+                    :title="
+                        ['ongoing', 'done'].includes(
+                            (row.evn_status || '').toLowerCase()
+                        )
                             ? 'Cannot edit ongoing/done event'
-                            : 'Edit'">
-                    <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
-                        ? 'text-neutral-400'
-                        : 'text-neutral-800'" />
+                            : 'Edit'
+                    "
+                >
+                    <PencilIcon
+                        class="h-5 w-5"
+                        :class="
+                            ['ongoing', 'done'].includes(
+                                (row.evn_status || '').toLowerCase()
+                            )
+                                ? 'text-neutral-400'
+                                : 'text-neutral-800'
+                        "
+                    />
                 </button>
 
                 <!-- ❌ Disabled เมื่อ upcoming หรือ (done + permission = disabled) -->
-                <span v-if="(row.evn_status || '').toLowerCase() === 'upcoming'
-                    || ((row.evn_status || '').toLowerCase() === 'done'
-                        && (empPermission || '').toLowerCase() === 'disabled')" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
-                    :title="(row.evn_status || '').toLowerCase() === 'upcoming'
-                        ? 'not available for upcoming event'
-                        : 'No permission to check-in'">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor" class="h-5 w-5 text-neutral-400">
+                <span
+                    v-if="
+                        (row.evn_status || '').toLowerCase() === 'upcoming' ||
+                        ((row.evn_status || '').toLowerCase() === 'done' &&
+                            (empPermission || '').toLowerCase() === 'disabled')
+                    "
+                    class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
+                    :title="
+                        (row.evn_status || '').toLowerCase() === 'upcoming'
+                            ? 'not available for upcoming event'
+                            : 'No permission to check-in'
+                    "
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="20px"
+                        viewBox="0 -960 960 960"
+                        width="20px"
+                        fill="currentColor"
+                        class="h-5 w-5 text-neutral-400"
+                    >
                         <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z"
+                        />
                     </svg>
                 </span>
 
                 <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
-                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Check-in">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor" class="h-5 w-5 text-neutral-800">
+                <router-link
+                    v-else
+                    :to="`/EventCheckIn/eveId/${row.id}`"
+                    class="rounded-lg p-1.5 hover:bg-slate-100"
+                    title="Check-in"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="20px"
+                        viewBox="0 -960 960 960"
+                        width="20px"
+                        fill="currentColor"
+                        class="h-5 w-5 text-neutral-800"
+                    >
                         <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z"
+                        />
                     </svg>
                 </router-link>
             </template>
         </DataTable>
 
-        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
-            message="This wil by deleted permanently. Are you sure?" :show-cancel="true" okText="OK" cancelText="Cancel"
-            @confirm="onConfirmDelete" @cancel="onCancelDelete" />
-        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
-            message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
-        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
-            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
-
+        <ModalAlert
+            :open="showModalAsk"
+            type="confirm"
+            title="ARE YOU SURE TO DELETE"
+            message="This wil by deleted permanently. Are you sure?"
+            :show-cancel="true"
+            okText="OK"
+            cancelText="Cancel"
+            @confirm="onConfirmDelete"
+            @cancel="onCancelDelete"
+        />
+        <ModalAlert
+            :open="showModalSuccess"
+            type="success"
+            title="DELETE SUCCESS!"
+            message="We have already deleted event."
+            :show-cancel="false"
+            okText="OK"
+            @confirm="onConfirmSuccess"
+        />
+        <ModalAlert
+            :open="showModalFail"
+            type="error"
+            title="ERROR!"
+            message="Sorry, Please try again later."
+            :show-cancel="false"
+            okText="OK"
+            @confirm="onConfirmFail"
+        />
     </section>
 </template>
 
@@ -153,7 +286,7 @@ import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
-import AddButton from '@/components/AddButton.vue';
+import AddButton from "@/components/AddButton.vue";
 import EventDatePicker from "@/components/IndexEvent/EventDatePicker.vue";
 
 import {
@@ -349,7 +482,11 @@ export default {
     ],
 
     async created() {
-        await Promise.all([this.fetchPermission(), this.fetchEvent(), this.fetchCategories()]);
+        await Promise.all([
+            this.fetchPermission(),
+            this.fetchEvent(),
+            this.fetchCategories(),
+        ]);
     },
 
     computed: {
@@ -408,11 +545,14 @@ export default {
                     if (!val) return null;
 
                     // รองรับ "YYYY-MM-DD" (ที่ API มักส่งมา)
-                    if (/^\d{4}-\d{2}-\d{2}/.test(val)) return new Date(val).getTime();
+                    if (/^\d{4}-\d{2}-\d{2}/.test(val))
+                        return new Date(val).getTime();
 
                     // รองรับ "DD/MM/YYYY" (กรณีแสดงผล/ข้อมูลเก่า)
                     if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(val)) {
-                        let [d, m, y] = val.split("/").map((n) => parseInt(n, 10));
+                        let [d, m, y] = val
+                            .split("/")
+                            .map((n) => parseInt(n, 10));
                         if (y >= 2400) y -= 543; // เผื่อ พ.ศ.
                         return new Date(y, m - 1, d).getTime();
                     }
@@ -429,7 +569,8 @@ export default {
                     const evT = toTime(e.evn_date);
                     if (evT == null) return false;
 
-                    if (startT != null && endT != null) return evT >= startT && evT <= endT;
+                    if (startT != null && endT != null)
+                        return evT >= startT && evT <= endT;
                     if (startT != null) return evT >= startT;
                     if (endT != null) return evT <= endT;
                     return true;
@@ -604,7 +745,8 @@ export default {
             if (status === "ongoing") return false;
 
             // enabled ลบได้ upcoming + done
-            if (perm === "enabled") return status === "upcoming" || status === "done";
+            if (perm === "enabled")
+                return status === "upcoming" || status === "done";
 
             // disabled ลบได้แค่ upcoming
             return status === "upcoming";
@@ -642,13 +784,13 @@ export default {
                 const cats = res.data?.categories || [];
 
                 // ✅ ใช้ id / cat_name ตามที่ EventFilter ต้องการ
-                this.categories = cats.map(c => ({
+                this.categories = cats.map((c) => ({
                     id: String(c.id),
-                    cat_name: c.cat_name
+                    cat_name: c.cat_name,
                 }));
 
                 this.catMap = Object.fromEntries(
-                    cats.map(c => [String(c.id), c.cat_name])
+                    cats.map((c) => [String(c.id), c.cat_name])
                 );
             } catch (err) {
                 console.error("fetchCategories error", err);
@@ -661,7 +803,9 @@ export default {
             try {
                 const res = await axios.get("/permission");
                 // ตัวอย่าง response: { emp_permission: "enabled" }
-                this.empPermission = (res.data?.emp_permission || "disabled").toLowerCase();
+                this.empPermission = (
+                    res.data?.emp_permission || "disabled"
+                ).toLowerCase();
             } catch (err) {
                 console.error("fetchPermission error", err);
                 this.empPermission = "disabled";
