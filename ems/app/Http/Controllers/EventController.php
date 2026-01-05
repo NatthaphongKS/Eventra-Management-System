@@ -414,6 +414,7 @@ class EventController extends Controller
      */
     public function Eventtable(Request $request)
     {
+        $this->syncEventStatus();
         // อนุญาตให้ sort ตามชื่อคอลัมน์/alias ที่ select มา
         $allowSort = [
             'evn_title'      => 'ems_event.evn_title',
