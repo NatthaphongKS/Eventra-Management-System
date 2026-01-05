@@ -765,7 +765,7 @@ async function downloadTemplate() {
 
         sheet.addRow([
             "CN",
-            "CN1111",
+            "1111",
             "นาย",
             "สมชาย",
             "เขียวสะอาด",
