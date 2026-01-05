@@ -1,123 +1,119 @@
 <template>
-  <div>
-    <header class="mx-auto max-w-[1400px] px-6 pt-6">
-      <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <div>
+        <header class="mx-auto max-w-[1400px] px-6 pt-6">
+            <link rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-      <div class="flex items-center justify-between gap-3">
-        <h2 class="text-xl font-semibold text-gray-800">
-          Edit Employee
-        </h2>
-      </div>
-    </header>
-
-    <div class="px-2 py-0">
-      <div class="max-w-[1400px] mx-auto px-6">
-        <form @submit.prevent="openConfirmSave">
-          <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between items-stretch">
-
-            <div class="flex flex-col gap-5 h-full">
-              <FormField label="Prefix" required class="w-full">
-                <DropdownPill v-model="form.emp_prefix" :options="prefixes" placeholder="Select prefix"
-                  class="mt-1 block h-11 w-full" :error="errors.emp_prefix" />
-              </FormField>
-
-              <FormField label="First Name" required>
-                <InputPill v-model="form.emp_firstname" placeholder="Ex.Perapat" class="mt-1 block h-11 w-full"
-                  :error="errors.emp_firstname" />
-              </FormField>
-
-              <FormField label="Last Name" required>
-                <InputPill v-model="form.emp_lastname" placeholder="Ex.Saimai" class="mt-1 block h-11 w-full"
-                  :error="errors.emp_lastname" />
-              </FormField>
-
-              <FormField label="Nickname" required>
-                <InputPill v-model="form.emp_nickname" placeholder="Ex.beam" class="mt-1 block h-11 w-full"
-                  :error="errors.emp_nickname" />
-              </FormField>
-
-              <FormField label="Phone" required>
-                <InputPill v-model="form.emp_phone" placeholder="Ex.0988900988" inputmode="numeric"
-                  class="mt-1 block h-11 w-full" :error="errors.emp_phone" />
-              </FormField>
-
-              <FormField label="Employee ID" required>
-                <InputPill v-model="form.emp_id" placeholder="Ex.CN707008" class="mt-1 block h-11 w-full"
-                  :error="errors.emp_id" />
-              </FormField>
-
-              <div class="pt-2 mt-auto">
-                  <CancelButton @click="onCancel" :disabled="saving" />
-              </div>
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-xl font-semibold text-gray-800">
+                    Edit Employee
+                </h2>
             </div>
+        </header>
 
-            <div class="flex flex-col gap-5 h-full">
-              <FormField label="Department" required>
-                <DropdownPill v-model="form.emp_department_id" :options="departments" placeholder="Select Department"
-                  class="mt-1 block h-11 w-full" :error="errors.emp_department_id" />
-              </FormField>
+        <div class="px-2 py-0">
+            <div class="max-w-[1400px] mx-auto px-6">
+                <form @submit.prevent="openConfirmSave">
+                    <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between items-stretch">
 
-              <FormField label="Team" required>
-                <DropdownPill v-model="form.emp_team_id" :options="teamOptions"
-                  :placeholder="form.emp_department_id ? 'Select Team' : 'Please select Department first'"
-                  class="mt-1 block h-11 w-full" :error="errors.emp_team_id" :disabled="!form.emp_department_id" />
-              </FormField>
+                        <div class="flex flex-col gap-5 h-full">
+                            <FormField label="Prefix" required class="w-full">
+                                <DropdownPill v-model="form.emp_prefix" :options="prefixes" placeholder="Select prefix"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_prefix" />
+                            </FormField>
 
-              <FormField label="Position" required>
-                <DropdownPill v-model="form.emp_position_id" :options="positionOptions"
-                  :placeholder="form.emp_team_id ? 'Select Position' : 'Please select Team first'"
-                  class="mt-1 block h-11 w-full" :error="errors.emp_position_id" :disabled="!form.emp_team_id" />
-              </FormField>
+                            <FormField label="First Name" required>
+                                <InputPill v-model="form.emp_firstname" placeholder="Ex.Perapat"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_firstname" />
+                            </FormField>
 
-              <FormField label="Email" required>
-                <InputPill v-model="form.emp_email" type="email" placeholder="Ex.66160106@go.buu.ac.th"
-                  class="mt-1 block h-11 w-full" :error="errors.emp_email" />
-              </FormField>
+                            <FormField label="Last Name" required>
+                                <InputPill v-model="form.emp_lastname" placeholder="Ex.Saimai"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_lastname" />
+                            </FormField>
 
-              <FormField label="Password" >
-                <InputPill v-model="form.password" type="password" placeholder="Leave blank to keep current password"
-                  class="mt-1 block h-11 w-full" :error="errors.password" />
-              </FormField>
+                            <FormField label="Nickname" required>
+                                <InputPill v-model="form.emp_nickname" placeholder="Ex.beam"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_nickname" />
+                            </FormField>
 
-              <FormField label="Permission" required>
-                <DropdownPill v-model="form.emp_permission" :options="permissions" placeholder="Select Permission"
-                  class="mt-1 block h-11 w-full" :error="errors.emp_permission" />
-              </FormField>
+                            <FormField label="Phone" required>
+                                <InputPill v-model="form.emp_phone" placeholder="Ex.0988900988" inputmode="numeric"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_phone" />
+                            </FormField>
 
-              <div class="pt-2 mt-auto flex justify-end flex-col items-end">
-                <button
-                  type="submit"
-                  :disabled="saving"
-                  class="inline-flex items-center justify-center gap-2 w-[140px] h-[45px] rounded-[20px] bg-green-600 text-white font-bold text-[15px] shadow-sm transition hover:bg-green-700 hover:shadow-md disabled:opacity-50"
-                >
-                  <span v-if="!saving" class="material-symbols-outlined text-[20px] leading-none">check</span>
-                  <span>{{ saving ? "Saving…" : "Confirm" }}</span>
-                </button>
+                            <FormField label="Employee ID" required>
+                                <InputPill v-model="form.emp_id" placeholder="Ex.CN707008"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_id" />
+                            </FormField>
 
-                <p v-if="noChange" class="text-amber-600 text-sm pt-2">No changes were made.</p>
-                <p v-if="saveError" class="text-rose-600 text-sm pt-2">{{ saveError }}</p>
-              </div>
+                            <div class="pt-2 mt-auto">
+                                <CancelButton @click="onCancel" :disabled="saving" />
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-5 h-full">
+                            <FormField label="Department" required>
+                                <DropdownPill v-model="form.emp_department_id" :options="departments"
+                                    placeholder="Select Department" class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_department_id" />
+                            </FormField>
+
+                            <FormField label="Team" required>
+                                <DropdownPill v-model="form.emp_team_id" :options="teamOptions"
+                                    :placeholder="form.emp_department_id ? 'Select Team' : 'Please select Department first'"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_team_id"
+                                    :disabled="!form.emp_department_id" />
+                            </FormField>
+
+                            <FormField label="Position" required>
+                                <DropdownPill v-model="form.emp_position_id" :options="positionOptions"
+                                    :placeholder="form.emp_team_id ? 'Select Position' : 'Please select Team first'"
+                                    class="mt-1 block h-11 w-full" :error="errors.emp_position_id"
+                                    :disabled="!form.emp_team_id" />
+                            </FormField>
+
+                            <FormField label="Email" required>
+                                <InputPill v-model="form.emp_email" :disabled="!isAdmin" placeholder="Email"
+                                    class="mt-1 block h-11 w-full" />
+                            </FormField>
+
+                            <FormField label="Password">
+                                <InputPill v-model="form.password" type="password" :disabled="!isAdmin" :placeholder="isAdmin
+                                    ? 'Leave blank to keep current password'
+                                    : 'Admin only'" class="mt-1 block h-11 w-full" />
+                            </FormField>
+
+
+                            <FormField label="Permission" required>
+                                <DropdownPill v-model="form.emp_permission" :options="permissions"
+                                    placeholder="Select Permission" class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_permission" />
+                            </FormField>
+
+                            <div class="pt-2 mt-auto flex justify-end flex-col items-end">
+                                <button type="submit" :disabled="saving"
+                                    class="inline-flex items-center justify-center gap-2 w-[140px] h-[45px] rounded-[20px] bg-green-600 text-white font-bold text-[15px] shadow-sm transition hover:bg-green-700 hover:shadow-md disabled:opacity-50">
+                                    <span v-if="!saving"
+                                        class="material-symbols-outlined text-[20px] leading-none">check</span>
+                                    <span>{{ saving ? "Saving…" : "Confirm" }}</span>
+                                </button>
+
+                                <p v-if="noChange" class="text-amber-600 text-sm pt-2">No changes were made.</p>
+                                <p v-if="saveError" class="text-rose-600 text-sm pt-2">{{ saveError }}</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
             </div>
+        </div>
 
-          </div>
-        </form>
-      </div>
+        <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
+            :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText"
+            @confirm="alert.onConfirm" @cancel="alert.onCancel" />
+
     </div>
-
-    <ModalAlert
-      v-model:open="alert.open"
-      :type="alert.type"
-      :title="alert.title"
-      :message="alert.message"
-      :showCancel="alert.showCancel"
-      :okText="alert.okText"
-      :cancelText="alert.cancelText"
-      @confirm="alert.onConfirm"
-      @cancel="alert.onCancel"
-    />
-
-  </div>
 </template>
 
 <script setup>
@@ -138,15 +134,15 @@ const employeeId = route.params.id
 
 /* ------- Options ------- */
 const prefixes = [
-  { label: 'นาย', value: 'นาย' },
-  { label: 'นาง', value: 'นาง' },
-  { label: 'นางสาว', value: 'นางสาว' },
+    { label: 'นาย', value: 'นาย' },
+    { label: 'นาง', value: 'นาง' },
+    { label: 'นางสาว', value: 'นางสาว' },
 ]
 
 const permissions = [
-  { label: 'Administrator', value: 'enabled' },
-  { label: 'Human Resources', value: 'disabled' },
-  { label: 'Employee', value: 'disabled' },
+    { label: 'Administrator', value: 'enabled' },
+    { label: 'Human Resources', value: 'disabled' },
+    { label: 'Employee', value: 'disabled' },
 ]
 
 const departments = ref([])
@@ -155,18 +151,18 @@ const positions = ref([])
 
 /* ------- Form ------- */
 const form = reactive({
-  emp_prefix: '',
-  emp_firstname: '',
-  emp_lastname: '',
-  emp_nickname: '',
-  emp_phone: '',
-  emp_id: '',
-  emp_department_id: '',
-  emp_team_id: '',
-  emp_position_id: '',
-  emp_email: '',
-  password: '',
-  emp_permission: '',
+    emp_prefix: '',
+    emp_firstname: '',
+    emp_lastname: '',
+    emp_nickname: '',
+    emp_phone: '',
+    emp_id: '',
+    emp_department_id: '',
+    emp_team_id: '',
+    emp_position_id: '',
+    emp_email: '',
+    password: '',
+    emp_permission: '',
 })
 
 let original = {}
@@ -221,39 +217,39 @@ const positionOptions = computed(() => {
 
 /* ------- Load Data ------- */
 onMounted(async () => {
-  try {
-    const { data: metaData } = await axios.get('/meta')
-    departments.value = (metaData.departments || []).map(d => ({ label: d.dpm_name, value: d.id }))
-    teams.value = (metaData.teams || []).map(t => ({ label: t.tm_name, value: t.id, department_id: t.tm_department_id ?? null }))
-    positions.value = (metaData.positions || []).map(p => ({ label: p.pst_name, value: p.id, team_id: p.pst_team_id ?? null }))
+    try {
+        const { data: metaData } = await axios.get('/meta')
+        departments.value = (metaData.departments || []).map(d => ({ label: d.dpm_name, value: d.id }))
+        teams.value = (metaData.teams || []).map(t => ({ label: t.tm_name, value: t.id, department_id: t.tm_department_id ?? null }))
+        positions.value = (metaData.positions || []).map(p => ({ label: p.pst_name, value: p.id, team_id: p.pst_team_id ?? null }))
 
-    const { data: res } = await axios.get(`/employees/${employeeId}`)
-    const userData = res.data || res
+        const { data: res } = await axios.get(`/employees/${employeeId}`)
+        const userData = res.data || res
 
-    form.emp_prefix = userData.emp_prefix
-    form.emp_firstname = userData.emp_firstname
-    form.emp_lastname = userData.emp_lastname
-    form.emp_nickname = userData.emp_nickname
-    form.emp_phone = userData.emp_phone
-    form.emp_id = userData.emp_id
-    form.emp_department_id = userData.emp_department_id
-    form.emp_team_id = userData.emp_team_id
-    form.emp_position_id = userData.emp_position_id
-    form.emp_email = userData.emp_email
-    form.emp_permission = userData.emp_permission || userData.emp_role;
-    form.password = ''
+        form.emp_prefix = userData.emp_prefix
+        form.emp_firstname = userData.emp_firstname
+        form.emp_lastname = userData.emp_lastname
+        form.emp_nickname = userData.emp_nickname
+        form.emp_phone = userData.emp_phone
+        form.emp_id = userData.emp_id
+        form.emp_department_id = userData.emp_department_id
+        form.emp_team_id = userData.emp_team_id
+        form.emp_position_id = userData.emp_position_id
+        form.emp_email = userData.emp_email
+        form.emp_permission = userData.emp_permission || userData.emp_role;
+        form.password = ''
 
-    original = JSON.parse(JSON.stringify(form))
+        original = JSON.parse(JSON.stringify(form))
 
-  } catch (e) {
-    console.error(e)
-    openAlert({
-        type: 'error',
-        title: 'Error!',
-        message: 'Failed to load data.',
-        onConfirm: () => router.back()
-    })
-  }
+    } catch (e) {
+        console.error(e)
+        openAlert({
+            type: 'error',
+            title: 'Error!',
+            message: 'Failed to load data.',
+            onConfirm: () => router.back()
+        })
+    }
 })
 
 /* ====== Validation ====== */
@@ -315,8 +311,8 @@ Object.keys(fieldRules).forEach((k) => {
     })
 })
 
-watch(() => form.emp_department_id, (n, o) => { if(o && n!==o) { form.emp_team_id=''; form.emp_position_id='' } })
-watch(() => form.emp_team_id, (n, o) => { if(o && n!==o) { form.emp_position_id='' } })
+watch(() => form.emp_department_id, (n, o) => { if (o && n !== o) { form.emp_team_id = ''; form.emp_position_id = '' } })
+watch(() => form.emp_team_id, (n, o) => { if (o && n !== o) { form.emp_position_id = '' } })
 
 /* ------- Logic การบันทึก ------- */
 function openConfirmSave() {
@@ -347,6 +343,10 @@ function openConfirmSave() {
         }
     })
 }
+
+/* ------- ตรวจสอบสิทธิ์ผู้ใช้ ------- */
+const currentUser = JSON.parse(localStorage.getItem('userData') || '{}')
+const isAdmin = computed(() => currentUser.emp_permission === 'enabled')
 
 // ฟังก์ชันบันทึกที่แก้ไขข้อความ Error ตามต้องการ
 async function confirmSaveProcess() {
@@ -413,20 +413,20 @@ async function confirmSaveProcess() {
         // Case B: SQL Error (Fallback กรณี Backend ไม่ได้ Validate)
         // -------------------------------------------------------------
         else if (msg.includes('Duplicate entry')) {
-             hasValidationError = true
+            hasValidationError = true
 
-             if (msg.includes('phone')) {
-                 errors.emp_phone = 'This phone number is already in use.'
-             }
-             else if (msg.includes('email')) {
-                 errors.emp_email = 'This email is already in use.'
-             }
-             else if (msg.includes('emp_id') || msg.includes('employee') || msg.includes('CN')) {
-                 errors.emp_id = 'This employee ID is already in use.'
-             }
-             else {
-                 hasValidationError = false
-             }
+            if (msg.includes('phone')) {
+                errors.emp_phone = 'This phone number is already in use.'
+            }
+            else if (msg.includes('email')) {
+                errors.emp_email = 'This email is already in use.'
+            }
+            else if (msg.includes('emp_id') || msg.includes('employee') || msg.includes('CN')) {
+                errors.emp_id = 'This employee ID is already in use.'
+            }
+            else {
+                hasValidationError = false
+            }
         }
 
         // -------------------------------------------------------------
@@ -459,7 +459,7 @@ function onCancel() {
     delete prev.password
 
     if (JSON.stringify(current) !== JSON.stringify(prev) || form.password) {
-        if(!confirm('Discard changes?')) return
+        if (!confirm('Discard changes?')) return
     }
     router.push('/employee')
 }
