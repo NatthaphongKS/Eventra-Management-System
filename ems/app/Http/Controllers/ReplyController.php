@@ -6,14 +6,24 @@ use App\Models\Connect;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Event;
+use Illuminate\Support\Facades\Crypt;
+
 
 class ReplyController extends Controller
 {
 
     // app/Http/Controllers/ReplyController.php
-    public function openForm($evnID, $empID)
+
+ 
+    public function urlForm($evnID, $empID)
     {
+        // gen url
+        $url = 
         return view('reply', ['evnID' => $evnID, 'empID' => $empID]);
+    }
+
+    public function decodeURL(){
+
     }
 
     public function show(Request $req)
