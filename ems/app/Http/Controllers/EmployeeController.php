@@ -204,7 +204,7 @@ class EmployeeController extends Controller
         | 1) Role & Permission
         |----------------------------------------------------------------------
         */
-        $role = $request->emp_permission; // admin | hr | employee
+        $role = $request->emp_permission ?? 'employee';
         $isEmployee = $role === 'employee';
 
         $permissionMap = [
@@ -327,12 +327,8 @@ class EmployeeController extends Controller
                 'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
                 'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
                 'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-                'emp_password' => [
-                    \Illuminate\Validation\Rule::requiredIf(!$isEmployee),
-                    'nullable',
-                    'min:6',
-                ],
-                'emp_permission' => ['required', 'in:admin,hr,employee'],
+                'emp_password' => ['nullable', 'min:6'],
+                'emp_permission' => ['nullable', 'in:admin,hr,employee'],
             ]);
 
             try {
@@ -388,12 +384,8 @@ class EmployeeController extends Controller
             'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
             'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
             'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-            'emp_password' => [
-                \Illuminate\Validation\Rule::requiredIf(!$isEmployee),
-                'nullable',
-                'min:6',
-            ],
-            'emp_permission' => ['required', 'in:admin,hr,employee'],
+            'emp_password' => ['nullable', 'min:6'],
+            'emp_permission' => ['nullable', 'in:admin,hr,employee'],
         ]);
 
         try {
