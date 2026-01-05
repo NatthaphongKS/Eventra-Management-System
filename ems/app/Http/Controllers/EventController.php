@@ -497,11 +497,11 @@ class EventController extends Controller
     private function syncEventStatus(): void
     {
         // กันหลาย request อัปเดตพร้อมกัน
-        $lock = Cache::lock('events:sync-status', 30); // ล็อก 30 วินาที
+        //$lock = Cache::lock('events:sync-status', 30); // ล็อก 30 วินาที
 
-        if (!$lock->get()) {
-            return; // มีคนอื่นเพิ่ง sync ไปแล้ว
-        }
+        // if (!$lock->get()) {
+        //     return; // มีคนอื่นเพิ่ง sync ไปแล้ว
+        // }
 
         try {
             // ใช้เวลาไทยเป็นมาตรฐาน
@@ -536,7 +536,7 @@ class EventController extends Controller
                 ->update(['evn_status' => 'upcoming']);
         } finally {
             // ปล่อย lock
-            optional($lock)->release();
+           // optional($lock)->release();
         }
     }
 
@@ -624,7 +624,7 @@ class EventController extends Controller
             'team:id,tm_name',
         ])
             ->where('emp_delete_status', 'active')
-            ->orderBy('id', 'desc')
+            ->orderBy('id', 'asc')
             ->get([
                 'id',
                 'emp_id',
