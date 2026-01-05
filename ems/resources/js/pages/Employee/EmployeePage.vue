@@ -20,7 +20,7 @@
                     class="[&_button]:h-full"
                 />
 
-                <div class="relative z-[60]" ref="sortWrap">
+
                     <SortMenu
                         :is-open="sortMenuOpen"
                         :options="sortOptions"
@@ -30,7 +30,7 @@
                         @choose="onSortChoose"
                         class="[&_button]:h-full"
                     />
-                </div>
+                
 
                 <AddButton
                     @click="goAdd"
