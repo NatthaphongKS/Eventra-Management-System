@@ -32,14 +32,14 @@
       aria-label="Search"
       title="ค้นหา"
     >
-      <MagnifyingGlassIcon class="w-[30px] h-[30px]" />
+      <Icon icon="material-symbols:search-rounded" width="40" height="40"/>
     </button>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from "vue";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/vue/24/outline";
+import { Icon } from "@iconify/vue";
 
 defineOptions({ inheritAttrs: false });
 

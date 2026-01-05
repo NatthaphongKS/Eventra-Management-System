@@ -16,10 +16,10 @@
                 </div>
 
                 <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
-                    @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
+                    @update:modelValue="applyFilter" class=" [&_button]:h-full" />
 
                 <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
-                    class="h-[44px] [&_button]:h-full" />
+                    class=" [&_button]:h-full" />
 
                 <AddButton @click="$router.push('/add-event')"
                     class="h-[44px] w-[44px] flex items-center justify-center" />
@@ -92,8 +92,8 @@
                     class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'cursor-not-allowed opacity-40'
                         : 'hover:bg-slate-100 cursor-pointer'" :title="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
-        ? 'Cannot edit ongoing/done event'
-        : 'Edit'">
+                            ? 'Cannot edit ongoing/done event'
+                            : 'Edit'">
                     <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'text-neutral-400'
                         : 'text-neutral-800'" />
