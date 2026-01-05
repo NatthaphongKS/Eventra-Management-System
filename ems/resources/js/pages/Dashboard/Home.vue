@@ -39,18 +39,14 @@
       class="mt-6" 
     />
     
-    <!-- Export Button -->
-    <button 
-      @click="exportEvents"
-      class="inline-flex h-11 items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-6 transition-colors"
+    <!-- Export Dropdown -->
+    <ExportDropdown 
+      :data="sorted"
       :disabled="sorted.length === 0"
-      :class="{'opacity-50 cursor-not-allowed': sorted.length === 0}"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
-      Export
-    </button>
+      :formatDate="formatDate"
+      :timeText="timeText"
+      class="mt-6"
+    />
     
     <!-- Show Data Button -->
     <button 
@@ -178,8 +174,8 @@
   </div>
 </div>
 
-<!-- Summary/Graph Section - แสดงเมื่อเลือก event แล้ว -->
-<div v-if="selectedEventIds.size > 0" class="card summary-card">
+<!-- Summary/Graph Section - แสดงเมื่อเลือก event และกดปุ่ม Show Data แล้ว -->
+<div v-if="selectedEventIds.size > 0 && showStatistics" class="card summary-card">
     <div class="summary-grid">
       <!-- Actual Attendance -->
       <div class="summary-item chart-container actual-attendance-card">
@@ -231,9 +227,9 @@
     </div>
   </div>
 
-  <!-- Employee Table Section - แสดงเมื่อกดการ์ด -->
+  <!-- Employee Table Section - แสดงเมื่อกดการ์ดและกดปุ่ม Show Data แล้ว -->
   <DataTable
-    v-if="showEmployeeTable && selectedEventIds.size > 0"
+    v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics"
     :rows="paginatedEmployees"
     :columns="employeeColumns"
     :loading="loadingParticipants"
@@ -269,6 +265,7 @@ import EventFilter from "../../components/IndexEvent/EventFilter.vue";
 import EventSort from "../../components/IndexEvent/EventSort.vue";
 import DataTable from "@/components/DataTable.vue";
 import EventDatePicker from "../../components/IndexEvent/EventDatePicker.vue";
+import ExportDropdown from "../../components/ExportDropdown.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -286,7 +283,8 @@ export default {
     EventFilter,
     EventSort,
     DataTable,
-    EventDatePicker
+    EventDatePicker,
+    ExportDropdown
   },
   data() {
     return {
@@ -371,7 +369,9 @@ export default {
       },
       // รายชื่อผู้เข้าร่วมทั้งหมด
       eventParticipants: [],
-      loadingParticipants: false
+      loadingParticipants: false,
+      // ควบคุมการแสดงผลกราฟและตาราง
+      showStatistics: false
     };
   },
   async created() {
@@ -1082,10 +1082,12 @@ export default {
       // อัพเดตสถานะ select-all checkbox
       this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
       
+      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
+      this.showStatistics = false;
+      
       console.log('Updated selected events:', Array.from(this.selectedEventIds));
       
-      // ต้องเรียก fetch เอง เนื่องจาก Set ไม่รองรับ reactive
-      this.fetchEventStatistics();
+      // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
 
     selectAllEvents(event) {
@@ -1099,10 +1101,13 @@ export default {
         // ยกเลิกการเลือกทั้งหมด
         this.selectedEventIds.clear();
       }
+      
+      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
+      this.showStatistics = false;
+      
       console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
       
-      // ต้องเรียก fetch เอง เนื่องจาก Set ไม่รองรับ reactive
-      this.fetchEventStatistics();
+      // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
 
     // ดึงชื่ออีเวนต์มาแสดงผล
@@ -1356,65 +1361,15 @@ export default {
       }, 2000);
     },
 
-    // Export events to CSV
-    exportEvents() {
-      if (this.sorted.length === 0) {
-        alert('ไม่มีข้อมูลที่จะ Export');
-        return;
-      }
-
-      try {
-        // สร้าง CSV header
-        const headers = ['#', 'Event', 'Category', 'Date', 'Time', 'Invited', 'Accepted', 'Status'];
-        
-        // สร้าง CSV rows
-        const rows = this.sorted.map((event, index) => [
-          index + 1,
-          `"${(event.evn_title || '').replace(/"/g, '""')}"`,
-          `"${(event.cat_name || '').replace(/"/g, '""')}"`,
-          this.formatDate(event.evn_date),
-          this.timeText(event.evn_timestart, event.evn_timeend),
-          event.evn_num_guest,
-          event.evn_sum_accept,
-          event.evn_status || 'N/A'
-        ]);
-        
-        // รวม header และ rows
-        const csvContent = [
-          headers.join(','),
-          ...rows.map(row => row.join(','))
-        ].join('\n');
-        
-        // สร้าง Blob และ download
-        const BOM = '\uFEFF'; // UTF-8 BOM for Excel
-        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        const now = new Date();
-        const dateStr = now.toISOString().split('T')[0];
-        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', `events_dashboard_${dateStr}_${timeStr}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log('Export completed:', this.sorted.length, 'events');
-      } catch (error) {
-        console.error('Export error:', error);
-        alert('เกิดข้อผิดพลาดในการ Export ข้อมูล');
-      }
-    },
-
     // Show data handler - scroll to charts and fetch statistics
     showDataHandler() {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
         return;
       }
+
+      // เปิดการแสดงผลกราฟและตาราง
+      this.showStatistics = true;
 
       // เรียก fetch statistics
       this.fetchEventStatistics();
@@ -3132,6 +3087,28 @@ tbody tr.selected-row:hover {
 
 :deep(.selected-row):hover {
   background-color: #fbcfe8 !important; /* Slightly darker pink on hover */
+}
+
+/* Export Dropdown Styles */
+.rotate-180 {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+/* Dropdown animation */
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.relative > div[class*="absolute"] {
+  animation: dropdown-fade-in 0.2s ease-out;
 }
 
 </style>
