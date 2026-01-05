@@ -95,21 +95,26 @@
                 -->
 
                 <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
-                <button @click="!['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) && editEvent(row.id)"
+                <button
+                    @click="!['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) && editEvent(row.id)"
                     :disabled="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())"
                     class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'cursor-not-allowed opacity-40'
                         : 'hover:bg-slate-100 cursor-pointer'" :title="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
-        ? 'Cannot edit ongoing/done event'
-        : 'Edit'">
+                            ? 'Cannot edit ongoing/done event'
+                            : 'Edit'">
                     <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'text-neutral-400'
                         : 'text-neutral-800'" />
                 </button>
 
-                <!-- ❌ Disabled เมื่อ upcoming -->
-                <span v-if="row.evn_status === 'upcoming'" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
-                    title="not available for upcoming event">
+                <!-- ❌ Disabled เมื่อ upcoming หรือ (done + permission = disabled) -->
+                <span v-if="(row.evn_status || '').toLowerCase() === 'upcoming'
+                    || ((row.evn_status || '').toLowerCase() === 'done'
+                        && (empPermission || '').toLowerCase() === 'disabled')" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
+                    :title="(row.evn_status || '').toLowerCase() === 'upcoming'
+                        ? 'not available for upcoming event'
+                        : 'No permission to check-in'">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor" class="h-5 w-5 text-neutral-400">
                         <path
@@ -117,7 +122,7 @@
                     </svg>
                 </span>
 
-                <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming -->
+                <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
                 <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -603,6 +608,20 @@ export default {
 
             // disabled ลบได้แค่ upcoming
             return status === "upcoming";
+        },
+
+        canCheckIn(row) {
+            const status = (row.evn_status || "").toLowerCase();
+            const perm = (this.empPermission || "disabled").toLowerCase();
+
+            // upcoming ห้ามทุกกรณี
+            if (status === "upcoming") return false;
+
+            // done → disabled ห้าม, enabled ได้
+            if (status === "done" && perm === "disabled") return false;
+
+            // ที่เหลือ (ongoing, done+enabled)
+            return true;
         },
 
         async fetchEvent() {
