@@ -124,8 +124,7 @@ export default {
     },
 
     created() {
-        const { evnID, empID } = this.resolveIds();
-        this.fetchFromApi(evnID, empID);
+        this.fetchFromApi();
     },
 
     computed: {
@@ -167,48 +166,44 @@ export default {
     },
 
     methods: {
-        // รองรับทั้ง /reply/1/2 และกรณีมี path นำหน้า
-        resolveIds() {
-            const m = window.location.pathname.match(
-                /\/reply\/(\d+)\/(\d+)(?:\/|$)/
-            );
-            if (!m) throw new Error("ไม่พบ evnID/empID ใน URL");
-            return { evnID: m[1], empID: m[2] }; // d เล็กทั้งคู่
-        },
-
-        async fetchFromApi(evnID, empID) {
+        // แก้ไข: เติม async เพื่อใช้ await ภายในฟังก์ชัน
+        async fetchFromApi() {
             try {
-                console.log("Fetching data for evnID:", evnID, "empID:", empID),
-                    (this.loading = true);
-                const { data } = await axios.get(
-                    `/reply/${evnID}/${empID}`,
-                    {
-                        headers: { Accept: "application/json" },
-                    }
-                );
+                this.loading = true; // เริ่มโหลด
 
-                // เก็บ id ไว้ใช้ตอนส่ง
-                this.evnID = evnID;
-                this.empID = empID;
-                this.replyStatus = data.connect.con_answer;
-                console.log("data.connect:", data.connect.con_answer);
+                // แก้ไข: ประกาศตัวแปรให้ถูกต้อง และดึงค่าจาก URL
+                const pathSegments = window.location.pathname.split("/");
+                const token = pathSegments[pathSegments.length - 1]; // สมมติว่า ID อยู่ตัวสุดท้ายของ URL
 
-                // event
+                // แก้ไข: ใส่ await เพื่อรอข้อมูลจาก API
+                const response = await axios.get(`/reply/${token}`, {
+                    headers: { Accept: "application/json" },
+                });
+
+                const data = response.data;
+                console.log("Data fetched:", data);
+
+                // แก้ไข: กำหนดค่าจาก data ที่ API ส่งกลับมา (ตรวจสอบ field name ให้ตรงกับ Backend นะครับ)
+                this.evnID = data.event?.id;
+                this.empID = data.employee?.id;
+                this.replyStatus = data.connect?.con_answer || "";
+                //console.log("eveID empID ReplyStatus : " + this.evnID + " " + this.empID + " " + this.replyStatus)
+
+                // event info
                 this.title = data.event?.evn_title || "";
                 this.date = data.event?.evn_date || "";
                 this.timeStart = data.event?.evn_timestart || "";
                 this.timeEnd = data.event?.evn_timeend || "";
                 this.location = data.event?.evn_location || "";
 
-                // employee
+                // employee info
                 this.empName = `${data.employee?.emp_firstname || ""} ${
                     data.employee?.emp_lastname || ""
                 }`.trim();
                 this.empEmail = data.employee?.emp_email || "";
                 this.empPhone = data.employee?.emp_phone || "";
-
-                this.conne;
             } catch (e) {
+                console.error("Fetch Error:", e);
                 this.error =
                     e.response?.data?.message ??
                     e.message ??

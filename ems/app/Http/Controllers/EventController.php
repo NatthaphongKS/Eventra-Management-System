@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;      // ใช้เฉพาะ transaction
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -374,11 +375,14 @@ class EventController extends Controller
             $employees = Employee::whereIn('id', $data['employee_ids'])
                 ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
+            
+
             foreach ($employees as $emp) {
                 if (!$emp->emp_email) {
                     continue;
                 }
-                Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles));
+                $formURL = '/reply/'.Crypt::encryptString($event->id.'/'.$emp->id);
+                Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles, $formURL));
                 // หรือใช้คิว: Mail::to(...)->queue(new EventInvitationMail(...));
             }
 

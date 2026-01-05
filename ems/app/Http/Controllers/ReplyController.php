@@ -6,41 +6,52 @@ use App\Models\Connect;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Event;
+use Illuminate\Support\Facades\Crypt;
 
 class ReplyController extends Controller
 {
 
     // app/Http/Controllers/ReplyController.php
-    public function openForm($evnID, $empID)
+    public function openForm($encryptURL)
     {
-        return view('reply', ['evnID' => $evnID, 'empID' => $empID]);
+        $descryptURL = Crypt::decryptString($encryptURL);
+        $ids = explode('/', $descryptURL);
+        return view('reply', ['evnID' => $ids[0], 'empID' => $ids[1]]);
     }
 
-    public function show(Request $req)
+    public function show($encryptURL)
     {
+        $descryptURL = Crypt::decryptString($encryptURL);
+        $ids = explode('/', $descryptURL);
+
+        $eveId = $ids[0];
+        $empId = $ids[1];
+        
         $employee = Employee::query()
             ->select(
-                'emp_prefix',
+                'id'
+,                'emp_prefix',
                 'emp_firstname',
                 'emp_lastname',
                 'emp_email',
                 'emp_phone'
             )
-            ->where('id', $req->empID)
+            ->where('id', $empId)
             ->first();
         $event = Event::query()
             ->Select(
+                'id',
                 'evn_title',
                 'evn_date',
                 'evn_timestart',
                 'evn_timeend',
                 'evn_location'
             )
-            ->where('id', $req->evnID)
+            ->where('id', $eveId)
             ->first();
         $connect = Connect::query()
-            ->where('con_event_id', $req->evnID)
-            ->where('con_employee_id', $req->empID)
+            ->where('con_event_id', $eveId)
+            ->where('con_employee_id', $empId)
             ->first();
 
         return response()->json(
