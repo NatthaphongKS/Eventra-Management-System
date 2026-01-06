@@ -844,6 +844,21 @@ class EventController extends Controller
                 ')
                 ->get();
 
+            // Get team breakdown
+            $teams = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->join('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+                ->whereIn('ems_connect.con_event_id', $eventIds)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->groupBy('ems_team.id', 'ems_team.tm_name')
+                ->selectRaw('
+                    ems_team.tm_name as name,
+                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+                    SUM(CASE WHEN ems_connect.con_answer = "pending" OR ems_connect.con_answer = "invalid" OR ems_connect.con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
+                ')
+                ->get();
+
             // Get all participants (including same person in multiple events)
             $participants = DB::table('ems_connect')
                 ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
@@ -867,9 +882,11 @@ class EventController extends Controller
                     'ems_position.pst_name as position',
                     'ems_event.evn_title as event_title',
                     'ems_connect.con_answer as status',
-                    'ems_connect.con_checkin_status'
+                    'ems_connect.con_checkin_status',
+                    'ems_connect.con_event_id as event_id'
                 )
-                ->get(); // No unique() - show all participations
+                ->orderBy('ems_employees.emp_id')
+                ->get();
 
             return response()->json([
                 'total_participation' => $stats->total_participation ?? 0,
@@ -877,6 +894,7 @@ class EventController extends Controller
                 'not_attending' => $stats->not_attending ?? 0,
                 'pending' => $stats->pending ?? 0,
                 'departments' => $departments,
+                'teams' => $teams,
                 'participants' => $participants
             ]);
 

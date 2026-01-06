@@ -4,9 +4,16 @@
     <div class="chart-header">
       <h3 class="chart-title">Event Participation</h3>
       <div class="filter-dropdown">
-        <select v-model="selectedDepartment" @change="filterByDepartment" class="department-select">
-          <option value="">All Departments</option>
-          <option v-for="dept in allDepartments" :key="dept" :value="dept">{{ dept }}</option>
+        <!-- View Type Selector -->
+        <select v-model="viewType" @change="onViewTypeChange" class="department-select">
+          <option value="department">Department</option>
+          <option value="team">Team</option>
+        </select>
+        
+        <!-- Filter Dropdown -->
+        <select v-model="selectedFilter" @change="applyFilter" class="department-select">
+          <option value="">{{ viewType === 'department' ? 'All Departments' : 'All Teams' }}</option>
+          <option v-for="item in filterOptions" :key="item" :value="item">{{ item }}</option>
         </select>
       </div>
     </div>
@@ -14,25 +21,25 @@
     <!-- Bar chart -->
     <div class="bar-chart-container">
       <div class="bar-chart">
-        <div class="bar-group" v-for="(department, index) in displayData.departments" :key="index">
+        <div class="bar-group" v-for="(item, index) in displayData" :key="index">
           <div class="bars">
             <div class="bar attending" 
-                 :style="{ height: getBarHeight(department.attending) + '%' }"
-                 :title="`Attending: ${department.attending}`">
-              <span class="bar-value" v-if="department.attending > 0">{{ department.attending }}</span>
+                 :style="{ height: getBarHeight(item.attending) + '%' }"
+                 :title="`Attending: ${item.attending}`">
+              <span class="bar-value" v-if="item.attending > 0">{{ item.attending }}</span>
             </div>
             <div class="bar not-attending" 
-                 :style="{ height: getBarHeight(department.notAttending) + '%' }"
-                 :title="`Not Attending: ${department.notAttending}`">
-              <span class="bar-value" v-if="department.notAttending > 0">{{ department.notAttending }}</span>
+                 :style="{ height: getBarHeight(item.notAttending) + '%' }"
+                 :title="`Not Attending: ${item.notAttending}`">
+              <span class="bar-value" v-if="item.notAttending > 0">{{ item.notAttending }}</span>
             </div>
             <div class="bar pending" 
-                 :style="{ height: getBarHeight(department.pending) + '%' }"
-                 :title="`Pending: ${department.pending}`">
-              <span class="bar-value" v-if="department.pending > 0">{{ department.pending }}</span>
+                 :style="{ height: getBarHeight(item.pending) + '%' }"
+                 :title="`Pending: ${item.pending}`">
+              <span class="bar-value" v-if="item.pending > 0">{{ item.pending }}</span>
             </div>
           </div>
-          <div class="bar-label">{{ department.name }}</div>
+          <div class="bar-label">{{ item.name }}</div>
         </div>
       </div>
     </div>
@@ -79,24 +86,24 @@ export default {
   },
   data() {
     return {
-      participationData: {
-        departments: []
-      },
-      originalData: {
-        departments: []
-      },
-      isLoading: false,
-      selectedDepartment: '',
-      allDepartments: []
+      viewType: 'department', // 'department' or 'team'
+      selectedFilter: '',
+      originalDepartments: [],
+      originalTeams: [],
+      filteredData: [],
+      isLoading: false
     };
   },
   computed: {
     displayData() {
-      // Use filtered data if department is selected, otherwise use all departments from props
-      if (this.selectedDepartment && this.participationData.departments.length > 0) {
-        return this.participationData;
+      return this.filteredData;
+    },
+    filterOptions() {
+      if (this.viewType === 'department') {
+        return this.originalDepartments.map(d => d.name);
+      } else {
+        return this.originalTeams.map(t => t.name);
       }
-      return this.data;
     }
   },
   watch: {
@@ -104,22 +111,24 @@ export default {
       immediate: true,
       deep: true,
       handler(newData) {
-        if (newData && newData.departments) {
-          this.originalData = { departments: [...newData.departments] };
-          this.allDepartments = newData.departments.map(dept => dept.name);
-          this.participationData = { departments: [...newData.departments] };
+        if (newData) {
+          // Store original data
+          this.originalDepartments = newData.departments ? [...newData.departments] : [];
+          this.originalTeams = newData.teams ? [...newData.teams] : [];
+          
+          // Update displayed data based on current view type
+          this.updateDisplayData();
         }
       }
     }
   },
   methods: {
     getMaxValue() {
-      const departments = this.displayData.departments || [];
-      if (departments.length === 0) return 1;
+      if (this.filteredData.length === 0) return 1;
       
       let maxValue = 0;
-      departments.forEach(dept => {
-        const total = (dept.attending || 0) + (dept.notAttending || 0) + (dept.pending || 0);
+      this.filteredData.forEach(item => {
+        const total = (item.attending || 0) + (item.notAttending || 0) + (item.pending || 0);
         if (total > maxValue) {
           maxValue = total;
         }
@@ -134,17 +143,25 @@ export default {
       return Math.max((value / maxValue) * 100, 5); // Minimum 5% height for visibility
     },
 
-    filterByDepartment() {
-      if (!this.selectedDepartment) {
-        // Show all departments
-        this.participationData = {
-          departments: [...this.originalData.departments]
-        };
+    onViewTypeChange() {
+      // Reset filter when view type changes
+      this.selectedFilter = '';
+      this.updateDisplayData();
+    },
+
+    applyFilter() {
+      this.updateDisplayData();
+    },
+
+    updateDisplayData() {
+      // Get the source data based on view type
+      const sourceData = this.viewType === 'department' ? this.originalDepartments : this.originalTeams;
+      
+      // Apply filter if selected
+      if (this.selectedFilter) {
+        this.filteredData = sourceData.filter(item => item.name === this.selectedFilter);
       } else {
-        // Filter by selected department
-        this.participationData = {
-          departments: this.originalData.departments.filter(dept => dept.name === this.selectedDepartment)
-        };
+        this.filteredData = [...sourceData];
       }
     }
   }
@@ -180,6 +197,8 @@ export default {
 
 .filter-dropdown {
   position: relative;
+  display: flex;
+  gap: 8px;
 }
 
 .department-select {

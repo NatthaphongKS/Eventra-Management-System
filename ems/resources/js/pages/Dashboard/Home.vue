@@ -41,10 +41,13 @@
     
     <!-- Export Dropdown -->
     <ExportDropdown 
-      :data="sorted"
-      :disabled="sorted.length === 0"
-      :formatDate="formatDate"
-      :timeText="timeText"
+      :selectedEvents="selectedEventsArray"
+      :disabled="selectedEventIds.size === 0"
+      @export-start="handleExportStart"
+      @export-progress="handleExportProgress"
+      @export-complete="handleExportComplete"
+      @export-error="handleExportError"
+      @export-end="handleExportEnd"
       class="mt-6"
     />
     
@@ -74,7 +77,7 @@
     @update:pageSize="pageSize = $event; page = 1;" 
     @sort="handleClientSort" 
     row-key="id" 
-    :show-row-number="false" 
+    :show-row-number="false"
     :row-class="getRowClass"
     class="mt-4">
     
@@ -84,7 +87,6 @@
         type="checkbox"
         :checked="selectAll"
         @change="selectAllEvents"
-        style="cursor: pointer; width: 16px; height: 16px;"
       />
     </template>
     
@@ -94,7 +96,6 @@
         type="checkbox"
         :checked="selectedEventIds.has(row.id || row.evn_id)"
         @change="toggleEventSelection(row)"
-        style="cursor: pointer; width: 16px; height: 16px;"
       />
     </template>
 
@@ -162,6 +163,19 @@
     </template>
   </DataTable>
 </section>
+
+<!-- Export Progress Overlay -->
+<div v-if="isExporting" class="export-overlay">
+  <div class="export-modal">
+    <div class="export-spinner"></div>
+    <h3 class="export-title">กำลัง Export ข้อมูล...</h3>
+    <p class="export-text">{{ exportMessage }}</p>
+    <div class="export-progress-bar">
+      <div class="export-progress-fill" :style="{ width: exportProgressPercent + '%' }"></div>
+    </div>
+    <p class="export-hint">⏳ กรุณารอสักครู่ อย่าปิดหน้าต่างนี้</p>
+  </div>
+</div>
 
 <!-- No Selection Message -->
 <div v-if="selectedEventIds.size === 0" class="card summary-card">
@@ -365,13 +379,21 @@ export default {
       loadingTest: false,
       // ข้อมูลสำหรับกราฟแท่ง (Bar Chart)
       participationData: {
-        departments: []
+        departments: [],
+        teams: []
       },
       // รายชื่อผู้เข้าร่วมทั้งหมด
       eventParticipants: [],
       loadingParticipants: false,
       // ควบคุมการแสดงผลกราฟและตาราง
-      showStatistics: false
+      showStatistics: false,
+      // Export state
+      isExporting: false,
+      exportProgress: {
+        current: 0,
+        total: 0,
+        eventName: ''
+      }
     };
   },
   async created() {
@@ -791,6 +813,29 @@ export default {
       const firstEventId = Array.from(this.selectedEventIds)[0];
       return this.normalized.find(event => (event.id || event.evn_id) == firstEventId);
     },
+
+    // ดึงข้อมูลทุกอีเวนต์ที่เลือก (สำหรับ Export)
+    selectedEventsArray() {
+      if (this.selectedEventIds.size === 0) return [];
+      const selectedIds = Array.from(this.selectedEventIds);
+      return this.normalized.filter(event => 
+        selectedIds.includes(event.id || event.evn_id)
+      );
+    },
+
+    // Export progress message
+    exportMessage() {
+      if (this.exportProgress.total === 0) {
+        return 'กำลังเตรียมข้อมูล...';
+      }
+      return `กำลัง Export: ${this.exportProgress.eventName}\n(${this.exportProgress.current} จาก ${this.exportProgress.total})`;
+    },
+
+    // Export progress percentage
+    exportProgressPercent() {
+      if (this.exportProgress.total === 0) return 0;
+      return Math.round((this.exportProgress.current / this.exportProgress.total) * 100);
+    }
   },
   methods: {
     // Search handling
@@ -996,7 +1041,7 @@ export default {
           pending: 0,
           departments: []
         };
-        this.participationData = { departments: [] };
+        this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
         this.showEmployeeTable = false;
         return;
@@ -1030,6 +1075,12 @@ export default {
               attending: dept.attending || 0,
               notAttending: dept.notAttending || 0,
               pending: dept.pending || 0
+            })),
+            teams: (res.data.teams || []).map(team => ({
+              name: team.name,
+              attending: team.attending || 0,
+              notAttending: team.notAttending || 0,
+              pending: team.pending || 0
             }))
           };
           
@@ -1053,19 +1104,19 @@ export default {
           pending: 0,
           departments: []
         };
-        this.participationData = { departments: [] };
+        this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
       } finally {
         this.loadingParticipants = false;
       }
     },
 
-    // ฟังก์ชันจัดการ checkbox เลือกหลาย event
+    // ฟังก์ชันจัดการ checkbox เลือกหลาย event - สำหรับ highlight row
     getRowClass(row) {
       const eventId = row.id || row.evn_id;
       return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
     },
-    
+
     toggleEventSelection(event) {
       const eventId = event.id || event.evn_id;
       if (!eventId) {
@@ -1309,7 +1360,17 @@ export default {
           });
         }
         
-        // แปลงเป็นรูปแบบพนักงานสำหรับตาราง
+        // เรียงข้อมูลตาม emp_id และ event_id
+        filteredParticipants.sort((a, b) => {
+          // เรียงตาม emp_id ก่อน
+          const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
+          if (empCompare !== 0) return empCompare;
+          
+          // ถ้า emp_id เท่ากัน ให้เรียงตาม event_id
+          return (a.event_id || 0) - (b.event_id || 0);
+        });
+        
+        // แปลงเป็นรูปแบบพนักงานสำหรับตาราง (ไม่กรองข้อมูลซ้ำ - แสดงทุก participation)
         this.filteredEmployeesForTable = filteredParticipants.map(participant => ({
           id: participant.id,
           emp_id: participant.emp_id,
@@ -1326,8 +1387,8 @@ export default {
           emp_delete_status: 'active'
         }));
         
-        console.log(`Loaded ${this.filteredEmployeesForTable.length} employees for status: ${status}`);
-        console.log('ตรรกะการกรอง: attending ใช้ con_checkin_status=1 ไม่ใช่ con_answer');
+        console.log(`Loaded ${this.filteredEmployeesForTable.length} participations for status: ${status}`);
+        console.log('Note: Same employee may appear multiple times if they participate in multiple events');
         
       } catch (error) {
         console.error('Error loading employees:', error);
@@ -1381,6 +1442,29 @@ export default {
           summaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
+    },
+
+    // Export handlers
+    handleExportStart() {
+      this.isExporting = true;
+      this.exportProgress = { current: 0, total: 0, eventName: '' };
+    },
+
+    handleExportProgress(progress) {
+      this.exportProgress = progress;
+    },
+
+    handleExportComplete(result) {
+      console.log('Export completed:', result);
+    },
+
+    handleExportError(error) {
+      console.error('Export error:', error);
+    },
+
+    handleExportEnd() {
+      this.isExporting = false;
+      this.exportProgress = { current: 0, total: 0, eventName: '' };
     }
   }
 };
@@ -1466,15 +1550,6 @@ export default {
 .event-row:hover {
   background-color: #f9fafb;
   transition: background-color 0.2s ease;
-}
-
-/* Selected Row Styling */
-.event-row.selected-row {
-  background-color: #fef2f2 !important;
-}
-
-.event-row.selected-row:hover {
-  background-color: #fee2e2 !important;
 }
 
 /* No Data Row for Event Table */
@@ -2092,49 +2167,20 @@ export default {
 
 /* Employee Table Card */
 
-
-
-
-/* Input styling */
-input[type="radio"],
-input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #d1d5db;
-  border-radius: 3px;
-  background: #fff;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
+/* Override checkbox style to match DataTable component */
+:deep(input[type="checkbox"]) {
+  accent-color: #dc2626 !important;
 }
 
-input[type="radio"]:checked,
-input[type="checkbox"]:checked {
-  background: #dc2626;
-  border-color: #dc2626;
+/* Highlight selected rows - match DataTable component style */
+:deep(tr.selected-row) {
+  background-color: #fee2e2 !important; /* bg-red-100 equivalent */
 }
 
-input[type="radio"]:checked::after,
-input[type="checkbox"]:checked::after {
-  content: '';
-  position: absolute;
-  top: 1px;
-  left: 4px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+:deep(tr.selected-row:hover) {
+  background-color: #fecaca !important; /* slightly darker on hover */
 }
 
-input[type="radio"]:hover,
-input[type="checkbox"]:hover {
-  border-color: #9ca3af;
-  box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.1);
-}
 .employee-card {
   background: #fff;
   border-radius: 18px;
@@ -2275,15 +2321,6 @@ th, td { vertical-align:middle; padding:7px 10px; border-top:1px solid #eee; fon
 tbody tr:nth-child(odd){ background:#fff; }
 tbody tr:nth-child(even){ background:#fafafa; }
 tbody tr:hover{ background:#f3f4f6; }
-
-/* Selected row highlighting */
-tbody tr.selected-row { 
-  background: #fee2e2 !important; 
-  border-left: 4px solid #dc2626;
-}
-tbody tr.selected-row:hover { 
-  background: #fecaca !important; 
-}
 
 /* Text overflow */
 .truncate{ display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2918,10 +2955,6 @@ tbody tr.selected-row:hover {
   background: #f9fafb;
 }
 
-.event-table tbody tr.selected-row {
-  background: #fee2e2 !important;
-}
-
 .event-table td {
   padding: 14px 16px;
   font-size: 14px;
@@ -3080,15 +3113,6 @@ tbody tr.selected-row:hover {
   font-weight: 600;
 }
 
-/* Highlight selected rows */
-:deep(.selected-row) {
-  background-color: #fce7f3 !important; /* Pink background */
-}
-
-:deep(.selected-row):hover {
-  background-color: #fbcfe8 !important; /* Slightly darker pink on hover */
-}
-
 /* Export Dropdown Styles */
 .rotate-180 {
   transform: rotate(180deg);
@@ -3109,6 +3133,101 @@ tbody tr.selected-row:hover {
 
 .relative > div[class*="absolute"] {
   animation: dropdown-fade-in 0.2s ease-out;
+}
+
+/* Export Progress Overlay */
+.export-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.export-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border: 4px solid #fecaca;
+  border-top-color: #b91c1c;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.export-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 10px;
+}
+
+.export-text {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 20px;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.export-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.export-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b91c1c, #dc2626);
+  transition: width 0.3s ease-out;
+  border-radius: 4px;
+}
+
+.export-hint {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 10px;
+  font-style: italic;
 }
 
 </style>
