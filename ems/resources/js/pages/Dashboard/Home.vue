@@ -240,7 +240,7 @@
     v-model:pageSize="itemsPerPage"
     :totalItems="totalEmployees"
     :pageSizeOptions="[10, 25, 50, 100]"
-    rowKey="id"
+    rowKey="unique_key"
     :showRowNumber="true"
     class="mt-6"
   >
@@ -1325,8 +1325,19 @@ export default {
           });
         }
         
-        // เรียงข้อมูลตาม emp_id และ event_id
-        filteredParticipants.sort((a, b) => {
+        // กรองข้อมูลซ้ำโดยใช้ Map กับ unique key (emp_id + event_id + status)
+        const uniqueParticipants = new Map();
+        filteredParticipants.forEach(participant => {
+          const uniqueKey = `${participant.emp_id}_${participant.event_id}_${participant.con_checkin_status}_${participant.status}`;
+          // เก็บเฉพาะ record แรกที่พบ ไม่เอาข้อมูลซ้ำ
+          if (!uniqueParticipants.has(uniqueKey)) {
+            uniqueParticipants.set(uniqueKey, participant);
+          }
+        });
+        
+        // แปลง Map กลับเป็น Array และเรียงข้อมูล
+        const deduplicatedParticipants = Array.from(uniqueParticipants.values());
+        deduplicatedParticipants.sort((a, b) => {
           // เรียงตาม emp_id ก่อน
           const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
           if (empCompare !== 0) return empCompare;
@@ -1335,9 +1346,10 @@ export default {
           return (a.event_id || 0) - (b.event_id || 0);
         });
         
-        // แปลงเป็นรูปแบบพนักงานสำหรับตาราง (ไม่กรองข้อมูลซ้ำ - แสดงทุก participation)
-        this.filteredEmployeesForTable = filteredParticipants.map(participant => ({
+        // แปลงเป็นรูปแบบพนักงานสำหรับตาราง พร้อม unique_key
+        this.filteredEmployeesForTable = deduplicatedParticipants.map(participant => ({
           id: participant.id,
+          unique_key: `${participant.emp_id}_${participant.event_id}_${participant.id}`,
           emp_id: participant.emp_id,
           emp_prefix: participant.emp_prefix,
           emp_firstname: participant.emp_firstname,
@@ -1348,12 +1360,20 @@ export default {
           position: participant.position || 'N/A',
           department: participant.department || 'N/A',
           team: participant.team || 'N/A',
-          event_title: participant.event_title || 'N/A', // Add event title
+          event_title: participant.event_title || 'N/A',
           emp_delete_status: 'active'
         }));
         
-        console.log(`Loaded ${this.filteredEmployeesForTable.length} participations for status: ${status}`);
-        console.log('Note: Same employee may appear multiple times if they participate in multiple events');
+        // Reset pagination เมื่อโหลดข้อมูลใหม่
+        this.currentPage = 1;
+        
+        console.log(`Filtered ${filteredParticipants.length} raw participants`);
+        console.log(`After deduplication: ${this.filteredEmployeesForTable.length} unique participations for status: ${status}`);
+        
+        // แสดงตัวอย่างข้อมูล 3 รายการแรกเพื่อ debug
+        if (this.filteredEmployeesForTable.length > 0) {
+          console.log('Sample data (first 3):', this.filteredEmployeesForTable.slice(0, 3));
+        }
         
       } catch (error) {
         console.error('Error loading employees:', error);
