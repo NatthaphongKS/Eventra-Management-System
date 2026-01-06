@@ -18,7 +18,7 @@ use App\Http\Controllers\{
 | Public Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']);
+Route::get('/reply/{encryptURL}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
 
 

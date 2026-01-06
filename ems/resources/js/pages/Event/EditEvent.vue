@@ -3,8 +3,8 @@
  * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
  * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
  * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
- * ชื่อผู้เขียน/แก้ไข: 
- * วันที่จัดทำ/แก้ไข: 
+ * ชื่อผู้เขียน/แก้ไข:
+ * วันที่จัดทำ/แก้ไข:
  */ -->
 <!-- pages/edit_event.vue -->
 <template>
@@ -20,7 +20,7 @@
                     <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
                      trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
                     <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
                             Event Title <span class="text-red-500">*</span>
                         </label><br />
                         <InputPill v-model="eventTitle"
@@ -31,8 +31,11 @@
                             Required field
                         </p>
                     </div>
+
+
+                    <!-- ช่องเลือกประเภท event-->
                     <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
                             Event Category <span class="text-red-500">*</span>
                         </label><br />
                         <div class="relative w-full">
@@ -61,8 +64,9 @@
                 </div>
             </div>
 
+            <!-- ช่องกรอกคำอธิบายอีเวนต์ -->
             <div class="mt-4">
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1" >
                     Event Description <span class="text-red-500">*</span>
                 </label><br />
                 <textarea
@@ -76,21 +80,35 @@
             </div>
 
             <div class="grid grid-cols-3 mt-4 gap-4">
+
+            <!-- ช่องกรอกวัน -->
                 <div class="">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
                         Date <span class="text-red-500">*</span>
                     </label><br>
+                    <div class="relative w-full">
                     <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
                         focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition
-                        px-5 py-4" type="date" v-model="eventDate" :min="minDate"
-                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }">
+                        px-5 py-4
+                        [&::-webkit-calendar-picker-indicator]:hidden
+                        [&::-webkit-inner-spin-button]:hidden
+                        [&::-webkit-clear-button]:hidden"
+                        type="date" v-model="eventDate" :min="minDate"
+                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }"
+                        onclick="this.showPicker()"
+                        >
 
+
+                    <Icon icon="stash:data-date-solid" class="ml-20 w-7 h-[30px] text-red-700 shrink-0 absolute right-5 top-1/2 -translate-y-1/2  pointer-events-none" />
+                    </div>
                     <p v-if="submitted && formErrors.eventDate" class="mt-1 text-xs text-red-600 font-medium">
                         'Required date'
                     </p>
                 </div>
+
+                <!-- ช่องกรอกเวลา -->
                 <div class="">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
                         Time <span class="text-red-500">*</span>
                     </label>
                     <div class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 shadow-sm px-5 py-4"
@@ -112,7 +130,7 @@
                             <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
                         </div>
 
-                        <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-rose-400 shrink-0 ml-2" />
+                        <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-red-700 shrink-0 " />
 
                     </div>
 
@@ -123,8 +141,10 @@
 
                 </div>
 
+
+                <!-- ช่องกรอกแสดงช่วงเวลา -->
                 <div>
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">Duration</label>
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">Duration</label>
                     <div
                         class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
                         <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
@@ -133,8 +153,10 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ช่องกรอกสถานที่-->
             <div class="mt-4">
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4">
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
                     Location <span class="text-red-500">*</span>
                 </label><br>
                 <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
@@ -150,10 +172,10 @@
         <!-- Upload attachments -->
         <div class="col-span-4 m-5">
             <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
-            <p class="text-sm text-neutral-500 mb-2">Drag and drop document to your support task</p>
+            <p class="text-sm text-neutral-800 mb-2">Drag and drop document to your support task</p>
 
             <!-- ▼ Drop zone -->
-            <div class="group relative rounded-2xl border-2 border-dashed border-rose-300 bg-rose-50 p-6 transition-all hover:border-rose-400"
+            <div class="group relative rounded-2xl border-2 border-dashed border-red-700 bg-red-100 p-6 transition-all"
                 :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
                 @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
                 <!-- รายการไฟล์ (เดิม + ใหม่) เต็มความกว้าง เรียงลงมา -->
@@ -194,13 +216,13 @@
                 <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
                     <Icon icon="entypo:upload-to-cloud" class="w-16 h-16 mb-3 text-rose-400" />
                     <p class="text-[15px] font-medium text-neutral-800">Choose a file or drag &amp; drop it here</p>
-                    <p class="mt-1 text-sm text-neutral-600">pdf, txt, docx, jpeg, xlsx</p>
+                    <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx</p>
                 </div>
 
                 <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
                 <div class="flex justify-center mt-6">
                     <button type="button"
-                        class="inline-flex items-center rounded-[12px] border bg-white border-rose-500 px-4 py-1.5 text-sm text-rose-700 hover:bg-rose-50 active:bg-rose-100"
+                        class="inline-flex items-center rounded-[12px] border  bg-white border-rose-500 px-4 py-1.5 text-sm text-neutral-800 hover:bg-rose-50 active:bg-rose-100"
                         @click="pickFiles">
                         Browse files
                     </button>
@@ -216,77 +238,78 @@
 
         </div>
     </div>
-    <h3 class="text-neutral-800 font-semibold font-[Poppins] text-3xl m-4">Add Guest</h3>
 
-    <div class="guest-toolbar grid gap-3 mt-3 mb-3 md:grid-cols-[1fr,165px,165px,165px,165px] items-center">
-        <!-- Search -->
-        <div>
-            <SearchBar v-model="searchDraft" class="w-full" placeholder="Search Employee ID / Name / Nickname"
-                @search="applySearch" />
+    <div class="mt-10">
+            <h3 class="text-3xl font-semibold">Add Guest</h3>
+
+            <div class="mt-4 flex flex-col gap-3">
+                <div class="flex flex-wrap items-center gap-3 w-full">
+                    <div class="flex-1 min-w-[260px]">
+                        <SearchBar
+                            v-model="search"
+                            placeholder="Search ID / Name / Nickname"
+                            @search="() => (page = 1)"
+                            class=""
+                        />
+                    </div>
+
+                    <div
+                        class="flex flex-row flex-wrap items-center gap-2 mt-8"
+                    >
+                        <EmployeeDropdown
+                            label="Company ID"
+                            v-model="selectedCompanyIds"
+                            :options="companyIdOptions"
+                        />
+                        <EmployeeDropdown
+                            label="Department"
+                            v-model="selectedDepartmentIds"
+                            :options="departmentOptions"
+                        />
+                        <EmployeeDropdown
+                            label="Team"
+                            v-model="selectedTeamIds"
+                            :options="teamOptions"
+                        />
+                        <EmployeeDropdown
+                            label="Position"
+                            v-model="selectedPositionIds"
+                            :options="positionOptions"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <DataTable
+                    :rows="pagedEmployees"
+                    :columns="columns"
+                    :loading="loadingEmployees"
+                    :totalItems="filteredEmployees.length"
+                    v-model:page="page"
+                    v-model:pageSize="perPage"
+                    :pageSizeOptions="[10, 25, 50]"
+                    :selectable="true"
+                    :showRowNumber="true"
+                    rowKey="id"
+                    :modelValue="selectedIdsArr"
+                    @update:modelValue="onUpdateSelected"
+                >
+                    <template #cell-fullname="{ row }">
+                        {{
+                            (row.emp_firstname || "") +
+                            " " +
+                            (row.emp_lastname || "")
+                        }}
+                    </template>
+                    <template #empty>
+                        <div class="py-8 text-center text-neutral-400">
+                            ไม่พบข้อมูลพนักงาน
+                        </div>
+                    </template>
+                </DataTable>
+            </div>
         </div>
-
-        <!-- Company ID -->
-        <div class="mt-5 relative">
-            <select v-model="filtersDraft.empId" @change="applySearch"
-                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
-                <option value="">Company ID</option>
-                <option v-for="team in empIdOptions" :key="team" :value="team">{{ team }}</option>
-            </select>
-
-            <Icon icon="iconamoon:arrow-down-2-light"
-                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
-        </div>
-
-        <!-- Department -->
-        <div class="mt-5 relative">
-            <select v-model="filtersDraft.department" @change="applySearch"
-                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
-                <option value="">department</option>
-                <option v-for="team in departments" :key="team" :value="team">{{ team }}</option>
-            </select>
-
-            <Icon icon="iconamoon:arrow-down-2-light"
-                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
-        </div>
-
-        <!-- Team -->
-        <div class="mt-5 relative">
-            <select v-model="filtersDraft.team" @change="applySearch"
-                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
-                <option value="">Team</option>
-                <option v-for="team in teams" :key="team" :value="team">{{ team }}</option>
-            </select>
-
-            <Icon icon="iconamoon:arrow-down-2-light"
-                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
-        </div>
-
-        <!-- Position -->
-        <div class="mt-5 relative">
-            <select v-model="filtersDraft.position" @change="applySearch"
-                class="appearance-none w-full border border-neutral-200 rounded-2xl px-3 py-2 text-sm focus:ring-2 focus:ring-rose-300 focus:border-rose-400 outline-none bg-white">
-                <option value="">Position</option>
-                <option v-for="position in positions" :key="position" :value="position">{{ position }}</option>
-            </select>
-
-            <Icon icon="iconamoon:arrow-down-2-light"
-                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" />
-        </div>
-    </div>
-
-
-    <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
-        :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
-        :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id" :rowClass="rowClass"
-        :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected">
-        <!-- ชื่อเต็ม -->
-        <template #cell-fullname="{ row }">
-            {{ (row.emp_firstname || '') + ' ' + (row.emp_lastname || '') }}
-        </template>
-
-        <!-- ข้อความตอนว่าง -->
-        <template #empty>ไม่พบข้อมูล</template>
-    </DataTable>
 
 
     <!-- ปุ่มยกเลิก / ยืนยัน -->
@@ -325,17 +348,18 @@ import DropdownPill from '@/components/Input/DropdownPill.vue'
 import DataTable from '@/components/DataTable.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
+import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 
 
 export default {
-    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert },
-    data() { // เก็บ state ของฟอร์มไว้ใน component
+    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert, EmployeeDropdown },
+    data() {
         return {
-
-            eventTitle: '',        // ตัวแปรสำหรับ input "Event Title" เอาไว้เก็บค่าตอน controller ส่งค่ามา
-            eventCategoryName: '', // ตัวแปรสำหรับ select "Event Category" ที่ส่งมาจาก table อื่น
-            eventCategoryId: '',     // <-- ใช้ค่านี้ส่งไป backend ตอนกด save
-            selectCategory: [], //เก็บข้อมูล catagory ที่มีทั้งหมด เลยเก็บเป็น array
+            // --- Form Data ---
+            eventTitle: '',
+            eventCategoryName: '',
+            eventCategoryId: '',
+            selectCategory: [],
             eventDescription: '',
             eventDate: '',
             eventTimeStart: '',
@@ -343,39 +367,48 @@ export default {
             eventDuration: 0,
             eventLocation: '',
             saving: false,
-            eventDurationMinutes: 0, // นาทีจริงที่จะส่งไป backend
+            eventDurationMinutes: 0,
 
-            // Validation state
+            // --- Validation ---
             formErrors: {},
             submitted: false,
 
-            // ⬇️ state สำหรับไฟล์โ
-            filesExisting: [],    // ตัวแปรรับข้อมูล [{id,file_name,url,file_size,...}] จาก backend
-            filesNew: [],         // File objects เลือกอัปโหลดเพิ่ม
-            filesDeleted: [],     // เก็บ id ไฟล์เดิมที่ผู้ใช้ลบ
+            // --- Files ---
+            filesExisting: [],
+            filesNew: [],
+            filesDeleted: [],
             dragging: false,
 
-            // ===== สำหรับตาราง Guest =====
+            // --- Table & Filter Data ---
             employees: [],
             loadingEmployees: false,
-
             search: '',
-            searchDraft: '', //เก็บค่าที่ผู้ใช้ป้อน ก่อนกด search
-            filters: { department: '', team: '', position: '', empId: '' }, //เก็บค่าที่เลือก จาก dropdown
-            filtersDraft: { department: '', team: '', position: '', empId: '' }, //เก็บค่าที่เลือก จาก dropdown ก่อนกด search
+            searchDraft: '',
 
-            departments: [],
-            teams: [],
-            positions: [],
+            // ✅ เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
+            selectedCompanyIds: [],
+            selectedDepartmentIds: [],
+            selectedTeamIds: [],
+            selectedPositionIds: [],
 
-            selectedIds: new Set(),//เก็บไอดีที่ถูกติ๊ก
-            lockedIds: new Set(), //เก็บข้อมูลคนที่เคยถูกเลือกไว้แล้ว
+            // Options สำหรับ Dropdown
+            companyIdOptions: [],
+            departmentOptions: [],
+            teamOptions: [],
+            positionOptions: [],
+
+            // Selected & Locked Logic
+            selectedIds: new Set(),
+            lockedIds: new Set(), // คนที่ถูกเชิญไปแล้ว (แก้ไม่ได้)
+
+            // Pagination
             page: 1,
             perPage: 10,
 
+            // Alert Config
             alert: {
                 open: false,
-                type: 'confirm', // success | error | warning | confirm
+                type: 'confirm',
                 title: '',
                 message: '',
                 showCancel: false,
@@ -384,7 +417,6 @@ export default {
                 onConfirm: null,
                 onCancel: null,
             },
-
         };
     },
     methods: {
@@ -428,36 +460,67 @@ export default {
 
 
                 // 1) โหลด metadata สำหรับพนักงาน/ฟิลเตอร์
-                this.loadingEmployees = true
-                const info = await axios.get('/event-info') //ฌรียก controller /event-info เพื่อรับข้อมูลพนักงานมาแสดง
-                const employeeData = info.data || {}
-                this.employees = (employeeData.employees || []).map(employee => ({
-                    id: employee.id,
-                    emp_id: employee.emp_id || employee.code || '',
-                    emp_firstname: employee.emp_firstname || employee.first_name || '',
-                    emp_lastname: employee.emp_lastname || employee.last_name || '',
-                    nickname: employee.emp_nickname || '',
-                    department: employee.department_name || '',
-                    team: employee.team_name || '',
-                    position: employee.position_name || '',
-                }))
-                this.positions = (employeeData.positions || []).map(data => data.pst_name)
-                this.departments = (employeeData.departments || []).map(data => data.dpm_name)
-                this.teams = (employeeData.teams || []).map(data => data.tm_name)
-                this.loadingEmployees = false
+this.loadingEmployees = true
+const info = await axios.get('/event-info')
+const employeeData = info.data || {}
 
-                // 2) รับ guest_ids จาก endpoint edit-event/{id}
-                const guestIds = payload?.guest_ids || []
-                this.lockedIds = new Set(guestIds)     // แขกเดิม => ล็อก
-                this.selectedIds = new Set(guestIds)   // ติ๊กไว้ตั้งต้น
+// [แก้ไข 1] Map ข้อมูลให้เหมือนหน้า Create (เพิ่ม Logic Company ID)
+this.employees = (employeeData.employees || []).map(employee => {
+    // Logic หา Company จาก ID (เหมือนหน้า Create)
+    const rawId = String(employee.emp_id || employee.code || "");
+    const rawPrefixFromId = (rawId.match(/^[A-Za-z]+/) || [""])[0];
+    const companyAbbr = (rawPrefixFromId || "").toUpperCase();
 
+    return {
+        id: employee.id,
+        // ใช้ emp_id หรือ code แล้วแต่ Backend ส่งมา
+        emp_id: rawId,
+        emp_firstname: employee.emp_firstname || employee.first_name || '',
+        emp_lastname: employee.emp_lastname || employee.last_name || '',
+        fullname: `${employee.emp_firstname || ''} ${employee.emp_lastname || ''}`, // เพิ่มเผื่อไว้แสดงผล
+        nickname: employee.emp_nickname || '',
+        department: employee.department_name || '',
+        team: employee.team_name || '',
+        position: employee.position_name || '',
+        // เพิ่ม Company Field เพื่อใช้ Filter
+        companyAbbr: companyAbbr,
+        companyId: employee.company_id || companyAbbr || "",
+    }
+})
+this.buildFilterOptions()
 
+this.loadingEmployees = false
             } catch (err) {
                 // ถ้า error ให้แจ้งใน console + set ค่า
                 console.error(err)
                 this.eventTitle = '(โหลดข้อมูลไม่สำเร็จ)'
             }
         },
+        toOptions(arr) {
+        const uniq = [...new Set(arr.filter(Boolean))].sort();
+        return uniq.map((v) => ({ label: v, value: v }));
+    },
+
+        // สร้างตัวเลือก Filter จากข้อมูล Employees ที่มีอยู่
+    buildFilterOptions() {
+        // Company
+        this.companyIdOptions = this.toOptions(
+            this.employees.map((r) => r.companyId)
+        );
+        // Department
+        this.departmentOptions = this.toOptions(
+            this.employees.map((r) => r.department)
+        );
+        // Team
+        this.teamOptions = this.toOptions(
+            this.employees.map((r) => r.team)
+        );
+        // Position
+        this.positionOptions = this.toOptions(
+            this.employees.map((r) => r.position)
+        );
+    },
+
         // ซีดแถวที่ล็อกไว้
         rowClass(row) {
             // เช็คว่าถ้าเป็น id ที่ถูกล็อก (เชิญไปแล้ว)
@@ -532,21 +595,26 @@ export default {
         //mb.toFixed(2) = ปัดทศนิยม 2 ตำแหน่ง
         //${(byte / 1024).toFixed(0)} KB ถ้าไฟล์เล็กกว่า 1 MB → จะแปลงเป็น KB แทน
 
-        applySearch() {
-            this.search = this.searchDraft
-            this.filters = { ...this.filtersDraft }
-            this.page = 1
-        },
+        // applySearch() {
+        //     this.search = this.searchDraft
+        //     this.filters = { ...this.filtersDraft }
+        //     this.page = 1
+        // },
         // this.search = this.searchDraft;           เอาค่าที่พิมพ์ไว้ใน input (searchDraft) → ไปใส่ตัวแปร search
         // this.filters = { ...this.filtersDraft }; เอาค่า department/team/position ที่เลือกชั่วคราว → ไปใส่ filters
         //  this.page = 1;                          รีเซ็ต pagination กลับไปหน้าแรก
 
         resetSearch() { //reset ค่าที่ search มา
-            this.searchDraft = ''
-            this.filtersDraft = { department: '', team: '', position: '' }
-            this.search = ''
-            this.filters = { department: '', team: '', position: '' }
-            this.page = 1
+            this.search = '';
+    this.searchDraft = '';
+
+    // ✅ รีเซ็ต Array เป็นค่าว่าง
+    this.selectedCompanyIds = [];
+    this.selectedDepartmentIds = [];
+    this.selectedTeamIds = [];
+    this.selectedPositionIds = [];
+
+    this.page = 1;
         },
 
         toggleOne(id, event) {
@@ -769,6 +837,58 @@ export default {
         },
     },
     computed: {
+        // --- Filtering Logic (Adapted from EventCheckIn) ---
+        filteredEmployees() {
+            const q = (this.search || "").toLowerCase().trim();
+            let list = this.employees;
+
+            // Search Filter
+            if (q) {
+                list = list.filter((e) =>
+                    [
+                        String(e.emp_id),
+                        e.emp_firstname,
+                        e.emp_lastname,
+                        e.nickname,
+                    ].some((f) => f?.toLowerCase().includes(q))
+                );
+            }
+
+            // Company Filter
+            if (this.selectedCompanyIds?.length) {
+                const needles = this.selectedCompanyIds
+                    .map((x) => String(x).trim())
+                    .filter(Boolean);
+                list = list.filter((r) => {
+                    // เช็คทั้ง companyId และ companyAbbr ถ้ามี
+                    const idStr = String(
+                        r.companyId || r.companyAbbr || ""
+                    ).trim();
+                    return needles.some((n) => idStr.includes(n));
+                });
+            }
+
+            // Department Filter
+            if (this.selectedDepartmentIds?.length) {
+                const set = new Set(this.selectedDepartmentIds);
+                list = list.filter((r) => set.has(r.department));
+            }
+
+            // Team Filter
+            if (this.selectedTeamIds?.length) {
+                const set = new Set(this.selectedTeamIds);
+                list = list.filter((r) => set.has(r.team));
+            }
+
+            // Position Filter
+            if (this.selectedPositionIds?.length) {
+                const set = new Set(this.selectedPositionIds);
+                list = list.filter((r) => set.has(r.position));
+            }
+
+            return list;
+        },
+
         // ใน computed: { ... }
         isValidTimeLogic() {
             // แปลงเวลาเป็นตัวเลข (ชั่วโมง * 60 + นาที)
@@ -797,33 +917,11 @@ export default {
             ]
         },
 
-        // DataTable ต้องใช้ array; ของเดิมเก็บเป็น Set
-        selectedIdsArr: {
-            get() { return Array.from(this.selectedIds) },
-            set(arr) {
-                // ป้องกันเลือกคนที่ถูกล็อก
-                this.selectedIds = new Set(arr.filter(id => !this.lockedIds.has(id)))
-            }
-        },
         empIdOptions() {
             // ได้เป็น array ของ string เช่น ["E001","E002",...]
             return [...new Set(this.employees.map(e => e.emp_id).filter(Boolean))];
         },
-        // กรองด้วย empId เพิ่ม
-        filteredEmployees() {
-            const searchData = (this.search || '').toLowerCase()
-            return this.employees.filter(employee => {
-                const matchText = !searchData || `${employee.emp_id} ${employee.emp_firstname} ${employee.emp_lastname} ${employee.nickname || ''}`.toLowerCase().includes(searchData)
-                const matchDept = !this.filters.department || employee.department === this.filters.department
-                const matchTeam = !this.filters.team || employee.team === this.filters.team
-                const matchPos = !this.filters.position || employee.position === this.filters.position
 
-                // ถ้าเลือก empId ในดรอปดาวน์ให้บังคับตรง emp_id
-                const matchEmpId = !this.filters.empId || employee.emp_id === this.filters.empId
-
-                return matchText && matchDept && matchTeam && matchPos && matchEmpId
-            })
-        },
         hasAnyFiles() {
             return (this.filesExisting?.length || 0) + (this.filesNew?.length || 0) > 0
         },
@@ -921,11 +1019,17 @@ export default {
     watch: {
         eventTimeStart: 'calDuration',//เรียก calDuration ไม่ว่าค่าจะเปลี่ยนจากการส่งมาผ่าน controller หรือ คนใช้เลือกเปลี่ยนเองตอนเลือก Input
         eventTimeEnd: 'calDuration',// ใช้เพราะว่าต้องการคำนวณ duration ทุกครั้งที่มีการส่งข้อมูลมาจาก controller เวลาโหลดข้อมูลเก่าด้วย
+// เมื่อเปลี่ยนคำค้นหา -> รีเซ็ตหน้า
+    search() { this.page = 1 },
 
-        search() { this.page = 1 },
-        filters: { deep: true, handler() { this.page = 1 } },
-        perPage() { this.page = 1 },
-    },
+    //  Watch ตัวแปร Array ทีละตัว
+    selectedCompanyIds() { this.page = 1 },
+    selectedDepartmentIds() { this.page = 1 },
+    selectedTeamIds() { this.page = 1 },
+    selectedPositionIds() { this.page = 1 },
+
+    perPage() { this.page = 1 },
+},
     // ใช้เพื่อโหลดข้อมูลทันทีที่เปิดหน้า edit_event.vue
     mounted() {
         this.fetchData(); // เรียกฟังก์ชัน fetchData() เมื่อ component(layout.vue) ถูก mount

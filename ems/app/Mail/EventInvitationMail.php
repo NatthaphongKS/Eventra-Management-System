@@ -14,11 +14,14 @@ class EventInvitationMail extends Mailable
     public $event;
     public $files;
 
-    public function __construct($employee, $event, $files = [])
+    public $formURL;
+
+    public function __construct($employee, $event, $files = [], $formURL)
     {
         $this->employee = $employee;
         $this->event = $event;
         $this->files = $files; // ไฟล์ที่ส่งมาจาก Controller
+        $this->formURL = $formURL;
     }
 
     public function build()
