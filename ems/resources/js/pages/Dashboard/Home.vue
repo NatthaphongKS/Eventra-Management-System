@@ -455,39 +455,14 @@ export default {
       let arr = [...this.normalized];
       const q = this.search.toLowerCase().trim();
 
-      // ตัวกรองการค้นหา - แยกการค้นหาวันที่ออกมา
+      // ตัวกรองการค้นหา - ค้นหาเฉพาะข้อความ (ชื่องาน, หมวดหมู่, สถานะ)
+      // ไม่รวมการค้นหาวันที่เพราะมี EventDatePicker แล้ว
       if (q) {
-        // ตรวจสอบว่าเป็นตัวเลข (อาจเป็นวันที่)
-        const isNumeric = /^\d+$/.test(q);
-        
         arr = arr.filter((e) => {
-          // ถ้าเป็นตัวเลข ให้ค้นหาเฉพาะส่วนวันที่ที่ตรงกันพอดี
-          if (isNumeric) {
-            // แปลงวันที่เป็นรูปแบบ DD/MM/YYYY
-            const formattedDate = this.formatDate(e.evn_date);
-            // แยกส่วนวัน เดือน ปี
-            const dateParts = formattedDate.split('/');
-            const day = dateParts[0];
-            const month = dateParts[1];
-            const year = dateParts[2];
-            
-            // ค้นหาแบบตรงกันพอดีกับวัน หรือ เดือน หรือ ปี
-            const matchesDay = day === q;
-            const matchesMonth = month === q;
-            const matchesYear = year === q || (year && year.endsWith(q));
-            
-            // ค้นหาใน title, category, status ด้วย
-            const matchesText = `${e.evn_title} ${e.cat_name} ${e.evn_status}`
-              .toLowerCase()
-              .includes(q);
-            
-            return matchesDay || matchesMonth || matchesYear || matchesText;
-          } else {
-            // ถ้าไม่ใช่ตัวเลข ให้ค้นหาแบบปกติ
-            return `${e.evn_title} ${e.cat_name} ${e.evn_status}`
-              .toLowerCase()
-              .includes(q);
-          }
+          // ค้นหาเฉพาะใน title, category, status
+          return `${e.evn_title} ${e.cat_name} ${e.evn_status}`
+            .toLowerCase()
+            .includes(q);
         });
       }
 
