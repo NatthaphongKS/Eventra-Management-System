@@ -28,7 +28,7 @@
 
     <button
       @click="emitSearch"
-      class="w-[62px] h-[52px] flex items-center justify-center rounded-full bg-red-700 text-white transition-all duration-200 shadow-sm shrink-0 hover:bg-red-800 active:scale-95"
+      class="w-[62px] h-[60px] flex items-center justify-center rounded-full bg-red-700 text-white transition-all duration-200 shadow-sm shrink-0 hover:bg-red-800 active:scale-95"
       aria-label="Search"
       title="ค้นหา"
     >
