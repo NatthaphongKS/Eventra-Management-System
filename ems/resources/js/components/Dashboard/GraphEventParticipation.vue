@@ -9,12 +9,6 @@
           <option value="department">Department</option>
           <option value="team">Team</option>
         </select>
-        
-        <!-- Filter Dropdown -->
-        <select v-model="selectedFilter" @change="applyFilter" class="department-select">
-          <option value="">{{ viewType === 'department' ? 'All Departments' : 'All Teams' }}</option>
-          <option v-for="item in filterOptions" :key="item" :value="item">{{ item }}</option>
-        </select>
       </div>
     </div>
     
@@ -87,7 +81,6 @@ export default {
   data() {
     return {
       viewType: 'department', // 'department' or 'team'
-      selectedFilter: '',
       originalDepartments: [],
       originalTeams: [],
       filteredData: [],
@@ -97,13 +90,6 @@ export default {
   computed: {
     displayData() {
       return this.filteredData;
-    },
-    filterOptions() {
-      if (this.viewType === 'department') {
-        return this.originalDepartments.map(d => d.name);
-      } else {
-        return this.originalTeams.map(t => t.name);
-      }
     }
   },
   watch: {
@@ -144,25 +130,13 @@ export default {
     },
 
     onViewTypeChange() {
-      // Reset filter when view type changes
-      this.selectedFilter = '';
-      this.updateDisplayData();
-    },
-
-    applyFilter() {
       this.updateDisplayData();
     },
 
     updateDisplayData() {
-      // Get the source data based on view type
+      // Get the source data based on view type and show all items
       const sourceData = this.viewType === 'department' ? this.originalDepartments : this.originalTeams;
-      
-      // Apply filter if selected
-      if (this.selectedFilter) {
-        this.filteredData = sourceData.filter(item => item.name === this.selectedFilter);
-      } else {
-        this.filteredData = [...sourceData];
-      }
+      this.filteredData = [...sourceData];
     }
   }
 };
@@ -197,8 +171,6 @@ export default {
 
 .filter-dropdown {
   position: relative;
-  display: flex;
-  gap: 8px;
 }
 
 .department-select {
