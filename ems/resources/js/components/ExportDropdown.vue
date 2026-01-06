@@ -5,6 +5,7 @@
       class="inline-flex h-11 items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
       :disabled="disabled"
       :class="{'opacity-50 cursor-not-allowed': disabled}"
+      :title="disabled ? 'กรุณาเลือกกิจกรรมก่อน Export' : 'Export ข้อมูลกิจกรรม'"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -43,10 +44,15 @@
 </template>
 
 <script>
+import axios from 'axios';
+
+axios.defaults.baseURL = "/api";
+axios.defaults.headers.common["Accept"] = "application/json";
+
 export default {
   name: 'ExportDropdown',
   props: {
-    data: {
+    selectedEvents: {
       type: Array,
       required: true,
       default: () => []
@@ -54,19 +60,17 @@ export default {
     disabled: {
       type: Boolean,
       default: false
-    },
-    formatDate: {
-      type: Function,
-      default: (date) => date || ''
-    },
-    timeText: {
-      type: Function,
-      default: (start, end) => `${start || ''} - ${end || ''}`
     }
   },
   data() {
     return {
-      showMenu: false
+      showMenu: false,
+      isExporting: false,
+      exportProgress: {
+        current: 0,
+        total: 0,
+        eventName: ''
+      }
     };
   },
   mounted() {
@@ -83,19 +87,88 @@ export default {
       }
     },
 
-    exportToPDF() {
+    async exportToPDF() {
       this.showMenu = false;
       
-      if (this.data.length === 0) {
-        alert('ไม่มีข้อมูลที่จะ Export');
+      if (this.selectedEvents.length === 0) {
+        alert('กรุณาเลือกกิจกรรมก่อน Export');
         return;
       }
 
+      if (this.isExporting) {
+        alert('กำลัง Export อยู่ กรุณารอสักครู่...');
+        return;
+      }
+
+      this.isExporting = true;
+      this.$emit('export-start');
+
       try {
-        const printWindow = window.open('', '_blank');
+        // Export แยกไฟล์สำหรับแต่ละ event ที่เลือก
+        for (let i = 0; i < this.selectedEvents.length; i++) {
+          const event = this.selectedEvents[i];
+          
+          // อัปเดต progress
+          this.exportProgress.current = i + 1;
+          this.exportProgress.total = this.selectedEvents.length;
+          this.exportProgress.eventName = event.evn_title || 'Event';
+          
+          this.$emit('export-progress', {
+            current: this.exportProgress.current,
+            total: this.exportProgress.total,
+            eventName: this.exportProgress.eventName
+          });
+          
+          await this.exportSingleEventToPDF(event);
+          
+          // หน่วงเวลาระหว่างการ export แต่ละไฟล์ (เพื่อหลีกเลี่ยง popup blocker)
+          if (i < this.selectedEvents.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
+        }
+        
+        this.$emit('export-complete', {
+          type: 'PDF',
+          count: this.selectedEvents.length
+        });
+        
+        console.log(`PDF Export completed: ${this.selectedEvents.length} event(s)`);
+      } catch (error) {
+        console.error('Export error:', error);
+        this.$emit('export-error', error);
+        alert('เกิดข้อผิดพลาดในการ Export ข้อมูล: ' + error.message);
+      } finally {
+        this.isExporting = false;
+        this.exportProgress = { current: 0, total: 0, eventName: '' };
+        this.$emit('export-end');
+      }
+    },
+
+    async exportSingleEventToPDF(event) {
+      try {
+        // ดึงข้อมูล participants ของ event นี้
+        const participants = await this.fetchEventParticipants(event.id || event.evn_id);
+        
+        // ตรวจสอบว่า participants เป็น array
+        if (!Array.isArray(participants)) {
+          console.error('Participants is not an array:', participants);
+          throw new Error('ไม่สามารถดึงข้อมูลผู้เข้าร่วมได้');
+        }
+        
+        // สร้าง iframe แทนการใช้ window.open เพื่อหลีกเลี่ยง popup blocker
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+        
+        const printWindow = iframe.contentWindow;
         if (!printWindow) {
-          alert('กรุณาอนุญาตให้เปิด popup window');
-          return;
+          document.body.removeChild(iframe);
+          throw new Error('ไม่สามารถสร้างหน้าต่าง Print ได้');
         }
 
         const now = new Date();
@@ -107,15 +180,18 @@ export default {
           minute: '2-digit'
         });
 
+        // คำนวณระยะเวลากิจกรรม
+        const duration = this.calculateDuration(event.evn_timestart, event.evn_timeend);
+
         let htmlContent = `
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="UTF-8">
-            <title>Events Dashboard Report</title>
+            <title>${event.evn_title || 'Event'} - Details Report</title>
             <style>
               @page { 
-                size: A4 landscape; 
+                size: A4; 
                 margin: 15mm; 
               }
               body {
@@ -123,47 +199,96 @@ export default {
                 margin: 0;
                 padding: 20px;
                 font-size: 11pt;
+                color: #374151;
               }
+              
+              /* Header Section */
               .header {
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 30px;
                 border-bottom: 3px solid #b91c1c;
-                padding-bottom: 10px;
+                padding-bottom: 15px;
               }
               .header h1 {
-                margin: 0;
+                margin: 0 0 10px 0;
                 color: #b91c1c;
-                font-size: 24pt;
+                font-size: 28pt;
                 font-weight: bold;
               }
-              .header .date {
-                margin-top: 5px;
-                color: #666;
-                font-size: 10pt;
+              .header .subtitle {
+                margin: 5px 0;
+                color: #6b7280;
+                font-size: 11pt;
               }
+              
+              /* Event Details Section */
+              .section {
+                margin-bottom: 30px;
+                page-break-inside: avoid;
+              }
+              .section-title {
+                font-size: 18pt;
+                font-weight: bold;
+                color: #b91c1c;
+                margin-bottom: 15px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #fecaca;
+              }
+              
+              .details-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px 30px;
+                margin-bottom: 15px;
+              }
+              .details-grid.full {
+                grid-template-columns: 1fr;
+              }
+              
+              .detail-item {
+                padding: 10px;
+                background: #f9fafb;
+                border-radius: 8px;
+                border-left: 3px solid #b91c1c;
+              }
+              .detail-label {
+                font-weight: 600;
+                color: #4b5563;
+                font-size: 10pt;
+                margin-bottom: 5px;
+              }
+              .detail-value {
+                color: #1f2937;
+                font-size: 11pt;
+                word-wrap: break-word;
+              }
+              
+              /* Guest List Table */
               table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-top: 20px;
+                margin-top: 15px;
+                page-break-inside: auto;
               }
-              th {
+              thead {
                 background-color: #b91c1c;
                 color: white;
-                padding: 10px 8px;
+              }
+              th {
+                padding: 12px 8px;
                 text-align: center;
                 font-weight: 600;
                 border: 1px solid #991b1b;
-                font-size: 11pt;
+                font-size: 10pt;
               }
               td {
-                padding: 8px;
+                padding: 10px 8px;
                 text-align: center;
-                border: 1px solid #ddd;
+                border: 1px solid #e5e7eb;
                 font-size: 10pt;
               }
               td.left {
                 text-align: left;
-                padding-left: 12px;
               }
               tr:nth-child(even) {
                 background-color: #f9fafb;
@@ -171,21 +296,62 @@ export default {
               tr:nth-child(odd) {
                 background-color: #ffffff;
               }
-              .status-done { 
-                color: #059669; 
-                font-weight: 600; 
+              
+              /* Status badges */
+              .status-badge {
+                display: inline-block;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 9pt;
+                font-weight: 600;
                 text-transform: capitalize;
               }
-              .status-ongoing { 
-                color: #dc2626; 
-                font-weight: 600; 
-                text-transform: capitalize;
+              .status-accepted { 
+                background: #dcfce7; 
+                color: #166534; 
               }
-              .status-upcoming { 
-                color: #f59e0b; 
-                font-weight: 600; 
-                text-transform: capitalize;
+              .status-rejected { 
+                background: #fee2e2; 
+                color: #991b1b; 
               }
+              .status-pending { 
+                background: #fef3c7; 
+                color: #92400e; 
+              }
+              
+              /* Summary Stats */
+              .stats-row {
+                display: flex;
+                gap: 20px;
+                margin: 20px 0;
+                justify-content: center;
+              }
+              .stat-box {
+                flex: 1;
+                padding: 15px;
+                background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+                border-radius: 12px;
+                border: 2px solid #fecaca;
+                text-align: center;
+              }
+              .stat-label {
+                font-size: 10pt;
+                color: #6b7280;
+                margin-bottom: 5px;
+              }
+              .stat-value {
+                font-size: 24pt;
+                font-weight: bold;
+                color: #b91c1c;
+              }
+              
+              .no-data {
+                text-align: center;
+                color: #9ca3af;
+                font-style: italic;
+                padding: 30px;
+              }
+              
               @media print {
                 body { 
                   padding: 0; 
@@ -201,85 +367,269 @@ export default {
             </style>
           </head>
           <body>
+            <!-- Header -->
             <div class="header">
-              <h1>Events Dashboard Report</h1>
-              <div class="date">สร้างเมื่อ: ${dateStr}</div>
+              <h1>Event Details Report</h1>
+              <div class="subtitle">${event.evn_title || 'ไม่ระบุชื่อกิจกรรม'}</div>
+              <div class="subtitle">สร้างรายงานเมื่อ: ${dateStr}</div>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th style="width: 5%;">#</th>
-                  <th style="width: 28%;">Event</th>
-                  <th style="width: 15%;">Category</th>
-                  <th style="width: 12%;">Date</th>
-                  <th style="width: 13%;">Time</th>
-                  <th style="width: 8%;">Invited</th>
-                  <th style="width: 8%;">Accepted</th>
-                  <th style="width: 11%;">Status</th>
-                </tr>
-              </thead>
-              <tbody>
+            
+            <!-- Event Details Section -->
+            <div class="section">
+              <div class="section-title">รายละเอียดกิจกรรม (Event Details)</div>
+              
+              <div class="details-grid">
+                <div class="detail-item">
+                  <div class="detail-label">ชื่อกิจกรรม (Event Title)</div>
+                  <div class="detail-value">${event.evn_title || '-'}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">ประเภท (Category)</div>
+                  <div class="detail-value">${event.cat_name || '-'}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">วันที่ (Date)</div>
+                  <div class="detail-value">${this.formatDateThai(event.evn_date)}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">เวลา (Time)</div>
+                  <div class="detail-value">${event.evn_timestart || '-'} - ${event.evn_timeend || '-'}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">ระยะเวลา (Duration)</div>
+                  <div class="detail-value">${duration}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">สถานที่ (Location)</div>
+                  <div class="detail-value">${event.evn_location || '-'}</div>
+                </div>
+              </div>
+              
+              <div class="details-grid full">
+                <div class="detail-item">
+                  <div class="detail-label">รายละเอียด (Event Details)</div>
+                  <div class="detail-value">${event.evn_details || '-'}</div>
+                </div>
+              </div>
+              
+              <!-- Statistics -->
+              <div class="stats-row">
+                <div class="stat-box">
+                  <div class="stat-label">ผู้ได้รับเชิญทั้งหมด</div>
+                  <div class="stat-value">${participants.length}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">ยืนยันเข้าร่วม</div>
+                  <div class="stat-value">${participants.filter(p => p.con_status === 'accepted').length}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">ปฏิเสธ</div>
+                  <div class="stat-value">${participants.filter(p => p.con_status === 'rejected').length}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">รอตอบรับ</div>
+                  <div class="stat-value">${participants.filter(p => p.con_status === 'pending').length}</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Guest List Section -->
+            <div class="section">
+              <div class="section-title">รายชื่อผู้เข้าร่วม (Guest List)</div>
+              
+              ${participants.length > 0 ? `
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width: 5%;">#</th>
+                      <th style="width: 10%;">รหัส (ID)</th>
+                      <th style="width: 20%;">ชื่อ-นามสกุล (Name)</th>
+                      <th style="width: 10%;">ชื่อเล่น (Nickname)</th>
+                      <th style="width: 12%;">เบอร์โทร (Phone)</th>
+                      <th style="width: 15%;">แผนก (Department)</th>
+                      <th style="width: 13%;">ทีม (Team)</th>
+                      <th style="width: 15%;">สถานะ (Status)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${participants.map((guest, index) => `
+                      <tr>
+                        <td>${index + 1}</td>
+                        <td>${guest.emp_id || '-'}</td>
+                        <td class="left">${guest.emp_prefix || ''} ${guest.emp_firstname || ''} ${guest.emp_lastname || ''}</td>
+                        <td>${guest.emp_nickname || '-'}</td>
+                        <td>${guest.emp_phone || '-'}</td>
+                        <td class="left">${guest.department_name || '-'}</td>
+                        <td class="left">${guest.team_name || '-'}</td>
+                        <td>
+                          <span class="status-badge status-${guest.con_status || 'pending'}">
+                            ${this.getStatusLabel(guest.con_status)}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              ` : '<div class="no-data">ไม่มีรายชื่อผู้เข้าร่วม</div>'}
+            </div>
+          </body>
+          </html>
         `;
-
-        this.data.forEach((event, index) => {
-          const statusClass = event.evn_status ? `status-${event.evn_status.toLowerCase()}` : '';
-          htmlContent += `
-            <tr>
-              <td>${index + 1}</td>
-              <td class="left">${event.evn_title || ''}</td>
-              <td>${event.cat_name || ''}</td>
-              <td>${this.formatDate(event.evn_date)}</td>
-              <td>${this.timeText(event.evn_timestart, event.evn_timeend)}</td>
-              <td>${event.evn_num_guest}</td>
-              <td>${event.evn_sum_accept}</td>
-              <td class="${statusClass}">${event.evn_status || 'N/A'}</td>
-            </tr>
-          `;
-        });
-
-        htmlContent += '</tbody></table>';
-        htmlContent += '<' + 'script>';
-        htmlContent += 'window.onload = function() { window.print(); };';
-        htmlContent += '</' + 'script>';
-        htmlContent += '</body></html>';
 
         printWindow.document.write(htmlContent);
         printWindow.document.close();
+        
+        // รอให้โหลดเสร็จก่อน print แล้วลบ iframe
+        await new Promise((resolve) => {
+          iframe.onload = function() {
+            setTimeout(() => {
+              printWindow.print();
+              // ลบ iframe หลังจาก print dialog เปิด
+              setTimeout(() => {
+                if (iframe.parentNode) {
+                  document.body.removeChild(iframe);
+                }
+                resolve();
+              }, 1000);
+            }, 100);
+          };
+        });
 
-        console.log('PDF Export initiated:', this.data.length, 'events');
       } catch (error) {
-        console.error('Export error:', error);
-        alert('เกิดข้อผิดพลาดในการ Export ข้อมูล: ' + error.message);
+        console.error('Export single PDF error:', error);
+        throw error;
       }
     },
 
-    exportToExcel() {
+    async exportToExcel() {
       this.showMenu = false;
       
-      if (this.data.length === 0) {
-        alert('ไม่มีข้อมูลที่จะ Export');
+      if (this.selectedEvents.length === 0) {
+        alert('กรุณาเลือกกิจกรรมก่อน Export');
         return;
       }
 
+      if (this.isExporting) {
+        alert('กำลัง Export อยู่ กรุณารอสักครู่...');
+        return;
+      }
+
+      this.isExporting = true;
+      this.$emit('export-start');
+
       try {
-        const headers = ['#', 'Event', 'Category', 'Date', 'Time', 'Invited', 'Accepted', 'Status'];
+        // Export แยกไฟล์สำหรับแต่ละ event ที่เลือก
+        for (let i = 0; i < this.selectedEvents.length; i++) {
+          const event = this.selectedEvents[i];
+          
+          // อัปเดต progress
+          this.exportProgress.current = i + 1;
+          this.exportProgress.total = this.selectedEvents.length;
+          this.exportProgress.eventName = event.evn_title || 'Event';
+          
+          this.$emit('export-progress', {
+            current: this.exportProgress.current,
+            total: this.exportProgress.total,
+            eventName: this.exportProgress.eventName
+          });
+          
+          await this.exportSingleEventToExcel(event);
+          
+          // หน่วงเวลาระหว่างการ export แต่ละไฟล์
+          if (i < this.selectedEvents.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 800));
+          }
+        }
         
-        const rows = this.data.map((event, index) => [
-          index + 1,
-          `"${(event.evn_title || '').replace(/"/g, '""')}"`,
-          `"${(event.cat_name || '').replace(/"/g, '""')}"`,
-          this.formatDate(event.evn_date),
-          this.timeText(event.evn_timestart, event.evn_timeend),
-          event.evn_num_guest,
-          event.evn_sum_accept,
-          event.evn_status || 'N/A'
-        ]);
+        this.$emit('export-complete', {
+          type: 'Excel',
+          count: this.selectedEvents.length
+        });
         
-        const csvContent = [
-          headers.join(','),
-          ...rows.map(row => row.join(','))
-        ].join('\n');
+        console.log(`Excel Export completed: ${this.selectedEvents.length} event(s)`);
+      } catch (error) {
+        console.error('Export error:', error);
+        this.$emit('export-error', error);
+        alert('เกิดข้อผิดพลาดในการ Export ข้อมูล');
+      } finally {
+        this.isExporting = false;
+        this.exportProgress = { current: 0, total: 0, eventName: '' };
+        this.$emit('export-end');
+      }
+    },
+
+    async exportSingleEventToExcel(event) {
+      try {
+        // ดึงข้อมูล participants ของ event นี้
+        const participants = await this.fetchEventParticipants(event.id || event.evn_id);
         
+        // ตรวจสอบว่า participants เป็น array
+        if (!Array.isArray(participants)) {
+          console.error('Participants is not an array:', participants);
+          throw new Error('ไม่สามารถดึงข้อมูลผู้เข้าร่วมได้');
+        }
+        
+        const duration = this.calculateDuration(event.evn_timestart, event.evn_timeend);
+        
+        // สร้าง CSV content
+        let csvContent = '';
+        
+        // Event Details Section
+        csvContent += '"รายละเอียดกิจกรรม (Event Details)"\n\n';
+        csvContent += '"ชื่อกิจกรรม (Event Title)","' + (event.evn_title || '-').replace(/"/g, '""') + '"\n';
+        csvContent += '"ประเภท (Category)","' + (event.cat_name || '-').replace(/"/g, '""') + '"\n';
+        csvContent += '"วันที่ (Date)","' + this.formatDateThai(event.evn_date) + '"\n';
+        csvContent += '"เวลา (Time)","' + (event.evn_timestart || '-') + ' - ' + (event.evn_timeend || '-') + '"\n';
+        csvContent += '"ระยะเวลา (Duration)","' + duration + '"\n';
+        csvContent += '"สถานที่ (Location)","' + (event.evn_location || '-').replace(/"/g, '""') + '"\n';
+        csvContent += '"รายละเอียด (Details)","' + (event.evn_details || '-').replace(/"/g, '""') + '"\n';
+        csvContent += '\n';
+        
+        // Statistics Section
+        csvContent += '"สถิติ (Statistics)"\n';
+        csvContent += '"ผู้ได้รับเชิญทั้งหมด","' + participants.length + '"\n';
+        csvContent += '"ยืนยันเข้าร่วม","' + participants.filter(p => p.con_status === 'accepted').length + '"\n';
+        csvContent += '"ปฏิเสธ","' + participants.filter(p => p.con_status === 'rejected').length + '"\n';
+        csvContent += '"รอตอบรับ","' + participants.filter(p => p.con_status === 'pending').length + '"\n';
+        csvContent += '\n\n';
+        
+        // Guest List Section
+        csvContent += '"รายชื่อผู้เข้าร่วม (Guest List)"\n';
+        
+        const headers = [
+          '#',
+          'รหัส (ID)',
+          'คำนำหน้า (Prefix)',
+          'ชื่อ (First Name)',
+          'นามสกุล (Last Name)',
+          'ชื่อเล่น (Nickname)',
+          'เบอร์โทร (Phone)',
+          'แผนก (Department)',
+          'ทีม (Team)',
+          'ตำแหน่ง (Position)',
+          'สถานะ (Status)'
+        ];
+        csvContent += headers.join(',') + '\n';
+        
+        // Guest rows
+        participants.forEach((guest, index) => {
+          const row = [
+            index + 1,
+            `"${(guest.emp_id || '-').replace(/"/g, '""')}"`,
+            `"${(guest.emp_prefix || '-').replace(/"/g, '""')}"`,
+            `"${(guest.emp_firstname || '-').replace(/"/g, '""')}"`,
+            `"${(guest.emp_lastname || '-').replace(/"/g, '""')}"`,
+            `"${(guest.emp_nickname || '-').replace(/"/g, '""')}"`,
+            `"${(guest.emp_phone || '-').replace(/"/g, '""')}"`,
+            `"${(guest.department_name || '-').replace(/"/g, '""')}"`,
+            `"${(guest.team_name || '-').replace(/"/g, '""')}"`,
+            `"${(guest.position_name || '-').replace(/"/g, '""')}"`,
+            `"${this.getStatusLabel(guest.con_status)}"`
+          ];
+          csvContent += row.join(',') + '\n';
+        });
+        
+        // Create and download file
         const BOM = '\uFEFF';
         const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -288,19 +638,100 @@ export default {
         const now = new Date();
         const dateStr = now.toISOString().split('T')[0];
         const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        const eventTitle = (event.evn_title || 'event').replace(/[^a-zA-Z0-9ก-๙]/g, '_').substring(0, 50);
         
         link.setAttribute('href', url);
-        link.setAttribute('download', `events_dashboard_${dateStr}_${timeStr}.csv`);
+        link.setAttribute('download', `${eventTitle}_${dateStr}_${timeStr}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
         
-        console.log('Excel Export completed:', this.data.length, 'events');
       } catch (error) {
-        console.error('Export error:', error);
-        alert('เกิดข้อผิดพลาดในการ Export ข้อมูล');
+        console.error('Export single Excel error:', error);
+        throw error;
       }
+    },
+
+    async fetchEventParticipants(eventId) {
+      try {
+        const response = await axios.get(`/events/${eventId}/connects`);
+        
+        // จัดการ response ที่อาจมีโครงสร้างต่างกัน
+        let participants = [];
+        
+        if (Array.isArray(response.data)) {
+          participants = response.data;
+        } else if (response.data && Array.isArray(response.data.data)) {
+          participants = response.data.data;
+        } else if (response.data && typeof response.data === 'object') {
+          // กรณีที่ response เป็น object แต่ไม่ใช่ array
+          participants = [response.data];
+        }
+        
+        return participants;
+      } catch (error) {
+        console.error('Error fetching participants:', error);
+        return [];
+      }
+    },
+
+    formatDateThai(dateString) {
+      if (!dateString) return '-';
+      
+      try {
+        const date = new Date(dateString);
+        const thaiMonths = [
+          'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+          'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+        ];
+        
+        const day = date.getDate();
+        const month = thaiMonths[date.getMonth()];
+        const year = date.getFullYear() + 543;
+        
+        return `${day} ${month} ${year}`;
+      } catch (error) {
+        return dateString;
+      }
+    },
+
+    calculateDuration(startTime, endTime) {
+      if (!startTime || !endTime) return '-';
+      
+      try {
+        const [startHour, startMin] = startTime.split(':').map(Number);
+        const [endHour, endMin] = endTime.split(':').map(Number);
+        
+        let totalMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+        
+        if (totalMinutes < 0) {
+          totalMinutes += 24 * 60; // กรณีข้ามวัน
+        }
+        
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        
+        if (hours > 0 && minutes > 0) {
+          return `${hours} ชั่วโมง ${minutes} นาที`;
+        } else if (hours > 0) {
+          return `${hours} ชั่วโมง`;
+        } else {
+          return `${minutes} นาที`;
+        }
+      } catch (error) {
+        return '-';
+      }
+    },
+
+    getStatusLabel(status) {
+      const statusMap = {
+        'accepted': 'ยืนยันเข้าร่วม',
+        'rejected': 'ปฏิเสธ',
+        'pending': 'รอตอบรับ'
+      };
+      return statusMap[status] || 'ไม่ระบุ';
     }
   }
 };
