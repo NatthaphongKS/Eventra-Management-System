@@ -1,88 +1,109 @@
 <!-- src/views/ReplyForm.vue -->
 <template>
-    <div class="page">
-        <section class="card head">
-            <h1>แบบฟอร์มเชิญเข้าร่วมกิจกรรม</h1>
-            <p><strong>หัวข้อ:</strong> {{ title || "-" }}</p>
-            <p><strong>วันที่:</strong> {{ formattedDateTime || "-" }}</p>
-            <p><strong>สถานที่:</strong> {{ location || "-" }}</p>
-        </section>
+    <div v-if="urlStatus">
+        <div class="page">
+            <section class="card head">
+                <h1>แบบฟอร์มเชิญเข้าร่วมกิจกรรม</h1>
+                <p><strong>หัวข้อ:</strong> {{ title || "-" }}</p>
+                <p><strong>วันที่:</strong> {{ formattedDateTime || "-" }}</p>
+                <p><strong>สถานที่:</strong> {{ location || "-" }}</p>
+            </section>
 
-        <section v-if="show" class="card form">
-            <form @submit.prevent="onSubmit">
-                <div class="field">
-                    <label>ชื่อ–นามสกุล</label>
-                    <input type="text" :placeholder="empName || '—'" readonly />
-                    <!-- ไม่ต้องมี error เพราะล็อกไม่ให้แก้ -->
-                </div>
-
-                <div class="field">
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        :placeholder="empEmail || '—'"
-                        readonly
-                    />
-                </div>
-
-                <div class="field">
-                    <label>เบอร์โทร</label>
-                    <input type="tel" :placeholder="empPhone || '—'" readonly />
-                </div>
-
-                <div class="field">
-                    <label>เข้าร่วมหรือไม่</label>
-                    <div class="radio-row">
-                        <label class="radio">
-                            <input
-                                type="radio"
-                                value="accepted"
-                                v-model="form.attend"
-                            />
-                            เข้าร่วม
-                        </label>
-                        <label class="radio">
-                            <input
-                                type="radio"
-                                value="denied"
-                                v-model="form.attend"
-                            />
-                            ไม่เข้าร่วม
-                        </label>
+            <section v-if="show" class="card form">
+                <form @submit.prevent="onSubmit">
+                    <div class="field">
+                        <label>ชื่อ–นามสกุล</label>
+                        <input
+                            type="text"
+                            :placeholder="empName || '—'"
+                            readonly
+                        />
+                        <!-- ไม่ต้องมี error เพราะล็อกไม่ให้แก้ -->
                     </div>
-                    <small v-if="errors.attend" class="error">{{
-                        errors.attend
-                    }}</small>
-                </div>
 
-                <div class="field" :class="{ disabled: form.attend !== 'no' }">
-                    <label>หมายเหตุ (กรณีไม่เข้าร่วม)</label>
-                    <textarea
-                        v-model.trim="form.reason"
-                        :disabled="form.attend !== 'denied'"
-                        rows="3"
-                        placeholder="ระบุเหตุผลสั้น ๆ ค่ะ"
-                    />
-                    <small v-if="errors.reason" class="error">{{
-                        errors.reason
-                    }}</small>
-                </div>
+                    <div class="field">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            :placeholder="empEmail || '—'"
+                            readonly
+                        />
+                    </div>
 
-                <div class="actions">
-                    <button
-                        type="submit"
-                        class="primary"
-                        :disabled="submitting"
+                    <div class="field">
+                        <label>เบอร์โทร</label>
+                        <input
+                            type="tel"
+                            :placeholder="empPhone || '—'"
+                            readonly
+                        />
+                    </div>
+
+                    <div class="field">
+                        <label>เข้าร่วมหรือไม่</label>
+                        <div class="radio-row">
+                            <label class="radio">
+                                <input
+                                    type="radio"
+                                    value="accepted"
+                                    v-model="form.attend"
+                                />
+                                เข้าร่วม
+                            </label>
+                            <label class="radio">
+                                <input
+                                    type="radio"
+                                    value="denied"
+                                    v-model="form.attend"
+                                />
+                                ไม่เข้าร่วม
+                            </label>
+                        </div>
+                        <small v-if="errors.attend" class="error">{{
+                            errors.attend
+                        }}</small>
+                    </div>
+
+                    <div
+                        class="field"
+                        :class="{ disabled: form.attend !== 'no' }"
                     >
-                        {{ submitting ? "กำลังส่ง…" : "ส่งคำตอบ" }}
-                    </button>
-                </div>
-            </form>
-        </section>
+                        <label>หมายเหตุ (กรณีไม่เข้าร่วม)</label>
+                        <textarea
+                            v-model.trim="form.reason"
+                            :disabled="form.attend !== 'denied'"
+                            rows="3"
+                            placeholder="ระบุเหตุผลสั้น ๆ ค่ะ"
+                        />
+                        <small v-if="errors.reason" class="error">{{
+                            errors.reason
+                        }}</small>
+                    </div>
 
-        <section v-else class="label card">
-            คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
-        </section>
+                    <div class="actions">
+                        <button
+                            type="submit"
+                            class="primary"
+                            :disabled="submitting"
+                        >
+                            {{ submitting ? "กำลังส่ง…" : "ส่งคำตอบ" }}
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section v-else class="label card">
+                คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
+            </section>
+        </div>
+    </div>
+    <div v-else>
+        <div class="page">
+            <section class="card head">
+                <h1>แบบฟอร์มเชิญเข้าร่วมกิจกรรม</h1>
+                <p><strong>ลิงค์แบบฟอร์มเชิญเข้าร่วมกิจกรรมไม่ถูกต้อง</strong></p>
+            </section>
+        </div>
     </div>
 </template>
 
@@ -106,6 +127,7 @@ export default {
             empName: "",
             empEmail: "",
             empPhone: "",
+            urlStatus: true,
 
             replyStatus: "",
 
@@ -183,6 +205,7 @@ export default {
                 const data = response.data;
                 console.log("Data fetched:", data);
 
+                this.urlStatus = data.success;
                 // แก้ไข: กำหนดค่าจาก data ที่ API ส่งกลับมา (ตรวจสอบ field name ให้ตรงกับ Backend นะครับ)
                 this.evnID = data.event?.id;
                 this.empID = data.employee?.id;
