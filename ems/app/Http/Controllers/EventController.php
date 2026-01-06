@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;      // ใช้เฉพาะ transaction
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Event;
 use App\Models\Employee;
@@ -375,7 +376,7 @@ class EventController extends Controller
             $employees = Employee::whereIn('id', $data['employee_ids'])
                 ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
-            
+
 
             foreach ($employees as $emp) {
                 if (!$emp->emp_email) {
@@ -594,7 +595,7 @@ class EventController extends Controller
             return response()->json(['message' => 'Event deleted failed'], 500);
         }
     }
-    
+
     public function getEventParticipants($eventId)
     {
         try {
@@ -792,8 +793,8 @@ class EventController extends Controller
                     'declined' => $attendanceStats->declined ?? 0,
                     'pending' => $attendanceStats->pending ?? 0,
                     'total_invited' => $attendanceStats->total_invited ?? 0,
-                    'attendance_percentage' => $attendanceStats->total_invited > 0 
-                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2) 
+                    'attendance_percentage' => $attendanceStats->total_invited > 0
+                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2)
                         : 0
                 ]
             ]);
@@ -810,7 +811,7 @@ class EventController extends Controller
     {
         try {
             $eventIds = $request->input('event_ids', []);
-            
+
             if (empty($eventIds)) {
                 return response()->json([
                     'total_participation' => 0,

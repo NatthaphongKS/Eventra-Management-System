@@ -1,42 +1,23 @@
 <template>
     <section class="p-0">
-        <div
-            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3"
-        >
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <!-- Search -->
             <div class="flex-1">
-                <SearchBar
-                    v-model="searchInput"
-                    placeholder="Search event..."
-                    @search="applySearch"
-                    class=""
-                />
+                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch" class="" />
             </div>
 
             <div class="flex gap-2 flex-shrink-0 mt-[30px] items-stretch">
                 <div class="flex flex-row mt-2">
                     <!-- DatePicker -->
                     <div class="h-[44px]">
-                        <EventDatePicker
-                            v-model="selectedDate"
-                            class="h-full [&_button]:h-full [&_input]:h-full"
-                        />
+                        <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
                     </div>
 
-                    <EventFilter
-                        v-model="filters"
-                        :categories="categories"
-                        :status-options="statusOptions"
-                        @update:modelValue="applyFilter"
-                        class="h-[44px] [&_button]:h-full"
-                    />
+                    <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
+                        @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
 
-                    <EventSort
-                        v-model="selectedSort"
-                        :options="sortOptions"
-                        @change="onPickSort"
-                        class="h-[44px] [&_button]:h-full"
-                    />
+                    <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
+                        class="h-[44px] [&_button]:h-full" />
                 </div>
                 <!-- ✅ Add Button -->
                 <AddButton @click="$router.push('/add-event')" />
@@ -44,89 +25,54 @@
         </div>
 
         <!-- ตาราง -->
-        <DataTable
-            :rows="paged"
-            :columns="eventTableColumns"
-            :loading="false"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            :page="page"
-            :pageSize="pageSize"
-            :sortKey="sortBy"
-            :sortOrder="sortOrder"
-            @update:page="page = $event"
-            @update:pageSize="
+        <DataTable :rows="paged" :columns="eventTableColumns" :loading="false" :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
+            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="
                 pageSize = $event;
-                page = 1;
-            "
-            @sort="handleClientSort"
-            row-key="id"
-            :show-row-number="true"
-            class="mt-4"
-        >
+            page = 1;
+            " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                    title="ดูรายละเอียด"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)" title="ดูรายละเอียด">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-cat_name="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_status="{ row, value }">
-                <span
-                    role="button"
-                    tabindex="0"
+                <span role="button" tabindex="0"
                     class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-                    @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)"
-                >
+                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
+                    @keydown.space.prevent="goDetails(row.id)">
                     <span :class="badgeClass(value)">
                         {{ value || "N/A" }}
                     </span>
@@ -134,17 +80,10 @@
             </template>
 
             <template #actions="{ row }">
-                <button
-                    @click="openDelete(row.id)"
-                    class="rounded-lg p-1.5"
-                    :disabled="!canDelete(row)"
-                    :class="
-                        !canDelete(row)
-                            ? 'cursor-not-allowed opacity-40'
-                            : 'hover:bg-slate-100 cursor-pointer'
-                    "
-                    :title="!canDelete(row) ? 'Cannot delete' : 'Delete'"
-                >
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)" :class="!canDelete(row)
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'hover:bg-slate-100 cursor-pointer'
+                    " :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
                     <TrashIcon class="h-5 w-5" />
                 </button>
 
@@ -155,125 +94,67 @@
                 -->
 
                 <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
-                <button
-                    @click="
-                        !['ongoing', 'done'].includes(
-                            (row.evn_status || '').toLowerCase()
-                        ) && editEvent(row.id)
-                    "
-                    :disabled="
-                        ['ongoing', 'done'].includes(
-                            (row.evn_status || '').toLowerCase()
-                        )
-                    "
-                    class="rounded-lg p-1.5"
-                    :class="
-                        ['ongoing', 'done'].includes(
-                            (row.evn_status || '').toLowerCase()
-                        )
+                <button @click="
+                    !['ongoing', 'done'].includes(
+                        (row.evn_status || '').toLowerCase()
+                    ) && editEvent(row.id)
+                    " :disabled="['ongoing', 'done'].includes(
+                        (row.evn_status || '').toLowerCase()
+                    )
+                        " class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes(
+                        (row.evn_status || '').toLowerCase()
+                    )
                             ? 'cursor-not-allowed opacity-40'
                             : 'hover:bg-slate-100 cursor-pointer'
-                    "
-                    :title="
-                        ['ongoing', 'done'].includes(
-                            (row.evn_status || '').toLowerCase()
-                        )
+                        " :title="['ongoing', 'done'].includes(
+                        (row.evn_status || '').toLowerCase()
+                    )
                             ? 'Cannot edit ongoing/done event'
                             : 'Edit'
-                    "
-                >
-                    <PencilIcon
-                        class="h-5 w-5"
-                        :class="
-                            ['ongoing', 'done'].includes(
-                                (row.evn_status || '').toLowerCase()
-                            )
-                                ? 'text-neutral-400'
-                                : 'text-neutral-800'
-                        "
-                    />
+                        ">
+                    <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes(
+                        (row.evn_status || '').toLowerCase()
+                    )
+                            ? 'text-neutral-400'
+                            : 'text-neutral-800'
+                        " />
                 </button>
 
                 <!-- ❌ Disabled เมื่อ upcoming หรือ (done + permission = disabled) -->
-                <span
-                    v-if="
-                        (row.evn_status || '').toLowerCase() === 'upcoming' ||
-                        ((row.evn_status || '').toLowerCase() === 'done' &&
-                            (empPermission || '').toLowerCase() === 'disabled')
-                    "
-                    class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
-                    :title="
-                        (row.evn_status || '').toLowerCase() === 'upcoming'
+                <span v-if="
+                    (row.evn_status || '').toLowerCase() === 'upcoming' ||
+                    ((row.evn_status || '').toLowerCase() === 'done' &&
+                        (empPermission || '').toLowerCase() === 'disabled')
+                " class="rounded-lg p-1.5 cursor-not-allowed opacity-40" :title="(row.evn_status || '').toLowerCase() === 'upcoming'
                             ? 'not available for upcoming event'
                             : 'No permission to check-in'
-                    "
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="20px"
-                        viewBox="0 -960 960 960"
-                        width="20px"
-                        fill="currentColor"
-                        class="h-5 w-5 text-neutral-400"
-                    >
+                        ">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor" class="h-5 w-5 text-neutral-400">
                         <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z"
-                        />
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
                     </svg>
                 </span>
 
                 <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
-                <router-link
-                    v-else
-                    :to="`/EventCheckIn/eveId/${row.id}`"
-                    class="rounded-lg p-1.5 hover:bg-slate-100"
-                    title="Check-in"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="20px"
-                        viewBox="0 -960 960 960"
-                        width="20px"
-                        fill="currentColor"
-                        class="h-5 w-5 text-neutral-800"
-                    >
+                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                    title="Check-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                        fill="currentColor" class="h-5 w-5 text-neutral-800">
                         <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z"
-                        />
+                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
                     </svg>
                 </router-link>
             </template>
         </DataTable>
 
-        <ModalAlert
-            :open="showModalAsk"
-            type="confirm"
-            title="ARE YOU SURE TO DELETE"
-            message="This wil by deleted permanently. Are you sure?"
-            :show-cancel="true"
-            okText="OK"
-            cancelText="Cancel"
-            @confirm="onConfirmDelete"
-            @cancel="onCancelDelete"
-        />
-        <ModalAlert
-            :open="showModalSuccess"
-            type="success"
-            title="DELETE SUCCESS!"
-            message="We have already deleted event."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmSuccess"
-        />
-        <ModalAlert
-            :open="showModalFail"
-            type="error"
-            title="ERROR!"
-            message="Sorry, Please try again later."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmFail"
-        />
+        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
+            message="This wil by deleted permanently. Are you sure?" :show-cancel="true" okText="OK" cancelText="Cancel"
+            @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
+            message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
+        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
+            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
     </section>
 </template>
 
