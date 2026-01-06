@@ -45,6 +45,7 @@
 
 <script>
 import axios from 'axios';
+import ExcelJS from 'exceljs';
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -419,16 +420,16 @@ export default {
                   <div class="stat-value">${participants.length}</div>
                 </div>
                 <div class="stat-box">
-                  <div class="stat-label">ยืนยันเข้าร่วม</div>
-                  <div class="stat-value">${participants.filter(p => p.con_status === 'accepted').length}</div>
+                  <div class="stat-label">เข้าร่วมจริง (เช็คอิน)</div>
+                  <div class="stat-value">${participants.filter(p => p.con_checkin_status === 1).length}</div>
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">ปฏิเสธ</div>
-                  <div class="stat-value">${participants.filter(p => p.con_status === 'rejected').length}</div>
+                  <div class="stat-value">${participants.filter(p => p.status === 'denied').length}</div>
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">รอตอบรับ</div>
-                  <div class="stat-value">${participants.filter(p => p.con_status === 'pending').length}</div>
+                  <div class="stat-value">${participants.filter(p => p.con_checkin_status !== 1 && p.status !== 'denied').length}</div>
                 </div>
               </div>
             </div>
@@ -459,11 +460,11 @@ export default {
                         <td class="left">${guest.emp_prefix || ''} ${guest.emp_firstname || ''} ${guest.emp_lastname || ''}</td>
                         <td>${guest.emp_nickname || '-'}</td>
                         <td>${guest.emp_phone || '-'}</td>
-                        <td class="left">${guest.department_name || '-'}</td>
-                        <td class="left">${guest.team_name || '-'}</td>
+                        <td class="left">${guest.department || '-'}</td>
+                        <td class="left">${guest.team || '-'}</td>
                         <td>
-                          <span class="status-badge status-${guest.con_status || 'pending'}">
-                            ${this.getStatusLabel(guest.con_status)}
+                          <span class="status-badge status-${guest.con_checkin_status === 1 ? 'accepted' : (guest.status === 'denied' ? 'rejected' : 'pending')}">
+                            ${guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
                           </span>
                         </td>
                       </tr>
@@ -571,31 +572,89 @@ export default {
         
         const duration = this.calculateDuration(event.evn_timestart, event.evn_timeend);
         
-        // สร้าง CSV content
-        let csvContent = '';
+        // สร้าง workbook ใหม่ด้วย ExcelJS
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Event Details');
         
-        // Event Details Section
-        csvContent += '"รายละเอียดกิจกรรม (Event Details)"\n\n';
-        csvContent += '"ชื่อกิจกรรม (Event Title)","' + (event.evn_title || '-').replace(/"/g, '""') + '"\n';
-        csvContent += '"ประเภท (Category)","' + (event.cat_name || '-').replace(/"/g, '""') + '"\n';
-        csvContent += '"วันที่ (Date)","' + this.formatDateThai(event.evn_date) + '"\n';
-        csvContent += '"เวลา (Time)","' + (event.evn_timestart || '-') + ' - ' + (event.evn_timeend || '-') + '"\n';
-        csvContent += '"ระยะเวลา (Duration)","' + duration + '"\n';
-        csvContent += '"สถานที่ (Location)","' + (event.evn_location || '-').replace(/"/g, '""') + '"\n';
-        csvContent += '"รายละเอียด (Details)","' + (event.evn_details || '-').replace(/"/g, '""') + '"\n';
-        csvContent += '\n';
+        // ตั้งค่าความกว้างคอลัมน์ทั้งหมด
+        worksheet.columns = [
+          { width: 8 },   // # (A)
+          { width: 15 },  // รหัส (B)
+          { width: 12 },  // คำนำหน้า (C)
+          { width: 18 },  // ชื่อ (D)
+          { width: 18 },  // นามสกุล (E)
+          { width: 12 },  // ชื่อเล่น (F)
+          { width: 15 },  // เบอร์โทร (G)
+          { width: 25 },  // แผนก (H)
+          { width: 20 },  // ทีม (I)
+          { width: 25 },  // ตำแหน่ง (J)
+          { width: 15 }   // สถานะ (K)
+        ];
         
-        // Statistics Section
-        csvContent += '"สถิติ (Statistics)"\n';
-        csvContent += '"ผู้ได้รับเชิญทั้งหมด","' + participants.length + '"\n';
-        csvContent += '"ยืนยันเข้าร่วม","' + participants.filter(p => p.con_status === 'accepted').length + '"\n';
-        csvContent += '"ปฏิเสธ","' + participants.filter(p => p.con_status === 'rejected').length + '"\n';
-        csvContent += '"รอตอบรับ","' + participants.filter(p => p.con_status === 'pending').length + '"\n';
-        csvContent += '\n\n';
+        let currentRow = 1;
         
-        // Guest List Section
-        csvContent += '"รายชื่อผู้เข้าร่วม (Guest List)"\n';
+        // ส่วนที่ 1: รายละเอียดกิจกรรม
+        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        const titleCell = worksheet.getCell(`A${currentRow}`);
+        titleCell.value = 'รายละเอียดกิจกรรม (Event Details)';
+        titleCell.font = { bold: true, size: 14 };
+        titleCell.alignment = { vertical: 'middle', horizontal: 'left' };
+        currentRow += 2;
         
+        // รายละเอียดกิจกรรม
+        const eventDetails = [
+          ['ชื่อกิจกรรม (Event Title)', event.evn_title || '-'],
+          ['ประเภท (Category)', event.cat_name || '-'],
+          ['วันที่ (Date)', this.formatDateThai(event.evn_date)],
+          ['เวลา (Time)', `${event.evn_timestart || '-'} - ${event.evn_timeend || '-'}`],
+          ['ระยะเวลา (Duration)', duration],
+          ['สถานที่ (Location)', event.evn_location || '-'],
+          ['รายละเอียด (Details)', event.evn_details || '-']
+        ];
+        
+        eventDetails.forEach(([label, value]) => {
+          const row = worksheet.getRow(currentRow);
+          row.getCell(1).value = label;
+          row.getCell(1).font = { bold: true };
+          row.getCell(2).value = value;
+          worksheet.mergeCells(`B${currentRow}:K${currentRow}`);
+          currentRow++;
+        });
+        
+        currentRow += 1;
+        
+        // ส่วนที่ 2: สถิติ
+        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        const statsCell = worksheet.getCell(`A${currentRow}`);
+        statsCell.value = 'สถิติ (Statistics)';
+        statsCell.font = { bold: true, size: 14 };
+        currentRow += 1;
+        
+        const stats = [
+          ['ผู้ได้รับเชิญทั้งหมด', participants.length],
+          ['ยืนยันเข้าร่วม', participants.filter(p => p.con_checkin_status === 1).length],
+          ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length],
+          ['รอตอบรับ', participants.filter(p => p.con_checkin_status !== 1 && p.status !== 'denied').length]
+        ];
+        
+        stats.forEach(([label, value]) => {
+          const row = worksheet.getRow(currentRow);
+          row.getCell(1).value = label;
+          row.getCell(1).font = { bold: true };
+          row.getCell(2).value = value;
+          currentRow++;
+        });
+        
+        currentRow += 2;
+        
+        // ส่วนที่ 3: รายชื่อผู้เข้าร่วม
+        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        const guestListCell = worksheet.getCell(`A${currentRow}`);
+        guestListCell.value = 'รายชื่อผู้เข้าร่วม (Guest List)';
+        guestListCell.font = { bold: true, size: 14 };
+        currentRow += 1;
+        
+        // Header row
         const headers = [
           '#',
           'รหัส (ID)',
@@ -609,29 +668,64 @@ export default {
           'ตำแหน่ง (Position)',
           'สถานะ (Status)'
         ];
-        csvContent += headers.join(',') + '\n';
+        
+        const headerRow = worksheet.getRow(currentRow);
+        headers.forEach((header, index) => {
+          const cell = headerRow.getCell(index + 1);
+          cell.value = header;
+          cell.font = { bold: true };
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E0E0' }
+          };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+        currentRow++;
         
         // Guest rows
         participants.forEach((guest, index) => {
-          const row = [
+          const statusLabel = guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ');
+          const row = worksheet.getRow(currentRow);
+          
+          const rowData = [
             index + 1,
-            `"${(guest.emp_id || '-').replace(/"/g, '""')}"`,
-            `"${(guest.emp_prefix || '-').replace(/"/g, '""')}"`,
-            `"${(guest.emp_firstname || '-').replace(/"/g, '""')}"`,
-            `"${(guest.emp_lastname || '-').replace(/"/g, '""')}"`,
-            `"${(guest.emp_nickname || '-').replace(/"/g, '""')}"`,
-            `"${(guest.emp_phone || '-').replace(/"/g, '""')}"`,
-            `"${(guest.department_name || '-').replace(/"/g, '""')}"`,
-            `"${(guest.team_name || '-').replace(/"/g, '""')}"`,
-            `"${(guest.position_name || '-').replace(/"/g, '""')}"`,
-            `"${this.getStatusLabel(guest.con_status)}"`
+            guest.emp_id || '-',
+            guest.emp_prefix || '-',
+            guest.emp_firstname || '-',
+            guest.emp_lastname || '-',
+            guest.emp_nickname || '-',
+            guest.emp_phone || '-',
+            guest.department || '-',
+            guest.team || '-',
+            guest.position || '-',
+            statusLabel
           ];
-          csvContent += row.join(',') + '\n';
+          
+          rowData.forEach((value, colIndex) => {
+            const cell = row.getCell(colIndex + 1);
+            cell.value = value;
+            cell.border = {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' }
+            };
+            cell.alignment = { vertical: 'middle', horizontal: 'left' };
+          });
+          
+          currentRow++;
         });
         
-        // Create and download file
-        const BOM = '\uFEFF';
-        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        // สร้างและดาวน์โหลดไฟล์
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         
@@ -641,7 +735,7 @@ export default {
         const eventTitle = (event.evn_title || 'event').replace(/[^a-zA-Z0-9ก-๙]/g, '_').substring(0, 50);
         
         link.setAttribute('href', url);
-        link.setAttribute('download', `${eventTitle}_${dateStr}_${timeStr}.csv`);
+        link.setAttribute('download', `${eventTitle}_${dateStr}_${timeStr}.xlsx`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -661,7 +755,10 @@ export default {
         // จัดการ response ที่อาจมีโครงสร้างต่างกัน
         let participants = [];
         
-        if (Array.isArray(response.data)) {
+        if (response.data && Array.isArray(response.data.participants)) {
+          // ใช้ข้อมูล participants จาก API ใหม่
+          participants = response.data.participants;
+        } else if (Array.isArray(response.data)) {
           participants = response.data;
         } else if (response.data && Array.isArray(response.data.data)) {
           participants = response.data.data;

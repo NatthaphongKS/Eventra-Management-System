@@ -443,6 +443,8 @@ export default {
           evn_date: e.evn_date ?? "",
           evn_timestart: e.evn_timestart ?? "",
           evn_timeend: e.evn_timeend ?? "",
+          evn_location: e.evn_location ?? "",
+          evn_details: e.evn_description ?? "", // ใช้ evn_description จาก database
           evn_num_guest: Number(e.evn_num_guest ?? 0),
           evn_sum_accept: Number(e.evn_sum_accept ?? 0),
           evn_status: e.evn_status ?? "",
@@ -760,8 +762,9 @@ export default {
       return this.filteredEmployeesForTable.length;
     },
     paginatedEmployees() {
-      // ส่งข้อมูลทั้งหมดให้ DataTable จัดการ pagination เอง
-      return this.filteredEmployeesForTable;
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredEmployeesForTable.slice(start, end);
     },
     eventPaginationText() {
       const start = this.sorted.length > 0 ? (this.page - 1) * this.pageSize + 1 : 0;
@@ -1341,11 +1344,9 @@ export default {
             return participant.status === 'denied';
           });
         } else if (status === 'pending') {
-          // สำหรับรอตอบกลับ รวม 'pending', 'invalid', และ 'not_invite'
+          // สำหรับรอตอบกลับ: คนที่ยังไม่เช็คอินและยังไม่ได้ปฏิเสธ
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.status === 'pending' || 
-                   participant.status === 'invalid' || 
-                   participant.status === 'not_invite';
+            return participant.con_checkin_status !== 1 && participant.status !== 'denied';
           });
         }
         
