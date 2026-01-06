@@ -15,83 +15,93 @@ use App\Http\Controllers\{
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes
+| Public Routes (เข้าถึงได้โดยไม่ต้อง Login)
 |--------------------------------------------------------------------------
 */
-Route::get('/reply/{evnID}/{empID}', [ReplyController::class, 'show']);
-Route::post('/store', [ReplyController::class, 'store']);
-
+// จัดการการตอบรับเข้าร่วมกิจกรรม (Reply Form)
+Route::prefix('replies')->group(function () {
+    Route::post('/', [ReplyController::class, 'store']);              // บันทึกคำตอบรับเข้าร่วมงาน
+    Route::get('/{evnID}/{empID}', [ReplyController::class, 'show']); // ดึงข้อมูลสำหรับแสดงหน้าฟอร์มตอบรับ
+});
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Routes (web, auth)
+| Authenticated Routes (ต้อง Login ก่อนเข้าถึง)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['web', 'auth'])->group(function () {
 
-    // === Auth & Profile ===
-    Route::post('/logout', [LoginController::class, 'logout']);
-    Route::get('/showProfile', [LoginController::class, 'showProfile']);
+    // === Auth & User (จัดการผู้ใช้งาน) ===
+    Route::post('/logout', [LoginController::class, 'logout']);       // ออกจากระบบ
+    Route::get('/profile', [LoginController::class, 'showProfile']);  // ดูข้อมูลโปรไฟล์ส่วนตัว
 
-    // === Employee ===
-    Route::get('/employees', [EmployeeController::class, 'index']);
-    Route::get('/get-employees', [EmployeeController::class, 'index']);
-    Route::get('/employees/{id}', [EmployeeController::class, 'show']);
-    Route::get('/meta', [EmployeeController::class, 'meta']);
-    Route::get('/employees-meta', [EmployeeController::class, 'meta']);
-    
-    Route::post('/save-employee', [EmployeeController::class, 'store']);
-    Route::post('/check-employee-duplicate', [EmployeeController::class, 'checkDuplicate']);
-    Route::post('/import-employees', [EmployeeController::class, 'importBulk']);
-    
-    Route::put('/employees/{id}', [EmployeeController::class, 'update']);
-    Route::put('/employees/soft-delete/{id}', [EmployeeController::class, 'softDelete']);
-    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+    // === Employees (จัดการพนักงาน) ===
+    Route::prefix('employees')->group(function () {
+        Route::get('/', [EmployeeController::class, 'index']);      // ดูรายชื่อพนักงานทั้งหมด
+        Route::post('/', [EmployeeController::class, 'store']);     // สร้างพนักงานใหม่
 
-    // === Employee Sub-items ===
-    Route::post('/save-department', [EmployeeController::class, 'saveDepartment']);
-    Route::post('/save-position', [EmployeeController::class, 'savePosition']);
-    Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
+        // ข้อมูลเสริมและการจัดการไฟล์
+        Route::get('/meta', [EmployeeController::class, 'meta']);   // ดึงข้อมูลตั้งต้น (ตำแหน่ง/แผนก) สำหรับ Dropdown
+        Route::post('/check-duplicate', [EmployeeController::class, 'checkDuplicate']); // ตรวจสอบข้อมูลซ้ำ
+        Route::post('/import', [EmployeeController::class, 'importBulk']); // นำเข้าพนักงานจากไฟล์ Excel/CSV
 
-    // === Event ===
-    Route::get('/event', [EventController::class, 'index']);
-    Route::get('/events', [EventController::class, 'index']);
-    Route::get('/get-event', [EventController::class, 'Eventtable']);
-    Route::get('/event-info', [EventController::class, 'eventInfo']);
-    Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']);
-    Route::post('/event-statistics', [EventController::class, 'eventStatistics']);
-    Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
-    // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
-    // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
-    // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
-    // Route::get('/me', [EventController::class, 'me']);
-    Route::get('/permission', [EventController::class, 'permission']);
-    Route::get('/event/{id}', [EventController::class, 'show']);
-    Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']);
-    Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
-    Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
-    
-    Route::post('/event-save', [EventController::class, 'store']);
-    Route::post('/edit-event', [EventController::class, 'Update']);
-    Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
+        // จัดการข้อมูลย่อย (แผนก/ตำแหน่ง/ทีม)
+        Route::post('/departments', [EmployeeController::class, 'saveDepartment']); // เพิ่มแผนก
+        Route::post('/positions', [EmployeeController::class, 'savePosition']);     // เพิ่มตำแหน่ง
+        Route::post('/teams', [EmployeeController::class, 'saveTeam']);             // เพิ่มทีม
 
-    // === Category ===
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::post('/categories', [CategoryController::class, 'store']);
-    Route::put('/categories/{id}', [CategoryController::class, 'update']);
-    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+        // จัดการพนักงานรายคน
+        Route::get('/{id}', [EmployeeController::class, 'show']);    // ดูรายละเอียดพนักงานรายคน
+        Route::put('/{id}', [EmployeeController::class, 'update']);  // แก้ไขข้อมูลพนักงาน
+        Route::delete('/{id}', [EmployeeController::class, 'destroy']); // ลบพนักงาน (Soft Delete)
+    });
 
-    // === Check-in ===
-    Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']);
-    Route::get('/getEmployeeInviteStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeInviteStatus']);
-    Route::get('/getEmployeeCheckinStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeCheckinStatus']);
-    Route::put('/updateEmployeeAttendance/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'updateEmployeeAttendance']);
-    Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}', [CheckInController::class, 'updateEmployeeAttendanceAll']);
+    // === Events (จัดการกิจกรรม) ===
+    Route::prefix('events')->group(function () {
+        Route::get('/', [EventController::class, 'index']);         // ดูรายการกิจกรรมทั้งหมด
+        Route::post('/', [EventController::class, 'store']);        // สร้างกิจกรรมใหม่
 
-    // === History ===
-    Route::get('/history/employees', [HistoryEmployeeController::class, 'index']);
-    Route::get('/history/events', [HistoryEventController::class, 'eventInfo']);
-    Route::get('/history/event/{id}', [HistoryEventController::class, 'show']);
-    Route::get('/history/categories', [HistoryCategoryController::class, 'index']);
+        // ข้อมูลเสริมและสถิติ
+        Route::get('/meta', [EventController::class, 'eventInfo']); // ดึงข้อมูลตั้งต้นสำหรับสร้างกิจกรรม
+        Route::post('/statistics', [EventController::class, 'eventStatistics']); // ดูสถิติกิจกรรม
+        Route::get('/permissions', [EventController::class, 'permission']); // ตรวจสอบสิทธิ์การเข้าถึง
+
+        // จัดการกิจกรรมรายตัว
+        Route::prefix('{id}')->group(function () {
+            Route::get('/', [EventController::class, 'show']);          // ดูรายละเอียดกิจกรรม
+            Route::get('/edit-data', [EventController::class, 'edit_pages']); // ดึงข้อมูลสำหรับหน้าแก้ไข
+            Route::post('/update', [EventController::class, 'Update']); // บันทึกการแก้ไขกิจกรรม (ใช้ POST เพื่อรองรับไฟล์แนบ)
+            Route::delete('/', [EventController::class, 'deleted']);    // ลบกิจกรรม
+
+            // ข้อมูลที่เกี่ยวข้องกับกิจกรรม
+            Route::get('/connects', [EventController::class, 'connectList']); // รายชื่อคนที่ได้รับเชิญ
+            Route::get('/employees/{emp_id}', [EmployeeController::class, 'show']); // ดูข้อมูลพนักงานในบริบทของกิจกรรมนี้
+
+            // ระบบเช็คชื่อ (Check-in)
+            Route::prefix('check-in')->group(function () {
+                Route::get('/employees', [CheckInController::class, 'getEmployeeForCheckin']); // รายชื่อคนสำหรับเช็คชื่อ
+                Route::put('/all', [CheckInController::class, 'updateEmployeeAttendanceAll']); // เช็คชื่อทุกคนพร้อมกัน
+
+                // เช็คชื่อรายคน
+                Route::prefix('employees/{empId}')->group(function () {
+                    Route::get('/invite-status', [CheckInController::class, 'getEmployeeInviteStatus']); // ดูสถานะคำเชิญ
+                    Route::get('/status', [CheckInController::class, 'getEmployeeCheckinStatus']); // ดูสถานะเช็คชื่อ
+                    Route::put('/', [CheckInController::class, 'updateEmployeeAttendance']);       // อัปเดตสถานะเช็คชื่อรายคน
+                });
+            });
+        });
+    });
+
+    // === Categories (จัดการหมวดหมู่) ===
+    // ใช้ Resource Route (สร้าง index, store, show, update, destroy ให้อัตโนมัติ)
+    Route::apiResource('categories', CategoryController::class);
+
+    // === History (ประวัติการลบ) ===
+    Route::prefix('history')->group(function () {
+        Route::get('/employees', [HistoryEmployeeController::class, 'index']);     // ประวัติการลบพนักงาน
+        Route::get('/events', [HistoryEventController::class, 'eventInfo']);       // ประวัติการลบกิจกรรม (รายการ)
+        Route::get('/events/{id}', [HistoryEventController::class, 'show']);       // ดูรายละเอียดกิจกรรมที่ถูกลบ
+        Route::get('/categories', [HistoryCategoryController::class, 'index']);    // ประวัติการลบหมวดหมู่
+    });
 
 });
