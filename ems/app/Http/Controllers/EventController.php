@@ -58,6 +58,19 @@ class EventController extends Controller
         if (!$event) {
             return response()->json(['message' => 'Not found'], 404);
         }
+
+        $files = DB::table('ems_event_files')
+            ->where('file_event_id', $event->id)
+            ->select('id', 'file_name', 'file_path', 'file_size', 'file_type')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($f) {
+                // สร้าง Full URL สำหรับให้ Frontend download/เปิดดู
+                $f->url = asset('storage/' . $f->file_path);
+                return $f;
+            });
+
+        $event->files = $files;
         // คืน object ของอีเวนต์เดียว (ไม่ห่อ data)
         return response()->json($event);
     }
