@@ -89,7 +89,6 @@
                     :placeholder="isAdmin ? 'Leave blank to keep current password' : 'Admin only'"
                     class="mt-1 block h-11 w-full" :error="errors.password"
                   />
-
                   <p v-if="form.emp_permission === 'employee'" class="text-xs text-gray-400 mt-1">
                     *Employee does not require password
                   </p>
@@ -148,18 +147,18 @@ const router = useRouter()
 const route = useRoute()
 const employeeId = route.params.id
 
-/* ------- Options (Static) ------- */
+/* ------- Options ------- */
 const prefixes = [
   { label: 'นาย', value: 'นาย' },
   { label: 'นาง', value: 'นาง' },
   { label: 'นางสาว', value: 'นางสาว' },
 ]
 
-// ✅ ใช้ค่ามาตรฐานใหม่ (admin, hr, employee)
+// ✅ ใช้ enabled/disabled ตาม DB ปัจจุบัน (เพื่อไม่ให้ Update Failed)
 const permissions = [
-  { label: 'Administrator', value: 'admin' },
-  { label: 'Human Resources', value: 'hr' },
-  { label: 'Employee', value: 'employee' },
+  { label: 'Administrator', value: 'enabled' },
+  { label: 'Human Resources', value: 'disabled' }, // ใช้ disabled แทน hr ชั่วคราว
+  { label: 'Employee', value: 'disabled' },
 ]
 
 const companies = ref([])
@@ -220,7 +219,7 @@ function openAlert(cfg = {}) {
   }, cfg)
 }
 
-/* ------- ✅ 1. Logic Check Permission (เหมือนหน้า Employee Page) ------- */
+/* ------- Check User Role ------- */
 const currentUser = computed(() => {
     try {
         const u = localStorage.getItem("userData");
@@ -230,13 +229,12 @@ const currentUser = computed(() => {
     }
 })
 
-// รองรับทั้ง 'admin' (ใหม่) และ 'enabled' (เก่า)
 const isAdmin = computed(() => {
     const role = currentUser.value.emp_permission;
     return role === 'admin' || role === 'enabled';
 })
 
-// เช็ค HR
+// เช็คหลวมๆ ไว้ก่อน
 const isHR = computed(() => {
     const role = currentUser.value.emp_permission;
     return role === 'hr';
@@ -260,22 +258,22 @@ onMounted(async () => {
   try {
     const { data: metaData } = await axios.get('/meta')
 
-    // Map Companies (สำหรับ ID Logic)
+    // Map Companies
     companies.value = (metaData.companies || []).map(c => ({
       label: c.com_name,
       value: c.id,
       code: c.com_code || c.com_name
     }))
 
-    // departments, teams, positions
     departments.value = (metaData.departments || []).map(d => ({ label: d.dpm_name, value: d.id }))
     teams.value = (metaData.teams || []).map(t => ({ label: t.tm_name, value: t.id, department_id: t.tm_department_id ?? null }))
     positions.value = (metaData.positions || []).map(p => ({ label: p.pst_name, value: p.id, team_id: p.pst_team_id ?? null }))
 
-    // Load User
+    // Load Employee Data
     const { data: res } = await axios.get(`/employees/${employeeId}`)
     const userData = res.data || res
 
+    // Fill form
     form.emp_prefix = userData.emp_prefix
     form.emp_firstname = userData.emp_firstname
     form.emp_lastname = userData.emp_lastname
@@ -288,22 +286,26 @@ onMounted(async () => {
     form.emp_permission = userData.emp_permission
     form.password = ''
 
-    /* ------- ✅ 2. Logic แยก ID (แก้บั๊ก CNI vs CN) ------- */
-    const fullId = userData.emp_id || ""
+    /* ------- ✅ Logic แยก ID (Improved) ------- */
+    const fullId = (userData.emp_id || "").trim() // ตัดช่องว่างออก
 
-    // เรียงบริษัทที่มี Code ยาวกว่าขึ้นก่อน (เช่น CNI มาก่อน CN)
+    // 1. เรียง Code ยาวไปสั้น (แก้บั๊ก CNI vs CN)
     const sortedCompanies = [...companies.value].sort((a, b) => b.code.length - a.code.length)
 
-    // ค้นหาบริษัทที่ Match
-    const matchedCompany = sortedCompanies.find(c => fullId.startsWith(c.code))
+    // 2. ค้นหาแบบ Case Insensitive (แก้ปัญหาตัวพิมพ์ไม่ตรง)
+    const matchedCompany = sortedCompanies.find(c =>
+        fullId.toUpperCase().startsWith(c.code.toUpperCase())
+    )
 
     if (matchedCompany) {
       form.companyId = matchedCompany.value
       form.companyCode = matchedCompany.code
-      // ตัด Code ออกเหลือแต่เลข
-      form.employeeNumber = fullId.replace(matchedCompany.code, '')
+
+      // ตัด Code ออกเหลือแต่เลข โดยไม่สนตัวพิมพ์
+      const regex = new RegExp(`^${matchedCompany.code}`, 'i')
+      form.employeeNumber = fullId.replace(regex, '')
     } else {
-      // กรณีไม่เจอ (อาจเป็น Legacy ID) ใส่เลขไปเลย
+      console.warn("Company code not found for ID:", fullId)
       form.employeeNumber = fullId
     }
 
@@ -327,7 +329,8 @@ const MSG = {
   requiredNumber: 'Required field only number',
   requiredEmail: 'Required email',
   requiredField: 'Required field',
-  employeeNumber4: 'Must be 4 digits'
+  employeeNumber4: 'Must be 4 digits',
+  passwordMin8: 'Please enter a password with at least 8 characters'
 }
 
 const fieldRules = {
@@ -343,6 +346,7 @@ const fieldRules = {
   emp_email: ['requiredEmail'],
   companyId: ['requiredSelect'],
   employeeNumber: ['employeeNumber4'],
+  password: ['passwordMin8'],
 }
 
 function validateField(key, value) {
@@ -365,6 +369,11 @@ function validateField(key, value) {
     else if (r === 'employeeNumber4') {
       if (!value) return MSG.requiredField
       if (!/^\d{4}$/.test(value)) return MSG.employeeNumber4
+    }
+    else if (r === 'passwordMin8') {
+      if (value && value.length < 8) {
+        return MSG.passwordMin8
+      }
     }
   }
   return ''
