@@ -84,17 +84,28 @@
                 </FormField>
 
                 <FormField label="Password">
-                  <InputPill v-model="form.password" type="password" placeholder="Leave blank to keep current password"
+                  <InputPill v-model="form.password" type="password"
+                    :disabled="!isAdmin"
+                    :placeholder="isAdmin ? 'Leave blank to keep current password' : 'Admin only'"
                     class="mt-1 block h-11 w-full" :error="errors.password"
-                    :disabled="form.emp_permission === 'employee'" />
+                  />
+
                   <p v-if="form.emp_permission === 'employee'" class="text-xs text-gray-400 mt-1">
                     *Employee does not require password
+                  </p>
+                  <p v-if="!isAdmin" class="text-xs text-rose-500 mt-1">
+                    *Only Administrator can change password
                   </p>
                 </FormField>
 
                 <FormField label="Permission" required>
                   <DropdownPill v-model="form.emp_permission" :options="permissions" placeholder="Select Permission"
-                    class="mt-1 block h-11 w-full" :error="errors.emp_permission" />
+                    class="mt-1 block h-11 w-full" :error="errors.emp_permission"
+                    :disabled="!isAdmin"
+                  />
+                  <p v-if="!isAdmin" class="text-xs text-rose-500 mt-1">
+                    *Only Administrator can change permission
+                  </p>
                 </FormField>
 
                 <div class="mt-auto pt-2 flex justify-end flex-col items-end">
@@ -144,13 +155,13 @@ const prefixes = [
   { label: 'นางสาว', value: 'นางสาว' },
 ]
 
+// ✅ ใช้ค่ามาตรฐานใหม่ (admin, hr, employee)
 const permissions = [
   { label: 'Administrator', value: 'admin' },
   { label: 'Human Resources', value: 'hr' },
   { label: 'Employee', value: 'employee' },
 ]
 
-// Companies ใช้ ref เพราะต้องดึง API มาเพื่อทำ Logic Split ID
 const companies = ref([])
 const departments = ref([])
 const teams = ref([])
@@ -163,10 +174,9 @@ const form = reactive({
   emp_lastname: '',
   emp_nickname: '',
   emp_phone: '',
-  // emp_id: '',  <-- ลบออกตามที่ขอแยกช่อง
-  companyId: '',      // เพิ่ม
-  employeeNumber: '', // เพิ่ม
-  companyCode: '',    // เพิ่ม
+  companyId: '',
+  employeeNumber: '',
+  companyCode: '',
   emp_department_id: '',
   emp_team_id: '',
   emp_position_id: '',
@@ -209,6 +219,28 @@ function openAlert(cfg = {}) {
     cancelText: 'Cancel',
   }, cfg)
 }
+
+/* ------- ✅ 1. Logic Check Permission (เหมือนหน้า Employee Page) ------- */
+const currentUser = computed(() => {
+    try {
+        const u = localStorage.getItem("userData");
+        return u ? JSON.parse(u) : {};
+    } catch (e) {
+        return {};
+    }
+})
+
+// รองรับทั้ง 'admin' (ใหม่) และ 'enabled' (เก่า)
+const isAdmin = computed(() => {
+    const role = currentUser.value.emp_permission;
+    return role === 'admin' || role === 'enabled';
+})
+
+// เช็ค HR
+const isHR = computed(() => {
+    const role = currentUser.value.emp_permission;
+    return role === 'hr';
+})
 
 /* ------- Computed Options ------- */
 const teamOptions = computed(() => {
@@ -256,15 +288,22 @@ onMounted(async () => {
     form.emp_permission = userData.emp_permission
     form.password = ''
 
-    // Logic: Split ID back to Company + Number
+    /* ------- ✅ 2. Logic แยก ID (แก้บั๊ก CNI vs CN) ------- */
     const fullId = userData.emp_id || ""
-    const matchedCompany = companies.value.find(c => fullId.startsWith(c.code))
+
+    // เรียงบริษัทที่มี Code ยาวกว่าขึ้นก่อน (เช่น CNI มาก่อน CN)
+    const sortedCompanies = [...companies.value].sort((a, b) => b.code.length - a.code.length)
+
+    // ค้นหาบริษัทที่ Match
+    const matchedCompany = sortedCompanies.find(c => fullId.startsWith(c.code))
 
     if (matchedCompany) {
       form.companyId = matchedCompany.value
       form.companyCode = matchedCompany.code
+      // ตัด Code ออกเหลือแต่เลข
       form.employeeNumber = fullId.replace(matchedCompany.code, '')
     } else {
+      // กรณีไม่เจอ (อาจเป็น Legacy ID) ใส่เลขไปเลย
       form.employeeNumber = fullId
     }
 
@@ -357,7 +396,6 @@ Object.keys(fieldRules).forEach((k) => {
 
 watch(() => form.emp_department_id, (n, o) => { if (o && n !== o) { form.emp_team_id = ''; form.emp_position_id = '' } })
 watch(() => form.emp_team_id, (n, o) => { if (o && n !== o) { form.emp_position_id = '' } })
-
 watch(() => form.companyId, (newId) => {
   const found = companies.value.find(c => c.value === newId)
   form.companyCode = found ? found.code : ''
@@ -399,11 +437,9 @@ async function confirmSaveProcess() {
 
   try {
     const payload = { ...form }
-
-    // 1. Recombine ID
+    // รวม CompanyCode + Number กลับเป็น emp_id
     payload.emp_id = `${form.companyCode}${form.employeeNumber}`
 
-    // 2. Cleanup
     delete payload.companyId
     delete payload.employeeNumber
     delete payload.companyCode
@@ -413,7 +449,6 @@ async function confirmSaveProcess() {
 
     await axios.put(`/employees/${employeeId}`, payload)
 
-    /* --- Success --- */
     original = JSON.parse(JSON.stringify(form))
     original.password = ''
 
@@ -442,7 +477,6 @@ async function confirmSaveProcess() {
           errors.employeeNumber = 'This ID is already in use.';
           hasValidationError = true;
       }
-
     } else if (msg.includes('Duplicate entry')) {
       hasValidationError = true
       if (msg.includes('phone')) errors.emp_phone = 'This phone number is already in use.'
