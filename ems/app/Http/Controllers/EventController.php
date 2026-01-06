@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;      // ใช้เฉพาะ transaction
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -53,7 +54,7 @@ class EventController extends Controller
     // GET /api/event/{id}
     public function show($id)
     {
-        $event = Event::find($id);
+        $event = Event::with('category')->find($id);
         if (!$event) {
             return response()->json(['message' => 'Not found'], 404);
         }
@@ -374,11 +375,14 @@ class EventController extends Controller
             $employees = Employee::whereIn('id', $data['employee_ids'])
                 ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
+            
+
             foreach ($employees as $emp) {
                 if (!$emp->emp_email) {
                     continue;
                 }
-                Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles));
+                $formURL = '/reply/'.Crypt::encryptString($event->id.'/'.$emp->id);
+                Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles, $formURL));
                 // หรือใช้คิว: Mail::to(...)->queue(new EventInvitationMail(...));
             }
 
@@ -410,6 +414,7 @@ class EventController extends Controller
      */
     public function Eventtable(Request $request)
     {
+        $this->syncEventStatus();
         // อนุญาตให้ sort ตามชื่อคอลัมน์/alias ที่ select มา
         $allowSort = [
             'evn_title'      => 'ems_event.evn_title',
@@ -492,11 +497,11 @@ class EventController extends Controller
     private function syncEventStatus(): void
     {
         // กันหลาย request อัปเดตพร้อมกัน
-        $lock = Cache::lock('events:sync-status', 30); // ล็อก 30 วินาที
+        //$lock = Cache::lock('events:sync-status', 30); // ล็อก 30 วินาที
 
-        if (!$lock->get()) {
-            return; // มีคนอื่นเพิ่ง sync ไปแล้ว
-        }
+        // if (!$lock->get()) {
+        //     return; // มีคนอื่นเพิ่ง sync ไปแล้ว
+        // }
 
         try {
             // ใช้เวลาไทยเป็นมาตรฐาน
@@ -531,7 +536,7 @@ class EventController extends Controller
                 ->update(['evn_status' => 'upcoming']);
         } finally {
             // ปล่อย lock
-            optional($lock)->release();
+           // optional($lock)->release();
         }
     }
 
@@ -619,7 +624,7 @@ class EventController extends Controller
             'team:id,tm_name',
         ])
             ->where('emp_delete_status', 'active')
-            ->orderBy('id', 'desc')
+            ->orderBy('id', 'asc')
             ->get([
                 'id',
                 'emp_id',

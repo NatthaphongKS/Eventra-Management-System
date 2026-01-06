@@ -39,6 +39,7 @@ class Employee extends Authenticatable
         'emp_create_by',
         'emp_delete_status',
         'emp_delete_by',
+        'emp_delete_at',
     ];
 
     protected $hidden = [
