@@ -22,7 +22,7 @@ Route::middlewareGroup('api', [
 
 
 
-Route::get('/reply/{evn_id}/{emp_id}', [ReplyController::class, 'openForm']);
+Route::get('/reply/{encryptURL}', [ReplyController::class, 'openForm']);
 
 
 // Test Route

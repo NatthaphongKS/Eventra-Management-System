@@ -16,7 +16,7 @@ class CheckInController extends Controller
     function getEmployeeForCheckin($eveId)
     {
         $emps = Employee::where('emp_delete_status', 'active')->get();
-        
+
         try {
             foreach ($emps as $emp) {
                 // หาว่ามีข้อมูลหรือยัง ถ้าไม่มีให้สร้างใหม่ (Create) ด้วยค่าที่กำหนด
@@ -33,7 +33,7 @@ class CheckInController extends Controller
                     ]
                 );
             }
-        } catch (\Exception $e) { 
+        } catch (\Exception $e) {
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
 
@@ -87,8 +87,6 @@ class CheckInController extends Controller
             return response()->json(['error' => 'Error : getEmployeeCheckinStatus funtion failed', 500 ]);
         }
     }
-
-
 
     public function updateEmployeeAttendance($eveId, $empId)
     {
