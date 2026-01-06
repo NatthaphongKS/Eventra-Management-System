@@ -588,6 +588,7 @@ this.loadingEmployees = false
         removeExisting(id) { //รับ id ของไฟล์ที่จะลบมา แล้ว  filter(file => file.id === id) คือ วนลูป หา id ในข้อมูลarray ของfilesExisting
             this.filesExisting = this.filesExisting.filter(file => file.id !== id)
             this.filesDeleted.push(id) //เจอแล้วก็เพิ่มข้อมูล Id ใส่ตัวแปร fileDeleted
+
         },
         //ส่วนแปลง ขนาดไฟล์
         prettySize(byte) { const mb = byte / (1024 * 1024); return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(byte / 1024).toFixed(0)} KB` },
@@ -733,7 +734,7 @@ this.loadingEmployees = false
                         // ✅ ไฟล์เดิมที่ถูกลบ
                         if (this.filesDeleted.length > 0) {
                             this.filesDeleted.forEach((id) => {
-                                formData.append('deleted_ids[]', id)
+                                formData.append('delete_file_ids[]', id)
                             })
                         }
 
