@@ -177,17 +177,6 @@
   </div>
 </div>
 
-<!-- No Selection Message -->
-<div v-if="selectedEventIds.size === 0" class="card summary-card">
-  <div class="flex flex-col items-center justify-center py-16">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-    </svg>
-    <h3 class="text-xl font-semibold text-gray-700 mb-2">Please select an event</h3>
-    <p class="text-gray-500">Select one or more events from the table above to view statistics and participant data</p>
-  </div>
-</div>
-
 <!-- Summary/Graph Section - แสดงเมื่อเลือก event และกดปุ่ม Show Data แล้ว -->
 <div v-if="selectedEventIds.size > 0 && showStatistics" class="card summary-card">
     <div class="summary-grid">
@@ -2178,7 +2167,7 @@ export default {
 }
 
 :deep(tr.selected-row:hover) {
-  background-color: #fecaca !important; /* slightly darker on hover */
+  background-color: #ffffff !important; /* white on hover */
 }
 
 .employee-card {
