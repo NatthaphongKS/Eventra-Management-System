@@ -118,6 +118,7 @@
                                 class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
                                 @click="$event.target.showPicker()" />
                             <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+
                         </div>
 
                         <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
@@ -128,9 +129,9 @@
                                 @click="$event.target.showPicker()" />
                             <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
                         </div>
-
-                        <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-red-700 shrink-0 " />
-
+                        <div>
+                            <span class="text-red-700"><Icon icon="iconamoon:clock-light" class="h-6 w-6" /></span>
+                        </div>
                     </div>
 
                     <p v-if="submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd)"
@@ -148,7 +149,7 @@
                         class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
                         <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
                             v-model="eventDuration" placeholder="Auto fill Hour"></input>
-                        <Icon icon="iconamoon:clock-light" class="w-6 h-6  text-neutral-400" />
+                        <Icon icon="lucide:clock-fading"  class="w-6 h-6  text-neutral-400" />
                     </div>
                 </div>
             </div>
