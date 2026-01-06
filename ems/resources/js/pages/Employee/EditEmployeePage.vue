@@ -260,16 +260,19 @@ onMounted(async () => {
   try {
     const { data: metaData } = await axios.get('/meta')
 
+    // Map Companies (สำหรับ ID Logic)
     companies.value = (metaData.companies || []).map(c => ({
       label: c.com_name,
       value: c.id,
       code: c.com_code || c.com_name
     }))
 
+    // departments, teams, positions
     departments.value = (metaData.departments || []).map(d => ({ label: d.dpm_name, value: d.id }))
     teams.value = (metaData.teams || []).map(t => ({ label: t.tm_name, value: t.id, department_id: t.tm_department_id ?? null }))
     positions.value = (metaData.positions || []).map(p => ({ label: p.pst_name, value: p.id, team_id: p.pst_team_id ?? null }))
 
+    // Load User
     const { data: res } = await axios.get(`/employees/${employeeId}`)
     const userData = res.data || res
 
