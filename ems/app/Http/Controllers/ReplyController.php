@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Connect;
+use Exception;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Event;
@@ -14,23 +15,44 @@ class ReplyController extends Controller
     // app/Http/Controllers/ReplyController.php
     public function openForm($encryptURL)
     {
-        $descryptURL = Crypt::decryptString($encryptURL);
-        $ids = explode('/', $descryptURL);
-        return view('reply', ['evnID' => $ids[0], 'empID' => $ids[1]]);
+        try {
+            $descryptURL = Crypt::decryptString($encryptURL);
+            $ids = explode('/', $descryptURL);
+            $message = response()->json([
+                'success' => true,
+                'message' => 'Form can Open'
+            ]);
+        } catch (Exception $e) {
+            $message = response()->json([
+                'success' => false,
+                'message' => 'Invalid URL'
+            ]);
+            return view('reply', ['message' => $message]);
+        }
+        return view('reply', ['evnID' => $ids[0], 'empID' => $ids[1], 'message' => $message]);
     }
 
     public function show($encryptURL)
     {
-        $descryptURL = Crypt::decryptString($encryptURL);
-        $ids = explode('/', $descryptURL);
+        try {
+            $descryptURL = Crypt::decryptString($encryptURL);
+            $ids = explode('/', $descryptURL);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid URL'
+            ]);
+        }
+
 
         $eveId = $ids[0];
         $empId = $ids[1];
-        
+
         $employee = Employee::query()
             ->select(
                 'id'
-,                'emp_prefix',
+                ,
+                'emp_prefix',
                 'emp_firstname',
                 'emp_lastname',
                 'emp_email',
@@ -56,6 +78,7 @@ class ReplyController extends Controller
 
         return response()->json(
             [
+                'success' => true,
                 'employee' => $employee,
                 'event' => $event,
                 'connect' => $connect,
@@ -85,7 +108,7 @@ class ReplyController extends Controller
                 'con_answer' => $data['attend'],                   // หรือ $answer
                 'con_reason' => $data['reason'],
             ]);
-            
+
 
 
         return response()->json(['ok' => true], 201);
