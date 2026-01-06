@@ -53,16 +53,17 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-xl font-medium text-neutral-800">Upload attachments</label>
-                <p class="mb-2 text-xs text-neutral-400">Drag and drop document to your support task</p>
+                <label class="mb-1 block text-xl font-medium text-neutral-800">Attachments</label>
+                <p class="mb-2 text-xs text-neutral-400">Documents associated with this event</p>
 
                 <div class="flex min-h-[400px] flex-col gap-2 rounded-[20px] border border-dashed border-neutral-400 bg-neutral-100 p-4 ">
                     <div v-if="files.length === 0" class="grid flex-1 place-items-center text-neutral-400 text-md">ไม่มีไฟล์แนบ</div>
                     <div v-else class="flex flex-col gap-2">
-                        <div v-for="(f, i) in files" :key="i" class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium">
-                            <Icon icon="basil:file-solid" class="h-10 w-10" />
-                            <span class="truncate text-md text-gray-400">{{ f.name }}</span>
-                            <div class="ml-auto"></div>
+                        <div v-for="(f, i) in files" :key="i" class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors">
+                            <Icon icon="basil:file-solid" class="h-10 w-10 text-slat-700" />
+                            <a :href="f.url" target="_blank" class="truncate text-md text-neutral-400 hover:text-slat-700 flex-1" :title="f.file_name || f.name">
+                                {{ f.file_name || f.name }}
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -70,14 +71,14 @@
         </div>
 
         <div class="mt-10">
-            <h3 class="text-3xl font-semibold mb-4">Add Guest</h3>
+            <h3 class="text-3xl font-semibold mb-4">Guest List</h3>
             
             <div class="mb-4 flex flex-wrap items-center gap-2">
                 <div class="flex flex-1 items-center gap-2 min-w-[200px]">
                     <input
                         v-model.trim="searchInput"
                         @keyup.enter="doSearch"
-                        class="w-full rounded-2xl border border-neutral-200 bg-white px-3 py-2.5 text-md font-medium text-neutral-400 placeholder:text-red-300 outline-none"
+                        class="w-full rounded-2xl border border-neutral-200 bg-white px-3 py-2.5 text-md font-medium text-neutral-400 placeholder:text-red-300 outline-none focus:ring-2 focus:ring-rose-200"
                         placeholder="Search ID / Name / Nickname"
                     />
                     <button @click="doSearch" class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-rose-700 text-white hover:opacity-90 active:opacity-100">
@@ -85,10 +86,10 @@
                     </button>
                 </div>
 
-                <BaseFilterDropdown label="Company" :options="uniqueCompanies" v-model="companySel" @update:modelValue="onFilterChange" />
-                <BaseFilterDropdown label="Department" :options="uniqueDepartments" v-model="deptSel" @update:modelValue="onFilterChange" />
-                <BaseFilterDropdown label="Team" :options="uniqueTeams" v-model="teamSel" @update:modelValue="onFilterChange" />
-                <BaseFilterDropdown label="Position" :options="uniquePositions" v-model="posSel" @update:modelValue="onFilterChange" />
+                <EmployeeDropdown label="Company" :options="uniqueCompanies" v-model="companySel" @update:modelValue="onFilterChange" />
+                <EmployeeDropdown label="Department" :options="uniqueDepartments" v-model="deptSel" @update:modelValue="onFilterChange" />
+                <EmployeeDropdown label="Team" :options="uniqueTeams" v-model="teamSel" @update:modelValue="onFilterChange" />
+                <EmployeeDropdown label="Position" :options="uniquePositions" v-model="posSel" @update:modelValue="onFilterChange" />
             </div>
 
             <DataTable
@@ -99,32 +100,39 @@
                 v-model:page="page"
                 v-model:pageSize="pageSize"
                 row-key="id"
-                :show-row-number="true"
+                :show-row-number="false"
+                :selectable="false" 
                 :rowClass="rowClassFn"
                 class="mt-2"
             >
                 <template #header-_select>
-                    <div class="w-10 text-left"><input type="checkbox" class="accent-rose-600 opacity-60" disabled /></div>
+                    <div class="w-10 text-center">
+                        <input type="checkbox" class="accent-rose-600 opacity-60 size-5 cursor-not-allowed" @click.prevent />
+                    </div>
                 </template>
                 <template #cell-_select="{ row }">
-                    <input type="checkbox" class="accent-rose-700" :checked="selectedIds.has(row.id)" disabled />
-                </template>
-                <template #footer-info="{ from, to, total }">
-                    <span>แสดง</span>
-                    <div class="relative inline-block">
-                        <select class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200"
-                            :value="pageSize" @change="pageSize = +$event.target.value">
-                            <option v-for="opt in [10,20,30,50]" :key="opt" :value="opt">{{ opt }}</option>
-                        </select>
-                        <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+                    <div @click.stop class="flex justify-center">
+                        <input 
+                            type="checkbox" 
+                            class="accent-slate-700 size-5 cursor-not-allowed" 
+                            :checked="selectedIds.has(row.id)" 
+                            @click.prevent
+                        />
                     </div>
-                    <span>{{ from }}-{{ to }} จาก {{ total }} รายการ</span>
                 </template>
-                <template #empty>No data</template>
+
+                <template #cell-_index="{ row }">
+                    <span class="text-neutral-500 font-medium">
+                        {{ filteredRows.indexOf(row) + 1 }}
+                    </span>
+                </template>
+
+                <template #footer-info="{ from, to, total }">
+                    </template>
             </DataTable>
 
             <div class="mt-6">
-                <button class="rounded-2xl bg-neutral-400 px-5 py-2 text-white" @click="onBack">← Back</button>
+                <button class="rounded-2xl bg-neutral-400 px-5 py-2 text-white hover:bg-neutral-500 transition" @click="onBack">← Back</button>
             </div>
         </div>
 
@@ -137,7 +145,7 @@
 import axios from "axios";
 import { Icon } from "@iconify/vue";
 import DataTable from "@/components/DataTable.vue";
-import BaseFilterDropdown from "@/components/DetailsEvent/BaseFilterDropdown.vue";
+import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 import BaseReadonlyField from "@/components/DetailsEvent/BaseReadonlyField.vue";
 
 axios.defaults.baseURL = "/api";
@@ -145,11 +153,12 @@ axios.defaults.withCredentials = true;
 
 export default {
     name: "EventDetailCard",
-    components: { Icon, DataTable, BaseFilterDropdown, BaseReadonlyField },
+    components: { Icon, DataTable, EmployeeDropdown, BaseReadonlyField },
     props: { id: { type: [String, Number], required: true } },
     data() {
         return {
-            loading: false, error: "", files: [], Categories: [], idToCat: {},
+            loading: false, error: "", 
+            files: [], Categories: [], idToCat: {},
             rows: [], selectedIds: new Set(),
             page: 1, pageSize: 10,
             form: {
@@ -157,14 +166,17 @@ export default {
                 date: "", timeStart: "", timeEnd: "", duration: "", location: "", status: "",
             },
             searchInput: "", searchQuery: "",
-            companySel: "", deptSel: "", teamSel: "", posSel: "",
+            companySel: [], deptSel: [], teamSel: [], posSel: [],
+            
+            
             guestsTableColumns: [
-                { key: "_select", label: "", class: "w-10" },
-                { key: "codeDisplay", label: "ID", class: "text-left" },
-                { key: "name", label: "Name", class: "text-left" },
-                { key: "nick", label: "Nickname", class: "text-left" },
-                { key: "department", label: "Department", class: "text-left" },
-                { key: "team", label: "Team", class: "text-left" },
+                { key: "_select", label: "", class: "w-5 text-center" },
+                { key: "_index", label: "#", class: "w-12 text-center" },
+                { key: "codeDisplay", label: "ID", class: "w-auto text-left" },
+                { key: "name", label: "Name", class: "w-auto text-left" },
+                { key: "nick", label: "Nickname", class: "w-auto text-left" },
+                { key: "department", label: "Department", class: "w-auto text-left" },
+                { key: "team", label: "Team", class: "w-auto text-left" },
                 { key: "position", label: "Position", class: "text-left" },
             ],
         };
@@ -178,25 +190,19 @@ export default {
             const guessed = this.form.category?.name ?? this.form.cat_name ?? "";
             return guessed || (rec ? rec.name : `#${id}`);
         },
-        
-        uniqueDepartments() { return [...new Set(this.rows.map(r => r.department).filter(Boolean))].sort(); },
-        uniqueTeams() { return [...new Set(this.rows.map(r => r.team).filter(Boolean))].sort(); },
-        uniquePositions() { return [...new Set(this.rows.map(r => r.position).filter(Boolean))].sort(); },
-        uniqueCompanies() {
-            const vals = new Set();
-            for (const r of this.rows) {
-                if (r.companyAbbr) vals.add(r.companyAbbr);
-            }
-            return Array.from(vals).sort().map(val => ({ label: val, value: val }));
-        },
+        uniqueDepartments() { return this.toOptions(this.rows.map(r => r.department)); },
+        uniqueTeams() { return this.toOptions(this.rows.map(r => r.team)); },
+        uniquePositions() { return this.toOptions(this.rows.map(r => r.position)); },
+        uniqueCompanies() { return this.toOptions(this.rows.map(r => r.companyAbbr)); },
+
         filteredRows() {
             const q = (this.searchQuery || "").toLowerCase();
             return this.rows.filter(r => {
                 const hitQ = !q || [r.codeDisplay, r.code, r.name, r.nick].some(v => String(v || "").toLowerCase().includes(q));
-                const hitCompany = !this.companySel || r.companyAbbr === this.companySel;
-                const hitDept = !this.deptSel || r.department === this.deptSel;
-                const hitTeam = !this.teamSel || r.team === this.teamSel;
-                const hitPos = !this.posSel || r.position === this.posSel;
+                const hitCompany = this.companySel.length === 0 || this.companySel.includes(r.companyAbbr);
+                const hitDept = this.deptSel.length === 0 || this.deptSel.includes(r.department);
+                const hitTeam = this.teamSel.length === 0 || this.teamSel.includes(r.team);
+                const hitPos = this.posSel.length === 0 || this.posSel.includes(r.position);
                 return hitQ && hitCompany && hitDept && hitTeam && hitPos;
             });
         },
@@ -209,6 +215,9 @@ export default {
         await Promise.all([this.fetchCategories(), this.fetchEvent(), this.fetchEmployees(), this.fetchGuestSelection()]);
     },
     methods: {
+        toOptions(arr) {
+             return [...new Set(arr.filter(Boolean))].sort().map(v => ({ label: v, value: v }));
+        },
         async fetchCategories() {
             try {
                 const r = await axios.get('/categoriesAll', { params: { withTrashed: 1, includeInactive: 1 } });
@@ -228,7 +237,13 @@ export default {
                 this.loading = true;
                 if (!this.id) { this.error = "ไม่พบรหัสอีเวนต์"; return; }
                 const res = await axios.get(`/event/${this.id}`);
-                const item = Array.isArray(res.data) ? res.data[0] : (res.data?.data ?? res.data);
+                const rawData = res.data;
+                const item = rawData.event || rawData; 
+
+                if (Array.isArray(rawData.files)) { this.files = rawData.files; } 
+                else if (Array.isArray(item.files)) { this.files = item.files; } 
+                else { this.files = []; }
+
                 if (item) {
                     this.form.title = item.evn_title ?? item.title ?? "";
                     this.form.categoryId = item.evn_category_id ?? item.category_id ?? "";
@@ -240,7 +255,7 @@ export default {
                     this.form.duration = item.evn_duration ?? item.duration ?? "";
                     this.form.location = item.evn_location ?? item.location ?? "";
                 }
-             } catch(e) { this.error = "โหลดข้อมูลไม่สำเร็จ"; } finally { this.loading = false; }
+             } catch(e) { this.error = "โหลดข้อมูลไม่สำเร็จ"; console.error(e); } finally { this.loading = false; }
         },
         async fetchEmployees() {
             try {
@@ -282,63 +297,41 @@ export default {
             } catch (e) { this.selectedIds = new Set(); }
         },
         rowClassFn(row) { return this.selectedIds.has(row.id) ? 'row-selected' : ''; },
-
-        /**
-         * ชื่อฟังก์ชัน: calculateDuration 
-         * คำอธิบาย: คำนวณระยะเวลาจาก TimeStart/End เพื่อความแม่นยำ (แทนการใช้ duration จาก DB ที่อาจไม่ตรง)
-         */
         calculateDuration(start, end, fallbackDuration) {
-            // ถ้ามีเวลาเริ่มและจบครบถ้วน ให้คำนวณเองเลย
             if (start && end) {
                 const [startH, startM] = start.split(':').map(Number);
                 const [endH, endM] = end.split(':').map(Number);
-                
                 if (!isNaN(startH) && !isNaN(startM) && !isNaN(endH) && !isNaN(endM)) {
                     const startTotal = startH * 60 + startM;
                     const endTotal = endH * 60 + endM;
                     let diff = endTotal - startTotal;
-                    
-                    // กรณีข้ามวัน (เช่น เริ่ม 23:00 จบ 01:00)
                     if (diff < 0) diff += 24 * 60; 
-
                     const h = Math.floor(diff / 60);
                     const m = diff % 60;
-
                     let res = `${h} Hour`;
-                    if (m > 0) {
-                        res += ` ${m} Min${m > 1 ? '' : ''}`;
-                    }
+                    if (m > 0) { res += ` ${m} Min${m > 1 ? '' : ''}`; }
                     return res;
                 }
             }
-            
-            // ถ้าไม่มีเวลา ให้ใช้ Logic เดิม (Fallback)
             return this.formatDurationFallback(fallbackDuration);
         },
-
-        // Logic เดิมสำหรับแปลงตัวเลข Duration (ใช้เป็น Fallback)
         formatDurationFallback(v) {
             const n = Number(v);
             if (!Number.isFinite(n)) return v;
-            const h = Math.floor(n); // สมมติว่า DB เก็บเป็น Hour
-            const m = Math.round((n - h) * 60); // เศษทศนิยมเป็นนาที
+            const h = Math.floor(n); 
+            const m = Math.round((n - h) * 60); 
             let res = `${h} Hour`;
             if (m > 0) res += ` ${m} Minute${m > 1 ? 's' : ''}`;
             return res;
         },
-
         formatDate(dateStr) {
             if (!dateStr) return "";
             const [y, m, d] = dateStr.split('-');
             if (y && m && d) return `${d}/${m}/${y}`;
             return dateStr;
         },
-
         toThaiTime(v) { return v ? `${v} น.` : ""; },
-        onRootPointer(e) {
-            const insideDropdown = e.target.closest('[data-dd]');
-            if (!insideDropdown) { }
-        },
+        onRootPointer(e) { const insideDropdown = e.target.closest('[data-dd]'); if (!insideDropdown) { } },
         onBack() { this.$router ? this.$router.back() : this.$emit('back'); },
         doSearch() { this.searchQuery = this.searchInput.trim(); this.page = 1; },
         onFilterChange() { this.page = 1; }
