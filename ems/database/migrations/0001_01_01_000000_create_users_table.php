@@ -53,7 +53,7 @@ return new class extends Migration {
             $table->foreignId('emp_position_id')->constrained('ems_position')->onDelete('cascade');
             $table->foreignId('emp_department_id')->constrained('ems_department')->onDelete('cascade');
             $table->foreignId('emp_team_id')->constrained('ems_team')->onDelete('cascade');
-            $table->string('emp_password');
+            $table->string('emp_password')->nullable();
             $table->enum('emp_permission', ['enabled', 'disabled'])->default('disabled');
             $table->date('emp_create_at')->useCurrent();
             $table->unsignedBigInteger('emp_create_by')->nullable();
