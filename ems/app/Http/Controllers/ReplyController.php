@@ -3,48 +3,82 @@
 namespace App\Http\Controllers;
 
 use App\Models\Connect;
+use Exception;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Event;
+use Illuminate\Support\Facades\Crypt;
 
 class ReplyController extends Controller
 {
 
     // app/Http/Controllers/ReplyController.php
-    public function openForm($evnID, $empID)
+    public function openForm($encryptURL)
     {
-        return view('reply', ['evnID' => $evnID, 'empID' => $empID]);
+        try {
+            $descryptURL = Crypt::decryptString($encryptURL);
+            $ids = explode('/', $descryptURL);
+            $message = response()->json([
+                'success' => true,
+                'message' => 'Form can Open'
+            ]);
+        } catch (Exception $e) {
+            $message = response()->json([
+                'success' => false,
+                'message' => 'Invalid URL'
+            ]);
+            return view('reply', ['message' => $message]);
+        }
+        return view('reply', ['evnID' => $ids[0], 'empID' => $ids[1], 'message' => $message]);
     }
 
-    public function show(Request $req)
+    public function show($encryptURL)
     {
+        try {
+            $descryptURL = Crypt::decryptString($encryptURL);
+            $ids = explode('/', $descryptURL);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid URL'
+            ]);
+        }
+
+
+        $eveId = $ids[0];
+        $empId = $ids[1];
+
         $employee = Employee::query()
             ->select(
+                'id'
+                ,
                 'emp_prefix',
                 'emp_firstname',
                 'emp_lastname',
                 'emp_email',
                 'emp_phone'
             )
-            ->where('id', $req->empID)
+            ->where('id', $empId)
             ->first();
         $event = Event::query()
             ->Select(
+                'id',
                 'evn_title',
                 'evn_date',
                 'evn_timestart',
                 'evn_timeend',
                 'evn_location'
             )
-            ->where('id', $req->evnID)
+            ->where('id', $eveId)
             ->first();
         $connect = Connect::query()
-            ->where('con_event_id', $req->evnID)
-            ->where('con_employee_id', $req->empID)
+            ->where('con_event_id', $eveId)
+            ->where('con_employee_id', $empId)
             ->first();
 
         return response()->json(
             [
+                'success' => true,
                 'employee' => $employee,
                 'event' => $event,
                 'connect' => $connect,
@@ -74,7 +108,7 @@ class ReplyController extends Controller
                 'con_answer' => $data['attend'],                   // หรือ $answer
                 'con_reason' => $data['reason'],
             ]);
-            
+
 
 
         return response()->json(['ok' => true], 201);

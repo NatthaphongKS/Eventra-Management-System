@@ -10,7 +10,6 @@
                     d="M8 3.25a.75.75 0 0 1 .75.75v.75h6.5V4a.75.75 0 0 1 1.5 0v.758q.228.006.425.022c.38.03.736.098 1.073.27a2.75 2.75 0 0 1 1.202 1.202c.172.337.24.693.27 1.073c.03.365.03.81.03 1.345v7.66c0 .535 0 .98-.03 1.345c-.03.38-.098.736-.27 1.073a2.75 2.75 0 0 1-1.201 1.202c-.338.172-.694.24-1.074.27c-.365.03-.81.03-1.344.03H8.17c-.535 0-.98 0-1.345-.03c-.38-.03-.736-.098-1.073-.27a2.75 2.75 0 0 1-1.202-1.2c-.172-.338-.24-.694-.27-1.074c-.03-.365-.03-.81-.03-1.344V8.67c0-.535 0-.98.03-1.345c.03-.38.098-.736.27-1.073A2.75 2.75 0 0 1 5.752 5.05c.337-.172.693-.24 1.073-.27q.197-.016.425-.022V4A.75.75 0 0 1 8 3.25m10.25 7H5.75v6.05c0 .572 0 .957.025 1.252c.023.288.065.425.111.515c.12.236.311.427.547.547c.09.046.227.088.514.111c.296.024.68.025 1.253.025h7.6c.572 0 .957 0 1.252-.025c.288-.023.425-.065.515-.111a1.25 1.25 0 0 0 .547-.547c.046-.09.088-.227.111-.515c.024-.295.025-.68.025-1.252zM10.5 7a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5z"
                     clip-rule="evenodd" />
             </svg>
-            {{ dateRangeText }}
         </button>
 
         <div v-if="showDropdown"
@@ -92,14 +91,12 @@
                 </tbody>
             </table>
 
-            <div class="mt-4 flex justify-between">
-                <button @click="clearDateRange"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200">
+            <div class="mt-4 flex justify-center">
+                <button
+                    @click="clearDateRange"
+                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+                >
                     Clear Filter
-                </button>
-                <button @click="showDropdown = false"
-                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
-                    Done
                 </button>
             </div>
         </div>
@@ -314,7 +311,7 @@ export default {
             this.currentCalendarMonth = dayjsDate;
         },
 
-        // 🎯 LOGIC: Start Date และ End Date เป็นสีแดงเข้ม (ลบสีฟ้าออกทั้งหมด)
+        // 🎯 LOGIC: Start Date และ End Date
         dateCellClass(day) {
             let classes = 'p-1 h-8 w-8 rounded-lg cursor-pointer transition duration-150 text-xs';
 
@@ -324,9 +321,9 @@ export default {
 
             const isFullRange = this.selectedRange.start && this.selectedRange.end;
 
-            // 1. RED (เข้ม): Start Date หรือ End Date
+            // 1. RED (Start/End): แก้ไขเป็น bg-red-300 และ text-red-900
             if (day.isRangeStart || day.isRangeEnd) {
-                classes += ' bg-red-500 text-white font-semibold';
+                classes += ' bg-red-300 text-red-900 font-semibold';
 
                 if (day.isRangeStart && day.isRangeEnd) {
                     // วันเดียว
@@ -339,7 +336,7 @@ export default {
                     classes += ' rounded-r-lg rounded-l-none';
                 }
             }
-            // 2. LIGHT RED: In Range
+            // 2. LIGHT RED: In Range (คงเดิม bg-red-100)
             else if (day.isInRange) {
                 classes += ' bg-red-100 text-red-700 rounded-none';
             }

@@ -53,115 +53,130 @@
             </div>
         </div>
 
-        <div class="mb-4 flex flex-wrap items-center gap-2">
-            <button
-                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
-                :class="
-                    statusFilter === 'accepted'
-                        ? 'bg-[#00A73D] text-white border-[#00A73D] shadow-lg'
-                        : 'bg-[#F1FDF4] text-[#00A73D] border-[#E9E9E9] hover:bg-[#E2FBE9]'
-                "
-                @click="setStatus('accepted')"
-            >
-                <span class="ml-2"
-                    >{{ checkinStats.accepted }}/{{
-                        totals.accepted
-                    }}
-                    Accepted</span
+        <div class="mb-4 flex flex-wrap items-center justify-between">
+            <div class="flex gap-2">
+                <button
+                    class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                    :class="
+                        statusFilter === 'accepted'
+                            ? 'bg-[#00A73D] text-white border-[#00A73D] shadow-lg'
+                            : 'bg-[#F1FDF4] text-[#00A73D] border-[#E9E9E9] hover:bg-[#E2FBE9]'
+                    "
+                    @click="setStatus('accepted')"
                 >
-            </button>
+                    <span class="ml-2"
+                        >{{ checkinStats.accepted }}/{{
+                            totals.accepted
+                        }}
+                        Accepted</span
+                    >
+                </button>
 
-            <button
-                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
-                :class="
-                    statusFilter === 'denied'
-                        ? 'bg-[#C91C23] text-white border-[#C91C23] shadow-lg'
-                        : 'bg-[#FFF8F8] text-[#C91C23] border-[#E9E9E9] hover:bg-[#FFD4D4]'
-                "
-                @click="setStatus('denied')"
-            >
-                <span class="ml-2"
-                    >{{ checkinStats.denied }}/{{
-                        totals.denied
-                    }}
-                    Declined</span
+                <button
+                    class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                    :class="
+                        statusFilter === 'denied'
+                            ? 'bg-[#C91C23] text-white border-[#C91C23] shadow-lg'
+                            : 'bg-[#FFF8F8] text-[#C91C23] border-[#E9E9E9] hover:bg-[#FFD4D4]'
+                    "
+                    @click="setStatus('denied')"
                 >
-            </button>
+                    <span class="ml-2"
+                        >{{ checkinStats.denied }}/{{
+                            totals.denied
+                        }}
+                        Declined</span
+                    >
+                </button>
 
-            <button
-                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
-                :class="
-                    statusFilter === 'pending'
-                        ? 'bg-[#389FDC] text-white border-[#389FDC] shadow-lg'
-                        : 'bg-[#F0F9FF] text-[#389FDC] border-[#E9E9E9] hover:bg-[#CEEBFF]'
-                "
-                @click="setStatus('pending')"
-            >
-                <span class="ml-2"
-                    >{{ checkinStats.pending }}/{{
-                        totals.pending
-                    }}
-                    Pending</span
+                <button
+                    class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                    :class="
+                        statusFilter === 'pending'
+                            ? 'bg-[#389FDC] text-white border-[#389FDC] shadow-lg'
+                            : 'bg-[#F0F9FF] text-[#389FDC] border-[#E9E9E9] hover:bg-[#CEEBFF]'
+                    "
+                    @click="setStatus('pending')"
                 >
-            </button>
+                    <span class="ml-2"
+                        >{{ checkinStats.pending }}/{{
+                            totals.pending
+                        }}
+                        Pending</span
+                    >
+                </button>
 
-            <button
-                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
-                :class="
-                    statusFilter === 'notInvited'
-                        ? 'bg-[#696969] text-white border-[#696969] shadow-lg'
-                        : 'bg-[#F5F5F5] text-[#696969] border-[#E9E9E9] hover:bg-[#E3E0E0]'
-                "
-                @click="setStatus('notInvited')"
-            >
-                <span class="ml-2"
-                    >{{ checkinStats.notInvited }}/{{ totals.notInvited }} Not
-                    Invited</span
+                <button
+                    class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                    :class="
+                        statusFilter === 'notInvited'
+                            ? 'bg-[#696969] text-white border-[#696969] shadow-lg'
+                            : 'bg-[#F5F5F5] text-[#696969] border-[#E9E9E9] hover:bg-[#E3E0E0]'
+                    "
+                    @click="setStatus('notInvited')"
                 >
-            </button>
+                    <span class="ml-2"
+                        >{{ checkinStats.notInvited }}/{{
+                            totals.notInvited
+                        }}
+                        Not Invited</span
+                    >
+                </button>
 
-            <button
-                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
-                :class="
-                    statusFilter === 'all'
-                        ? 'bg-[#7107E7] text-white border-[#7107E7] shadow-lg'
-                        : 'bg-[#F5F3FF] text-[#7107E7] border-[#E9E9E9] hover:bg-[#E9E4FF]'
-                "
-                @click="setStatus('all')"
-            >
-                <span class="ml-2"
-                    >{{ checkinStats.notInvited + checkinStats.denied + checkinStats.pending + checkinStats.accepted }}/{{ rows.length }} All</span
+                <button
+                    class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                    :class="
+                        statusFilter === 'all'
+                            ? 'bg-[#7107E7] text-white border-[#7107E7] shadow-lg'
+                            : 'bg-[#F5F3FF] text-[#7107E7] border-[#E9E9E9] hover:bg-[#E9E4FF]'
+                    "
+                    @click="setStatus('all')"
                 >
-            </button>
+                    <span class="ml-2"
+                        >{{
+                            checkinStats.notInvited +
+                            checkinStats.denied +
+                            checkinStats.pending +
+                            checkinStats.accepted
+                        }}/{{ rows.length }} All</span
+                    >
+                </button>
+            </div>
+            <div class="flex gap-2">
+                <button
+                    class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                    :class="
+                        statusFilter === 'CheckIn'
+                            ? 'bg-[#007A56] text-white border-[#007A56] shadow-lg'
+                            : 'bg-[#ECFEF6] text-[#007A56] border-[#E9E9E9] hover:bg-[#D1FAE5]'
+                    "
+                    @click="setStatus('CheckIn')"
+                >
+                    <span class="ml-2"
+                        >{{ rows.length - totals.notCheckIn }}/{{
+                            rows.length
+                        }}
+                        Attended</span
+                    >
+                </button>
 
-            <button
-                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
-                :class="
-                    statusFilter === 'CheckIn'
-                        ? 'bg-[#007A56] text-white border-[#007A56] shadow-lg'
-                        : 'bg-[#ECFEF6] text-[#007A56] border-[#E9E9E9] hover:bg-[#D1FAE5]'
-                "
-                @click="setStatus('CheckIn')"
-            >
-                <span class="ml-2"
-                    >{{ rows.length - totals.notCheckIn }}/{{ rows.length }} Attended</span
+                <button
+                    class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
+                    :class="
+                        statusFilter === 'notCheckIn'
+                            ? 'bg-[#C70036] text-white border-[#C70036] shadow-lg'
+                            : 'bg-[#FFF2F2] text-[#C70036] border-[#E9E9E9] hover:bg-[#FFE4E6]'
+                    "
+                    @click="setStatus('notCheckIn')"
                 >
-            </button>
-
-            <button
-                class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
-                :class="
-                    statusFilter === 'notCheckIn'
-                        ? 'bg-[#C70036] text-white border-[#C70036] shadow-lg'
-                        : 'bg-[#FFF2F2] text-[#C70036] border-[#E9E9E9] hover:bg-[#FFE4E6]'
-                "
-                @click="setStatus('notCheckIn')"
-            >
-                <span class="ml-2"
-                    >{{ rows.length - totals.checkIn }}/{{ rows.length }} Not
-                    Attended</span
-                >
-            </button>
+                    <span class="ml-2"
+                        >{{ rows.length - totals.checkIn }}/{{
+                            rows.length
+                        }}
+                        Not Attended</span
+                    >
+                </button>
+            </div>
         </div>
 
         <DataTable
@@ -496,7 +511,8 @@ async function handleCheckin({ keys, checked }) {
     for (const empId of keys) {
         try {
             await axios.put(
-                `/updateEmployeeAttendance/eveId/${eveId.value}/empId/${empId}`);
+                `/updateEmployeeAttendance/eveId/${eveId.value}/empId/${empId}`
+            );
             const idx = rows.value.findIndex((r) => r.empId === empId);
             if (idx !== -1) rows.value[idx].empCheckinStatus = checked ? 1 : 0;
         } catch (err) {

@@ -204,7 +204,7 @@ class EmployeeController extends Controller
         | 1) Role & Permission
         |----------------------------------------------------------------------
         */
-        $role = $request->emp_permission; // admin | hr | employee
+        $role = $request->emp_permission ?? 'employee';
         $isEmployee = $role === 'employee';
 
         $permissionMap = [
@@ -327,12 +327,8 @@ class EmployeeController extends Controller
                 'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
                 'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
                 'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-                'emp_password' => [
-                    \Illuminate\Validation\Rule::requiredIf(!$isEmployee),
-                    'nullable',
-                    'min:6',
-                ],
-                'emp_permission' => ['required', 'in:admin,hr,employee'],
+                'emp_password' => ['nullable', 'min:6'],
+                'emp_permission' => ['nullable', 'in:admin,hr,employee'],
             ]);
 
             try {
@@ -388,12 +384,8 @@ class EmployeeController extends Controller
             'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
             'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
             'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-            'emp_password' => [
-                \Illuminate\Validation\Rule::requiredIf(!$isEmployee),
-                'nullable',
-                'min:6',
-            ],
-            'emp_permission' => ['required', 'in:admin,hr,employee'],
+            'emp_password' => ['nullable', 'min:6'],
+            'emp_permission' => ['nullable', 'in:admin,hr,employee'],
         ]);
 
         try {
@@ -435,26 +427,52 @@ class EmployeeController extends Controller
         }
     }
 
-    /**
-     * อัปเดตข้อมูลพนักงาน
-     */
     public function update(Request $request, $id)
     {
-        // ค้นหาพนักงานจาก ID หรือ emp_id
-        $emp = Employee::where('id', $id)->orWhere('emp_id', $id)->first();
+        // =========================
+        // 1) หา user ที่ login
+        // =========================
+        $user = Auth::user();
+
+        if (!$user || empty($user->emp_id)) {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        $loginEmployee = Employee::where('emp_id', $user->emp_id)->first();
+
+        if (!$loginEmployee) {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        // =========================
+        // 2) หา employee ที่ถูกแก้ไข
+        // =========================
+        $emp = Employee::where('id', $id)
+            ->orWhere('emp_id', $id)
+            ->first();
 
         if (!$emp) {
             return response()->json(['message' => 'Employee not found'], 404);
         }
 
+        // =========================
+        // 3) HR แก้ Email / Password ไม่ได้
+        // =========================
+        if ($loginEmployee->emp_permission !== 'enabled') {
+            $request->request->remove('emp_email');
+            $request->request->remove('emp_password');
+            $request->request->remove('password'); // เผื่อ FE ส่งมา
+        }
+
+        // =========================
+        // 4) Validate
+        // =========================
         $validated = $request->validate([
-            // --- [แก้ไข] เพิ่ม Rule::unique สำหรับ emp_id ---
             'emp_id' => [
                 'sometimes',
                 'required',
-                Rule::unique('ems_employees', 'emp_id')->ignore($emp->id) // ห้ามซ้ำ ยกเว้นของตัวเอง
+                Rule::unique('ems_employees', 'emp_id')->ignore($emp->id)
             ],
-            // ---------------------------------------------
             'emp_prefix' => ['sometimes', 'required'],
             'emp_firstname' => ['sometimes', 'required'],
             'emp_lastname' => ['sometimes', 'required'],
@@ -463,7 +481,7 @@ class EmployeeController extends Controller
                 'sometimes',
                 'nullable',
                 'email',
-                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id) // ใช้ ID จริงที่หาเจอ
+                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id)
             ],
             'emp_phone' => [
                 'sometimes',
@@ -471,7 +489,7 @@ class EmployeeController extends Controller
                 'regex:/^[0-9]+$/',
                 'min:10',
                 'max:10',
-                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id) // ใช้ ID จริงที่หาเจอ
+                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id)
             ],
             'emp_position_id' => ['sometimes', 'nullable', 'exists:ems_position,id'],
             'emp_department_id' => ['sometimes', 'nullable', 'exists:ems_department,id'],
@@ -481,6 +499,9 @@ class EmployeeController extends Controller
             'emp_password' => ['sometimes', 'nullable', 'min:6'],
         ]);
 
+        // =========================
+        // 5) Update
+        // =========================
         $update = collect($validated)->except('emp_status')->toArray();
 
         if ($request->filled('emp_status')) {
@@ -500,6 +521,7 @@ class EmployeeController extends Controller
             'data' => $emp->fresh(),
         ]);
     }
+
 
     /**
      * ลบแบบ soft (Standard)
@@ -523,19 +545,43 @@ class EmployeeController extends Controller
      */
     public function softDelete($id)
     {
-        // ค้นหาทั้ง ID และ emp_id เพื่อความยืดหยุ่น
-        $emp = Employee::where('id', $id)->orWhere('emp_id', $id)->first();
+        $user = Auth::user();
 
-        if (!$emp) {
-            return response()->json(['message' => 'Employee not found (id: ' . $id . ')'], 404);
+        // 🔒 ต้องมี emp_id เท่านั้น
+        if (empty($user->emp_id)) {
+            return response()->json(['message' => 'Permission denied'], 403);
         }
 
+        // 🔑 employee ของคนที่ login
+        $loginEmployee = Employee::where('emp_id', $user->emp_id)->first();
+
+        if (!$loginEmployee) {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        // ✅ เช็ค permission ตาม requirement
+        if ($loginEmployee->emp_permission !== 'enabled') {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        // 👤 employee ที่จะถูกลบ
+        $emp = Employee::where('id', $id)
+            ->orWhere('emp_id', $id)
+            ->first();
+
+        if (!$emp) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        // 🗑️ soft delete
         $emp->emp_delete_status = 'inactive';
         $emp->emp_delete_at = now();
-        $emp->emp_delete_by = Auth::id();
+        $emp->emp_delete_by = $loginEmployee->id;
         $emp->save();
 
-        return response()->json(['message' => 'Employee soft deleted successfully']);
+        return response()->json([
+            'message' => 'Employee soft deleted successfully'
+        ]);
     }
 
     // --- ส่วน Import / Helper เดิม ไม่ได้แก้ไข logic ---
