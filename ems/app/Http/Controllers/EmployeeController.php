@@ -28,6 +28,7 @@ class EmployeeController extends Controller
             'position:id,pst_name',
             'department:id,dpm_name',
             'team:id,tm_name',
+            'company:id,com_name'
         ])
             ->where(
                 fn($q) => $q
@@ -38,6 +39,7 @@ class EmployeeController extends Controller
             ->orderByDesc('id')
             ->get([
                 'id',
+                'emp_company_id',
                 'emp_id',
                 'emp_prefix',
                 'emp_firstname',
@@ -56,6 +58,7 @@ class EmployeeController extends Controller
         $rows = $employees->map(function (Employee $e) {
             return [
                 'id' => $e->id,
+                'emp_company_id' => $e->company->com_name,
                 'emp_id' => $e->emp_id,
                 'emp_prefix' => $e->emp_prefix,
                 'emp_firstname' => $e->emp_firstname,
@@ -327,7 +330,7 @@ class EmployeeController extends Controller
                 'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
                 'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
                 'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-                'emp_password' => ['nullable', 'min:6'],
+                'emp_password' => ['nullable', 'min:8'],
                 'emp_permission' => ['nullable', 'in:admin,hr,employee'],
             ]);
 
@@ -384,7 +387,7 @@ class EmployeeController extends Controller
             'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
             'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
             'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-            'emp_password' => ['nullable', 'min:6'],
+            'emp_password' => ['nullable', 'min:8'],
             'emp_permission' => ['nullable', 'in:admin,hr,employee'],
         ]);
 
