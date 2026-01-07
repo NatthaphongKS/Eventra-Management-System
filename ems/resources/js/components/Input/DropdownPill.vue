@@ -1,10 +1,10 @@
 <template>
-    <div class="relative" ref="root">
+    <div class="relative mb-2" ref="root">
         <!-- Trigger -->
         <button type="button" :disabled="disabled"
-            class="w-full rounded-full border px-4 py-2.5 text-sm flex items-center justify-between focus:outline-none focus:ring-2 transition"
+            class="w-full rounded-[15px] border px-4 py-2.5 text-base flex items-center justify-between focus:outline-none focus:ring-2 transition"
             :class="[
-                disabled ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white',
+                disabled ? 'bg-gray-50 text-neutral-400 cursor-not-allowed' : 'bg-white',
                 error ? 'border-red-700 focus:ring-red-300' : 'neutral-200 focus:ring-red-300',
             ]" @click="toggle" @keydown.down.prevent="openAndMove(1)" @keydown.up.prevent="openAndMove(-1)"
             @keydown.enter.prevent="commitActive" @keydown.esc.prevent="open = false">
@@ -14,7 +14,7 @@
             </span>
 
             <!-- ไอคอนแดงเข้ม -->
-            <svg class="h-5 w-5 transition-transform text-red-700" :class="open ? 'rotate-180' : ''" viewBox="0 0 20 20"
+            <svg class="h-8 w-8 transition-transform text-red-700" :class="open ? 'rotate-180' : ''" viewBox="0 0 20 20"
                 fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd"
                     d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, computed, onMounted, onBeforeUnmount} from 'vue'
 
 const props = defineProps({
     modelValue: { type: [String, Number, Object], default: '' },

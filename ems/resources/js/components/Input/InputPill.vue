@@ -2,20 +2,20 @@
     <div class="w-full">
         <input v-bind="$attrs" :type="type" :inputmode="inputmode" :placeholder="placeholder" :disabled="disabled"
             class="
-                rounded-[20px] border px-4 py-2.5 text-sm transition
+                rounded-[15px] border px-4 py-2.5 text-base transition
                 focus:outline-none focus:ring-2
                 placeholder-red-300
-                disabled:placeholder:text-red-300
+                disabled:placeholder:text-neutral-300
             " :class="[
                 disabled
-                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                    ? 'bg-neutral-50 text-neutral-400 cursor-not-allowed'
                     : 'bg-white text-neutral-800',
                 error
                     ? 'border-red-700 focus:ring-red-300 focus:border-red-700'
                     : 'border-neutral-200 focus:ring-red-300 focus:border-neutral-200'
             ]" :value="modelValue" @input="$emit('update:modelValue', $event.target?.value)" />
 
-        <p v-if="error" class="mt-1 text-xs text-red-500">
+        <p v-if="error" class="text-xs text-red-500">
             {{ error }}
         </p>
     </div>
