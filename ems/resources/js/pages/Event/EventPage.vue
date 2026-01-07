@@ -85,7 +85,7 @@
                         : 'cursor-pointer'" title="Edit">
                     <Icon icon="material-symbols:edit-rounded" width="20" height="20" :class="!canEdit(row)
                         ? 'text-neutral-400'
-                        : 'text-neutral-500 hover:text-[#059669]'" />
+                        : 'text-neutral-725 hover:text-[#059669]'" />
                 </button>
 
                 <!-- Delete -->
@@ -95,7 +95,7 @@
                         : 'cursor-pointer'" title="Delete">
                     <Icon icon="fluent:delete-12-filled" width="20" height="20" :class="!canDelete(row)
                         ? 'text-neutral-400'
-                        : 'text-neutral-500 hover:text-[#dc2626]'" />
+                        : 'text-neutral-725 hover:text-[#dc2626]'" />
                 </button>
 
                 <!-- Check-in -->
@@ -107,7 +107,7 @@
                 <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 transition-colors"
                     title="Check-in">
                     <Icon icon="material-symbols:fact-check-rounded" width="20" height="20"
-                        class="text-neutral-500 hover:text-[#0084d1]" />
+                        class="text-neutral-725 hover:text-[#0084d1]" />
                 </router-link>
             </template>
         </DataTable>
