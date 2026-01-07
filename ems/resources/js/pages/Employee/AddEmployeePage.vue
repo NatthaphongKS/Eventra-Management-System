@@ -147,7 +147,6 @@
 import { reactive, computed, watch, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
-import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 
 /* ---------- Components ---------- */
@@ -316,6 +315,7 @@ const MSG = {
     requiredEmail: "Required email, should have @ and .",
     requiredField: "Required field",
     employeeNumber4: "Employee number must be 4 digits",
+    passwordMin: "Password must be at least 8 characters",
 }
 
 const fieldRules = {
@@ -338,7 +338,6 @@ const fieldRules = {
  * validate field
  */
 function validateField(key, value) {
-    // ถ้าเป็น error จาก backend (already exist) ไม่ให้ถูกทับ
     if (errors[key] && errors[key].includes('already')) {
         return errors[key]
     }
@@ -372,6 +371,11 @@ function validateField(key, value) {
             if (!value || !(value.includes('@') && value.includes('.'))) {
                 return MSG.requiredEmail
             }
+        }
+
+        if (key === 'password') {
+            if (!value) return MSG.requiredField
+            if (value.length < 8) return MSG.passwordMin
         }
 
         if (r === 'requiredField' && !value) {
@@ -489,7 +493,7 @@ async function handleSubmit() {
             emp_team_id: Number(form.team),
             emp_permission: form.permission,
         })
-    
+
 
         suspendValidation.value = true
         Object.keys(form).forEach(k => form[k] = "")

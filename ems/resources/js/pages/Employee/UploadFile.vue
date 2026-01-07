@@ -491,13 +491,11 @@ function mapRows(rows) {
 
             // 1) Excel Date object
             if (norm.dateAdd instanceof Date) {
-                dateAdd = toDMY(
-                    new Date(
-                        norm.dateAdd.getFullYear(),
-                        norm.dateAdd.getMonth(),
-                        norm.dateAdd.getDate()
-                    )
-                );
+                const y = norm.dateAdd.getUTCFullYear();
+                const m = norm.dateAdd.getUTCMonth();
+                const d = norm.dateAdd.getUTCDate();
+
+                dateAdd = toDMY(new Date(y, m, d));
             }
 
             // 2) String date เช่น 20/08/2025 หรือ 2025-08-20
@@ -598,6 +596,22 @@ const showCreateSuccess = ref(false);
 const showCannotCreate = ref(false);
 
 // ======================================================
+function resolveCompanyId(companyCode) {
+    if (!companyCode) return null;
+
+    const code = String(companyCode).trim().toUpperCase();
+
+    const companyMap = {
+        CN: 1,
+        CNI: 2,
+        CNT: 3,
+        WA: 4,
+    };
+
+    return companyMap[code] || null;
+}
+
+// ======================================================
 // Bulk create employees
 // ======================================================
 async function onCreate() {
@@ -623,7 +637,6 @@ async function onCreate() {
                 return;
             }
 
-
             const prefixText = String(row.prefix || "").trim();
 
             const prefixLookup = {
@@ -639,9 +652,23 @@ async function onCreate() {
                 return;
             }
 
+            const companyId = resolveCompanyId(row.company);
+
+            if (!companyId) {
+                errorMessage.value = `Invalid company value (Row ${index + 2}).`;
+                showCannotCreate.value = true;
+                return;
+            }
+
+            const companyCode = String(row.company || "").trim().toUpperCase();
+            const empNumber = String(row.employeeId || "").trim();
+            const empIdCombined = `${companyCode}${empNumber}`;
+
+
             preparedRows.push({
                 payload: {
-                    emp_id: row.employeeId,
+                    emp_company_id: companyId,
+                    emp_id: empIdCombined,
                     emp_prefix: emp_prefix,
                     emp_firstname: row.firstName ?? "",
                     emp_lastname: row.lastName ?? "",
@@ -653,7 +680,6 @@ async function onCreate() {
                     emp_team_id: resolved.team.id,
                     emp_password: null,
                     emp_status: 2,
-                    emp_company_id: 1,
                 },
             });
         }
@@ -765,7 +791,7 @@ async function downloadTemplate() {
 
         sheet.addRow([
             "CN",
-            "CN1111",
+            "1111",
             "นาย",
             "สมชาย",
             "เขียวสะอาด",
@@ -862,7 +888,9 @@ async function downloadTemplate() {
                 formulae: [`"${posList}"`],
             };
 
-            sheet.getCell(`L${r}`).numFmt = "dd/mm/yyyy";
+            sheet.getCell(`B${r}`).numFmt = "@";
+            sheet.getCell(`J${r}`).numFmt = "@";
+            sheet.getCell(`L${r}`).numFmt = "@";
         }
 
         /* ============================
