@@ -185,10 +185,8 @@
         <DonutActualAttendance 
           :eventId="Array.from(selectedEventIds)[0]"
           :attendanceData="{
-            attending: chartData.attending || 0,
-            notAttending: chartData.not_attending || 0,
-            pending: chartData.pending || 0,
-            total: chartData.total_participation || 0
+            attending: chartData.actual_attendance?.attended || 0,
+            total: chartData.actual_attendance?.total_assigned || 0
           }"
           :loading="loadingParticipants"
         />
@@ -346,7 +344,6 @@ export default {
       ],
       // Event ที่เลือกสำหรับแสดงสถิติ
       selectedEventIds: new Set(),
-      selectAll: false,
       // กรองตามวันที่
       selectedDate: { start: null, end: null },
       // สถานะตารางพนักงาน
@@ -362,7 +359,8 @@ export default {
         attending: 0,
         not_attending: 0,
         pending: 0,
-        departments: []
+        departments: [],
+        actual_attendance: { attended: 0, total_assigned: 0 }
       },
       // ข้อมูลทดสอบปุ่ม
       loadingTest: false,
@@ -587,6 +585,12 @@ export default {
         ...item,
         row_number: start + index + 1
       }));
+    },
+
+    // Check if all visible rows on current page are selected
+    selectAll() {
+      if (this.paged.length === 0) return false;
+      return this.paged.every(row => this.selectedEventIds.has(row.id || row.evn_id));
     },
 
     eventTableColumns() {
@@ -1002,7 +1006,8 @@ export default {
           attending: 0,
           not_attending: 0,
           pending: 0,
-          departments: []
+          departments: [],
+          actual_attendance: { attended: 0, total_assigned: 0 }
         };
         this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
@@ -1028,7 +1033,8 @@ export default {
             attending: res.data.attending || 0,
             not_attending: res.data.not_attending || 0,
             pending: res.data.pending || 0,
-            departments: res.data.departments || []
+            departments: res.data.departments || [],
+            actual_attendance: res.data.actual_attendance || { attended: 0, total_assigned: 0 }
           };
           
           // อัพเดตข้อมูลกราฟแท่ง
@@ -1065,7 +1071,8 @@ export default {
           attending: 0,
           not_attending: 0,
           pending: 0,
-          departments: []
+          departments: [],
+          actual_attendance: { attended: 0, total_assigned: 0 }
         };
         this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
@@ -1093,9 +1100,6 @@ export default {
         this.selectedEventIds.add(eventId);
       }
       
-      // อัพเดตสถานะ select-all checkbox
-      this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
-      
       // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
       this.showStatistics = false;
       
@@ -1105,21 +1109,30 @@ export default {
     },
 
     selectAllEvents(event) {
-      // สลับสถานะ selectAll ตามสถานะ checkbox
-      this.selectAll = event.target.checked;
+      const isChecked = event.target.checked;
       
-      if (this.selectAll) {
-        // เลือกทุกอีเวนต์ในรายการที่เรียงแล้ว
-        this.selectedEventIds = new Set(this.sorted.map(e => e.id || e.evn_id));
+      if (isChecked) {
+        // เลือกเฉพาะแถวที่แสดงในหน้าปัจจุบัน
+        this.paged.forEach(row => {
+          const eventId = row.id || row.evn_id;
+          if (eventId) {
+            this.selectedEventIds.add(eventId);
+          }
+        });
       } else {
-        // ยกเลิกการเลือกทั้งหมด
-        this.selectedEventIds.clear();
+        // ยกเลิกการเลือกเฉพาะแถวที่แสดงในหน้าปัจจุบัน
+        this.paged.forEach(row => {
+          const eventId = row.id || row.evn_id;
+          if (eventId) {
+            this.selectedEventIds.delete(eventId);
+          }
+        });
       }
       
       // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
       this.showStatistics = false;
       
-      console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
+      console.log('Select all toggled on current page:', isChecked, 'Total selected count:', this.selectedEventIds.size);
       
       // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
@@ -1305,9 +1318,9 @@ export default {
         let filteredParticipants = [];
         
         if (status === 'attending') {
-          // สำหรับผู้เข้าร่วม ใช้ con_checkin_status = 1 (เช็คอินจริง)
+          // สำหรับผู้เข้าร่วม ใช้ con_answer = 'accepted' (ตอบรับ)
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.con_checkin_status === 1;
+            return participant.status === 'accepted';
           });
         } else if (status === 'not-attending') {
           // สำหรับไม่เข้าร่วม ใช้ con_answer = 'denied'
@@ -1315,9 +1328,9 @@ export default {
             return participant.status === 'denied';
           });
         } else if (status === 'pending') {
-          // สำหรับรอตอบกลับ: คนที่ยังไม่เช็คอินและยังไม่ได้ปฏิเสธ
+          // สำหรับรอตอบกลับ: คนที่ยังไม่ตอบรับหรือปฏิเสธ
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.con_checkin_status !== 1 && participant.status !== 'denied';
+            return participant.status !== 'accepted' && participant.status !== 'denied';
           });
         }
         

@@ -862,9 +862,19 @@ class EventController extends Controller
                 ->where('con_answer', '!=', 'not_invite')
                 ->selectRaw('
                     COUNT(*) as total_participation,
-                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
-                    SUM(CASE WHEN con_checkin_status != 1 AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN con_answer != "accepted" AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                ')
+                ->first();
+
+            // Get actual attendance statistics (all assigned employees)
+            $actualAttendance = DB::table('ems_connect')
+                ->whereIn('con_event_id', $eventIds)
+                ->where('con_delete_status', 'active')
+                ->selectRaw('
+                    COUNT(*) as total_assigned,
+                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attended
                 ')
                 ->first();
 
@@ -878,9 +888,9 @@ class EventController extends Controller
                 ->groupBy('ems_department.id', 'ems_department.dpm_name')
                 ->selectRaw('
                     ems_department.dpm_name as name,
-                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_answer != "accepted" AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
@@ -894,9 +904,9 @@ class EventController extends Controller
                 ->groupBy('ems_team.id', 'ems_team.tm_name')
                 ->selectRaw('
                     ems_team.tm_name as name,
-                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_answer != "accepted" AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
@@ -935,6 +945,10 @@ class EventController extends Controller
                 'attending' => $stats->attending ?? 0,
                 'not_attending' => $stats->not_attending ?? 0,
                 'pending' => $stats->pending ?? 0,
+                'actual_attendance' => [
+                    'attended' => $actualAttendance->attended ?? 0,
+                    'total_assigned' => $actualAttendance->total_assigned ?? 0
+                ],
                 'departments' => $departments,
                 'teams' => $teams,
                 'participants' => $participants
