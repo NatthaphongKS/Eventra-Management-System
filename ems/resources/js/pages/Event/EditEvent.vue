@@ -148,7 +148,7 @@
                 <div>
                     <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">Duration</label>
                     <div
-                        class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
+                        class="flex h-[52px] w-full items-center gap-3 rounded-xl  px-4 shadow-sm bg-[#F5F5F5]">
                         <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
                             v-model="eventDuration" placeholder="Auto fill Hour"></input>
                         <Icon icon="mingcute:time-duration-line" class="w-7 h-7  text-neutral-400" />
