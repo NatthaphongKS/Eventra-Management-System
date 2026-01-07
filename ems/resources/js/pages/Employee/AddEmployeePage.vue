@@ -254,7 +254,7 @@
                             </FormField>
 
                             <div
-                                class="col-span-full flex justify-between items-center"
+                                class="col-span-full flex justify-between items-center pb-6"
                             >
                                 <button
                                     type="button"

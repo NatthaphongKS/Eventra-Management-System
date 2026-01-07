@@ -11,7 +11,7 @@
     type="button"
     @click="$emit('click')"
     class="inline-flex items-center gap-2.5 rounded-[17px] border border-neutral-200 bg-white text-neutral-800
-           font-bold leading-none shadow-sm transition
+           font-semibold leading-none shadow-sm transition
            hover:border-black/20 hover:shadow-md
            active:translate-y-px active:shadow-inner
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35"

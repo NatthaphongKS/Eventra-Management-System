@@ -176,7 +176,7 @@
                 </div>
               </FormField>
 
-              <div class="pt-2 flex items-end">
+              <div class="pt-2 flex items-end pb-6">
                 <button type="button" @click="onCancel" class="inline-flex -ml-11">
                   <CancelButton />
                 </button>
