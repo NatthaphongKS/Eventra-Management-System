@@ -578,7 +578,7 @@ class EmployeeController extends Controller
         }
 
         // ✅ เช็ค permission ตาม requirement
-        if ($loginEmployee->emp_permission !== 'enabled') {
+        if ($loginEmployee->emp_permission !== 'employee') {
             return response()->json(['message' => 'Permission denied'], 403);
         }
 
