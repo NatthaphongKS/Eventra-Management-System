@@ -16,62 +16,63 @@
         <div class="grid grid-cols-1 gap-7 lg:grid-cols-3">
             <div class="space-y-6 lg:col-span-2">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    
-                    <BaseReadonlyField 
-                        class="md:col-span-2" 
-                        label="Event Title" 
-                        :value="form.title" 
-                    />
-                    
-                    <BaseReadonlyField 
-                        label="Category" 
-                        :value="categoryDisplay" 
-                        icon="iconamoon:arrow-down-2-light" 
-                    />
+
+                    <BaseReadonlyField class="md:col-span-2" label="Event Title" :value="form.title" />
+
+                    <BaseReadonlyField label="Category" :value="categoryDisplay" icon="iconamoon:arrow-down-2-light" />
                 </div>
 
                 <div>
                     <label class="mb-1 block text-xl font-medium text-neutral-800">Event Details</label>
-                    <div class="flex w-full items-start gap-2 rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5">
-                        <textarea :value="form.details" rows="4" disabled class="w-full resize-none bg-transparent text-neutral-400 outline-none text-md font-medium"></textarea>
+                    <div
+                        class="flex w-full items-start gap-2 rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5">
+                        <textarea :value="form.details" rows="4" disabled
+                            class="w-full resize-none bg-transparent text-neutral-400 outline-none text-md font-medium"></textarea>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <BaseReadonlyField label="Date" :value="formatDate(form.date)" icon="stash:data-date-solid" />
-                    
+
                     <div>
                         <label class="mb-1 block text-xl font-medium text-neutral-800">Time</label>
-                        <div class="flex w-full items-center justify-between rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5">
+                        <div
+                            class="flex w-full items-center justify-between rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5">
                             <div class="flex items-center gap-3 ">
-                                <span class="w-15 text-center text-neutral-400 font-medium text-md">{{ toThaiTime(form.timeStart) }}</span>
+                                <span class="w-15 text-center text-neutral-400 font-medium text-md">{{
+                                    toThaiTime(form.timeStart) }}</span>
                                 <span class="select-none text-slate-400">:</span>
-                                <span class="w-15 text-center text-neutral-400 font-medium text-md">{{ toThaiTime(form.timeEnd) }}</span>
+                                <span class="w-15 text-center text-neutral-400 font-medium text-md">{{
+                                    toThaiTime(form.timeEnd) }}</span>
                             </div>
-                            <span class="text-neutral-400"><Icon icon="iconamoon:clock-light" class="h-6 w-6 text-neutral-400 shrink-0 " /></span>
+                            <span class="text-neutral-400">
+                                <Icon icon="iconamoon:clock-light" class="h-6 w-6 text-neutral-400 shrink-0 " />
+                            </span>
                         </div>
                     </div>
 
-                    <BaseReadonlyField 
-                        label="Duration" 
-                        :value="calculateDuration(form.timeStart, form.timeEnd, form.duration)" 
-                        icon="mingcute:time-duration-line" 
-                    />
+                    <BaseReadonlyField label="Duration"
+                        :value="calculateDuration(form.timeStart, form.timeEnd, form.duration)"
+                        icon="mingcute:time-duration-line" />
                 </div>
 
                 <BaseReadonlyField label="Location" :value="form.location" />
             </div>
 
             <div>
-                <label class="mb-1 block text-xl font-medium text-neutral-800">Attachments</label>
+                <label class="mb-1 block text-xl font-medium text-neutral-800">Upload Attachments</label>
                 <p class="mb-2 text-xs text-neutral-400">Drag and drop document to your support task</p>
 
-                <div class="flex min-h-[400px] flex-col gap-2 rounded-[20px] border border-dashed border-neutral-400 bg-neutral-100 p-4 ">
-                    <div v-if="files.length === 0" class="grid flex-1 place-items-center text-neutral-400 text-md">ไม่มีไฟล์แนบ</div>
+                <div
+                    class="flex min-h-[400px] flex-col gap-2 rounded-[20px] border border-dashed border-neutral-400 bg-neutral-100 p-4 ">
+                    <div v-if="files.length === 0" class="grid flex-1 place-items-center text-neutral-400 text-md">
+                        ไม่มีไฟล์แนบ</div>
                     <div v-else class="flex flex-col gap-2">
-                        <div v-for="(f, i) in files" :key="i" class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors">
+                        <div v-for="(f, i) in files" :key="i"
+                            class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors">
                             <Icon icon="basil:file-solid" class="h-10 w-10 text-slat-700" />
-                            <span class="truncate text-md text-neutral-400 hover:text-slat-700 flex-1" :title="f.file_name || f.name">
+                            <span class="truncate text-md text-neutral-400 hover:text-slat-700 flex-1"
+                                :title="f.file_name || f.name">
                                 {{ f.file_name || f.name }}
                             </span>
                         </div>
@@ -82,72 +83,59 @@
 
         <div class="mt-10">
             <h3 class="text-3xl font-semibold mb-4">Add Guest</h3>
-            <label class="mb-1 block text-xl font-medium text-neutral-800" for="searchInput">Search</label>
-            <div class="mb-4 flex flex-wrap items-center gap-2">
+            <div class=" flex flex-wrap items-center gap-2">
                 <div class="flex flex-1 items-center gap-2 min-w-[200px]">
-                    <input
-                        v-model.trim="searchInput"
-                        @keyup.enter="doSearch"
-                        class="w-full rounded-2xl border border-neutral-200 bg-white px-3 py-2.5 text-md font-medium text-neutral-400 placeholder:text-red-300 outline-none focus:ring-2 focus:ring-rose-200"
-                        placeholder="Search Employee ID / Name / Nickname "
-                    />
-                    <button @click="doSearch" class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-rose-700 text-white hover:opacity-90 active:opacity-100">
-                        <Icon icon="mdi:magnify" class="h-8 w-8" />
-                    </button>
+                    <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname"
+                        @search="doSearch">
+                    </SearchBar>
                 </div>
-
-                <EmployeeDropdown label="Company" :options="uniqueCompanies" v-model="companySel" @update:modelValue="onFilterChange" />
-                <EmployeeDropdown label="Department" :options="uniqueDepartments" v-model="deptSel" @update:modelValue="onFilterChange" />
-                <EmployeeDropdown label="Team" :options="uniqueTeams" v-model="teamSel" @update:modelValue="onFilterChange" />
-                <EmployeeDropdown label="Position" :options="uniquePositions" v-model="posSel" @update:modelValue="onFilterChange" />
-            </div>
-
-            <DataTable
-                :rows="pagedRows"
-                :columns="guestsTableColumns"
-                :loading="loading"
-                :total-items="filteredRows.length"
-                v-model:page="page"
-                v-model:pageSize="pageSize"
-                row-key="id"
-                :show-row-number="false"
-                :selectable="false" 
-                :rowClass="rowClassFn"
-                class="mt-2"
-            >
-                <template #header-_select>
-                    <div class="w-10 text-center">
-                        <input type="checkbox" class="accent-rose-600 opacity-60 size-5 cursor-not-allowed" @click.prevent />
-                    </div>
-                </template>
-                <template #cell-_select="{ row }">
-                    <div @click.stop class="flex justify-center">
-                        <input 
-                            type="checkbox" 
-                            class="accent-slate-700 size-5 cursor-not-allowed" 
-                            :checked="selectedIds.has(row.id)" 
-                            @click.prevent
-                        />
-                    </div>
-                </template>
-
-                <template #cell-_index="{ row }">
-                    <span class="text-neutral-500 font-medium">
-                        {{ filteredRows.indexOf(row) + 1 }}
-                    </span>
-                </template>
-
-                <template #footer-info="{ from, to, total }">
-                    </template>
-            </DataTable>
-
-            <div class="mt-6">
-                <button class="rounded-2xl bg-neutral-400 px-5 py-2 text-white hover:bg-neutral-500 transition" @click="onBack">← Back</button>
+                <div class="mt-8 gap-2">
+                <EmployeeDropdown label="Company" :options="uniqueCompanies" v-model="companySel"
+                    @update:modelValue="onFilterChange" class="px-2"/>
+                <EmployeeDropdown label="Department" :options="uniqueDepartments" v-model="deptSel"
+                    @update:modelValue="onFilterChange" class="px-2"/>
+                <EmployeeDropdown label="Team" :options="uniqueTeams" v-model="teamSel"
+                    @update:modelValue="onFilterChange" class="px-2"/>
+                <EmployeeDropdown label="Position" :options="uniquePositions" v-model="posSel"
+                    @update:modelValue="onFilterChange" class="px-2"/>
             </div>
         </div>
 
-        <div v-if="loading" class="mt-4 text-slate-500">กำลังโหลดข้อมูล…</div>
-        <div v-if="error" class="mt-4 text-rose-600">{{ error }}</div>
+        <DataTable :rows="pagedRows" :columns="guestsTableColumns" :loading="loading" :total-items="filteredRows.length"
+            v-model:page="page" v-model:pageSize="pageSize" row-key="id" :show-row-number="false" :selectable="false"
+            :rowClass="rowClassFn" class="mt-2">
+            <template #header-_select>
+                <div class="w-10 text-center">
+                    <input type="checkbox" class="accent-rose-600 opacity-60 size-5 cursor-not-allowed"
+                        @click.prevent />
+                </div>
+            </template>
+            <template #cell-_select="{ row }">
+                <div @click.stop class="flex justify-center">
+                    <input type="checkbox" class="accent-slate-700 size-5 cursor-not-allowed"
+                        :checked="selectedIds.has(row.id)" @click.prevent />
+                </div>
+            </template>
+
+            <template #cell-_index="{ row }">
+                <span class="text-neutral-500 font-medium">
+                    {{ filteredRows.indexOf(row) + 1 }}
+                </span>
+            </template>
+
+            <template #footer-info="{ from, to, total }">
+            </template>
+        </DataTable>
+
+        <div class="mt-6">
+            <button class="rounded-2xl bg-neutral-400 px-5 py-2 text-white hover:bg-neutral-500 transition"
+                @click="onBack">←
+                Back</button>
+        </div>
+    </div>
+
+    <div v-if="loading" class="mt-4 text-slate-500">กำลังโหลดข้อมูล…</div>
+    <div v-if="error" class="mt-4 text-rose-600">{{ error }}</div>
     </div>
 </template>
 
@@ -157,28 +145,29 @@ import { Icon } from "@iconify/vue";
 import DataTable from "@/components/DataTable.vue";
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 import BaseReadonlyField from "@/components/DetailsEvent/BaseReadonlyField.vue";
+import SearchBar from "../SearchBar.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.withCredentials = true;
 
 export default {
     name: "EventDetailCard",
-    components: { Icon, DataTable, EmployeeDropdown, BaseReadonlyField },
+    components: { Icon, DataTable, EmployeeDropdown, BaseReadonlyField, SearchBar },
     props: { id: { type: [String, Number], required: true } },
     data() {
         return {
-            loading: false, error: "", 
+            loading: false, error: "",
             files: [], Categories: [], idToCat: {},
             rows: [], selectedIds: new Set(),
             page: 1, pageSize: 10,
             form: {
-                title: "", categoryId: "", categoryName: "", details: "", 
+                title: "", categoryId: "", categoryName: "", details: "",
                 date: "", timeStart: "", timeEnd: "", duration: "", location: "", status: "",
             },
             searchInput: "", searchQuery: "",
             companySel: [], deptSel: [], teamSel: [], posSel: [],
-            
-            
+
+
             guestsTableColumns: [
                 { key: "_select", label: "", class: "w-5 text-center" },
                 { key: "_index", label: "#", class: "w-12 text-center" },
@@ -192,7 +181,7 @@ export default {
         };
     },
     computed: {
-        categoryDisplay() { 
+        categoryDisplay() {
             if (this.form.categoryName) return String(this.form.categoryName);
             const id = this.form.categoryId;
             if (!id) return "";
@@ -217,8 +206,8 @@ export default {
             });
         },
         pagedRows() {
-             const start = (this.page - 1) * this.pageSize;
-             return this.filteredRows.slice(start, start + this.pageSize);
+            const start = (this.page - 1) * this.pageSize;
+            return this.filteredRows.slice(start, start + this.pageSize);
         }
     },
     async created() {
@@ -226,7 +215,7 @@ export default {
     },
     methods: {
         toOptions(arr) {
-             return [...new Set(arr.filter(Boolean))].sort().map(v => ({ label: v, value: v }));
+            return [...new Set(arr.filter(Boolean))].sort().map(v => ({ label: v, value: v }));
         },
         async fetchCategories() {
             try {
@@ -242,16 +231,16 @@ export default {
             const name = c.name ?? c.cat_name ?? c.title ?? '';
             return { id: String(id), name: String(name) };
         },
-        async fetchEvent() { 
-             try {
+        async fetchEvent() {
+            try {
                 this.loading = true;
                 if (!this.id) { this.error = "ไม่พบรหัสอีเวนต์"; return; }
                 const res = await axios.get(`/event/${this.id}`);
                 const rawData = res.data;
-                const item = rawData.event || rawData; 
+                const item = rawData.event || rawData;
 
-                if (Array.isArray(rawData.files)) { this.files = rawData.files; } 
-                else if (Array.isArray(item.files)) { this.files = item.files; } 
+                if (Array.isArray(rawData.files)) { this.files = rawData.files; }
+                else if (Array.isArray(item.files)) { this.files = item.files; }
                 else { this.files = []; }
 
                 if (item) {
@@ -265,7 +254,7 @@ export default {
                     this.form.duration = item.evn_duration ?? item.duration ?? "";
                     this.form.location = item.evn_location ?? item.location ?? "";
                 }
-             } catch(e) { this.error = "โหลดข้อมูลไม่สำเร็จ"; console.error(e); } finally { this.loading = false; }
+            } catch (e) { this.error = "โหลดข้อมูลไม่สำเร็จ"; console.error(e); } finally { this.loading = false; }
         },
         async fetchEmployees() {
             try {
@@ -275,7 +264,7 @@ export default {
                     const rawId = String(e.emp_id || "").trim();
                     let abbr = (e.company_abbr || e.company_code || "").toUpperCase().trim();
                     if (!abbr) {
-                        const match = rawId.match(/^([A-Za-z]+)/); 
+                        const match = rawId.match(/^([A-Za-z]+)/);
                         if (match) abbr = match[1].toUpperCase();
                     }
                     let display = rawId;
@@ -292,7 +281,7 @@ export default {
                         department: e.department_name || "",
                         team: e.team_name || "",
                         position: e.position_name || "",
-                        companyAbbr: abbr, 
+                        companyAbbr: abbr,
                         companyId: e.company_id || ""
                     };
                 });
@@ -315,7 +304,7 @@ export default {
                     const startTotal = startH * 60 + startM;
                     const endTotal = endH * 60 + endM;
                     let diff = endTotal - startTotal;
-                    if (diff < 0) diff += 24 * 60; 
+                    if (diff < 0) diff += 24 * 60;
                     const h = Math.floor(diff / 60);
                     const m = diff % 60;
                     let res = `${h} Hour`;
@@ -328,8 +317,8 @@ export default {
         formatDurationFallback(v) {
             const n = Number(v);
             if (!Number.isFinite(n)) return v;
-            const h = Math.floor(n); 
-            const m = Math.round((n - h) * 60); 
+            const h = Math.floor(n);
+            const m = Math.round((n - h) * 60);
             let res = `${h} Hour`;
             if (m > 0) res += ` ${m} Minute${m > 1 ? 's' : ''}`;
             return res;
@@ -350,6 +339,12 @@ export default {
 </script>
 
 <style scoped>
-:deep(tr.row-selected) > * { background-color: #d4d4d4 !important; }
-:deep(tr.row-selected input[type="checkbox"]) { opacity: 1; cursor: not-allowed; }
+:deep(tr.row-selected)>* {
+    background-color: #d4d4d4 !important;
+}
+
+:deep(tr.row-selected input[type="checkbox"]) {
+    opacity: 1;
+    cursor: not-allowed;
+}
 </style>
