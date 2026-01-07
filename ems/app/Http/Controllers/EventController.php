@@ -469,12 +469,12 @@ class EventController extends Controller
             ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
             ->where('con_delete_status', 'active');
 
-        // สร้าง subquery สำหรับนับที่เช็คอินแล้ว (actual attendance)
+        // สร้าง subquery สำหรับนับที่ตอบรับเข้าร่วม (accepted)
         $subAccept = DB::table('ems_connect')
             ->selectRaw('COUNT(*)')
             ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
             ->where('con_delete_status', 'active')
-            ->where('con_checkin_status', 1);
+            ->where('con_answer', 'accepted');
 
         $rows = Event::query()
             ->leftJoin('ems_categories as c', 'c.id', '=', 'ems_event.evn_category_id')
