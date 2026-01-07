@@ -39,18 +39,17 @@
       class="mt-6" 
     />
     
-    <!-- Export Button -->
-    <button 
-      @click="exportEvents"
-      class="inline-flex h-11 items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-6 transition-colors"
-      :disabled="sorted.length === 0"
-      :class="{'opacity-50 cursor-not-allowed': sorted.length === 0}"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
-      Export
-    </button>
+    <!-- Export Dropdown -->
+    <ExportDropdown 
+      :selectedEvents="selectedEventsArray"
+      :disabled="selectedEventIds.size === 0"
+      @export-start="handleExportStart"
+      @export-progress="handleExportProgress"
+      @export-complete="handleExportComplete"
+      @export-error="handleExportError"
+      @export-end="handleExportEnd"
+      class="mt-6"
+    />
     
     <!-- Show Data Button -->
     <button 
@@ -78,7 +77,7 @@
     @update:pageSize="pageSize = $event; page = 1;" 
     @sort="handleClientSort" 
     row-key="id" 
-    :show-row-number="false" 
+    :show-row-number="false"
     :row-class="getRowClass"
     class="mt-4">
     
@@ -88,7 +87,6 @@
         type="checkbox"
         :checked="selectAll"
         @change="selectAllEvents"
-        style="cursor: pointer; width: 16px; height: 16px;"
       />
     </template>
     
@@ -98,7 +96,6 @@
         type="checkbox"
         :checked="selectedEventIds.has(row.id || row.evn_id)"
         @change="toggleEventSelection(row)"
-        style="cursor: pointer; width: 16px; height: 16px;"
       />
     </template>
 
@@ -167,19 +164,21 @@
   </DataTable>
 </section>
 
-<!-- No Selection Message -->
-<div v-if="selectedEventIds.size === 0" class="card summary-card">
-  <div class="flex flex-col items-center justify-center py-16">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-    </svg>
-    <h3 class="text-xl font-semibold text-gray-700 mb-2">Please select an event</h3>
-    <p class="text-gray-500">Select one or more events from the table above to view statistics and participant data</p>
+<!-- Export Progress Overlay -->
+<div v-if="isExporting" class="export-overlay">
+  <div class="export-modal">
+    <div class="export-spinner"></div>
+    <h3 class="export-title">กำลัง Export ข้อมูล...</h3>
+    <p class="export-text">{{ exportMessage }}</p>
+    <div class="export-progress-bar">
+      <div class="export-progress-fill" :style="{ width: exportProgressPercent + '%' }"></div>
+    </div>
+    <p class="export-hint">⏳ กรุณารอสักครู่ อย่าปิดหน้าต่างนี้</p>
   </div>
 </div>
 
-<!-- Summary/Graph Section - แสดงเมื่อเลือก event แล้ว -->
-<div v-if="selectedEventIds.size > 0" class="card summary-card">
+<!-- Summary/Graph Section - แสดงเมื่อเลือก event และกดปุ่ม Show Data แล้ว -->
+<div v-if="selectedEventIds.size > 0 && showStatistics" class="card summary-card">
     <div class="summary-grid">
       <!-- Actual Attendance -->
       <div class="summary-item chart-container actual-attendance-card">
@@ -231,9 +230,9 @@
     </div>
   </div>
 
-  <!-- Employee Table Section - แสดงเมื่อกดการ์ด -->
+  <!-- Employee Table Section - แสดงเมื่อกดการ์ดและกดปุ่ม Show Data แล้ว -->
   <DataTable
-    v-if="showEmployeeTable && selectedEventIds.size > 0"
+    v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics"
     :rows="paginatedEmployees"
     :columns="employeeColumns"
     :loading="loadingParticipants"
@@ -241,7 +240,7 @@
     v-model:pageSize="itemsPerPage"
     :totalItems="totalEmployees"
     :pageSizeOptions="[10, 25, 50, 100]"
-    rowKey="id"
+    rowKey="unique_key"
     :showRowNumber="true"
     class="mt-6"
   >
@@ -269,6 +268,7 @@ import EventFilter from "../../components/IndexEvent/EventFilter.vue";
 import EventSort from "../../components/IndexEvent/EventSort.vue";
 import DataTable from "@/components/DataTable.vue";
 import EventDatePicker from "../../components/IndexEvent/EventDatePicker.vue";
+import ExportDropdown from "../../components/ExportDropdown.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -286,7 +286,8 @@ export default {
     EventFilter,
     EventSort,
     DataTable,
-    EventDatePicker
+    EventDatePicker,
+    ExportDropdown
   },
   data() {
     return {
@@ -367,11 +368,21 @@ export default {
       loadingTest: false,
       // ข้อมูลสำหรับกราฟแท่ง (Bar Chart)
       participationData: {
-        departments: []
+        departments: [],
+        teams: []
       },
       // รายชื่อผู้เข้าร่วมทั้งหมด
       eventParticipants: [],
-      loadingParticipants: false
+      loadingParticipants: false,
+      // ควบคุมการแสดงผลกราฟและตาราง
+      showStatistics: false,
+      // Export state
+      isExporting: false,
+      exportProgress: {
+        current: 0,
+        total: 0,
+        eventName: ''
+      }
     };
   },
   async created() {
@@ -432,6 +443,8 @@ export default {
           evn_date: e.evn_date ?? "",
           evn_timestart: e.evn_timestart ?? "",
           evn_timeend: e.evn_timeend ?? "",
+          evn_location: e.evn_location ?? "",
+          evn_details: e.evn_description ?? "", // ใช้ evn_description จาก database
           evn_num_guest: Number(e.evn_num_guest ?? 0),
           evn_sum_accept: Number(e.evn_sum_accept ?? 0),
           evn_status: e.evn_status ?? "",
@@ -442,39 +455,14 @@ export default {
       let arr = [...this.normalized];
       const q = this.search.toLowerCase().trim();
 
-      // ตัวกรองการค้นหา - แยกการค้นหาวันที่ออกมา
+      // ตัวกรองการค้นหา - ค้นหาเฉพาะข้อความ (ชื่องาน, หมวดหมู่, สถานะ)
+      // ไม่รวมการค้นหาวันที่เพราะมี EventDatePicker แล้ว
       if (q) {
-        // ตรวจสอบว่าเป็นตัวเลข (อาจเป็นวันที่)
-        const isNumeric = /^\d+$/.test(q);
-        
         arr = arr.filter((e) => {
-          // ถ้าเป็นตัวเลข ให้ค้นหาเฉพาะส่วนวันที่ที่ตรงกันพอดี
-          if (isNumeric) {
-            // แปลงวันที่เป็นรูปแบบ DD/MM/YYYY
-            const formattedDate = this.formatDate(e.evn_date);
-            // แยกส่วนวัน เดือน ปี
-            const dateParts = formattedDate.split('/');
-            const day = dateParts[0];
-            const month = dateParts[1];
-            const year = dateParts[2];
-            
-            // ค้นหาแบบตรงกันพอดีกับวัน หรือ เดือน หรือ ปี
-            const matchesDay = day === q;
-            const matchesMonth = month === q;
-            const matchesYear = year === q || (year && year.endsWith(q));
-            
-            // ค้นหาใน title, category, status ด้วย
-            const matchesText = `${e.evn_title} ${e.cat_name} ${e.evn_status}`
-              .toLowerCase()
-              .includes(q);
-            
-            return matchesDay || matchesMonth || matchesYear || matchesText;
-          } else {
-            // ถ้าไม่ใช่ตัวเลข ให้ค้นหาแบบปกติ
-            return `${e.evn_title} ${e.cat_name} ${e.evn_status}`
-              .toLowerCase()
-              .includes(q);
-          }
+          // ค้นหาเฉพาะใน title, category, status
+          return `${e.evn_title} ${e.cat_name} ${e.evn_status}`
+            .toLowerCase()
+            .includes(q);
         });
       }
 
@@ -749,8 +737,9 @@ export default {
       return this.filteredEmployeesForTable.length;
     },
     paginatedEmployees() {
-      // ส่งข้อมูลทั้งหมดให้ DataTable จัดการ pagination เอง
-      return this.filteredEmployeesForTable;
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredEmployeesForTable.slice(start, end);
     },
     eventPaginationText() {
       const start = this.sorted.length > 0 ? (this.page - 1) * this.pageSize + 1 : 0;
@@ -791,6 +780,29 @@ export default {
       const firstEventId = Array.from(this.selectedEventIds)[0];
       return this.normalized.find(event => (event.id || event.evn_id) == firstEventId);
     },
+
+    // ดึงข้อมูลทุกอีเวนต์ที่เลือก (สำหรับ Export)
+    selectedEventsArray() {
+      if (this.selectedEventIds.size === 0) return [];
+      const selectedIds = Array.from(this.selectedEventIds);
+      return this.normalized.filter(event => 
+        selectedIds.includes(event.id || event.evn_id)
+      );
+    },
+
+    // Export progress message
+    exportMessage() {
+      if (this.exportProgress.total === 0) {
+        return 'กำลังเตรียมข้อมูล...';
+      }
+      return `กำลัง Export: ${this.exportProgress.eventName}\n(${this.exportProgress.current} จาก ${this.exportProgress.total})`;
+    },
+
+    // Export progress percentage
+    exportProgressPercent() {
+      if (this.exportProgress.total === 0) return 0;
+      return Math.round((this.exportProgress.current / this.exportProgress.total) * 100);
+    }
   },
   methods: {
     // Search handling
@@ -996,7 +1008,7 @@ export default {
           pending: 0,
           departments: []
         };
-        this.participationData = { departments: [] };
+        this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
         this.showEmployeeTable = false;
         return;
@@ -1030,6 +1042,12 @@ export default {
               attending: dept.attending || 0,
               notAttending: dept.notAttending || 0,
               pending: dept.pending || 0
+            })),
+            teams: (res.data.teams || []).map(team => ({
+              name: team.name,
+              attending: team.attending || 0,
+              notAttending: team.notAttending || 0,
+              pending: team.pending || 0
             }))
           };
           
@@ -1053,19 +1071,19 @@ export default {
           pending: 0,
           departments: []
         };
-        this.participationData = { departments: [] };
+        this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
       } finally {
         this.loadingParticipants = false;
       }
     },
 
-    // ฟังก์ชันจัดการ checkbox เลือกหลาย event
+    // ฟังก์ชันจัดการ checkbox เลือกหลาย event - สำหรับ highlight row
     getRowClass(row) {
       const eventId = row.id || row.evn_id;
       return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
     },
-    
+
     toggleEventSelection(event) {
       const eventId = event.id || event.evn_id;
       if (!eventId) {
@@ -1082,10 +1100,12 @@ export default {
       // อัพเดตสถานะ select-all checkbox
       this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
       
+      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
+      this.showStatistics = false;
+      
       console.log('Updated selected events:', Array.from(this.selectedEventIds));
       
-      // ต้องเรียก fetch เอง เนื่องจาก Set ไม่รองรับ reactive
-      this.fetchEventStatistics();
+      // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
 
     selectAllEvents(event) {
@@ -1099,10 +1119,13 @@ export default {
         // ยกเลิกการเลือกทั้งหมด
         this.selectedEventIds.clear();
       }
+      
+      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
+      this.showStatistics = false;
+      
       console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
       
-      // ต้องเรียก fetch เอง เนื่องจาก Set ไม่รองรับ reactive
-      this.fetchEventStatistics();
+      // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
 
     // ดึงชื่ออีเวนต์มาแสดงผล
@@ -1296,17 +1319,37 @@ export default {
             return participant.status === 'denied';
           });
         } else if (status === 'pending') {
-          // สำหรับรอตอบกลับ รวม 'pending', 'invalid', และ 'not_invite'
+          // สำหรับรอตอบกลับ: คนที่ยังไม่เช็คอินและยังไม่ได้ปฏิเสธ
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.status === 'pending' || 
-                   participant.status === 'invalid' || 
-                   participant.status === 'not_invite';
+            return participant.con_checkin_status !== 1 && participant.status !== 'denied';
           });
         }
         
-        // แปลงเป็นรูปแบบพนักงานสำหรับตาราง
-        this.filteredEmployeesForTable = filteredParticipants.map(participant => ({
+        // กรองข้อมูลซ้ำโดยใช้ Map กับ unique key (emp_id + event_id + status)
+        const uniqueParticipants = new Map();
+        filteredParticipants.forEach(participant => {
+          const uniqueKey = `${participant.emp_id}_${participant.event_id}_${participant.con_checkin_status}_${participant.status}`;
+          // เก็บเฉพาะ record แรกที่พบ ไม่เอาข้อมูลซ้ำ
+          if (!uniqueParticipants.has(uniqueKey)) {
+            uniqueParticipants.set(uniqueKey, participant);
+          }
+        });
+        
+        // แปลง Map กลับเป็น Array และเรียงข้อมูล
+        const deduplicatedParticipants = Array.from(uniqueParticipants.values());
+        deduplicatedParticipants.sort((a, b) => {
+          // เรียงตาม emp_id ก่อน
+          const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
+          if (empCompare !== 0) return empCompare;
+          
+          // ถ้า emp_id เท่ากัน ให้เรียงตาม event_id
+          return (a.event_id || 0) - (b.event_id || 0);
+        });
+        
+        // แปลงเป็นรูปแบบพนักงานสำหรับตาราง พร้อม unique_key
+        this.filteredEmployeesForTable = deduplicatedParticipants.map(participant => ({
           id: participant.id,
+          unique_key: `${participant.emp_id}_${participant.event_id}_${participant.id}`,
           emp_id: participant.emp_id,
           emp_prefix: participant.emp_prefix,
           emp_firstname: participant.emp_firstname,
@@ -1317,12 +1360,20 @@ export default {
           position: participant.position || 'N/A',
           department: participant.department || 'N/A',
           team: participant.team || 'N/A',
-          event_title: participant.event_title || 'N/A', // Add event title
+          event_title: participant.event_title || 'N/A',
           emp_delete_status: 'active'
         }));
         
-        console.log(`Loaded ${this.filteredEmployeesForTable.length} employees for status: ${status}`);
-        console.log('ตรรกะการกรอง: attending ใช้ con_checkin_status=1 ไม่ใช่ con_answer');
+        // Reset pagination เมื่อโหลดข้อมูลใหม่
+        this.currentPage = 1;
+        
+        console.log(`Filtered ${filteredParticipants.length} raw participants`);
+        console.log(`After deduplication: ${this.filteredEmployeesForTable.length} unique participations for status: ${status}`);
+        
+        // แสดงตัวอย่างข้อมูล 3 รายการแรกเพื่อ debug
+        if (this.filteredEmployeesForTable.length > 0) {
+          console.log('Sample data (first 3):', this.filteredEmployeesForTable.slice(0, 3));
+        }
         
       } catch (error) {
         console.error('Error loading employees:', error);
@@ -1356,65 +1407,15 @@ export default {
       }, 2000);
     },
 
-    // Export events to CSV
-    exportEvents() {
-      if (this.sorted.length === 0) {
-        alert('ไม่มีข้อมูลที่จะ Export');
-        return;
-      }
-
-      try {
-        // สร้าง CSV header
-        const headers = ['#', 'Event', 'Category', 'Date', 'Time', 'Invited', 'Accepted', 'Status'];
-        
-        // สร้าง CSV rows
-        const rows = this.sorted.map((event, index) => [
-          index + 1,
-          `"${(event.evn_title || '').replace(/"/g, '""')}"`,
-          `"${(event.cat_name || '').replace(/"/g, '""')}"`,
-          this.formatDate(event.evn_date),
-          this.timeText(event.evn_timestart, event.evn_timeend),
-          event.evn_num_guest,
-          event.evn_sum_accept,
-          event.evn_status || 'N/A'
-        ]);
-        
-        // รวม header และ rows
-        const csvContent = [
-          headers.join(','),
-          ...rows.map(row => row.join(','))
-        ].join('\n');
-        
-        // สร้าง Blob และ download
-        const BOM = '\uFEFF'; // UTF-8 BOM for Excel
-        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        const now = new Date();
-        const dateStr = now.toISOString().split('T')[0];
-        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', `events_dashboard_${dateStr}_${timeStr}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log('Export completed:', this.sorted.length, 'events');
-      } catch (error) {
-        console.error('Export error:', error);
-        alert('เกิดข้อผิดพลาดในการ Export ข้อมูล');
-      }
-    },
-
     // Show data handler - scroll to charts and fetch statistics
     showDataHandler() {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
         return;
       }
+
+      // เปิดการแสดงผลกราฟและตาราง
+      this.showStatistics = true;
 
       // เรียก fetch statistics
       this.fetchEventStatistics();
@@ -1426,6 +1427,29 @@ export default {
           summaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
+    },
+
+    // Export handlers
+    handleExportStart() {
+      this.isExporting = true;
+      this.exportProgress = { current: 0, total: 0, eventName: '' };
+    },
+
+    handleExportProgress(progress) {
+      this.exportProgress = progress;
+    },
+
+    handleExportComplete(result) {
+      console.log('Export completed:', result);
+    },
+
+    handleExportError(error) {
+      console.error('Export error:', error);
+    },
+
+    handleExportEnd() {
+      this.isExporting = false;
+      this.exportProgress = { current: 0, total: 0, eventName: '' };
     }
   }
 };
@@ -1511,15 +1535,6 @@ export default {
 .event-row:hover {
   background-color: #f9fafb;
   transition: background-color 0.2s ease;
-}
-
-/* Selected Row Styling */
-.event-row.selected-row {
-  background-color: #fef2f2 !important;
-}
-
-.event-row.selected-row:hover {
-  background-color: #fee2e2 !important;
 }
 
 /* No Data Row for Event Table */
@@ -2137,49 +2152,20 @@ export default {
 
 /* Employee Table Card */
 
-
-
-
-/* Input styling */
-input[type="radio"],
-input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #d1d5db;
-  border-radius: 3px;
-  background: #fff;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
+/* Override checkbox style to match DataTable component */
+:deep(input[type="checkbox"]) {
+  accent-color: #dc2626 !important;
 }
 
-input[type="radio"]:checked,
-input[type="checkbox"]:checked {
-  background: #dc2626;
-  border-color: #dc2626;
+/* Highlight selected rows - match DataTable component style */
+:deep(tr.selected-row) {
+  background-color: #fee2e2 !important; /* bg-red-100 equivalent */
 }
 
-input[type="radio"]:checked::after,
-input[type="checkbox"]:checked::after {
-  content: '';
-  position: absolute;
-  top: 1px;
-  left: 4px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+:deep(tr.selected-row:hover) {
+  background-color: #ffffff !important; /* white on hover */
 }
 
-input[type="radio"]:hover,
-input[type="checkbox"]:hover {
-  border-color: #9ca3af;
-  box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.1);
-}
 .employee-card {
   background: #fff;
   border-radius: 18px;
@@ -2320,15 +2306,6 @@ th, td { vertical-align:middle; padding:7px 10px; border-top:1px solid #eee; fon
 tbody tr:nth-child(odd){ background:#fff; }
 tbody tr:nth-child(even){ background:#fafafa; }
 tbody tr:hover{ background:#f3f4f6; }
-
-/* Selected row highlighting */
-tbody tr.selected-row { 
-  background: #fee2e2 !important; 
-  border-left: 4px solid #dc2626;
-}
-tbody tr.selected-row:hover { 
-  background: #fecaca !important; 
-}
 
 /* Text overflow */
 .truncate{ display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2963,10 +2940,6 @@ tbody tr.selected-row:hover {
   background: #f9fafb;
 }
 
-.event-table tbody tr.selected-row {
-  background: #fee2e2 !important;
-}
-
 .event-table td {
   padding: 14px 16px;
   font-size: 14px;
@@ -3125,13 +3098,121 @@ tbody tr.selected-row:hover {
   font-weight: 600;
 }
 
-/* Highlight selected rows */
-:deep(.selected-row) {
-  background-color: #fce7f3 !important; /* Pink background */
+/* Export Dropdown Styles */
+.rotate-180 {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
 }
 
-:deep(.selected-row):hover {
-  background-color: #fbcfe8 !important; /* Slightly darker pink on hover */
+/* Dropdown animation */
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.relative > div[class*="absolute"] {
+  animation: dropdown-fade-in 0.2s ease-out;
+}
+
+/* Export Progress Overlay */
+.export-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.export-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border: 4px solid #fecaca;
+  border-top-color: #b91c1c;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.export-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 10px;
+}
+
+.export-text {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 20px;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.export-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.export-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b91c1c, #dc2626);
+  transition: width 0.3s ease-out;
+  border-radius: 4px;
+}
+
+.export-hint {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 10px;
+  font-style: italic;
 }
 
 </style>
