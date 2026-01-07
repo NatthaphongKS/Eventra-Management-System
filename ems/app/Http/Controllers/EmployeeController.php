@@ -28,6 +28,7 @@ class EmployeeController extends Controller
             'position:id,pst_name',
             'department:id,dpm_name',
             'team:id,tm_name',
+            'company:id,com_name'
         ])
             ->where(
                 fn($q) => $q
@@ -38,6 +39,7 @@ class EmployeeController extends Controller
             ->orderByDesc('id')
             ->get([
                 'id',
+                'emp_company_id',
                 'emp_id',
                 'emp_prefix',
                 'emp_firstname',
@@ -56,6 +58,7 @@ class EmployeeController extends Controller
         $rows = $employees->map(function (Employee $e) {
             return [
                 'id' => $e->id,
+                'emp_company_id' => $e->company->com_name,
                 'emp_id' => $e->emp_id,
                 'emp_prefix' => $e->emp_prefix,
                 'emp_firstname' => $e->emp_firstname,
@@ -503,15 +506,20 @@ class EmployeeController extends Controller
         // 5) Update
         // =========================
         $update = collect($validated)->except('emp_status')->toArray();
+        unset($update['emp_permission']);
 
         if ($request->filled('emp_status')) {
-            $update['emp_permission'] = $request->emp_status;
+            $update['emp_status'] = $request->emp_status;
         }
 
         if (!empty($update['emp_password'] ?? null)) {
             $update['emp_password'] = Hash::make($update['emp_password']);
         } else {
             unset($update['emp_password']);
+        }
+
+        if ($request->input('emp_permission') === 'employee') {
+            $update['emp_password'] = null;
         }
 
         $emp->fill($update)->save();
