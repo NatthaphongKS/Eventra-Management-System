@@ -2,7 +2,7 @@
     <div class="w-full">
         <input v-bind="$attrs" :type="type" :inputmode="inputmode" :placeholder="placeholder" :disabled="disabled"
             class="
-                rounded-[15px] border px-4 py-2.5 text-base transition
+                rounded-[15px] h-[50px] border px-4 py-2.5 text-base transition
                 focus:outline-none focus:ring-2
                 placeholder-red-300
                 disabled:placeholder:text-neutral-300

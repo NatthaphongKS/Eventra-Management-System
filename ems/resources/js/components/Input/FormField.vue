@@ -1,14 +1,15 @@
-<!-- FormField.vue -->
 <template>
     <div class="w-full">
-        <label class="block text-xl font-regular text-neutral-800 mb-1">
+        <label
+            :for="id"
+            class="block text-xl font-regular text-neutral-800 mb-1"
+        >
             {{ label }}
             <span v-if="required" class="text-red-800"> *</span>
         </label>
 
-        <!-- ช่องกรอกให้กินความกว้างเต็มและอยู่บรรทัดล่าง -->
         <div class="w-full">
-            <slot />
+            <slot :id="id" />
         </div>
 
         <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
@@ -19,6 +20,7 @@
 defineProps({
     label: String,
     required: Boolean,
-    error: String
-})
+    error: String,
+    id: String, // เพิ่ม prop id
+});
 </script>
