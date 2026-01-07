@@ -225,7 +225,6 @@ export default {
               /* Event Details Section */
               .section {
                 margin-bottom: 12px;
-                page-break-inside: avoid;
               }
               .section-title {
                 font-size: 14pt;
@@ -234,6 +233,8 @@ export default {
                 margin-bottom: 10px;
                 padding-bottom: 5px;
                 border-bottom: 2px solid #fecaca;
+                page-break-after: avoid;
+                break-after: avoid;
               }
               
               .details-grid {
@@ -269,11 +270,11 @@ export default {
                 width: 100%;
                 border-collapse: collapse;
                 margin-top: 10px;
-                page-break-inside: auto;
               }
               thead {
                 background-color: #b91c1c;
                 color: white;
+                display: table-header-group;
               }
               th {
                 padding: 8px 6px;
@@ -281,6 +282,13 @@ export default {
                 font-weight: 600;
                 border: 1px solid #991b1b;
                 font-size: 9pt;
+              }
+              tbody {
+                display: table-row-group;
+              }
+              tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
               }
               td {
                 padding: 6px 5px;
@@ -297,6 +305,8 @@ export default {
               tr:nth-child(odd) {
                 background-color: #ffffff;
               }
+              
+              /* Page break styles - removed fixed pagination */
               
               /* Status badges */
               .status-badge {
@@ -396,7 +406,7 @@ export default {
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">เวลา (Time)</div>
-                  <div class="detail-value">${event.evn_timestart || '-'} - ${event.evn_timeend || '-'}</div>
+                  <div class="detail-value">${this.formatTime(event.evn_timestart)} - ${this.formatTime(event.evn_timeend)}</div>
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">ระยะเวลา (Duration)</div>
@@ -441,10 +451,10 @@ export default {
             </div>
             
             <!-- Guest List Section -->
-            <div class="section">
-              <div class="section-title">รายชื่อผู้เข้าร่วม (Guest List)</div>
-              
-              ${participants.length > 0 ? `
+            ${participants.length > 0 ? `
+              <div class="section">
+                <div class="section-title">รายชื่อผู้เข้าร่วม (Guest List)</div>
+                
                 <table>
                   <thead>
                     <tr>
@@ -481,8 +491,13 @@ export default {
                     `).join('')}
                   </tbody>
                 </table>
-              ` : '<div class="no-data">ไม่มีรายชื่อผู้เข้าร่วม</div>'}
-            </div>
+              </div>
+            ` : `
+              <div class="section">
+                <div class="section-title">รายชื่อผู้เข้าร่วม (Guest List)</div>
+                <div class="no-data">ไม่มีรายชื่อผู้เข้าร่วม</div>
+              </div>
+            `}
           </body>
           </html>
         `;
