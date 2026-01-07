@@ -66,4 +66,5 @@ class Event extends Model
     {
         return $this->hasMany(Connect::class, 'con_event_id');
     }
+    
 }

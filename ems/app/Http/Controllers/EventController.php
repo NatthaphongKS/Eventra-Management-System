@@ -589,7 +589,7 @@ class EventController extends Controller
             return response()->json(['message' => 'Event deleted failed'], 500);
         }
     }
-    
+
     public function getEventParticipants($eventId)
     {
         try {
@@ -787,8 +787,8 @@ class EventController extends Controller
                     'declined' => $attendanceStats->declined ?? 0,
                     'pending' => $attendanceStats->pending ?? 0,
                     'total_invited' => $attendanceStats->total_invited ?? 0,
-                    'attendance_percentage' => $attendanceStats->total_invited > 0 
-                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2) 
+                    'attendance_percentage' => $attendanceStats->total_invited > 0
+                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2)
                         : 0
                 ]
             ]);
@@ -805,7 +805,7 @@ class EventController extends Controller
     {
         try {
             $eventIds = $request->input('event_ids', []);
-            
+
             if (empty($eventIds)) {
                 return response()->json([
                     'total_participation' => 0,
