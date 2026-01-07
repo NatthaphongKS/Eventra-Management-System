@@ -60,14 +60,19 @@
                                         :has-error="!!errors.nickname" />
                                 </FormField>
 
-                                <FormField label="Email" required :error="errors.email">
-                                    <InputPill v-model="form.email" type="email" placeholder="Ex.example@gmail.com"
-                                        class="h-11 w-full" :has-error="!!errors.email" />
-                                </FormField>
-
                                 <FormField label="Phone" required :error="errors.phone">
                                     <InputPill v-model="form.phone" placeholder="Ex.0988900988" maxlength="10"
                                         class="h-11 w-full" :has-error="!!errors.phone" />
+                                </FormField>
+
+                                <FormField label="Employee ID" required
+                                    :error="errors.companyId || errors.employeeNumber">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <DropdownPill v-model="form.companyId" :options="companies"
+                                            placeholder="Company" class="h-11 w-full" :has-error="!!errors.companyId" />
+                                        <InputPill v-model="form.employeeNumber" placeholder="Ex.0001" maxlength="4"
+                                            class="h-11 w-full" :has-error="!!errors.employeeNumber" />
+                                    </div>
                                 </FormField>
 
                             </div>
@@ -93,19 +98,14 @@
                                         :has-error="!!errors.position" />
                                 </FormField>
 
+                                <FormField label="Email" required :error="errors.email">
+                                    <InputPill v-model="form.email" type="email" placeholder="Ex.example@gmail.com"
+                                        class="h-11 w-full" :has-error="!!errors.email" />
+                                </FormField>
+
                                 <FormField label="Password" :required="!isEmployeePermission" :error="errors.password">
                                     <InputPill v-model="form.password" type="password" :disabled="isEmployeePermission"
                                         placeholder="Ex.Ssaw.1234" class="h-11 w-full" :has-error="!!errors.password" />
-                                </FormField>
-
-                                <FormField label="Employee ID" required
-                                    :error="errors.companyId || errors.employeeNumber">
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <DropdownPill v-model="form.companyId" :options="companies"
-                                            placeholder="Company" class="h-11 w-full" :has-error="!!errors.companyId" />
-                                        <InputPill v-model="form.employeeNumber" placeholder="Ex.0001" maxlength="4"
-                                            class="h-11 w-full" :has-error="!!errors.employeeNumber" />
-                                    </div>
                                 </FormField>
 
                                 <FormField label="Permission" required :error="errors.permission">
@@ -115,6 +115,7 @@
                                 </FormField>
                             </div>
                         </div>
+
 
                         <!-- ================= ACTION BUTTONS ================= -->
                         <div class="mt-1 flex justify-between items-center">
