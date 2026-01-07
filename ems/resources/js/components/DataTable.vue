@@ -10,7 +10,7 @@
                     <tr class="bg-neutral-100 text-neutral-800">
                         <th v-if="selectable" class="w-10 py-3 text-center">
                             <input type="checkbox" :checked="allSelectedOnPage" :indeterminate.prop="isIndeterminate"
-                                @change="toggleSelectAllOnPage" class="accent-red-600" />
+                                @change="toggleSelectAllOnPage" class="accent-red-600 w-6 h-6 rounded" />
                         </th>
 
                         <th v-if="showRowNumber" class="w-12 py-3 text-center font-semibold">
@@ -42,10 +42,10 @@
                                 { 'bg-red-100': selectable && selectedSet.has(row[rowKey]) },
                                 rowClass(row),
                             ]">
-                            <td v-if="selectable" class="px-2 py-2 text-center">
+                            <td v-if="selectable" class="px-2 py-2 text-center ">
                                 <input type="checkbox" :value="row[rowKey]" :checked="selectedSet.has(row[rowKey])"
                                     :disabled="isRowDisabled(row)" @change="toggleSelectOne(row[rowKey], $event)"
-                                    class="accent-red-600 disabled:accent-neutral-800 disabled:opacity-100 disabled:cursor-not-allowed" />
+                                    class="h-6 w-6 rounded accent-red-600 disabled:accent-neutral-800 disabled:opacity-100 disabled:cursor-not-allowed " />
                             </td>
 
                             <td v-if="showRowNumber" class="px-2 py-2 text-center text-sm text-slate-700">
