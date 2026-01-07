@@ -883,12 +883,12 @@ export default {
         // โครงคอลัมน์ของ DataTable
         columns() {
             return [
-                { key: 'emp_id', label: 'ID', sortable: false, class: 'min-w-[120px]' },
-                { key: 'fullname', label: 'Name', sortable: false }, // เรนเดอร์ผ่าน slot
-                { key: 'nickname', label: 'Nickname', sortable: false, class: 'min-w-[120px]' },
-                { key: 'department', label: 'Department', sortable: false },
-                { key: 'team', label: 'Team', sortable: false },
-                { key: 'position', label: 'Position', sortable: false },
+                { key: 'emp_id', label: 'Employee ID', sortable: false, class: 'min-w-[120px] text-left' },
+                { key: 'fullname', label: 'Name', sortable: false , class: 'min-w-[120px] text-left'}, // เรนเดอร์ผ่าน slot
+                { key: 'nickname', label: 'Nickname', sortable: false, class: 'min-w-[120px] text-left' },
+                { key: 'department', label: 'Department', sortable: false, class: 'min-w-[120px] text-left' },
+                { key: 'team', label: 'Team', sortable: false, class: 'min-w-[120px] text-left' },
+                { key: 'position', label: 'Position', sortable: false , class: 'min-w-[120px] text-left'},
             ]
         },
 
