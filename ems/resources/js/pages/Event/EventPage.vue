@@ -3,9 +3,8 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <!-- Search -->
             <div class="flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch" class="" />
+                <SearchBar v-model="searchInput" placeholder="Search Event" @search="applySearch" class="" />
             </div>
-
             <div class="flex gap-2 flex-shrink-0 mt-[30px] items-stretch">
                 <div class="flex flex-row mt-2">
                     <!-- DatePicker -->

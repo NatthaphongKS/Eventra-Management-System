@@ -204,7 +204,16 @@ const isParentActive = (item) => {
 
 const isActive = (to) => {
   if (!to) return false;
+
+  // 1. เช็คจาก meta.activeMenu ก่อน (ถ้า Router ตั้งค่ามา ให้ยึดตามนี้)
+  if (route.meta && route.meta.activeMenu) {
+    if (route.meta.activeMenu === to) return true;
+  }
+
+  // 2. ถ้าไม่มี meta ให้ใช้ Logic เดิม (เช็ค URL ตรงๆ)
   if (to === "/") return route.path === "/";
+
+  // เช็คเผื่อกรณี Query param หรือ Trailing slash
   return route.path === to || route.path.startsWith(to + "/");
 };
 

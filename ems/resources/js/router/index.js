@@ -31,15 +31,15 @@ const routes = [
   // [เพิ่ม] เส้นทาง Forgot Password (ใส่ blank: true เพื่อให้ไม่มี Sidebar)
   { path: '/forgot-password', component: ForgotPassword, meta: { blank: true, title: 'Forgot Password' } },
 
-  { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' } },
-  { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'Event' } },
-  { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' } },
+  { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' , activeMenu: '/employee'} },
+  { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'Event', activeMenu: '/event' } },
+  { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' , activeMenu: '/event' } },
 
-  { path: '/event', component: EventPage, meta: { title: 'Event' } },
-  { path: '/add-event' , component: CreateEvent, meta: { title: 'Create Event' } },
-  { path: '/employee', component: Employees, meta: { title: 'Employee' } },
+  { path: '/event', component: EventPage, meta: { title: 'Event' , activeMenu: '/event' } },
+  { path: '/add-event' , component: CreateEvent, meta: { title: 'Create Event' , activeMenu: '/event' } },
+  { path: '/employee', component: Employees, meta: { title: 'Employee', activeMenu: '/employee' } },
   { path: '/history', component: History, meta: { title: 'History' } },
-  { path: '/categories', component: Category, meta: { title: 'Category' } },
+  { path: '/categories', component: Category, meta: { title: 'Category', activeMenu: '/categories' } },
   { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
   { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
   {
@@ -54,13 +54,13 @@ const routes = [
 
 
   { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form'}},
-  { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees' } },
+  { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees', activeMenu: '/employee'} },
 
 
   // [เพิ่ม] เส้นทางหน้าแก้ไขพนักงาน
-  { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Employee' } },
+  { path: '/edit-employee/:id', name: 'edit-employee', component: EditEmployee, props: true, meta: { title: 'Employee', activeMenu: '/employee' } },
   // หน้า Details – ใช้ชื่อ route 'event.details' และส่ง :id เป็น props
-  { path: '/events/:id', name: 'event.details', component: EventDetails, props: true, meta: { title: 'Event' } },
+  { path: '/events/:id', name: 'event.details', component: EventDetails, props: true, meta: { title: 'Event', activeMenu: '/event' } },
   // เพิ่ม redirect กันพลาด (ถ้าใครไป /event/2 จะถูกส่งมาที่ /events/2)
   { path: '/event/:id', redirect: to => ({ name: 'event.details', params: { id: to.params.id } }) },
 
