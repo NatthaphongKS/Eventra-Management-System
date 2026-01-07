@@ -10,9 +10,6 @@
             class="grid grid-cols-12 gap-8 border-b border-neutral-100 pb-10 mb-10"
         >
             <div class="col-span-12 lg:col-span-8">
-                <h3 class="text-xl font-semibold text-neutral-800 mb-6">
-                    Event Details
-                </h3>
 
                 <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start">
                     <div>
