@@ -118,40 +118,40 @@ export default {
 
             // ตัวแปรสำหรับการเรียงลำดับ (ส่งไปให้ SortMenu)
             sortMenuOpen: false,
-            sortBy: { key: "deleted_at", order: "desc" },
+            sortBy: { key: "evn_deleted_at", order: "desc" },
             sortOptions: [
                 {
-                    key: "evn_title", // แก้จาก cat_name
+                    key: "evn_title", 
                     order: "asc",
                     label: "ชื่อ A-Z",
                     value: "az",
                 },
                 {
-                    key: "evn_title", // แก้จาก cat_name
+                    key: "evn_title", 
                     order: "desc",
                     label: "ชื่อ Z-A",
                     value: "za",
                 },
                 {
-                    key: "created_at", // แก้จาก cat_created_at
+                    key: "evn_created_at", 
                     order: "desc",
                     label: "วันที่สร้างล่าสุด",
                     value: "created_newest",
                 },
                 {
-                    key: "created_at", // แก้จาก cat_created_at
+                    key: "evn_created_at", 
                     order: "asc",
                     label: "วันที่สร้างเก่าสุด",
                     value: "created_oldest",
                 },
                 {
-                    key: "deleted_at", // แก้จาก cat_deleted_at
+                    key: "evn_deleted_at", 
                     order: "desc",
                     label: "วันที่ลบล่าสุด",
                     value: "deleted_newest",
                 },
                 {
-                    key: "deleted_at", // แก้จาก cat_deleted_at
+                    key: "evn_deleted_at", 
                     order: "asc",
                     label: "วันที่ลบเก่าสุด",
                     value: "deleted_oldest",
