@@ -17,7 +17,7 @@
                     <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
                         class="h-[44px] [&_button]:h-full" />
                 </div>
-                <!-- ✅ Add Button -->
+                <!-- Add Button -->
                 <AddButton @click="$router.push('/add-event')" />
             </div>
         </div>
@@ -78,7 +78,7 @@
             </template>
 
             <template #actions="{ row }">
-                <!-- ✏️ Edit -->
+                <!-- Edit -->
                 <button @click="canEdit(row) && editEvent(row.id)" :disabled="!canEdit(row)"
                     class="rounded-lg p-1.5 transition-colors" :class="!canEdit(row)
                         ? 'cursor-not-allowed opacity-40'
@@ -88,7 +88,7 @@
                         : 'text-neutral-500 hover:text-[#059669]'" />
                 </button>
 
-                <!-- 🗑️ Delete -->
+                <!-- Delete -->
                 <button @click="canDelete(row) && openDelete(row.id)" :disabled="!canDelete(row)"
                     class="rounded-lg p-1.5 transition-colors" :class="!canDelete(row)
                         ? 'cursor-not-allowed opacity-40'
@@ -98,7 +98,7 @@
                         : 'text-neutral-500 hover:text-[#dc2626]'" />
                 </button>
 
-                <!-- ✅ Check-in -->
+                <!-- Check-in -->
                 <span v-if="!canCheckin(row)" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
                     :title="checkinDisabledTitle(row)">
                     <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-400" />
@@ -110,8 +110,6 @@
                         class="text-neutral-500 hover:text-[#0084d1]" />
                 </router-link>
             </template>
-
-
         </DataTable>
 
         <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
@@ -134,7 +132,6 @@ import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import AddButton from "@/components/AddButton.vue";
 import EventDatePicker from "@/components/IndexEvent/EventDatePicker.vue";
-
 import { Icon } from '@iconify/vue'
 
 axios.defaults.baseURL = "/api";
@@ -388,15 +385,7 @@ export default {
     watch: {
         search() { this.page = 1; },
         pageSize() { this.page = 1; },
-        // 🔴🔴 จุดที่แก้ 2: ลบ selectedDate ออกจาก watch (เพราะย้ายไปทำใน onDateChange แล้ว)
-        /*
-        selectedDate: {
-            deep: true,
-            handler() {
-                this.page = 1;
-            },
-        },
-        */
+
         selectedSort: {
             handler(v) {
                 if (!v) return;
@@ -420,7 +409,6 @@ export default {
     },
 
     methods: {
-        // 🔴🔴 จุดที่แก้ 3: สร้างฟังก์ชันรับค่าจากปฏิทินโดยเฉพาะ
         onDateChange(newDateVal) {
             // รับค่ามาแล้วอัปเดตตัวแปรทันที
             this.selectedDate = newDateVal;
