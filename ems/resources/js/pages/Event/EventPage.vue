@@ -80,44 +80,28 @@
             </template>
 
             <template #actions="{ row }">
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)" :class="!canDelete(row)
-                    ? 'cursor-not-allowed opacity-40'
-                    : 'hover:bg-slate-100 cursor-pointer'
-                    " :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
-                    <TrashIcon class="h-5 w-5" />
-                </button>
-
-                <!-- ปุ่มชั่วคราว
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" title="Delete">
-                    <TrashIcon class="h-5 w-5" />
-                </button>
-                -->
-
                 <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
                 <button @click="
-                    !['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    ) && editEvent(row.id)
-                    " :disabled="['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    )
-                        " class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes(
-                            (row.evn_status || '').toLowerCase()
-                        )
-                            ? 'cursor-not-allowed opacity-40'
-                            : 'hover:bg-slate-100 cursor-pointer'
-                            " :title="['ongoing', 'done'].includes(
-                                (row.evn_status || '').toLowerCase()
-                            )
-                                ? 'Cannot edit ongoing/done event'
-                                : 'Edit'
-                                ">
-                    <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    )
+                    !['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) &&
+                    editEvent(row.id)
+                    " :disabled="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())"
+                    class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'hover:bg-slate-100 cursor-pointer'" :title="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
+                            ? 'Cannot edit ongoing/done event'
+                            : 'Edit'">
+                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
                         ? 'text-neutral-400'
-                        : 'text-neutral-800'
-                        " />
+                        : 'text-neutral-800'" />
+                </button>
+
+                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)" :class="!canDelete(row)
+                    ? 'cursor-not-allowed opacity-40'
+                    : 'hover:bg-slate-100 cursor-pointer'" :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
+                    <!-- <Icon icon="fluent:delete-12-filled" width="20" height="20" class="text-neutral-800" /> -->
+                    <Icon icon="fluent:delete-12-filled" width="20" height="20"
+                        :class="!canDelete(row) ? 'text-neutral-400' : 'text-neutral-800'" />
+
                 </button>
 
                 <!-- ❌ Disabled เมื่อ upcoming หรือ (done + permission = disabled) -->
@@ -127,23 +111,14 @@
                         (empPermission || '').toLowerCase() === 'disabled')
                 " class="rounded-lg p-1.5 cursor-not-allowed opacity-40" :title="(row.evn_status || '').toLowerCase() === 'upcoming'
                     ? 'not available for upcoming event'
-                    : 'No permission to check-in'
-                    ">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor" class="h-5 w-5 text-neutral-400">
-                        <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
-                    </svg>
+                    : 'No permission to check-in'">
+                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-400" />
                 </span>
 
                 <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
                 <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor" class="h-5 w-5 text-neutral-800">
-                        <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
-                    </svg>
+                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-800" />
                 </router-link>
             </template>
         </DataTable>
@@ -169,11 +144,7 @@ import SearchBar from "@/components/SearchBar.vue";
 import AddButton from "@/components/AddButton.vue";
 import EventDatePicker from "@/components/IndexEvent/EventDatePicker.vue";
 
-import {
-    MagnifyingGlassIcon,
-    PencilIcon,
-    TrashIcon,
-} from "@heroicons/vue/24/outline";
+import { Icon } from '@iconify/vue'
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -181,9 +152,7 @@ axios.defaults.withCredentials = true;
 
 export default {
     components: {
-        MagnifyingGlassIcon,
-        PencilIcon,
-        TrashIcon,
+        Icon,
         Filter,
         EventSort,
         DataTable,
