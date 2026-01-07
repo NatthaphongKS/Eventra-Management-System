@@ -7,10 +7,9 @@
                 v-model="searchInput"
                 placeholder="Search Category / Created by / Deleted by"
                 @search="onSearch"
-                class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
             />
 
-            <div class="relative z-[60] mt-6" ref="sortWrap">
+            <div class="relative z-[60] mt-8" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
                     :options="sortOptions"
@@ -106,9 +105,9 @@ export default {
 
             columns: [
                 {
-                    key: "cat_name",
+                    key: "cat_name_display",
                     label: "Category",
-                    class: "text-left w-[520px] h-[60px]",
+                    class: "text-left w-[520px] h-[60px] whitespace-pre-wrap break-all",
                 },
                 {
                     key: "created_by_name",
@@ -189,10 +188,22 @@ export default {
     },
 
     methods: {
+        wrapEveryChars(text, size = 65) {
+            const s = String(text ?? "");
+            const n = Number(size) || 65;
+            if (!s) return s;
+
+            let out = "";
+            for (let i = 0; i < s.length; i += n) {
+                out += (i === 0 ? "" : "\n") + s.slice(i, i + n);
+            }
+            return out;
+        },
+
         async loadHistoryCategories() {
             try {
                 // ดึงจาก backend
-                const res = await axios.get('/history/categories')
+                const res = await axios.get("/history/categories");
                 const data = Array.isArray(res.data)
                     ? res.data
                     : Array.isArray(res.data?.data)
@@ -206,6 +217,9 @@ export default {
                     cat_created_at: x.cat_created_at ?? null,
                     deleted_by_name: x.deleted_by_name ?? "-",
                     cat_deleted_at: x.cat_deleted_at ?? null,
+                    cat_name_display: this.wrapEveryChars(
+                        x.cat_name ?? "-", 65
+                    ),
                 }));
             } catch (e) {
                 console.error(e);
