@@ -37,19 +37,42 @@ class EventController extends Controller
         // คืนข้อมูลเป็น array ของอีเวนต์
         return response()->json(Event::orderBy('id', 'asc')->get());
     }
-    //คืนชุด employee_ids ของอีเวนต์นั้น
+    //คืนชุด employee_ids และข้อมูลผู้เข้าร่วมของอีเวนต์นั้น
     public function connectList($id)
     {
-        $ids = DB::table('ems_connect')
-            ->where('con_event_id', $id)
-            ->where(function ($q) {
-                $q->whereNull('con_delete_status')
-                    ->orWhere('con_delete_status', '')
-                    ->orWhere('con_delete_status', 'active');
-            })
-            ->pluck('con_employee_id'); // => [1,2,3,...]
+        // ดึงข้อมูลผู้เข้าร่วมทั้งหมด (รวมทั้งที่เช็คอินและไม่เช็คอิน)
+        $participants = DB::table('ems_connect')
+            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+            ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
+            ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+            ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
+            ->where('ems_connect.con_event_id', $id)
+            ->where('ems_connect.con_delete_status', 'active')
+            ->select(
+                'ems_employees.id',
+                'ems_employees.emp_id',
+                'ems_employees.emp_prefix',
+                'ems_employees.emp_firstname',
+                'ems_employees.emp_lastname',
+                'ems_employees.emp_nickname',
+                'ems_employees.emp_phone',
+                'ems_employees.emp_email',
+                'ems_department.dpm_name as department',
+                'ems_team.tm_name as team',
+                'ems_position.pst_name as position',
+                'ems_connect.con_answer as status',
+                'ems_connect.con_checkin_status'
+            )
+            ->orderBy('ems_employees.emp_id')
+            ->get();
 
-        return response()->json(['employee_ids' => $ids]);
+        // ดึง employee_ids เพื่อ backward compatibility
+        $ids = $participants->pluck('id')->toArray();
+
+        return response()->json([
+            'employee_ids' => $ids,
+            'participants' => $participants
+        ]);
     }
 
     // GET /api/event/{id}
@@ -462,11 +485,12 @@ class EventController extends Controller
                 'ems_event.evn_title',
                 DB::raw('ems_event.evn_category_id as evn_cat_id'),
                 DB::raw('COALESCE(c.cat_name, "") as cat_name'),
-                // 'ems_event.evn_description', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
+                'ems_event.evn_description',
                 'ems_event.evn_date',
                 'ems_event.evn_timestart',
                 'ems_event.evn_timeend',
-                // 'ems_event.evn_duration', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
+                'ems_event.evn_location',
+                'ems_event.evn_duration',
                 DB::raw('COALESCE(ems_event.evn_status, "") as evn_status'),
             ])
             ->selectSub($subTotal,  'evn_num_guest')
@@ -834,7 +858,7 @@ class EventController extends Controller
                     COUNT(*) as total_participation,
                     SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
-                    SUM(CASE WHEN con_answer = "pending" OR con_answer = "invalid" OR con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN con_checkin_status != 1 AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->first();
 
@@ -849,7 +873,22 @@ class EventController extends Controller
                     ems_department.dpm_name as name,
                     SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_answer = "pending" OR ems_connect.con_answer = "invalid" OR ems_connect.con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                ')
+                ->get();
+
+            // Get team breakdown
+            $teams = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->join('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+                ->whereIn('ems_connect.con_event_id', $eventIds)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->groupBy('ems_team.id', 'ems_team.tm_name')
+                ->selectRaw('
+                    ems_team.tm_name as name,
+                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
@@ -876,9 +915,11 @@ class EventController extends Controller
                     'ems_position.pst_name as position',
                     'ems_event.evn_title as event_title',
                     'ems_connect.con_answer as status',
-                    'ems_connect.con_checkin_status'
+                    'ems_connect.con_checkin_status',
+                    'ems_connect.con_event_id as event_id'
                 )
-                ->get(); // No unique() - show all participations
+                ->orderBy('ems_employees.emp_id')
+                ->get();
 
             return response()->json([
                 'total_participation' => $stats->total_participation ?? 0,
@@ -886,6 +927,7 @@ class EventController extends Controller
                 'not_attending' => $stats->not_attending ?? 0,
                 'pending' => $stats->pending ?? 0,
                 'departments' => $departments,
+                'teams' => $teams,
                 'participants' => $participants
             ]);
         } catch (\Exception $e) {
