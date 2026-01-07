@@ -299,7 +299,7 @@
             <button type="button" @click="saveEvent" :disabled="saving"
                 class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
                 <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
-                <span>Create</span>
+                <span>Confirm</span>
             </button>
         </div>
     </div>
