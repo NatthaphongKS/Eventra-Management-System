@@ -2,7 +2,7 @@
     <div class="relative mb-2" ref="root">
         <!-- Trigger -->
         <button type="button" :disabled="disabled"
-            class="w-full rounded-[15px] border px-4 py-2.5 text-base flex items-center justify-between focus:outline-none focus:ring-2 transition"
+            class="w-full h-[50px] rounded-[15px] border px-4 py-2.5 text-base flex items-center justify-between focus:outline-none focus:ring-2 transition"
             :class="[
                 disabled ? 'bg-gray-50 text-neutral-400 cursor-not-allowed' : 'bg-white',
                 error ? 'border-red-700 focus:ring-red-300' : 'neutral-200 focus:ring-red-300',
