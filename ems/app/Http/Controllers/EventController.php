@@ -575,14 +575,14 @@ class EventController extends Controller
     // ดึงสิทธิ์ของผู้ใช้ปัจจุบัน
     public function permission()
     {
-        $userId = Auth::id();
-        if (!$userId) return response()->json(['message' => 'Unauthenticated'], 401);
+        $empId = Auth::id();
+        if (!$empId) return response()->json(['message' => 'Unauthenticated'], 401);
 
-        $emp = Employee::find($userId);
-        if (!$emp) return response()->json(['message' => 'Employee not found'], 404);
+        $perm = DB::table('ems_employees')->where('id', $empId)->value('emp_permission');
+        if ($perm === null) return response()->json(['message' => 'Employee not found'], 404);
 
         return response()->json([
-            'emp_permission' => strtolower((string) $emp->emp_permission),
+            'emp_permission' => strtolower((string) $perm),
         ]);
     }
 
