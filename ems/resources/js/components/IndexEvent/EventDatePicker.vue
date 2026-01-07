@@ -18,24 +18,20 @@
             leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0  scale-100"
             leave-to-class="opacity-0 translate-y-1  scale-95">
         <div v-if="showDropdown"
-            class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[259px] bg-white rounded-[10px] shadow-lg border border-gray-100 z-50 p-4 space-y-2"
+            class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[259px] bg-white rounded-[20px] shadow-lg border border-neutral-100 z-50 p-4 space-y-2"
             @click.stop ref="dateDropdown">
 
             <div class="flex items-center justify-center mb-4">
                 <div class="flex gap-2 relative">
                     <div class="relative">
                         <button @click="toggleMonthDropdown"
-                            class="text-sm font-semibold text-neutral-800 cursor-pointer flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                            class="text-sm font-semibold text-neutral-800 cursor-pointer flex items-center p-2 rounded-lg border border-neutral-200 hover:bg-neutral-50"
                             type="button">
                             Month
-                            <svg class="w-4 h-4 inline ml-1 transition-transform duration-200"
-                                :class="{ 'rotate-180': showMonthDropdown }" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                            <Icon icon="ic:round-navigate-next" width="25" height="25" class="rotate-90 text-red-700"/>
                         </button>
                         <div v-if="showMonthDropdown"
-                            class="absolute z-20 w-36 bg-white border border-gray-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
+                            class="absolute z-20 w-36 bg-white border border-neutral-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
                             <div v-for="(month, index) in monthOptions" :key="index" @click="selectMonth(index)"
                                 :class="{ 'bg-red-500 text-white': currentCalendarMonth.month() === index }"
                                 class="p-1 text-sm hover:bg-red-100 cursor-pointer text-center">
@@ -46,17 +42,13 @@
 
                     <div class="relative">
                         <button @click="toggleYearDropdown"
-                            class="text-sm font-semibold text-neutral-800 cursor-pointer flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                            class="text-sm font-semibold text-neutral-800 cursor-pointer flex items-center p-2 rounded-lg border border-neutral-200 hover:bg-neutral-50"
                             type="button">
                             Year
-                            <svg class="w-4 h-4 inline ml-1 transition-transform duration-200"
-                                :class="{ 'rotate-180': showYearDropdown }" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                            <Icon icon="ic:round-navigate-next" width="25" height="25" class="rotate-90 text-red-700"/>
                         </button>
                         <div v-if="showYearDropdown"
-                            class="absolute z-20 w-36 bg-white border border-gray-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
+                            class="absolute z-20 w-36 bg-white border border-neutral-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
                             <div v-for="year in yearOptions" :key="year" @click="selectYear(year)"
                                 :class="{ 'bg-red-500 text-white': currentCalendarMonth.year() === year }"
                                 class="p-1 text-sm hover:bg-red-100 cursor-pointer text-center">
@@ -69,17 +61,15 @@
 
             <div class="flex items-center justify-between text-base font-medium mb-3 px-1">
                 <span class="font-normal text-lg">{{ currentCalendarMonth.format('MMM YYYY') }}</span>
-                <div>
-                    <span @click="prevMonth"
-                        class="text-red-500 cursor-pointer p-1 rounded-full hover:bg-gray-100 inline-block mr-1">&lt;</span>
-                    <span @click="nextMonth"
-                        class="text-red-500 cursor-pointer p-1 rounded-full hover:bg-gray-100 inline-block">&gt;</span>
+                <div class="flex items-center justify-between text-red-500 cursor-pointer p-1 rounded-full inline-block">
+                    <Icon icon="ic:round-navigate-next" width="25" height="25" @click="prevMonth" class="rotate-180"/>
+                    <Icon icon="ic:round-navigate-next" width="25" height="25" @click="nextMonth" />
                 </div>
             </div>
 
             <table class="w-full text-center text-xs border-collapse">
                 <thead>
-                    <tr class="text-gray-500 font-medium">
+                    <tr class="text-neutral-500 font-medium">
                         <th v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day"
                             class="font-medium pb-2">{{ day }}</th>
                     </tr>
@@ -98,7 +88,7 @@
 
             <div class="mt-4 flex justify-center">
                 <button @click="clearDateRange"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200">
+                    class="rounded-lg bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-200">
                     Clear
                 </button>
             </div>
@@ -114,6 +104,7 @@ import weekday from 'dayjs/plugin/weekday';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isBetween from 'dayjs/plugin/isBetween';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { Icon } from "@iconify/vue";
 
 dayjs.extend(weekday);
 dayjs.extend(weekOfYear);
@@ -123,6 +114,7 @@ dayjs.extend(customParseFormat);
 dayjs.locale('en');
 
 export default {
+    components: { Icon },
     props: {
         modelValue: {
             type: Object,
@@ -300,16 +292,16 @@ export default {
                 classes += ' bg-blue-500 text-white font-bold';
             }
             else if (day.isRangeStart || day.isRangeEnd) {
-                classes += ' bg-red-500 text-white font-semibold';
+                classes += ' bg-red-400 text-white font-semibold';
             }
             else if (day.isInRange) {
                 classes += ' bg-red-100 text-red-700';
             }
             else if (day.isCurrentMonth) {
-                classes += ' text-gray-800 hover:bg-gray-100';
+                classes += ' text-neutral-800 hover:bg-neutral-100';
             }
             else {
-                classes += ' text-gray-300';
+                classes += ' text-neutral-300';
             }
 
             return classes;
