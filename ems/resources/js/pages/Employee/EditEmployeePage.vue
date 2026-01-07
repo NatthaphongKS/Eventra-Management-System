@@ -1,259 +1,189 @@
 <template>
-    <div>
-        <div class="mx-auto max-w-[1400px] px-6">
-            <header class="pt-6 mb-6">
-                <link
-                    rel="stylesheet"
-                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+  <div class="px-2 py-0">
+    <div class="max-w-[1400px] mx-auto px-6">
+      <form @submit.prevent="openConfirmSave">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5">
+
+          <FormField label="Prefix" required class="w-full">
+            <DropdownPill
+              v-model="form.emp_prefix"
+              :options="prefixes"
+              placeholder="Select prefix"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_prefix"
+            />
+          </FormField>
+
+          <FormField label="Department" required>
+            <DropdownPill
+              v-model="form.emp_department_id"
+              :options="departments"
+              placeholder="Select Department"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_department_id"
+            />
+          </FormField>
+
+          <FormField label="First Name" required>
+            <InputPill
+              v-model="form.emp_firstname"
+              placeholder="Ex.Perapat"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_firstname"
+            />
+          </FormField>
+
+          <FormField label="Team" required>
+            <DropdownPill
+              v-model="form.emp_team_id"
+              :options="teamOptions"
+              :placeholder="form.emp_department_id ? 'Select Team' : 'Please select Department first'"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_team_id"
+              :disabled="!form.emp_department_id"
+            />
+          </FormField>
+
+          <FormField label="Last Name" required>
+            <InputPill
+              v-model="form.emp_lastname"
+              placeholder="Ex.Saimai"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_lastname"
+            />
+          </FormField>
+
+          <FormField label="Position" required>
+            <DropdownPill
+              v-model="form.emp_position_id"
+              :options="positionOptions"
+              :placeholder="form.emp_team_id ? 'Select Position' : 'Please select Team first'"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_position_id"
+              :disabled="!form.emp_team_id"
+            />
+          </FormField>
+
+          <FormField label="Nickname" required>
+            <InputPill
+              v-model="form.emp_nickname"
+              placeholder="Ex.beam"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_nickname"
+            />
+          </FormField>
+
+          <FormField label="Email" required>
+            <div class="relative"> <InputPill
+                v-model="form.emp_email"
+                type="email"
+                placeholder="Ex.example@gmail.com"
+                class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400"
+                :error="errors.emp_email"
+                :disabled="!isAdmin"
                 />
-
-                <div class="flex items-center justify-between gap-3 mb-6">
-                    <h2 class="text-xl font-semibold text-gray-800 ml-8">
-                        Edit Employee
-                    </h2>
-                </div>
-            </header>
-
-            <div class="px-2 py-0">
-                <div class="max-w-[1400px] mx-auto px-6">
-                    <form @submit.prevent="openConfirmSave">
-                        <div
-                            class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between"
-                        >
-                            <div class="flex flex-col gap-5">
-                                <FormField
-                                    label="Prefix"
-                                    required
-                                    class="w-full"
-                                >
-                                    <DropdownPill
-                                        v-model="form.emp_prefix"
-                                        :options="prefixes"
-                                        placeholder="Select prefix"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_prefix"
-                                    />
-                                </FormField>
-
-                                <FormField label="First Name" required>
-                                    <InputPill
-                                        v-model="form.emp_firstname"
-                                        placeholder="Ex.Perapat"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_firstname"
-                                    />
-                                </FormField>
-
-                                <FormField label="Last Name" required>
-                                    <InputPill
-                                        v-model="form.emp_lastname"
-                                        placeholder="Ex.Saimai"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_lastname"
-                                    />
-                                </FormField>
-
-                                <FormField label="Nickname" required>
-                                    <InputPill
-                                        v-model="form.emp_nickname"
-                                        placeholder="Ex.beam"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_nickname"
-                                    />
-                                </FormField>
-
-                                <FormField label="Phone" required>
-                                    <InputPill
-                                        v-model="form.emp_phone"
-                                        placeholder="Ex.0988900988"
-                                        maxlength="10"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_phone"
-                                    />
-                                </FormField>
-
-                                <FormField label="Employee ID" required>
-                                    <div class="grid grid-cols-2 gap-3 mt-1">
-                                        <DropdownPill
-                                            v-model="form.companyId"
-                                            :options="companies"
-                                            placeholder="Company"
-                                            class="h-11 w-full"
-                                            :error="errors.companyId"
-                                        />
-
-                                        <InputPill
-                                            v-model="form.employeeNumber"
-                                            placeholder="Ex.0001"
-                                            maxlength="4"
-                                            class="h-11 w-full"
-                                            :error="errors.employeeNumber"
-                                            @input="onEmployeeNumberInput"
-                                        />
-                                    </div>
-                                </FormField>
-
-                                <div class="pt-2">
-                                    <button
-                                        type="button"
-                                        @click="onCancel"
-                                        class="inline-flex -ml-11"
-                                    >
-                                        <CancelButton />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col gap-5 h-full">
-                                <FormField label="Department" required>
-                                    <DropdownPill
-                                        v-model="form.emp_department_id"
-                                        :options="departments"
-                                        placeholder="Select Department"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_department_id"
-                                    />
-                                </FormField>
-
-                                <FormField label="Team" required>
-                                    <DropdownPill
-                                        v-model="form.emp_team_id"
-                                        :options="teamOptions"
-                                        :placeholder="
-                                            form.emp_department_id
-                                                ? 'Select Team'
-                                                : 'Please select Department first'
-                                        "
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_team_id"
-                                        :disabled="!form.emp_department_id"
-                                    />
-                                </FormField>
-
-                                <FormField label="Position" required>
-                                    <DropdownPill
-                                        v-model="form.emp_position_id"
-                                        :options="positionOptions"
-                                        :placeholder="
-                                            form.emp_team_id
-                                                ? 'Select Position'
-                                                : 'Please select Team first'
-                                        "
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_position_id"
-                                        :disabled="!form.emp_team_id"
-                                    />
-                                </FormField>
-
-                                <FormField label="Email" required>
-                                    <InputPill
-                                        v-model="form.emp_email"
-                                        type="email"
-                                        placeholder="Ex.example@gmail.com"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_email"
-                                    />
-                                </FormField>
-
-                                <FormField label="Password">
-                                    <InputPill
-                                        v-model="form.password"
-                                        type="password"
-                                        :disabled="!isAdmin || form.emp_permission === 'employee'"
-                                        :placeholder="
-                                            form.emp_permission === 'employee'
-                                                ? 'No password required'
-                                                : isAdmin
-                                                ? 'Leave blank to keep current password'
-                                                : 'Admin only'
-                                        "
-                                        class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400 disabled:placeholder:!text-neutral-400"
-                                        :error="errors.password"
-                                    />
-
-                                    <p
-                                        v-if="form.emp_permission === 'employee'"
-                                        class="text-xs text-gray-400 mt-1"
-                                    >
-                                        *Employee does not require password
-                                    </p>
-                                    <p
-                                        v-if="!isAdmin"
-                                        class="text-xs text-rose-500 mt-1"
-                                    >
-                                        *Only Administrator can change password
-                                    </p>
-                                </FormField>
-
-                                <FormField label="Permission" required>
-                                    <DropdownPill
-                                        v-model="form.emp_permission"
-                                        :options="permissions"
-                                        placeholder="Select Permission"
-                                        class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_permission"
-                                        :disabled="!isAdmin"
-                                    />
-                                    <p
-                                        v-if="!isAdmin"
-                                        class="text-xs text-rose-500 mt-1"
-                                    >
-                                        *Only Administrator can change
-                                        permission
-                                    </p>
-                                </FormField>
-
-                                <div
-                                    class="mt-auto pt-2 flex justify-end flex-col items-end"
-                                >
-                                    <button
-                                        type="submit"
-                                        :disabled="saving"
-                                        class="inline-flex items-center justify-center gap-2 w-[140px] h-[45px] rounded-[20px] bg-green-600 text-white font-bold text-[15px] shadow-sm transition hover:shadow-md disabled:opacity-50"
-                                    >
-                                        <span
-                                            v-if="!saving"
-                                            class="material-symbols-outlined text-[20px] leading-none"
-                                            >check</span
-                                        >
-                                        <span>{{
-                                            saving ? "Saving…" : "Confirm"
-                                        }}</span>
-                                    </button>
-
-                                    <p
-                                        v-if="noChange"
-                                        class="text-amber-600 text-sm pt-2"
-                                    >
-                                        No changes were made.
-                                    </p>
-                                    <p
-                                        v-if="saveError"
-                                        class="text-rose-600 text-sm pt-2"
-                                    >
-                                        {{ saveError }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                <p v-if="!isAdmin" class="absolute -bottom-5 left-0 text-[10px] text-rose-500">
+                    *Only Administrator can change email
+                </p>
             </div>
-        </div>
+          </FormField>
 
-        <ModalAlert
-            v-model:open="alert.open"
-            :type="alert.type"
-            :title="alert.title"
-            :message="alert.message"
-            :showCancel="alert.showCancel"
-            :okText="alert.okText"
-            :cancelText="alert.cancelText"
-            @confirm="alert.onConfirm"
-            @cancel="alert.onCancel"
-        />
+          <FormField label="Phone" required>
+            <InputPill
+              v-model="form.emp_phone"
+              placeholder="Ex.0988900988"
+              maxlength="10"
+              class="mt-1 block h-11 w-full"
+              :error="errors.emp_phone"
+            />
+          </FormField>
+
+          <FormField label="Password">
+            <div class="relative">
+                <InputPill
+                v-model="form.password"
+                type="password"
+                :disabled="!isAdmin || form.emp_permission === 'employee'"
+                :placeholder="
+                    form.emp_permission === 'employee'
+                    ? 'No password required'
+                    : isAdmin
+                    ? 'Leave blank to keep current password'
+                    : 'Admin only'
+                "
+                class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400 disabled:placeholder:!text-neutral-400"
+                :error="errors.password"
+                />
+                <p v-if="form.emp_permission === 'employee'" class="absolute -bottom-5 left-0 text-[10px] text-gray-400">
+                   *Employee does not require password
+                </p>
+                <p v-if="!isAdmin" class="absolute -bottom-5 left-0 text-[10px] text-rose-500">
+                   *Only Administrator can change password
+                </p>
+            </div>
+          </FormField>
+
+          <FormField label="Employee ID" required>
+            <div class="grid grid-cols-2 gap-3 mt-1">
+              <DropdownPill
+                v-model="form.companyId"
+                :options="companies"
+                placeholder="Company"
+                class="h-11 w-full"
+                :error="errors.companyId"
+              />
+              <InputPill
+                v-model="form.employeeNumber"
+                placeholder="Ex.0001"
+                maxlength="4"
+                class="h-11 w-full"
+                :error="errors.employeeNumber"
+                @input="onEmployeeNumberInput"
+              />
+            </div>
+          </FormField>
+
+          <FormField label="Permission" required>
+            <div class="relative">
+                <DropdownPill
+                v-model="form.emp_permission"
+                :options="permissions"
+                placeholder="Select Permission"
+                class="mt-1 block h-11 w-full"
+                :error="errors.emp_permission"
+                :disabled="!isAdmin"
+                />
+                <p v-if="!isAdmin" class="absolute -bottom-5 left-0 text-[10px] text-rose-500">
+                    *Only Administrator can change permission
+                </p>
+            </div>
+          </FormField>
+
+          <div class="pt-2 flex items-end">
+            <button type="button" @click="onCancel" class="inline-flex -ml-11">
+              <CancelButton />
+            </button>
+          </div>
+
+          <div class="mt-auto pt-2 flex justify-end flex-col items-end">
+            <button
+              type="submit"
+              :disabled="saving"
+              class="inline-flex items-center justify-center gap-2 w-[140px] h-[45px] rounded-[20px] bg-green-600 text-white font-bold text-[15px] shadow-sm transition hover:shadow-md disabled:opacity-50"
+            >
+              <span v-if="!saving" class="material-symbols-outlined text-[20px] leading-none">check</span>
+              <span>{{ saving ? "Saving…" : "Confirm" }}</span>
+            </button>
+            <p v-if="noChange" class="text-amber-600 text-sm pt-2">No changes were made.</p>
+            <p v-if="saveError" class="text-rose-600 text-sm pt-2">{{ saveError }}</p>
+          </div>
+
+        </div> </form>
     </div>
-</template>
+  </div>
+
+  </template>
 
 <script setup>
 import { reactive, computed, watch, ref, onMounted } from "vue";
