@@ -37,7 +37,7 @@
             <template #empty>
                 {{
                     sorted.length === 0
-                        ? "ไม่พบข้อมูลประวัติพนักงาน"
+                        ? "ไม่พบข้อมูลพนักงาน"
                         : "ไม่มีข้อมูลในหน้านี้"
                 }}
             </template>
@@ -126,11 +126,6 @@ export default {
                     class: 'text-center w-[120px]',
                 },
                 {
-                    key: 'emp_delete_status',
-                    label: 'Status',
-                    class: 'text-center w-[100px]',
-                },
-                {
                     key: 'department_name',
                     label: 'Department',
                     class: 'text-center w-[120px]',
@@ -181,7 +176,6 @@ export default {
                     (r.emp_firstname || '').toLowerCase().includes(q) ||
                     (r.emp_lastname || '').toLowerCase().includes(q) ||
                     (r.emp_nickname || '').toLowerCase().includes(q) ||
-                    (r.emp_delete_status || '').toLowerCase().includes(q) ||
                     (r.department_name || '').toLowerCase().includes(q) ||
                     (r.team_name || '').toLowerCase().includes(q) ||
                     (r.position_name || '').toLowerCase().includes(q)
