@@ -327,7 +327,7 @@ class EmployeeController extends Controller
                 'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
                 'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
                 'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-                'emp_password' => ['nullable', 'min:6'],
+                'emp_password' => ['nullable', 'min:8'],
                 'emp_permission' => ['nullable', 'in:admin,hr,employee'],
             ]);
 
@@ -384,7 +384,7 @@ class EmployeeController extends Controller
             'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
             'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
             'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-            'emp_password' => ['nullable', 'min:6'],
+            'emp_password' => ['nullable', 'min:8'],
             'emp_permission' => ['nullable', 'in:admin,hr,employee'],
         ]);
 
