@@ -9,8 +9,6 @@
                 @search="onSearch"
                 class=""
             />
-
-            <!-- ✅ ห่อไว้เพื่อจับคลิกรอบนอก -->
             <div class="mt-6" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
@@ -187,15 +185,16 @@ export default {
             editOpen: false,
             editing: null,
 
-            userName: "Admin",
+            userName: "",
 
             CategoryTableColumns: [
                 {
-                    key: "cat_name",
+                    key: "cat_name_display",
                     label: "Category",
-                    class: "text-left w-[867px] h-[60px]",
+                    class: "text-left w-[520px] h-[60px] whitespace-pre-wrap break-all",
                     sortable: true,
                 },
+
                 {
                     key: "created_by_name",
                     label: "Created by",
@@ -254,7 +253,6 @@ export default {
     },
 
     mounted() {
-        // ✅ ใช้ bubbling phase (ไม่ใส่ true) เพื่อให้ @click.stop ในเมนูทำงานก่อน
         document.addEventListener("click", this.onDocClick);
     },
     beforeUnmount() {
@@ -263,6 +261,19 @@ export default {
 
     methods: {
         /* --------- โหลดรายการ --------- */
+        /* --------- แสดงข้อมูลในคอลลัมไม่เกิน 100 vachar ถ้าเกินขึ้นบรรทัดใหม่ --------- */
+        wrapEveryChars(text, size = 100) {
+            const s = String(text ?? "");
+            const n = Number(size) || 100;
+            if (!s) return s;
+
+            let out = "";
+            for (let i = 0; i < s.length; i += n) {
+                out += (i === 0 ? "" : "\n") + s.slice(i, i + n);
+            }
+            return out;
+        },
+
         async loadCategories() {
             try {
                 // 1) โหลด categories + events พร้อมกัน
@@ -305,8 +316,11 @@ export default {
                         cat_created_at:
                             c.cat_created_at ?? c.created_at ?? null,
 
-                        // ✅ จุดสำคัญ: ให้ FE ใช้ disable ไอคอนแก้ไข
+                        // จุดสำคัญ: ให้ FE ใช้ disable ไอคอนแก้ไข
                         is_used_in_event: usedCatIds.has(id),
+                        cat_name_display: this.wrapEveryChars(
+                            c.cat_name ?? c.name ?? "-",100
+                        ),
                     };
                 });
             } catch (e) {
@@ -347,8 +361,6 @@ export default {
                 this.sortMenuOpen = false;
             }
         },
-
-        /* ================== CREATE/EDIT/DELETE (เดิม) ================== */
         openAdd() {
             this.addOpen = true;
         },
@@ -380,6 +392,9 @@ export default {
                     created_by_name: created.created_by_name || this.userName,
                     cat_created_at:
                         created.cat_created_at || new Date().toISOString(),
+                    cat_name_display: this.wrapEveryChars(
+                        created.cat_name || n,100
+                    ),
                 });
                 this.addOpen = false;
                 this.alert = {
@@ -401,7 +416,7 @@ export default {
             }
         },
         openEdit(row) {
-            if (row?.is_used_in_event) return; // ✅ กันแก้ไขเมื่อถูกใช้งานแล้ว
+            if (row?.is_used_in_event) return;
             this.editing = {
                 id: row.id,
                 name: row.cat_name,
@@ -441,7 +456,13 @@ export default {
             try {
                 await axios.put(`/categories/${id}`, { cat_name: n });
                 this.rows = this.rows.map((r) =>
-                    r.id === id ? { ...r, cat_name: n } : r
+                    r.id === id
+                        ? {
+                              ...r,
+                              cat_name: n,
+                              cat_name_display: this.wrapEveryChars(n, 100),
+                          }
+                        : r
                 );
                 this.editOpen = false;
                 this.alert = {

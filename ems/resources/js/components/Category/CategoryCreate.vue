@@ -13,7 +13,7 @@
           </label>
 
           <input
-            v-model.trim="name"
+            v-model="name"
             type="text"
             placeholder="Ex. สัมมนา"
             :aria-invalid="submitted && invalid"
@@ -26,11 +26,20 @@
             autofocus
           />
 
-          <!-- ✅ โชว์หลัง “กด Create/Enter” เท่านั้น -->
-          <p v-if="submitted && isEmpty" class="mt-1 text-sm text-red-700">Required field</p>
-          <p v-else-if="submitted && showDup" class="mt-1 text-sm text-red-700">
-            This name is already in use!
-          </p>
+          <div class="mt-1 flex items-center justify-between">
+            <p v-if="submitted && isEmpty" class="text-sm text-red-700">Required field</p>
+
+            <p v-else-if="submitted && tooLong" class="text-sm text-red-700">
+              Character limit exceeded (maximum 255 characters).
+            </p>
+
+            <p v-else-if="submitted && showDup" class="text-sm text-red-700">
+              This name is already in use!
+            </p>
+            <!-- <p class="text-sm text-neutral-500 ml-auto">
+              {{ charCount }}/255
+            </p> -->
+          </div>
         </div>
       </div>
 
@@ -39,11 +48,7 @@
           <CancelButton @click="close" class="inline-flex items-center gap-2" />
         </div>
         <div>
-          <!-- ✅ ไม่ disable ตาม invalid เพื่อให้กดแล้วค่อยโชว์ validate -->
-          <CreateButton
-            @click="submit"
-            class="inline-flex items-center gap-2"
-          >
+          <CreateButton @click="submit" class="inline-flex items-center gap-2">
             Create
           </CreateButton>
         </div>
@@ -68,6 +73,8 @@ const emit = defineEmits<{
   (e: "submit", payload: { name: string }): void;
 }>();
 
+const MAX_LEN = 255;
+
 const name = ref("");
 const submitted = ref(false);
 
@@ -79,7 +86,7 @@ watch(() => props.open, (v) => {
   }
 });
 
-// ✅ พอผู้ใช้พิมพ์หลังจากเคยกด submit แล้ว ให้ซ่อน validate ระหว่างพิมพ์
+// พอผู้ใช้พิมพ์หลังจากเคยกด submit แล้ว ให้ซ่อน validate ระหว่างพิมพ์
 watch(name, () => {
   if (submitted.value) submitted.value = false;
 });
@@ -87,12 +94,17 @@ watch(name, () => {
 const trimmed = computed(() => name.value.trim());
 const isEmpty = computed(() => trimmed.value.length === 0);
 
+// นับจำนวน “ตัวอักษรจริง”
+const charCount = computed(() => Array.from(trimmed.value).length);
+const tooLong = computed(() => charCount.value > MAX_LEN);
+
 const showDup = computed(() => {
   if (isEmpty.value) return false;
   return props.duplicate ? props.duplicate(trimmed.value) : false;
 });
 
-const invalid = computed(() => isEmpty.value || showDup.value);
+// ✅ บล็อก submit ถ้าเกิน 255
+const invalid = computed(() => isEmpty.value || showDup.value || tooLong.value);
 
 function close() {
   emit("update:open", false);
@@ -100,7 +112,7 @@ function close() {
 }
 
 function submit() {
-  submitted.value = true;        // ✅ เริ่ม validate ตอนกดปุ่ม/Enter
+  submitted.value = true;
   if (invalid.value) return;
 
   emit("submit", { name: trimmed.value });

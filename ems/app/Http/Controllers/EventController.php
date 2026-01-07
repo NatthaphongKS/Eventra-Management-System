@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;      // ใช้เฉพาะ transaction
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Event;
 use App\Models\Employee;
@@ -36,19 +37,42 @@ class EventController extends Controller
         // คืนข้อมูลเป็น array ของอีเวนต์
         return response()->json(Event::orderBy('id', 'asc')->get());
     }
-    //คืนชุด employee_ids ของอีเวนต์นั้น
+    //คืนชุด employee_ids และข้อมูลผู้เข้าร่วมของอีเวนต์นั้น
     public function connectList($id)
     {
-        $ids = DB::table('ems_connect')
-            ->where('con_event_id', $id)
-            ->where(function ($q) {
-                $q->whereNull('con_delete_status')
-                    ->orWhere('con_delete_status', '')
-                    ->orWhere('con_delete_status', 'active');
-            })
-            ->pluck('con_employee_id'); // => [1,2,3,...]
+        // ดึงข้อมูลผู้เข้าร่วมทั้งหมด (รวมทั้งที่เช็คอินและไม่เช็คอิน)
+        $participants = DB::table('ems_connect')
+            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+            ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
+            ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+            ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
+            ->where('ems_connect.con_event_id', $id)
+            ->where('ems_connect.con_delete_status', 'active')
+            ->select(
+                'ems_employees.id',
+                'ems_employees.emp_id',
+                'ems_employees.emp_prefix',
+                'ems_employees.emp_firstname',
+                'ems_employees.emp_lastname',
+                'ems_employees.emp_nickname',
+                'ems_employees.emp_phone',
+                'ems_employees.emp_email',
+                'ems_department.dpm_name as department',
+                'ems_team.tm_name as team',
+                'ems_position.pst_name as position',
+                'ems_connect.con_answer as status',
+                'ems_connect.con_checkin_status'
+            )
+            ->orderBy('ems_employees.emp_id')
+            ->get();
 
-        return response()->json(['employee_ids' => $ids]);
+        // ดึง employee_ids เพื่อ backward compatibility
+        $ids = $participants->pluck('id')->toArray();
+
+        return response()->json([
+            'employee_ids' => $ids,
+            'participants' => $participants
+        ]);
     }
 
     // GET /api/event/{id}
@@ -101,16 +125,13 @@ class EventController extends Controller
             ->map(function ($f) { //ใช้สร้าง URL ให้ frontend โหลดไฟล์จริง ต้องมี php artisan storage:link
 
                 //ข้อมูลจาก file_path ก่อน Map { id: 1, file_name: "contract.pdf", file_path: "events/12/contract.pdf", file_size: 120000 }
-
                 $f->url = asset('storage/' . $f->file_path); //เพิ่มข้อมูล Link url เข้าไป เพื่อให้ frontend  url: "http://localhost:8000/storage/events/12/contract.pdf"
-
                 return $f;
                 //.map() = วนทุกไฟล์ใน Collection
-
                 // $f->url = asset(...) = เพิ่ม field url ที่เป็นลิงก์จริงไปยังไฟล์ใน public/storage
-
                 // return $f; = คืน object ที่ถูกแก้ไข
             });
+
         $guestIds = DB::table('ems_connect')
             ->where('con_event_id', $event->id)
             ->where('con_delete_status', 'active')
@@ -123,15 +144,12 @@ class EventController extends Controller
         ]);
     }
 
-
-
-
     public function Update(Request $request)
     {
         $data = $request->validate([
             'id' => 'required|integer|exists:ems_event,id',
             'evn_title' => 'required|string|max:255',
-            // ... (Validation rules อื่นๆ เหมือนเดิม) ...
+            // ... (Validation rules อื่นๆ) ...
             'evn_category_id' => 'sometimes|integer|exists:ems_categories,id',
             'evn_description' => 'sometimes|nullable|string',
             'evn_date' => 'sometimes|date',
@@ -177,7 +195,7 @@ class EventController extends Controller
                 $oldLocation != $event->evn_location
             );
 
-            // ... (ส่วนจัดการไฟล์ - ลบ/เพิ่มไฟล์ คงเดิมไว้) ...
+            // ... (ส่วนจัดการไฟล์ - ลบ/เพิ่มไฟล์ คงเดิม) ...
             if ($request->filled('delete_file_ids')) {
                 $ids = array_values(array_unique($request->input('delete_file_ids', [])));
                 $files = DB::table('ems_event_files')->where('file_event_id', $event->id)->whereIn('id', $ids)->get();
@@ -200,7 +218,6 @@ class EventController extends Controller
             $remain = DB::table('ems_event_files')->where('file_event_id', $event->id)->count();
             $event->evn_file = $remain > 0 ? 'have' : 'not_have';
             $event->save();
-
 
             // =========================================================
             // 4. จัดการพนักงาน (แยก Logic คนใหม่ / คนเก่า)
@@ -231,9 +248,12 @@ class EventController extends Controller
                     // *** ส่งอีเมลเชิญ (Invitation) ให้คนใหม่ ***
                     $newEmployees = Employee::whereIn('id', $idsToAdd)->get();
                     $currentFiles = DB::table('ems_event_files')->where('file_event_id', $event->id)->get();
+
                     foreach ($newEmployees as $emp) {
                         if ($emp->emp_email) {
-                            Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $currentFiles));
+                            // ✅ [แก้จุดที่ 1] สร้าง URL และส่งเข้า Mail Class
+                            $formURL = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
+                            Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $currentFiles, $formURL));
                         }
                     }
                 }
@@ -252,14 +272,11 @@ class EventController extends Controller
             // 5. แจ้งเตือนคนเดิม (Update) เฉพาะเมื่อมีการแก้ไขสำคัญ
             // =========================================================
             if ($isCriticalChange) {
-                // รีเซ็ตสถานะ "เฉพาะคนเดิม" (ไม่รวมคนใหม่ เพราะคนใหม่เพิ่งได้ invite ไปตะกี้)
-                // คนใหม่ ($idsToAdd) สถานะเป็น invalid อยู่แล้วจากการ insert/update ข้างบน
-
-                // ดึงคนเดิมที่ Active อยู่
+                // ดึงคนเดิมที่ Active อยู่ (ไม่รวมคนใหม่ที่เพิ่งเชิญ)
                 $existingParticipants = DB::table('ems_connect')
                     ->where('con_event_id', $event->id)
                     ->where('con_delete_status', 'active')
-                    ->whereNotIn('con_employee_id', $idsToAdd) // <--- สำคัญ: ไม่เอาคนเพิ่งเพิ่ม
+                    ->whereNotIn('con_employee_id', $idsToAdd)
                     ->pluck('con_employee_id');
 
                 if ($existingParticipants->isNotEmpty()) {
@@ -275,7 +292,11 @@ class EventController extends Controller
 
                     foreach ($employeesToUpdate as $emp) {
                         if ($emp->emp_email) {
-                            Mail::to($emp->emp_email)->send(new EventUpdateMail($emp, $event, $filesToSend));
+                            // ✅ [แก้จุดที่ 2] สร้าง URL และส่งเข้า Mail Class (ถ้า EventUpdateMail ต้องใช้ปุ่มตอบรับ)
+                            $formURL = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
+
+                            // อย่าลืม! คุณต้องไปแก้ __construct ของไฟล์ EventUpdateMail.php ให้รับ $formURL ด้วยนะครับ
+                            Mail::to($emp->emp_email)->send(new EventUpdateMail($emp, $event, $filesToSend, $formURL));
                         }
                     }
                 }
@@ -324,7 +345,6 @@ class EventController extends Controller
             'employee_ids.*' => 'integer|exists:ems_employees,id',
         ]);
 
-
         try {
             return DB::transaction(function () use ($request, $data) {
 
@@ -345,65 +365,63 @@ class EventController extends Controller
 
                 // 2) อัปโหลดไฟล์ + บันทึกผ่านความสัมพันธ์ files()
                 $savedFiles = [];
-            if ($request->hasFile('attachments')) {
-                foreach ($request->file('attachments') as $file) {
-                    $path = $file->store("events/{$event->id}", 'public');
+                if ($request->hasFile('attachments')) {
+                    foreach ($request->file('attachments') as $file) {
+                        $path = $file->store("events/{$event->id}", 'public');
 
-                    $fileRow = $event->files()->create([
-                        'file_name'   => $file->getClientOriginalName(),
-                        'file_path'   => $path,
-                        'file_type'   => $file->getClientMimeType(),
-                        'file_size'   => $file->getSize(),
-                        'uploaded_at' => now(),
-                    ]);
+                        $fileRow = $event->files()->create([
+                            'file_name'   => $file->getClientOriginalName(),
+                            'file_path'   => $path,
+                            'file_type'   => $file->getClientMimeType(),
+                            'file_size'   => $file->getSize(),
+                            'uploaded_at' => now(),
+                        ]);
 
-                    // บันทึกลงตาราง File (Table: ems_file)
-                    // ต้องแน่ใจว่า import App\Models\File แล้ว
-                    $fileRecord = new File();
-                    $fileRecord->file_name      = $file->getClientOriginalName(); // ชื่อเดิม
-                    $fileRecord->file_path      = $path;                          // path ที่เก็บ
-                    $fileRecord->file_event_id  = $event->id;                     // ID กิจกรรม
-                    $fileRecord->file_type      = $file->getMimeType(); // เพิ่ม: file_type
-                    $fileRecord->file_size      = $file->getSize();     // เพิ่ม: file_size (จำเป็น)
-                    $fileRecord->save();
+                        // บันทึกลงตาราง File (Table: ems_file)
+                        // ต้องแน่ใจว่า import App\Models\File แล้ว
+                        $fileRecord = new File();
+                        $fileRecord->file_name      = $file->getClientOriginalName(); // ชื่อเดิม
+                        $fileRecord->file_path      = $path;                          // path ที่เก็บ
+                        $fileRecord->file_event_id  = $event->id;                     // ID กิจกรรม
+                        $fileRecord->file_type      = $file->getMimeType(); // เพิ่ม: file_type
+                        $fileRecord->file_size      = $file->getSize();     // เพิ่ม: file_size (จำเป็น)
+                        $fileRecord->save();
+                    }
                 }
-            }
 
-            // 3) ผูกผู้เข้าร่วม (ems_connect) ผ่านความสัมพันธ์ connects()
-            $connectRows = collect($data['employee_ids'])
-                ->unique()
-                ->map(fn($eid) => [
-                    // 'con_event_id' จะถูกใส่อัตโนมัติจากความสัมพันธ์
-                    'con_employee_id'   => $eid,
-                    'con_answer'        => 'invalid',
-                    'con_reason'        => null,
-                    'con_delete_status' => 'active',
-                ])
-                ->values()
-                ->all();
+                // 3) ผูกผู้เข้าร่วม (ems_connect) ผ่านความสัมพันธ์ connects()
+                $connectRows = collect($data['employee_ids'])
+                    ->unique()
+                    ->map(fn($eid) => [
+                        // 'con_event_id' จะถูกใส่อัตโนมัติจากความสัมพันธ์
+                        'con_employee_id'   => $eid,
+                        'con_answer'        => 'invalid',
+                        'con_reason'        => null,
+                        'con_delete_status' => 'active',
+                    ])
+                    ->values()
+                    ->all();
 
-            $event->connects()->createMany($connectRows);
+                $event->connects()->createMany($connectRows);
 
-            // 4) ส่งอีเมลเชิญ
-            $employees = Employee::whereIn('id', $data['employee_ids'])
-                ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
+                // 4) ส่งอีเมลเชิญ
+                $employees = Employee::whereIn('id', $data['employee_ids'])
+                    ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
-            
-
-            foreach ($employees as $emp) {
-                if (!$emp->emp_email) {
-                    continue;
+                foreach ($employees as $emp) {
+                    if (!$emp->emp_email) {
+                        continue;
+                    }
+                    $formURL = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
+                    Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles, $formURL));
+                    // หรือใช้คิว: Mail::to(...)->queue(new EventInvitationMail(...));
                 }
-                $formURL = '/reply/'.Crypt::encryptString($event->id.'/'.$emp->id);
-                Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles, $formURL));
-                // หรือใช้คิว: Mail::to(...)->queue(new EventInvitationMail(...));
-            }
 
-            return response()->json([
-                'message'  => 'สร้างกิจกรรมและส่งอีเมลเชิญแล้ว',
-                'event'    => $event,
-                'redirect' => '/event',
-            ], 201);
+                return response()->json([
+                    'message'  => 'สร้างกิจกรรมและส่งอีเมลเชิญแล้ว',
+                    'event'    => $event,
+                    'redirect' => '/event',
+                ], 201);
             });
         } catch (\Exception $e) {
             DB::rollBack(); // ย้อนกลับข้อมูลทั้งหมดถ้ามี Error
@@ -467,11 +485,12 @@ class EventController extends Controller
                 'ems_event.evn_title',
                 DB::raw('ems_event.evn_category_id as evn_cat_id'),
                 DB::raw('COALESCE(c.cat_name, "") as cat_name'),
-                // 'ems_event.evn_description', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
+                'ems_event.evn_description',
                 'ems_event.evn_date',
                 'ems_event.evn_timestart',
                 'ems_event.evn_timeend',
-                // 'ems_event.evn_duration', // ยังไม่ได้เรียกใช้ ลบได้แต่ยังเก็บไว้ก่อน
+                'ems_event.evn_location',
+                'ems_event.evn_duration',
                 DB::raw('COALESCE(ems_event.evn_status, "") as evn_status'),
             ])
             ->selectSub($subTotal,  'evn_num_guest')
@@ -549,7 +568,7 @@ class EventController extends Controller
                 ->update(['evn_status' => 'upcoming']);
         } finally {
             // ปล่อย lock
-           // optional($lock)->release();
+            // optional($lock)->release();
         }
     }
 
@@ -607,7 +626,7 @@ class EventController extends Controller
             return response()->json(['message' => 'Event deleted failed'], 500);
         }
     }
-    
+
     public function getEventParticipants($eventId)
     {
         try {
@@ -651,6 +670,7 @@ class EventController extends Controller
                 'emp_department_id',
                 'emp_team_id'
             ])
+
             ->map(function (Employee $e) {
                 return [
                     'id'               => $e->id,
@@ -674,7 +694,6 @@ class EventController extends Controller
         $positions = Position::select('id', 'pst_name')->where('pst_delete_status', 'active')->orderBy('pst_name')->get();
         $departments = Department::select('id', 'dpm_name')->where('dpm_delete_status', 'active')->orderBy('dpm_name')->get();
         $teams = Team::select('id', 'tm_name')->where('tm_delete_status', 'active')->orderBy('tm_name')->get();
-
         return response()->json(compact('categories', 'employees', 'positions', 'departments', 'teams'));
     }
 
@@ -688,7 +707,6 @@ class EventController extends Controller
             }
 
             $statusFilter = $request->get('status'); // accepted, declined, pending
-
             // ดึงข้อมูล participants จาก ems_connect และ join กับ employees
             $query = DB::table('ems_connect as c')
                 ->join('ems_employees as e', 'c.con_employee_id', '=', 'e.id')
@@ -696,7 +714,7 @@ class EventController extends Controller
                 ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
                 ->leftJoin('ems_team as t', 'e.emp_team_id', '=', 't.id')
                 ->where('c.con_event_id', $id)
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->where('c.con_delete_status', 'active');
                 })
                 ->select([
@@ -724,7 +742,6 @@ class EventController extends Controller
                     $query->where('c.con_answer', 'denied');
                 }
             }
-
             $participants = $query->orderBy('e.emp_firstname')->get();
 
             // นับสถิติ - แก้ไขให้ตรงกับ database จริง
@@ -758,7 +775,6 @@ class EventController extends Controller
                     'status' => $event->evn_status
                 ]
             ]);
-
         } catch (\Exception $e) {
             \Log::error("Error in getParticipants for event $id: " . $e->getMessage());
             return response()->json([
@@ -783,10 +799,10 @@ class EventController extends Controller
             // ดึงข้อมูลการตอบรับจาก ems_connect table
             $attendanceStats = DB::table('ems_connect')
                 ->where('con_event_id', $eventId)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNull('con_delete_status')
-                          ->orWhere('con_delete_status', '')
-                          ->orWhere('con_delete_status', 'active');
+                        ->orWhere('con_delete_status', '')
+                        ->orWhere('con_delete_status', 'active');
                 })
                 ->selectRaw('
                     COUNT(CASE WHEN con_answer = "accept" THEN 1 END) as actual_attendance,
@@ -805,12 +821,11 @@ class EventController extends Controller
                     'declined' => $attendanceStats->declined ?? 0,
                     'pending' => $attendanceStats->pending ?? 0,
                     'total_invited' => $attendanceStats->total_invited ?? 0,
-                    'attendance_percentage' => $attendanceStats->total_invited > 0 
-                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2) 
+                    'attendance_percentage' => $attendanceStats->total_invited > 0
+                        ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2)
                         : 0
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -823,7 +838,7 @@ class EventController extends Controller
     {
         try {
             $eventIds = $request->input('event_ids', []);
-            
+
             if (empty($eventIds)) {
                 return response()->json([
                     'total_participation' => 0,
@@ -843,7 +858,7 @@ class EventController extends Controller
                     COUNT(*) as total_participation,
                     SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
-                    SUM(CASE WHEN con_answer = "pending" OR con_answer = "invalid" OR con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN con_checkin_status != 1 AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->first();
 
@@ -858,7 +873,22 @@ class EventController extends Controller
                     ems_department.dpm_name as name,
                     SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_answer = "pending" OR ems_connect.con_answer = "invalid" OR ems_connect.con_answer = "not_invite" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                ')
+                ->get();
+
+            // Get team breakdown
+            $teams = DB::table('ems_connect')
+                ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
+                ->join('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
+                ->whereIn('ems_connect.con_event_id', $eventIds)
+                ->where('ems_connect.con_delete_status', 'active')
+                ->groupBy('ems_team.id', 'ems_team.tm_name')
+                ->selectRaw('
+                    ems_team.tm_name as name,
+                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
@@ -885,9 +915,11 @@ class EventController extends Controller
                     'ems_position.pst_name as position',
                     'ems_event.evn_title as event_title',
                     'ems_connect.con_answer as status',
-                    'ems_connect.con_checkin_status'
+                    'ems_connect.con_checkin_status',
+                    'ems_connect.con_event_id as event_id'
                 )
-                ->get(); // No unique() - show all participations
+                ->orderBy('ems_employees.emp_id')
+                ->get();
 
             return response()->json([
                 'total_participation' => $stats->total_participation ?? 0,
@@ -895,9 +927,9 @@ class EventController extends Controller
                 'not_attending' => $stats->not_attending ?? 0,
                 'pending' => $stats->pending ?? 0,
                 'departments' => $departments,
+                'teams' => $teams,
                 'participants' => $participants
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -906,5 +938,4 @@ class EventController extends Controller
             ], 500);
         }
     }
-
 }

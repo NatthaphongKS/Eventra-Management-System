@@ -18,10 +18,10 @@
           v-if="searchInput"
           @click="clearSearch"
           type="button"
-          class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-neutral-100"
+          class="absolute  right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-neutral-100 "
           title="ล้างคำค้นหา"
         >
-          <XMarkIcon class="w-5 h-5" />
+          <Icon icon="iconoir:cancel" width="30" height="30" class="text-neutral-400 text-xs"/>
         </button>
       </div>
     </div>
