@@ -193,74 +193,74 @@ export default {
             <style>
               @page { 
                 size: A4; 
-                margin: 15mm; 
+                margin: 12mm 10mm; 
               }
               body {
                 font-family: 'Sarabun', 'TH Sarabun New', 'Cordia New', 'Angsana New', Arial, sans-serif;
                 margin: 0;
-                padding: 20px;
-                font-size: 11pt;
+                padding: 10px;
+                font-size: 10pt;
                 color: #374151;
               }
               
               /* Header Section */
               .header {
                 text-align: center;
-                margin-bottom: 30px;
-                border-bottom: 3px solid #b91c1c;
-                padding-bottom: 15px;
+                margin-bottom: 8px;
+                border-bottom: 2px solid #b91c1c;
+                padding-bottom: 8px;
               }
               .header h1 {
-                margin: 0 0 10px 0;
+                margin: 0 0 4px 0;
                 color: #b91c1c;
-                font-size: 28pt;
+                font-size: 20pt;
                 font-weight: bold;
               }
               .header .subtitle {
-                margin: 5px 0;
+                margin: 2px 0;
                 color: #6b7280;
-                font-size: 11pt;
+                font-size: 9pt;
               }
               
               /* Event Details Section */
               .section {
-                margin-bottom: 30px;
+                margin-bottom: 12px;
                 page-break-inside: avoid;
               }
               .section-title {
-                font-size: 18pt;
+                font-size: 14pt;
                 font-weight: bold;
                 color: #b91c1c;
-                margin-bottom: 15px;
-                padding-bottom: 8px;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
                 border-bottom: 2px solid #fecaca;
               }
               
               .details-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 15px 30px;
-                margin-bottom: 15px;
+                gap: 8px 15px;
+                margin-bottom: 10px;
               }
               .details-grid.full {
                 grid-template-columns: 1fr;
               }
               
               .detail-item {
-                padding: 10px;
+                padding: 8px;
                 background: #f9fafb;
-                border-radius: 8px;
+                border-radius: 6px;
                 border-left: 3px solid #b91c1c;
               }
               .detail-label {
                 font-weight: 600;
                 color: #4b5563;
-                font-size: 10pt;
-                margin-bottom: 5px;
+                font-size: 9pt;
+                margin-bottom: 3px;
               }
               .detail-value {
                 color: #1f2937;
-                font-size: 11pt;
+                font-size: 10pt;
                 word-wrap: break-word;
               }
               
@@ -268,7 +268,7 @@ export default {
               table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-top: 15px;
+                margin-top: 10px;
                 page-break-inside: auto;
               }
               thead {
@@ -276,17 +276,17 @@ export default {
                 color: white;
               }
               th {
-                padding: 12px 8px;
+                padding: 8px 6px;
                 text-align: center;
                 font-weight: 600;
                 border: 1px solid #991b1b;
-                font-size: 10pt;
+                font-size: 9pt;
               }
               td {
-                padding: 10px 8px;
+                padding: 6px 5px;
                 text-align: center;
                 border: 1px solid #e5e7eb;
-                font-size: 10pt;
+                font-size: 9pt;
               }
               td.left {
                 text-align: left;
@@ -301,9 +301,9 @@ export default {
               /* Status badges */
               .status-badge {
                 display: inline-block;
-                padding: 4px 12px;
-                border-radius: 12px;
-                font-size: 9pt;
+                padding: 3px 8px;
+                border-radius: 10px;
+                font-size: 8pt;
                 font-weight: 600;
                 text-transform: capitalize;
               }
@@ -323,25 +323,27 @@ export default {
               /* Summary Stats */
               .stats-row {
                 display: flex;
-                gap: 20px;
-                margin: 20px 0;
+                gap: 10px;
+                margin: 12px 0;
                 justify-content: center;
+                flex-wrap: wrap;
               }
               .stat-box {
                 flex: 1;
-                padding: 15px;
+                min-width: 80px;
+                padding: 8px;
                 background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
-                border-radius: 12px;
+                border-radius: 8px;
                 border: 2px solid #fecaca;
                 text-align: center;
               }
               .stat-label {
-                font-size: 10pt;
+                font-size: 8pt;
                 color: #6b7280;
-                margin-bottom: 5px;
+                margin-bottom: 3px;
               }
               .stat-value {
-                font-size: 24pt;
+                font-size: 16pt;
                 font-weight: bold;
                 color: #b91c1c;
               }
@@ -434,7 +436,7 @@ export default {
                 <div class="stat-box">
                   <div class="stat-label">รอตอบรับ</div>
                   <div class="stat-value">${participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length}</div>
-                </div>
+                
               </div>
             </div>
             
