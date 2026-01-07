@@ -158,7 +158,7 @@ const prefixes = [
 const permissions = [
   { label: 'Administrator', value: 'enabled' },
   { label: 'Human Resources', value: 'disabled' }, // ใช้ disabled แทน hr ชั่วคราว
-  { label: 'Employee', value: 'disabled' },
+  { label: 'Employee', value: 'employee' },
 ]
 
 const companies = ref([])

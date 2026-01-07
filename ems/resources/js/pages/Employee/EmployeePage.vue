@@ -1,49 +1,85 @@
 <template>
     <section class="p-0">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
+        <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3"
+        >
             <div class="flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search ID, Name, Nickname..." @search="onSearchText"
-                    class="" />
+                <SearchBar
+                    v-model="searchInput"
+                    placeholder="Search ID, Name, Nickname..."
+                    @search="onSearchText"
+                    class=""
+                />
             </div>
 
             <div class="flex items-stretch gap-2 flex-shrink-0 mt-[30px]">
-                <FilterEmployees ref="filterDropdown" v-model="filters" :options="optionsMap"
-                    class="[&_button]:h-full" />
+                <FilterEmployees
+                    ref="filterDropdown"
+                    v-model="filters"
+                    :options="optionsMap"
+                    class="[&_button]:h-full"
+                />
 
+                <SortMenu
+                    :is-open="sortMenuOpen"
+                    :options="sortOptions"
+                    :sort-by="sortBy.key"
+                    :sort-order="sortBy.order"
+                    @toggle="sortMenuOpen = !sortMenuOpen"
+                    @choose="onSortChoose"
+                    class="[&_button]:h-full"
+                />
 
-                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
-                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose"
-                    class="[&_button]:h-full" />
-
-
-                <AddButton @click="goAdd" class="h-full w-[44px] flex items-center justify-center" />
+                <AddButton
+                    @click="goAdd"
+                    class="h-full w-[44px] flex items-center justify-center"
+                />
             </div>
         </div>
 
-        <DataTable :rows="paged" :columns="EmployeeTableColumns" :page="page" :pageSize="pageSize"
-            :total-items="sorted.length" :page-size-options="[10, 20, 50, 100]" @update:page="page = $event"
+        <DataTable
+            :rows="paged"
+            :columns="EmployeeTableColumns"
+            :page="page"
+            :pageSize="pageSize"
+            :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]"
+            @update:page="page = $event"
             @update:pageSize="
                 (s) => {
                     pageSize = s;
                     page = 1;
                 }
-            " class="mt-4">
+            "
+            class="mt-4"
+        >
             <template #actions="{ row }">
-                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600"
-                    @click="editEmployee(row.emp_id)" title="Edit" aria-label="edit">
-                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
+                <button
+                    class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600"
+                    @click="editEmployee(row.emp_id)"
+                    title="Edit"
+                    aria-label="edit"
+                >
+                    <Icon
+                        icon="material-symbols:edit-rounded"
+                        width="20"
+                        height="20"
+                    />
                 </button>
 
-                <button :disabled="!canDelete" class="grid h-8 w-8 place-items-center rounded-full transition
-           text-neutral-800 cursor-pointer
-           hover:text-red-600
-           disabled:text-neutral-400
-           disabled:cursor-not-allowed
-           disabled:opacity-40" @click="openDelete(row.emp_id)"
-                    :title="canDelete ? 'Delete' : 'You do not have permission'" aria-label="delete">
-                    <Icon icon="fluent:delete-12-filled" width="20" height="20" />
+                <button
+                    :disabled="!canDelete"
+                    class="grid h-8 w-8 place-items-center rounded-full transition text-neutral-800 cursor-pointer hover:text-red-600 disabled:text-neutral-400 disabled:cursor-not-allowed disabled:opacity-40"
+                    @click="openDelete(row.emp_id)"
+                    :title="canDelete ? 'Delete' : 'You do not have permission'"
+                    aria-label="delete"
+                >
+                    <Icon
+                        icon="fluent:delete-12-filled"
+                        width="20"
+                        height="20"
+                    />
                 </button>
-
             </template>
 
             <template #empty>
@@ -51,16 +87,37 @@
             </template>
         </DataTable>
 
-        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
-            message="This employee will be deleted permanently. Are you sure?" :show-cancel="true" okText="OK"
-            cancelText="Cancel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert
+            :open="showModalAsk"
+            type="confirm"
+            title="ARE YOU SURE TO DELETE"
+            message="This employee will be deleted permanently. Are you sure?"
+            :show-cancel="true"
+            okText="OK"
+            cancelText="Cancel"
+            @confirm="onConfirmDelete"
+            @cancel="onCancelDelete"
+        />
 
-        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
-            message="Employee has been deleted successfully." :show-cancel="false" okText="OK"
-            @confirm="onConfirmSuccess" />
+        <ModalAlert
+            :open="showModalSuccess"
+            type="success"
+            title="DELETE SUCCESS!"
+            message="Employee has been deleted successfully."
+            :show-cancel="false"
+            okText="OK"
+            @confirm="onConfirmSuccess"
+        />
 
-        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
-            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
+        <ModalAlert
+            :open="showModalFail"
+            type="error"
+            title="ERROR!"
+            message="Sorry, Please try again later."
+            :show-cancel="false"
+            okText="OK"
+            @confirm="onConfirmFail"
+        />
     </section>
 </template>
 
@@ -101,7 +158,12 @@ export default {
             // Search & Filter
             searchInput: "",
             search: "",
-            filters: { department: "all", team: "all", position: "all" },
+            filters: {
+                department: "all",
+                team: "all",
+                position: "all",
+                company: "all",
+            },
 
             page: 1,
             pageSize: 10,
@@ -205,6 +267,14 @@ export default {
         },
         optionsMap() {
             return {
+                company: [
+                    // เพิ่มส่วนนี้
+                    ...new Set(
+                        this.employees
+                            .map((e) => e.emp_company_id) // หรือ e.company_id ตามข้อมูลที่มี
+                            .filter(Boolean)
+                    ),
+                ],
                 department: [
                     ...new Set(
                         this.employees
@@ -233,8 +303,9 @@ export default {
             if (this.search) {
                 const q = this.search.toLowerCase();
                 result = result.filter((e) => {
-                    const fullName = `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""
-                        }`.toLowerCase();
+                    const fullName = `${e.emp_firstname ?? ""} ${
+                        e.emp_lastname ?? ""
+                    }`.toLowerCase();
                     const nickname = (e.emp_nickname ?? "").toLowerCase();
                     const empId = (e.emp_id ?? "").toString().toLowerCase();
                     return (
@@ -258,7 +329,11 @@ export default {
                 result = result.filter(
                     (e) => e.position_name === this.filters.position
                 );
-
+            if (this.filters.company !== "all") {
+                result = result.filter(
+                    (e) => e.emp_company_id === this.filters.company
+                );
+            }
             return result;
         },
         sorted() {
@@ -296,8 +371,9 @@ export default {
                     : res.data?.data || [];
                 this.employees = data.map((e) => ({
                     ...e,
-                    emp_fullname: `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""
-                        }`.trim(),
+                    emp_fullname: `${e.emp_firstname ?? ""} ${
+                        e.emp_lastname ?? ""
+                    }`.trim(),
                     emp_phone: e.emp_phone ?? e.phone ?? "-",
                     created_at:
                         e.emp_create_at ?? e.created_at ?? e.createdAt ?? null,
