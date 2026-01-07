@@ -78,34 +78,40 @@
             </template>
 
             <template #actions="{ row }">
-                <!-- Edit -->
-                <button @click="canEdit(row) && editEvent(row.id)" :disabled="!canEdit(row)" class="rounded-lg p-1.5"
-                    :class="!canEdit(row) ? 'cursor-not-allowed opacity-40' : 'hover:bg-slate-100 cursor-pointer'"
-                    :title="!canEdit(row) ? 'Cannot edit' : 'Edit'">
-                    <Icon icon="material-symbols:edit-rounded" width="20" height="20"
-                        :class="!canEdit(row) ? 'text-neutral-400' : 'text-neutral-800'" />
+                <!-- ✏️ Edit -->
+                <button @click="canEdit(row) && editEvent(row.id)" :disabled="!canEdit(row)"
+                    class="rounded-lg p-1.5 transition-colors" :class="!canEdit(row)
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'cursor-pointer'" title="Edit">
+                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" :class="!canEdit(row)
+                        ? 'text-neutral-400'
+                        : 'text-neutral-500 hover:text-[#059669]'" />
                 </button>
 
-                <!-- Delete -->
+                <!-- 🗑️ Delete -->
                 <button @click="canDelete(row) && openDelete(row.id)" :disabled="!canDelete(row)"
-                    class="rounded-lg p-1.5"
-                    :class="!canDelete(row) ? 'cursor-not-allowed opacity-40' : 'hover:bg-slate-100 cursor-pointer'"
-                    :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
-                    <Icon icon="fluent:delete-12-filled" width="20" height="20"
-                        :class="!canDelete(row) ? 'text-neutral-400' : 'text-neutral-800'" />
+                    class="rounded-lg p-1.5 transition-colors" :class="!canDelete(row)
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'cursor-pointer'" title="Delete">
+                    <Icon icon="fluent:delete-12-filled" width="20" height="20" :class="!canDelete(row)
+                        ? 'text-neutral-400'
+                        : 'text-neutral-500 hover:text-[#dc2626]'" />
                 </button>
 
-                <!-- Check-in -->
+                <!-- ✅ Check-in -->
                 <span v-if="!canCheckin(row)" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
                     :title="checkinDisabledTitle(row)">
                     <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-400" />
                 </span>
 
-                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 transition-colors"
                     title="Check-in">
-                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-800" />
+                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20"
+                        class="text-neutral-500 hover:text-[#0084d1]" />
                 </router-link>
             </template>
+
+
         </DataTable>
 
         <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
