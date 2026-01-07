@@ -155,7 +155,7 @@ export default {
             return u ? JSON.parse(u) : {};
         },
         canDelete() {
-            return this.currentUser.emp_permission === "enabled";
+            return this.currentUser.emp_permission === "admin";
         },
         optionsMap() {
             // Options สำหรับ Filter ยังคงมี Company ID อยู่

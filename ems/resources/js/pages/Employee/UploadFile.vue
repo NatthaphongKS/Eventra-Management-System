@@ -679,6 +679,7 @@ async function onCreate() {
                     emp_department_id: resolved.dep.id,
                     emp_team_id: resolved.team.id,
                     emp_password: null,
+                    emp_permission: "employee",
                     emp_status: 2,
                 },
             });
