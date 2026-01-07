@@ -129,8 +129,9 @@
 
         <div class="mt-6">
             <button class="rounded-2xl bg-neutral-400 px-5 py-2 text-white hover:bg-neutral-500 transition"
-                @click="onBack">←
-                Back</button>
+                @click="onBack">
+                <Icon icon="formkit:arrowleft"></Icon>Back
+            </button>
         </div>
     </div>
 
