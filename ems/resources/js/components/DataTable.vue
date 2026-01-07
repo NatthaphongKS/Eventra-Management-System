@@ -37,14 +37,15 @@
 
                 <tbody>
                     <template v-if="!loading && rows.length > 0">
-                        <tr v-for="(row, index) in rows" :key="row[rowKey] ?? index" class="border-t hover:bg-neutral-100"
-                            :class="[
+                        <tr v-for="(row, index) in rows" :key="row[rowKey] ?? index"
+                            class="border-t hover:bg-neutral-100" :class="[
                                 { 'bg-red-100': selectable && selectedSet.has(row[rowKey]) },
                                 rowClass(row),
                             ]">
                             <td v-if="selectable" class="px-2 py-2 text-center">
                                 <input type="checkbox" :value="row[rowKey]" :checked="selectedSet.has(row[rowKey])"
-                                    @change="toggleSelectOne(row[rowKey], $event)" class="accent-red-600" />
+                                    :disabled="isRowDisabled(row)" @change="toggleSelectOne(row[rowKey], $event)"
+                                    class="accent-red-600 disabled:accent-neutral-800 disabled:opacity-100 disabled:cursor-not-allowed" />
                             </td>
 
                             <td v-if="showRowNumber" class="px-2 py-2 text-center text-sm text-slate-700">
@@ -211,6 +212,11 @@ const props = defineProps({
      * ฟังก์ชันสำหรับกำหนด class ให้ <tr>
      */
     rowClass: { type: Function, default: () => '' },
+
+    /**
+     * ฟังก์ชันเช็คว่าแถวนี้ต้อง Disable Checkbox หรือไม่ (รับ row ส่งกลับ boolean)
+     */
+    isRowDisabled: { type: Function, default: () => false },
 });
 
 // --- Emits ---
@@ -222,7 +228,7 @@ const emit = defineEmits([
     'update:sortOrder',
     'sort', // Event ใหม่สำหรับ Server-Side Sorting
     'checkbox-checkin',
-     'check-all-page'
+    'check-all-page'
 ]);
 
 const slots = useSlots(); // (ใช้เช็ค $slots.actions)
@@ -331,40 +337,40 @@ const isIndeterminate = computed(() => {
 
 // --- Methods (Selection) ---
 function toggleSelectOne(key, event) {
-  const next = new Set(selectedSet.value);
-  const checked = event.target.checked; // ✅ ประกาศตัวแปร checked
+    const next = new Set(selectedSet.value);
+    const checked = event.target.checked; // ✅ ประกาศตัวแปร checked
 
-  if (checked) {
-    next.add(key);
-  } else {
-    next.delete(key);
-  }
+    if (checked) {
+        next.add(key);
+    } else {
+        next.delete(key);
+    }
 
-  emit('update:modelValue', Array.from(next));
-  emit('checkbox-checkin', { keys: [key], checked }); // ✅ ส่งให้แม่ component
+    emit('update:modelValue', Array.from(next));
+    emit('checkbox-checkin', { keys: [key], checked }); // ✅ ส่งให้แม่ component
 }
 
 function toggleSelectAllOnPage(event) {
-  const next = new Set(selectedSet.value);
-  const checked = event.target.checked; // ✅
+    const next = new Set(selectedSet.value);
+    const checked = event.target.checked; // ✅
 
-  pageRowKeys.value.forEach((key) => {
-    if (checked) {
-      next.add(key);
-    } else {
-      next.delete(key);
-    }
-  });
+    pageRowKeys.value.forEach((key) => {
+        if (checked) {
+            next.add(key);
+        } else {
+            next.delete(key);
+        }
+    });
 
-  emit('update:modelValue', Array.from(next));
-  //emit('checkbox-checkin', { keys: Array.from(pageRowKeys.value), checked }); // ✅ ส่งรวมทั้งหมดในหน้า
-  emit('check-all-page', {                           // ✅ เพิ่ม อีเวนต์ให้แม่
-    action: checked ? 'check' : 'uncheck',          //    บอกประเภทการกระทำ
-    pageKeys: Array.from(pageRowKeys.value),        //    คีย์ทั้งหมดบนหน้า
-    rowsOnPage: props.rows,                         //    แถวจริงบนหน้า (มี empCheckinStatus)
-    rowKey: props.rowKey,                           //    ชื่อคีย์ (เช่น 'empId')
-    checkinField: 'empCheckinStatus',               //    ฟิลด์สถานะที่ใช้กรอง
-  });
+    emit('update:modelValue', Array.from(next));
+    //emit('checkbox-checkin', { keys: Array.from(pageRowKeys.value), checked }); // ✅ ส่งรวมทั้งหมดในหน้า
+    emit('check-all-page', {                           // ✅ เพิ่ม อีเวนต์ให้แม่
+        action: checked ? 'check' : 'uncheck',          //    บอกประเภทการกระทำ
+        pageKeys: Array.from(pageRowKeys.value),        //    คีย์ทั้งหมดบนหน้า
+        rowsOnPage: props.rows,                         //    แถวจริงบนหน้า (มี empCheckinStatus)
+        rowKey: props.rowKey,                           //    ชื่อคีย์ (เช่น 'empId')
+        checkinField: 'empCheckinStatus',               //    ฟิลด์สถานะที่ใช้กรอง
+    });
 }
 
 </script>

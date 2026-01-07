@@ -30,18 +30,18 @@
     >
       <ul
         v-show="open"
-        class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-white rounded-lg shadow-lg border border-neutral-200 z-50"
+        class="absolute top-full left-1/2 -translate-x-1/2  w-56 bg-white rounded-lg shadow-lg border border-neutral-200 z-50"
         role="menu"
       >
-        <li v-for="option in optionsList" :key="option.id" class="p-[3px]">
+        <li v-for="option in optionsList" :key="option.id" class="px-[3px]">
           <button
             type="button"
             @click="select(option)"
             class="w-full flex items-center  px-2 py-2 text-sm text-left  rounded-[7px]"
             :class="[
               modelValue?.id === option.id
-                ? 'bg-red-50 text-red-700' /* ✅ ถ้าเลือก: พื้นแดงอ่อน ตัวหนังสือแดงเข้ม */
-                : 'text-neutral-800 hover:bg-slate-50' /* ❌ ถ้าไม่เลือก: สีปกติ */,
+                ? 'bg-red-50 text-red-700' /* ถ้าเลือก: พื้นแดงอ่อน ตัวหนังสือแดงเข้ม */
+                : 'text-neutral-800 hover:bg-slate-50' /* ถ้าไม่เลือก: สีปกติ */,
             ]"
           >
             <span>{{ option.label }}</span>

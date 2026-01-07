@@ -15,7 +15,7 @@
                     v-model="searchInput"
                     placeholder="Search Event / Created by / Delete by"
                     @search="applySearch"
-                    class="rounded-2xl [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-15 [&_button]:w-15 [&_svg]:w-8 [&_svg]:h-8"
+
                 />
             </div>
 
@@ -26,7 +26,7 @@
                 :sort-order="sortOrder"
                 @toggle="toggleSortMenu"
                 @choose="onPickSort"
-                class="mt-0"
+                class="mt-8"
             />
         </div>
 
@@ -48,7 +48,7 @@
             class="mt-4"
         >
             <template #cell-evn_title="{ value, row }">
-                <router-link 
+                <router-link
                     :to="{ name: 'history-event-detail', params: { id: row.id } }"
                     class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate  cursor-pointer transition-colors"
                     title="Click to view details"
