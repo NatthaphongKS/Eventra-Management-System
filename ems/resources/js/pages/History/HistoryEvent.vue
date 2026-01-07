@@ -44,7 +44,7 @@
             class="mt-4"
         >
             <template #cell-evn_title="{ value, row }">
-                <router-link 
+                <router-link
                     :to="{ name: 'history-event-detail', params: { id: row.id } }"
                     class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate  cursor-pointer transition-colors"
                     title="Click to view details"
