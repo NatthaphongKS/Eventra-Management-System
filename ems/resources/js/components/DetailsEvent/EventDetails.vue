@@ -15,9 +15,19 @@
 
         <div class="grid grid-cols-1 gap-7 lg:grid-cols-3">
             <div class="space-y-6 lg:col-span-2">
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <BaseReadonlyField label="Event Title" :value="form.title" />
-                    <BaseReadonlyField label="Category" :value="categoryDisplay" icon="mdi:chevron-down" />
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    
+                    <BaseReadonlyField 
+                        class="md:col-span-2" 
+                        label="Event Title" 
+                        :value="form.title" 
+                    />
+                    
+                    <BaseReadonlyField 
+                        label="Category" 
+                        :value="categoryDisplay" 
+                        icon="iconamoon:arrow-down-2-light" 
+                    />
                 </div>
 
                 <div>
@@ -38,14 +48,14 @@
                                 <span class="select-none text-slate-400">:</span>
                                 <span class="w-15 text-center text-neutral-400 font-medium text-md">{{ toThaiTime(form.timeEnd) }}</span>
                             </div>
-                            <span class="text-neutral-400"><Icon icon="mdi:clock-outline" class="h-6 w-6" /></span>
+                            <span class="text-neutral-400"><Icon icon="iconamoon:clock-light" class="h-6 w-6 text-neutral-400 shrink-0 " /></span>
                         </div>
                     </div>
 
                     <BaseReadonlyField 
                         label="Duration" 
                         :value="calculateDuration(form.timeStart, form.timeEnd, form.duration)" 
-                        icon="lucide:clock-fading" 
+                        icon="mingcute:time-duration-line" 
                     />
                 </div>
 
@@ -54,16 +64,16 @@
 
             <div>
                 <label class="mb-1 block text-xl font-medium text-neutral-800">Attachments</label>
-                <p class="mb-2 text-xs text-neutral-400">Documents associated with this event</p>
+                <p class="mb-2 text-xs text-neutral-400">Drag and drop document to your support task</p>
 
                 <div class="flex min-h-[400px] flex-col gap-2 rounded-[20px] border border-dashed border-neutral-400 bg-neutral-100 p-4 ">
                     <div v-if="files.length === 0" class="grid flex-1 place-items-center text-neutral-400 text-md">ไม่มีไฟล์แนบ</div>
                     <div v-else class="flex flex-col gap-2">
                         <div v-for="(f, i) in files" :key="i" class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors">
                             <Icon icon="basil:file-solid" class="h-10 w-10 text-slat-700" />
-                            <a :href="f.url" target="_blank" class="truncate text-md text-neutral-400 hover:text-slat-700 flex-1" :title="f.file_name || f.name">
+                            <span class="truncate text-md text-neutral-400 hover:text-slat-700 flex-1" :title="f.file_name || f.name">
                                 {{ f.file_name || f.name }}
-                            </a>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -71,15 +81,15 @@
         </div>
 
         <div class="mt-10">
-            <h3 class="text-3xl font-semibold mb-4">Guest List</h3>
-            
+            <h3 class="text-3xl font-semibold mb-4">Add Guest</h3>
+            <label class="mb-1 block text-xl font-medium text-neutral-800" for="searchInput">Search</label>
             <div class="mb-4 flex flex-wrap items-center gap-2">
                 <div class="flex flex-1 items-center gap-2 min-w-[200px]">
                     <input
                         v-model.trim="searchInput"
                         @keyup.enter="doSearch"
                         class="w-full rounded-2xl border border-neutral-200 bg-white px-3 py-2.5 text-md font-medium text-neutral-400 placeholder:text-red-300 outline-none focus:ring-2 focus:ring-rose-200"
-                        placeholder="Search ID / Name / Nickname"
+                        placeholder="Search Employee ID / Name / Nickname "
                     />
                     <button @click="doSearch" class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-rose-700 text-white hover:opacity-90 active:opacity-100">
                         <Icon icon="mdi:magnify" class="h-8 w-8" />
@@ -172,7 +182,7 @@ export default {
             guestsTableColumns: [
                 { key: "_select", label: "", class: "w-5 text-center" },
                 { key: "_index", label: "#", class: "w-12 text-center" },
-                { key: "codeDisplay", label: "ID", class: "w-auto text-left" },
+                { key: "codeDisplay", label: "Employee ID", class: "w-auto text-left" },
                 { key: "name", label: "Name", class: "w-auto text-left" },
                 { key: "nick", label: "Nickname", class: "w-auto text-left" },
                 { key: "department", label: "Department", class: "w-auto text-left" },
