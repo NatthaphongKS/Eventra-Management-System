@@ -3,23 +3,21 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <!-- Search -->
             <div class="flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search event..." @search="applySearch" class="" />
+                <SearchBar v-model="searchInput" placeholder="Search Event" @search="applySearch" class="" />
             </div>
-
             <div class="flex gap-2 flex-shrink-0 mt-[30px] items-stretch">
                 <div class="flex flex-row mt-2">
                     <!-- DatePicker -->
                     <div class="h-[44px]">
                         <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
                     </div>
-
                     <EventFilter v-model="filters" :categories="activeCategories" :status-options="statusOptions"
                         @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
 
                     <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
                         class="h-[44px] [&_button]:h-full" />
                 </div>
-                <!-- ✅ Add Button -->
+                <!-- Add Button -->
                 <AddButton @click="$router.push('/add-event')" />
             </div>
         </div>
@@ -80,70 +78,36 @@
             </template>
 
             <template #actions="{ row }">
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)" :class="!canDelete(row)
-                    ? 'cursor-not-allowed opacity-40'
-                    : 'hover:bg-slate-100 cursor-pointer'
-                    " :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
-                    <TrashIcon class="h-5 w-5" />
-                </button>
-
-                <!-- ปุ่มชั่วคราว
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" title="Delete">
-                    <TrashIcon class="h-5 w-5" />
-                </button>
-                -->
-
-                <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
-                <button @click="
-                    !['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    ) && editEvent(row.id)
-                    " :disabled="['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    )
-                        " class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes(
-                            (row.evn_status || '').toLowerCase()
-                        )
-                            ? 'cursor-not-allowed opacity-40'
-                            : 'hover:bg-slate-100 cursor-pointer'
-                            " :title="['ongoing', 'done'].includes(
-                                (row.evn_status || '').toLowerCase()
-                            )
-                                ? 'Cannot edit ongoing/done event'
-                                : 'Edit'
-                                ">
-                    <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    )
+                <!-- Edit -->
+                <button @click="canEdit(row) && editEvent(row.id)" :disabled="!canEdit(row)"
+                    class="rounded-lg p-1.5 transition-colors" :class="!canEdit(row)
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'cursor-pointer'" title="Edit">
+                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" :class="!canEdit(row)
                         ? 'text-neutral-400'
-                        : 'text-neutral-800'
-                        " />
+                        : 'text-neutral-500 hover:text-[#059669]'" />
                 </button>
 
-                <!-- ❌ Disabled เมื่อ upcoming หรือ (done + permission = disabled) -->
-                <span v-if="
-                    (row.evn_status || '').toLowerCase() === 'upcoming' ||
-                    ((row.evn_status || '').toLowerCase() === 'done' &&
-                        (empPermission || '').toLowerCase() === 'disabled')
-                " class="rounded-lg p-1.5 cursor-not-allowed opacity-40" :title="(row.evn_status || '').toLowerCase() === 'upcoming'
-                    ? 'not available for upcoming event'
-                    : 'No permission to check-in'
-                    ">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor" class="h-5 w-5 text-neutral-400">
-                        <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
-                    </svg>
+                <!-- Delete -->
+                <button @click="canDelete(row) && openDelete(row.id)" :disabled="!canDelete(row)"
+                    class="rounded-lg p-1.5 transition-colors" :class="!canDelete(row)
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'cursor-pointer'" title="Delete">
+                    <Icon icon="fluent:delete-12-filled" width="20" height="20" :class="!canDelete(row)
+                        ? 'text-neutral-400'
+                        : 'text-neutral-500 hover:text-[#dc2626]'" />
+                </button>
+
+                <!-- Check-in -->
+                <span v-if="!canCheckin(row)" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
+                    :title="checkinDisabledTitle(row)">
+                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-400" />
                 </span>
 
-                <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
-                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 transition-colors"
                     title="Check-in">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor" class="h-5 w-5 text-neutral-800">
-                        <path
-                            d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm40-80h200v-80H200v80Zm382-80 198-198-57-57-141 142-57-57-56 57 113 113Zm-382-80h200v-80H200v80Zm0-160h200v-80H200v80Zm-40 400v-560 560Z" />
-                    </svg>
+                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20"
+                        class="text-neutral-500 hover:text-[#0084d1]" />
                 </router-link>
             </template>
         </DataTable>
@@ -168,12 +132,7 @@ import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import AddButton from "@/components/AddButton.vue";
 import EventDatePicker from "@/components/IndexEvent/EventDatePicker.vue";
-
-import {
-    MagnifyingGlassIcon,
-    PencilIcon,
-    TrashIcon,
-} from "@heroicons/vue/24/outline";
+import { Icon } from '@iconify/vue'
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -181,9 +140,7 @@ axios.defaults.withCredentials = true;
 
 export default {
     components: {
-        MagnifyingGlassIcon,
-        PencilIcon,
-        TrashIcon,
+        Icon,
         Filter,
         EventSort,
         DataTable,
@@ -197,6 +154,7 @@ export default {
     data() {
         return {
             selectedDate: { start: null, end: null },
+            empPermission: "employee",
 
             showModalBlockedDone: false,
             showModalBlockedOngoing: false,
@@ -427,15 +385,7 @@ export default {
     watch: {
         search() { this.page = 1; },
         pageSize() { this.page = 1; },
-        // 🔴🔴 จุดที่แก้ 2: ลบ selectedDate ออกจาก watch (เพราะย้ายไปทำใน onDateChange แล้ว)
-        /*
-        selectedDate: {
-            deep: true,
-            handler() {
-                this.page = 1;
-            },
-        },
-        */
+
         selectedSort: {
             handler(v) {
                 if (!v) return;
@@ -459,7 +409,6 @@ export default {
     },
 
     methods: {
-        // 🔴🔴 จุดที่แก้ 3: สร้างฟังก์ชันรับค่าจากปฏิทินโดยเฉพาะ
         onDateChange(newDateVal) {
             // รับค่ามาแล้วอัปเดตตัวแปรทันที
             this.selectedDate = newDateVal;
@@ -475,31 +424,55 @@ export default {
 
         applyFilter() { this.page = 1; },
 
-        canDelete(row) {
-            const status = (row.evn_status || "").toLowerCase();
-            const perm = (this.empPermission || "disabled").toLowerCase();
-            if (status === "ongoing") return false;
-
-            // enabled ลบได้ upcoming + done
-            if (perm === "enabled")
-                return status === "upcoming" || status === "done";
-
-            // disabled ลบได้แค่ upcoming
-            return status === "upcoming";
+        statusOf(row) {
+            return (row?.evn_status || "").toLowerCase();
+        },
+        roleOf() {
+            return (this.empPermission || "employee").toLowerCase();
         },
 
-        canCheckIn(row) {
-            const status = (row.evn_status || "").toLowerCase();
-            const perm = (this.empPermission || "disabled").toLowerCase();
+        canEdit(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
 
-            // upcoming ห้ามทุกกรณี
-            if (status === "upcoming") return false;
+            if (r === "employee") return false;
+            if (s === "upcoming") return r === "admin" || r === "hr";
+            // ongoing / done แก้ไม่ได้ทุกกรณี
+            return false;
+        },
 
-            // done → disabled ห้าม, enabled ได้
-            if (status === "done" && perm === "disabled") return false;
+        canDelete(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
 
-            // ที่เหลือ (ongoing, done+enabled)
-            return true;
+            if (r === "employee") return false;
+
+            if (s === "upcoming") return r === "admin" || r === "hr";
+            if (s === "done") return r === "admin";     // hr ทำไม่ได้
+            // ongoing ลบไม่ได้
+            return false;
+        },
+
+        canCheckin(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
+
+            if (r === "employee") return false;
+
+            if (s === "ongoing") return r === "admin" || r === "hr";
+            if (s === "done") return r === "admin";     // hr ทำไม่ได้
+            // upcoming เช็คชื่อไม่ได้
+            return false;
+        },
+
+        checkinDisabledTitle(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
+
+            if (r === "employee") return "No permission";
+            if (s === "upcoming") return "not available for upcoming event";
+            if (s === "done" && r === "hr") return "No permission to check-in";
+            return "No permission to check-in";
         },
 
         async fetchEvent() {
@@ -537,13 +510,10 @@ export default {
         async fetchPermission() {
             try {
                 const res = await axios.get("/permission");
-                // ตัวอย่าง response: { emp_permission: "enabled" }
-                this.empPermission = (
-                    res.data?.emp_permission || "disabled"
-                ).toLowerCase();
+                this.empPermission = (res.data?.emp_permission || "employee").toLowerCase();
             } catch (err) {
                 console.error("fetchPermission error", err);
-                this.empPermission = "disabled";
+                this.empPermission = "employee";
             }
         },
 

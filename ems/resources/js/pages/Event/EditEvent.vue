@@ -20,7 +20,7 @@
                     <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
                      trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
                     <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px] mb-4 ml-1">
                             Event Title <span class="text-red-500">*</span>
                         </label><br />
                         <InputPill v-model="eventTitle"
@@ -35,7 +35,7 @@
 
                     <!-- ช่องเลือกประเภท event-->
                     <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
+                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
                             Event Category <span class="text-red-500">*</span>
                         </label><br />
                         <div class="relative w-full">
@@ -66,7 +66,7 @@
 
             <!-- ช่องกรอกคำอธิบายอีเวนต์ -->
             <div class="mt-4">
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
                     Event Description <span class="text-red-500">*</span>
                 </label><br />
                 <textarea
@@ -83,7 +83,7 @@
 
                 <!-- ช่องกรอกวัน -->
                 <div class="">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
                         Date <span class="text-red-500">*</span>
                     </label><br>
                     <div class="relative w-full">
@@ -107,7 +107,7 @@
 
                 <!-- ช่องกรอกเวลา -->
                 <div class="">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
                         Time <span class="text-red-500">*</span>
                     </label>
                     <div class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 shadow-sm px-5 py-4"
@@ -115,9 +115,9 @@
                         <!-- Time Start -->
                         <div class="flex items-center justify-center">
                             <input type="time" v-model="eventTimeStart" step="300"
-                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                                class="time-input w-auto bg-transparent text-[16px]  font-medium text-neutral-800 outline-none text-center"
                                 @click="$event.target.showPicker()" />
-                            <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                            <span class="text-[16px]  font-medium text-neutral-800 ml-2"></span>
 
                         </div>
 
@@ -125,9 +125,9 @@
                         <!-- Time End -->
                         <div class="flex items-center justify-center">
                             <input type="time" v-model="eventTimeEnd" step="300"
-                                class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
+                                class="time-input w-auto bg-transparent text-[16px]  font-medium text-neutral-800 outline-none text-center"
                                 @click="$event.target.showPicker()" />
-                            <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+                            <span class="text-[16px]  font-medium text-neutral-800 ml-2"></span>
                         </div>
                         <div>
                             <span class="text-red-700"><Icon icon="iconamoon:clock-light" class="h-6 w-6" /></span>
@@ -144,19 +144,19 @@
 
                 <!-- ช่องกรอกแสดงช่วงเวลา -->
                 <div>
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">Duration</label>
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">Duration</label>
                     <div
                         class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
                         <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
                             v-model="eventDuration" placeholder="Auto fill Hour"></input>
-                        <Icon icon="lucide:clock-fading"  class="w-6 h-6  text-neutral-400" />
+                        <Icon icon="mingcute:time-duration-line"  class="w-7 h-7  text-neutral-400" />
                     </div>
                 </div>
             </div>
 
             <!-- ช่องกรอกสถานที่-->
             <div class="mt-4">
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
                     Location <span class="text-red-500">*</span>
                 </label><br>
                 <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
@@ -184,22 +184,22 @@
                         class="w-full flex items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 shadow-sm">
                         <div class="flex items-center gap-3 min-w-0">
                             <div class="flex h-8 w-8 items-center justify-center rounded-md ">
-                                <Icon icon="basil:file-solid" class="h-10 w-10 text-rose-600" />
+                                <Icon icon="basil:file-solid" class="h-10 w-10 text-red-700" />
                             </div>
 
                             <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
                             <template v-if="item.kind === 'existing'">
                                 <a :href="item.url" target="_blank" rel="noopener"
-                                    class="truncate text-[15px] text-rose-700 hover:underline">
+                                    class="truncate text-[16px]  text-red-700 hover:underline">
                                     {{ item.name }}
                                 </a>
-                                <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                }})</span>
+                                <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span> -->
                             </template>
                             <template v-else>
-                                <span class="truncate text-[15px] text-neutral-800">{{ item.name }}</span>
-                                <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                }})</span>
+                                <span class="truncate text-[16px]  text-neutral-800">{{ item.name }}</span>
+                                <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span> -->
                             </template>
                         </div>
 
@@ -214,17 +214,17 @@
 
                 <!-- เมฆ + ข้อความ: โชว์เฉพาะตอน “ยังไม่มีไฟล์เลย” -->
                 <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
-                    <Icon icon="entypo:upload-to-cloud" class="w-16 h-16 mb-3 text-rose-400" />
-                    <p class="text-[15px] font-medium text-neutral-800">Choose a file or drag &amp; drop it here</p>
+                    <Icon icon="ep:upload-filled" class="w-40 h-28 mb-3 text-red-300" />
+                    <p class="text-[16px]  font-medium text-neutral-800">Choose a file or drag &amp; drop it here</p>
                     <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx</p>
                 </div>
 
                 <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
-                <div class="flex justify-center mt-6">
+                <div class="flex justify-center mt-1 mb-12">
                     <button type="button"
-                        class="inline-flex items-center rounded-[12px] border  bg-white border-rose-500 px-4 py-1.5 text-sm text-neutral-800 hover:bg-rose-50 active:bg-rose-100"
+                        class="inline-flex items-center rounded-[12px] border  bg-white border-rose-500 px-2 py-1  text-neutral-800 hover:bg-rose-50 active:bg-rose-100"
                         @click="pickFiles">
-                        Browse files
+                        <span class="text-sm font-medium">Browse files</span>
                     </button>
                 </div>
 
