@@ -31,24 +31,24 @@ const routes = [
     // [เพิ่ม] เส้นทาง Forgot Password (ใส่ blank: true เพื่อให้ไม่มี Sidebar)
     { path: '/forgot-password', component: ForgotPassword, meta: { blank: true, title: 'Forgot Password' } },
 
-    { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee', activeMenu: '/employee' } },
-    { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'Event', activeMenu: '/event' } },
-    { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn', activeMenu: '/event' } },
+  { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' , activeMenu: '/employee'} },
+  { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'Event', activeMenu: '/event' } },
+  { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'Event' , activeMenu: '/event' } },
 
-    { path: '/event', component: EventPage, meta: { title: 'Event', activeMenu: '/event' } },
-    { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event', activeMenu: '/event' } },
-    { path: '/employee', component: Employees, meta: { title: 'Employee', activeMenu: '/employee' } },
-    { path: '/history', component: History, meta: { title: 'History' } },
-    { path: '/categories', component: Category, meta: { title: 'Category', activeMenu: '/categories' } },
-    { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
-    { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
-    {
-        path: '/history/event/:id',
-        name: 'history-event-detail', // ตั้งชื่อเพื่อให้เรียกใช้ง่ายๆ
-        component: HistoryDetailsEvent,
-        props: true, // เปิดรับ id เป็น props
-        meta: { title: 'History Event' }
-    },
+  { path: '/event', component: EventPage, meta: { title: 'Event' , activeMenu: '/event' } },
+  { path: '/add-event' , component: CreateEvent, meta: { title: 'Event' , activeMenu: '/event' } },
+  { path: '/employee', component: Employees, meta: { title: 'Employee', activeMenu: '/employee' } },
+  { path: '/history', component: History, meta: { title: 'History' } },
+  { path: '/categories', component: Category, meta: { title: 'Category', activeMenu: '/categories' } },
+  { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
+  { path: '/history-event', component: History_Event, meta: { title: 'History Event' } },
+  {
+    path: '/history/event/:id',
+    name: 'history-event-detail', // ตั้งชื่อเพื่อให้เรียกใช้ง่ายๆ
+    component: HistoryDetailsEvent,
+    props: true, // เปิดรับ id เป็น props
+    meta: { title: 'History Event Details' }
+  },
 
     { path: '/history-category', component: HistoryCategory, meta: { title: 'History Category' } },
 
