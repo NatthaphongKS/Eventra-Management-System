@@ -7,10 +7,9 @@
                 v-model="searchInput"
                 placeholder="Search Employee / Department / Team / Position"
                 @search="onSearch"
-                class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
             />
 
-            <div class="relative z-[60] mt-6" ref="sortWrap">
+            <div class="relative z-[60] mt-8" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
                     :options="sortOptions"
