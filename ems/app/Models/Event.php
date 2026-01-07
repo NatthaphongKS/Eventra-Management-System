@@ -66,4 +66,9 @@ class Event extends Model
     {
         return $this->hasMany(Connect::class, 'con_event_id');
     }
+    public function files()
+    {
+        // แก้ไข 'File' เป็นชื่อ Model ของไฟล์ที่คุณใช้งานจริง
+        return $this->hasMany(File::class, 'file_event_id');
+    }
 }

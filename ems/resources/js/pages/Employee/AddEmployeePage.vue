@@ -3,10 +3,8 @@
         <!-- Header + ปุ่ม Import -->
         <div class="mx-auto max-w-[1400px] px-6">
             <header class="pt-6 mb-6">
-                <link
-                    rel="stylesheet"
-                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-                />
+                <link rel="stylesheet"
+                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
                 <div class="flex items-center justify-between gap-3 mb-6">
                     <h2 class="text-3xl font-semibold text-nutral-800 ml-8">
@@ -14,43 +12,21 @@
                     </h2>
 
                     <div class="flex justify-end">
-                        <input
-                            ref="fileInput"
-                            type="file"
-                            accept=".csv"
-                            class="hidden"
-                            @change="onImport"
-                        />
-                        <ImportButton
-                            class="ml-auto"
-                            label="Import"
-                            icon="download"
-                            @click="goImport"
-                        />
+                        <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
+                        <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
                     </div>
 
                     <!-- Success alert -->
-                    <ModalAlert
-                        v-model:open="showCreateSuccess"
-                        title="Success"
-                        message="Create employee success"
-                        type="success"
-                        @confirm="handleSuccessClose"
-                    />
+                    <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success"
+                        type="success" @confirm="handleSuccessClose" />
 
                     <!-- Error alert -->
-                    <EmployeeCannotCreate
-                        :open="showCreateError"
-                        :message="createErrorMessage"
-                        @close="handleErrorClose"
-                    />
+                    <EmployeeCannotCreate :open="showCreateError" :message="createErrorMessage"
+                        @close="handleErrorClose" />
 
                     <!-- Load meta error alert -->
-                    <EmployeeCannotCreate
-                        :open="showLoadMetaError"
-                        :message="loadMetaErrorMessage"
-                        @close="handleLoadMetaErrorClose"
-                    />
+                    <EmployeeCannotCreate :open="showLoadMetaError" :message="loadMetaErrorMessage"
+                        @close="handleLoadMetaErrorClose" />
                 </div>
             </header>
 
@@ -58,220 +34,96 @@
             <div class="px-2 py-0">
                 <div class="max-w-[1400px] mx-auto px-6">
                     <form @submit.prevent="handleSubmit">
-                        <div
-                            class="grid grid-cols-1 md:grid-cols-2 md:gap-x-16 gap-y-6 items-start"
-                        >
-                            <FormField
-                                label="Prefix"
-                                required
-                                :error="errors.prefix"
-                            >
-                                <DropdownPill
-                                    v-model="form.prefix"
-                                    :options="prefixes"
-                                    placeholder="Select prefix"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.prefix"
-                                />
-                            </FormField>
 
-                            <FormField
-                                label="Department"
-                                required
-                                :error="errors.department"
-                            >
-                                <DropdownPill
-                                    v-model="form.department"
-                                    :options="departments"
-                                    placeholder="Select Department"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.department"
-                                />
-                            </FormField>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6">
 
-                            <FormField
-                                label="First Name"
-                                required
-                                :error="errors.firstName"
-                            >
-                                <InputPill
-                                    v-model="form.firstName"
-                                    placeholder="Ex.Perapat"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.firstName"
-                                />
-                            </FormField>
+                            <!-- ================= LEFT COLUMN ================= -->
+                            <div class="flex flex-col gap-y-6">
 
-                            <FormField
-                                label="Team"
-                                required
-                                :error="errors.team"
-                            >
-                                <DropdownPill
-                                    v-model="form.team"
-                                    :options="teamOptions"
-                                    :placeholder="
-                                        form.department
-                                            ? 'Select Team'
-                                            : 'Please select Department first'
-                                    "
-                                    class="h-11 w-full"
-                                    :disabled="!form.department"
-                                    :has-error="!!errors.team"
-                                />
-                            </FormField>
+                                <FormField label="Prefix" required :error="errors.prefix">
+                                    <DropdownPill v-model="form.prefix" :options="prefixes" placeholder="Select prefix"
+                                        class="h-11 w-full" :has-error="!!errors.prefix" />
+                                </FormField>
 
-                            <FormField
-                                label="Last Name"
-                                required
-                                :error="errors.lastName"
-                            >
-                                <InputPill
-                                    v-model="form.lastName"
-                                    placeholder="Ex.Saimai"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.lastName"
-                                />
-                            </FormField>
+                                <FormField label="First Name" required :error="errors.firstName">
+                                    <InputPill v-model="form.firstName" placeholder="Ex.Perapat" class="h-11 w-full"
+                                        :has-error="!!errors.firstName" />
+                                </FormField>
 
-                            <FormField
-                                label="Position"
-                                required
-                                :error="errors.position"
-                            >
-                                <DropdownPill
-                                    v-model="form.position"
-                                    :options="positionOptions"
-                                    :placeholder="
-                                        form.team
-                                            ? 'Select Position'
-                                            : 'Please select Team first'
-                                    "
-                                    class="h-11 w-full"
-                                    :disabled="!form.team"
-                                    :has-error="!!errors.position"
-                                />
-                            </FormField>
+                                <FormField label="Last Name" required :error="errors.lastName">
+                                    <InputPill v-model="form.lastName" placeholder="Ex.Saimai" class="h-11 w-full"
+                                        :has-error="!!errors.lastName" />
+                                </FormField>
 
-                            <FormField
-                                label="Nickname"
-                                required
-                                :error="errors.nickname"
-                            >
-                                <InputPill
-                                    v-model="form.nickname"
-                                    placeholder="Ex.beam"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.nickname"
-                                />
-                            </FormField>
+                                <FormField label="Nickname" required :error="errors.nickname">
+                                    <InputPill v-model="form.nickname" placeholder="Ex.beam" class="h-11 w-full"
+                                        :has-error="!!errors.nickname" />
+                                </FormField>
 
-                            <FormField
-                                label="Email"
-                                required
-                                :error="errors.email"
-                            >
-                                <InputPill
-                                    v-model="form.email"
-                                    type="email"
-                                    placeholder="Ex.example@gmail.com"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.email"
-                                />
-                            </FormField>
+                                <FormField label="Email" required :error="errors.email">
+                                    <InputPill v-model="form.email" type="email" placeholder="Ex.example@gmail.com"
+                                        class="h-11 w-full" :has-error="!!errors.email" />
+                                </FormField>
 
-                            <FormField
-                                label="Phone"
-                                required
-                                :error="errors.phone"
-                            >
-                                <InputPill
-                                    v-model="form.phone"
-                                    placeholder="Ex.0988900988"
-                                    maxlength="10"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.phone"
-                                />
-                            </FormField>
+                                <FormField label="Phone" required :error="errors.phone">
+                                    <InputPill v-model="form.phone" placeholder="Ex.0988900988" maxlength="10"
+                                        class="h-11 w-full" :has-error="!!errors.phone" />
+                                </FormField>
 
-                            <FormField
-                                label="Password"
-                                :required="!isEmployeePermission"
-                                :error="errors.password"
-                            >
-                                <InputPill
-                                    v-model="form.password"
-                                    type="password"
-                                    :placeholder="
-                                        isEmployeePermission
-                                            ? 'Employee does not require password'
-                                            : 'Ex.Ssaw.1234'
-                                    "
-                                    class="h-11 w-full"
-                                    :disabled="isEmployeePermission"
-                                    :has-error="!!errors.password"
-                                />
-                            </FormField>
-
-                            <FormField
-                                label="Employee ID"
-                                required
-                                :error="
-                                    errors.companyId || errors.employeeNumber
-                                "
-                            >
-                                <div class="grid grid-cols-2 gap-3">
-                                    <DropdownPill
-                                        v-model="form.companyId"
-                                        :options="companies"
-                                        placeholder="Company"
-                                        class="h-11 w-full"
-                                        :has-error="!!errors.companyId"
-                                    />
-                                    <InputPill
-                                        v-model="form.employeeNumber"
-                                        placeholder="Ex.0001"
-                                        maxlength="4"
-                                        class="h-11 w-full"
-                                        :has-error="!!errors.employeeNumber"
-                                        @input="onEmployeeNumberInput"
-                                    />
-                                </div>
-                            </FormField>
-
-                            <FormField
-                                label="Permission"
-                                required
-                                :error="errors.permission"
-                            >
-                                <DropdownPill
-                                    v-model="form.permission"
-                                    :options="permissions"
-                                    placeholder="Select Permission"
-                                    class="h-11 w-full"
-                                    :has-error="!!errors.permission"
-                                />
-                            </FormField>
-
-                            <div
-                                class="col-span-full flex justify-between items-center"
-                            >
-                                <button
-                                    type="button"
-                                    @click="onCancel"
-                                    class="hover:opacity-80 transition-opacity"
-                                >
-                                    <CancelButton />
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    :disabled="submitting"
-                                    class="disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <CreateButton :disabled="submitting" />
-                                </button>
                             </div>
+
+                            <!-- ================= RIGHT COLUMN ================= -->
+                            <div class="flex flex-col gap-y-6">
+
+                                <FormField label="Department" required :error="errors.department">
+                                    <DropdownPill v-model="form.department" :options="departments"
+                                        placeholder="Select Department" class="h-11 w-full"
+                                        :has-error="!!errors.department" />
+                                </FormField>
+
+                                <FormField label="Team" required :error="errors.team">
+                                    <DropdownPill v-model="form.team" :options="teamOptions"
+                                        :disabled="!form.department" placeholder="Select Team" class="h-11 w-full"
+                                        :has-error="!!errors.team" />
+                                </FormField>
+
+                                <FormField label="Position" required :error="errors.position">
+                                    <DropdownPill v-model="form.position" :options="positionOptions"
+                                        :disabled="!form.team" placeholder="Select Position" class="h-11 w-full"
+                                        :has-error="!!errors.position" />
+                                </FormField>
+
+                                <FormField label="Password" :required="!isEmployeePermission" :error="errors.password">
+                                    <InputPill v-model="form.password" type="password" :disabled="isEmployeePermission"
+                                        placeholder="Ex.Ssaw.1234" class="h-11 w-full" :has-error="!!errors.password" />
+                                </FormField>
+
+                                <FormField label="Employee ID" required
+                                    :error="errors.companyId || errors.employeeNumber">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <DropdownPill v-model="form.companyId" :options="companies"
+                                            placeholder="Company" class="h-11 w-full" :has-error="!!errors.companyId" />
+                                        <InputPill v-model="form.employeeNumber" placeholder="Ex.0001" maxlength="4"
+                                            class="h-11 w-full" :has-error="!!errors.employeeNumber" />
+                                    </div>
+                                </FormField>
+
+                                <FormField label="Permission" required :error="errors.permission">
+                                    <DropdownPill v-model="form.permission" :options="permissions"
+                                        placeholder="Select Permission" class="h-11 w-full"
+                                        :has-error="!!errors.permission" />
+                                </FormField>
+                            </div>
+                        </div>
+
+                        <!-- ================= ACTION BUTTONS ================= -->
+                        <div class="mt-1 flex justify-between items-center">
+                            <button type="button" @click="onCancel">
+                                <CancelButton />
+                            </button>
+                            <button type="submit" :disabled="submitting">
+                                <CreateButton :disabled="submitting" />
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -641,12 +493,6 @@ async function handleSubmit() {
             emp_team_id: Number(form.team),
             emp_permission: form.permission,
         })
-
-
-        suspendValidation.value = true
-        Object.keys(form).forEach(k => form[k] = "")
-        Object.keys(errors).forEach(k => delete errors[k])
-        showCreateSuccess.value = true
 
         suspendValidation.value = true;
         Object.keys(form).forEach((k) => (form[k] = ""));
