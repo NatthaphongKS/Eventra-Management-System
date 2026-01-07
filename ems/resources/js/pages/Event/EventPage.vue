@@ -13,7 +13,7 @@
                         <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
                     </div>
 
-                    <EventFilter v-model="filters" :categories="categories" :status-options="statusOptions"
+                    <EventFilter v-model="filters" :categories="activeCategories" :status-options="statusOptions"
                         @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
 
                     <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
@@ -81,8 +81,8 @@
 
             <template #actions="{ row }">
                 <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)" :class="!canDelete(row)
-                        ? 'cursor-not-allowed opacity-40'
-                        : 'hover:bg-slate-100 cursor-pointer'
+                    ? 'cursor-not-allowed opacity-40'
+                    : 'hover:bg-slate-100 cursor-pointer'
                     " :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
                     <TrashIcon class="h-5 w-5" />
                 </button>
@@ -102,21 +102,21 @@
                         (row.evn_status || '').toLowerCase()
                     )
                         " class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    )
+                            (row.evn_status || '').toLowerCase()
+                        )
                             ? 'cursor-not-allowed opacity-40'
                             : 'hover:bg-slate-100 cursor-pointer'
-                        " :title="['ongoing', 'done'].includes(
-                        (row.evn_status || '').toLowerCase()
-                    )
-                            ? 'Cannot edit ongoing/done event'
-                            : 'Edit'
-                        ">
+                            " :title="['ongoing', 'done'].includes(
+                                (row.evn_status || '').toLowerCase()
+                            )
+                                ? 'Cannot edit ongoing/done event'
+                                : 'Edit'
+                                ">
                     <PencilIcon class="h-5 w-5" :class="['ongoing', 'done'].includes(
                         (row.evn_status || '').toLowerCase()
                     )
-                            ? 'text-neutral-400'
-                            : 'text-neutral-800'
+                        ? 'text-neutral-400'
+                        : 'text-neutral-800'
                         " />
                 </button>
 
@@ -126,9 +126,9 @@
                     ((row.evn_status || '').toLowerCase() === 'done' &&
                         (empPermission || '').toLowerCase() === 'disabled')
                 " class="rounded-lg p-1.5 cursor-not-allowed opacity-40" :title="(row.evn_status || '').toLowerCase() === 'upcoming'
-                            ? 'not available for upcoming event'
-                            : 'No permission to check-in'
-                        ">
+                    ? 'not available for upcoming event'
+                    : 'No permission to check-in'
+                    ">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor" class="h-5 w-5 text-neutral-400">
                         <path
@@ -271,7 +271,7 @@ export default {
     computed: {
         // (ส่วน Filter Logic เหมือนเดิม)
         filterFields() {
-            const categoryOptions = this.categories.map((c) => ({
+            const categoryOptions = this.activeCategories.map((c) => ({
                 label: c.cat_name,
                 value: String(c.id),
             }));
@@ -351,6 +351,15 @@ export default {
                 arr = arr.filter((e) => this.filters.status.includes((e.evn_status || "").toLowerCase()));
             }
             return arr;
+        },
+
+        activeCategories() {
+            return (this.categories || []).filter((c) => {
+                const s = String(c.cat_delete_status ?? "").trim().toLowerCase();
+                // ถ้าไม่มีค่า status -> ให้ถือว่าแอคทีฟ
+                if (!s) return true;
+                return s === "active";
+            });
         },
 
         sorted() {
@@ -512,6 +521,7 @@ export default {
                 this.categories = cats.map((c) => ({
                     id: String(c.id),
                     cat_name: c.cat_name,
+                    cat_delete_status: c.cat_delete_status, // เก็บสถานะ
                 }));
 
                 this.catMap = Object.fromEntries(

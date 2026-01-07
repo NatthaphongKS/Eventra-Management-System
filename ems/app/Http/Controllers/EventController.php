@@ -108,6 +108,7 @@ class EventController extends Controller
                 // $f->url = asset(...) = เพิ่ม field url ที่เป็นลิงก์จริงไปยังไฟล์ใน public/storage
                 // return $f; = คืน object ที่ถูกแก้ไข
             });
+
         $guestIds = DB::table('ems_connect')
             ->where('con_event_id', $event->id)
             ->where('con_delete_status', 'active')
@@ -645,6 +646,7 @@ class EventController extends Controller
                 'emp_department_id',
                 'emp_team_id'
             ])
+
             ->map(function (Employee $e) {
                 return [
                     'id'               => $e->id,
@@ -668,7 +670,6 @@ class EventController extends Controller
         $positions = Position::select('id', 'pst_name')->where('pst_delete_status', 'active')->orderBy('pst_name')->get();
         $departments = Department::select('id', 'dpm_name')->where('dpm_delete_status', 'active')->orderBy('dpm_name')->get();
         $teams = Team::select('id', 'tm_name')->where('tm_delete_status', 'active')->orderBy('tm_name')->get();
-
         return response()->json(compact('categories', 'employees', 'positions', 'departments', 'teams'));
     }
 
@@ -682,7 +683,6 @@ class EventController extends Controller
             }
 
             $statusFilter = $request->get('status'); // accepted, declined, pending
-
             // ดึงข้อมูล participants จาก ems_connect และ join กับ employees
             $query = DB::table('ems_connect as c')
                 ->join('ems_employees as e', 'c.con_employee_id', '=', 'e.id')
@@ -718,7 +718,6 @@ class EventController extends Controller
                     $query->where('c.con_answer', 'denied');
                 }
             }
-
             $participants = $query->orderBy('e.emp_firstname')->get();
 
             // นับสถิติ - แก้ไขให้ตรงกับ database จริง
