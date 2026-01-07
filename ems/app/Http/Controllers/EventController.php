@@ -60,7 +60,8 @@ class EventController extends Controller
                 'ems_team.tm_name as team',
                 'ems_position.pst_name as position',
                 'ems_connect.con_answer as status',
-                'ems_connect.con_checkin_status'
+                'ems_connect.con_checkin_status',
+                'ems_connect.con_reason'
             )
             ->orderBy('ems_employees.emp_id')
             ->get();

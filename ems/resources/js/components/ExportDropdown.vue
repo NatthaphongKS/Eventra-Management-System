@@ -420,6 +420,10 @@ export default {
                   <div class="stat-value">${participants.length}</div>
                 </div>
                 <div class="stat-box">
+                  <div class="stat-label">ตอบรับเข้าร่วม</div>
+                  <div class="stat-value">${participants.filter(p => p.status === 'accepted').length}</div>
+                </div>
+                <div class="stat-box">
                   <div class="stat-label">เข้าร่วมจริง (เช็คอิน)</div>
                   <div class="stat-value">${participants.filter(p => p.con_checkin_status === 1).length}</div>
                 </div>
@@ -429,7 +433,7 @@ export default {
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">รอตอบรับ</div>
-                  <div class="stat-value">${participants.filter(p => p.con_checkin_status !== 1 && p.status !== 'denied').length}</div>
+                  <div class="stat-value">${participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length}</div>
                 </div>
               </div>
             </div>
@@ -444,12 +448,14 @@ export default {
                     <tr>
                       <th style="width: 5%;">#</th>
                       <th style="width: 10%;">รหัส (ID)</th>
-                      <th style="width: 20%;">ชื่อ-นามสกุล (Name)</th>
+                      <th style="width: 18%;">ชื่อ-นามสกุล (Name)</th>
                       <th style="width: 10%;">ชื่อเล่น (Nickname)</th>
                       <th style="width: 12%;">เบอร์โทร (Phone)</th>
-                      <th style="width: 15%;">แผนก (Department)</th>
-                      <th style="width: 13%;">ทีม (Team)</th>
-                      <th style="width: 15%;">สถานะ (Status)</th>
+                      <th style="width: 12%;">แผนก (Department)</th>
+                      <th style="width: 11%;">ทีม (Team)</th>
+                      <th style="width: 10%;">สถานะ (Status)</th>
+                      <th style="width: 10%;">เข้าร่วมจริง</th>
+                      <th style="width: 9%;">เหตุผล (Reason)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -463,10 +469,12 @@ export default {
                         <td class="left">${guest.department || '-'}</td>
                         <td class="left">${guest.team || '-'}</td>
                         <td>
-                          <span class="status-badge status-${guest.con_checkin_status === 1 ? 'accepted' : (guest.status === 'denied' ? 'rejected' : 'pending')}">
-                            ${guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
+                          <span class="status-badge status-${guest.status === 'accepted' ? 'accepted' : (guest.status === 'denied' ? 'rejected' : 'pending')}">
+                            ${guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
                           </span>
                         </td>
+                        <td>${guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม'}</td>
+                        <td class="left">${guest.con_reason || '-'}</td>
                       </tr>
                     `).join('')}
                   </tbody>
@@ -578,7 +586,7 @@ export default {
         
         // ตั้งค่าความกว้างคอลัมน์ทั้งหมด
         worksheet.columns = [
-          { width: 8 },   // # (A)
+          { width: 35 },  // # (A)
           { width: 15 },  // รหัส (B)
           { width: 12 },  // คำนำหน้า (C)
           { width: 18 },  // ชื่อ (D)
@@ -588,13 +596,15 @@ export default {
           { width: 25 },  // แผนก (H)
           { width: 20 },  // ทีม (I)
           { width: 25 },  // ตำแหน่ง (J)
-          { width: 15 }   // สถานะ (K)
+          { width: 15 },  // สถานะ (K)
+          { width: 35 },  // เข้าร่วมจริง (L)
+          { width: 30 }   // ความคิดเห็น (M)
         ];
         
         let currentRow = 1;
         
         // ส่วนที่ 1: รายละเอียดกิจกรรม
-        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
         const titleCell = worksheet.getCell(`A${currentRow}`);
         titleCell.value = 'รายละเอียดกิจกรรม (Event Details)';
         titleCell.font = { bold: true, size: 14 };
@@ -606,7 +616,7 @@ export default {
           ['ชื่อกิจกรรม (Event Title)', event.evn_title || '-'],
           ['ประเภท (Category)', event.cat_name || '-'],
           ['วันที่ (Date)', this.formatDateThai(event.evn_date)],
-          ['เวลา (Time)', `${event.evn_timestart || '-'} - ${event.evn_timeend || '-'}`],
+          ['เวลา (Time)', `${this.formatTime(event.evn_timestart)} - ${this.formatTime(event.evn_timeend)}`],
           ['ระยะเวลา (Duration)', duration],
           ['สถานที่ (Location)', event.evn_location || '-'],
           ['รายละเอียด (Details)', event.evn_details || '-']
@@ -617,14 +627,14 @@ export default {
           row.getCell(1).value = label;
           row.getCell(1).font = { bold: true };
           row.getCell(2).value = value;
-          worksheet.mergeCells(`B${currentRow}:K${currentRow}`);
+          worksheet.mergeCells(`B${currentRow}:M${currentRow}`);
           currentRow++;
         });
         
         currentRow += 1;
         
         // ส่วนที่ 2: สถิติ
-        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
         const statsCell = worksheet.getCell(`A${currentRow}`);
         statsCell.value = 'สถิติ (Statistics)';
         statsCell.font = { bold: true, size: 14 };
@@ -632,9 +642,10 @@ export default {
         
         const stats = [
           ['ผู้ได้รับเชิญทั้งหมด', participants.length],
-          ['ยืนยันเข้าร่วม', participants.filter(p => p.con_checkin_status === 1).length],
+          ['ตอบรับเข้าร่วม', participants.filter(p => p.status === 'accepted').length],
+          ['เข้าร่วมจริง (เช็คอิน)', participants.filter(p => p.con_checkin_status === 1).length],
           ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length],
-          ['รอตอบรับ', participants.filter(p => p.con_checkin_status !== 1 && p.status !== 'denied').length]
+          ['รอตอบรับ', participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length]
         ];
         
         stats.forEach(([label, value]) => {
@@ -648,7 +659,7 @@ export default {
         currentRow += 2;
         
         // ส่วนที่ 3: รายชื่อผู้เข้าร่วม
-        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
         const guestListCell = worksheet.getCell(`A${currentRow}`);
         guestListCell.value = 'รายชื่อผู้เข้าร่วม (Guest List)';
         guestListCell.font = { bold: true, size: 14 };
@@ -666,7 +677,9 @@ export default {
           'แผนก (Department)',
           'ทีม (Team)',
           'ตำแหน่ง (Position)',
-          'สถานะ (Status)'
+          'สถานะ (Status)',
+          'เข้าร่วมจริง',
+          'ความคิดเห็น/เหตุผล (Reason)'
         ];
         
         const headerRow = worksheet.getRow(currentRow);
@@ -691,7 +704,7 @@ export default {
         
         // Guest rows
         participants.forEach((guest, index) => {
-          const statusLabel = guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ');
+          const statusLabel = guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ');
           const row = worksheet.getRow(currentRow);
           
           const rowData = [
@@ -705,7 +718,9 @@ export default {
             guest.department || '-',
             guest.team || '-',
             guest.position || '-',
-            statusLabel
+            statusLabel,
+            guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม',
+            guest.con_reason || '-'
           ];
           
           rowData.forEach((value, colIndex) => {
@@ -829,6 +844,12 @@ export default {
         'pending': 'รอตอบรับ'
       };
       return statusMap[status] || 'ไม่ระบุ';
+    },
+
+    formatTime(timeString) {
+      if (!timeString) return '-';
+      // ตัดวินาทีออก แสดงแค่ชั่วโมง:นาที (HH:MM)
+      return timeString.substring(0, 5);
     }
   }
 };

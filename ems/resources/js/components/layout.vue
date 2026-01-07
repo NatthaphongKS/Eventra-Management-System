@@ -23,7 +23,7 @@
             <div v-if="item.children" class="flex flex-col">
               <button
                 type="button"
-                @click="toggle(item.to)"
+                @click="handleParentClick(item)"
                 class="group relative inline-flex items-center justify-between rounded-2xl px-3 py-2.5 text-lg font-semibold transition"
                 :class="
                   isParentActive(item)
@@ -223,6 +223,13 @@ const syncExpandedWithRoute = () => {
 };
 
 watch(() => route.path, syncExpandedWithRoute, { immediate: true });
+
+const handleParentClick = (item) => {
+  // ถ้ามี children ให้ไปที่ child แรก
+  if (item.children && item.children.length > 0) {
+    router.push(item.children[0].to);
+  }
+};
 
 const toggle = (key) => {
   // ถ้าอยากให้เปิดได้ทีละเมนู (Accordion) ให้เปิดคอมเมนต์ด้านล่างนี้
