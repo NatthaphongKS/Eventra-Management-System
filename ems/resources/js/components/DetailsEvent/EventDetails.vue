@@ -141,13 +141,10 @@
                     </template>
             </DataTable>
 
-            <div class="mt-6">
-                <button class="rounded-2xl bg-neutral-400 px-5 py-2 text-white hover:bg-neutral-500 transition" @click="onBack">← Back</button>
-            </div>
         </div>
-
-        <div v-if="loading" class="mt-4 text-slate-500">กำลังโหลดข้อมูล…</div>
+        <div v-if="loading" class="mt-4 text-slate-500"></div>
         <div v-if="error" class="mt-4 text-rose-600">{{ error }}</div>
+        <BackButton @click="onBack">Back</BackButton>
     </div>
 </template>
 
@@ -157,13 +154,14 @@ import { Icon } from "@iconify/vue";
 import DataTable from "@/components/DataTable.vue";
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 import BaseReadonlyField from "@/components/DetailsEvent/BaseReadonlyField.vue";
+import BackButton from "@/components/Button/BackButton.vue";
 
 axios.defaults.baseURL = "/api";
 axios.defaults.withCredentials = true;
 
 export default {
     name: "EventDetailCard",
-    components: { Icon, DataTable, EmployeeDropdown, BaseReadonlyField },
+    components: { Icon, DataTable, EmployeeDropdown, BaseReadonlyField, BackButton },
     props: { id: { type: [String, Number], required: true } },
     data() {
         return {
@@ -182,8 +180,8 @@ export default {
             guestsTableColumns: [
                 { key: "_select", label: "", class: "w-5 text-center" },
                 { key: "_index", label: "#", class: "w-12 text-center" },
-                { key: "codeDisplay", label: "Employee ID", class: "w-auto text-left" },
-                { key: "name", label: "Name", class: "w-auto text-left" },
+                { key: "codeDisplay", label: "Employee ID", class: "w-[140px] text-left" },
+                { key: "name", label: "Name", class: "w-[500px] text-left" },
                 { key: "nick", label: "Nickname", class: "w-auto text-left" },
                 { key: "department", label: "Department", class: "w-auto text-left" },
                 { key: "team", label: "Team", class: "w-auto text-left" },
