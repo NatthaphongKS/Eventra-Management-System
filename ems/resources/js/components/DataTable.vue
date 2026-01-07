@@ -1,35 +1,57 @@
 <template>
     <div class="relative">
-        <div v-if="loading" class="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/60">
-            <div class="h-12 w-12 animate-spin rounded-full border-4 border-rose-200 border-t-rose-600"></div>
+        <div
+            v-if="loading"
+            class="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/60"
+        >
+            <div
+                class="h-12 w-12 animate-spin rounded-full border-4 border-rose-200 border-t-rose-600"
+            ></div>
         </div>
 
-        <div class="overflow-hidden rounded-2xl border border-neutral-200" :class="{ 'opacity-50': loading }">
+        <div
+            class="overflow-hidden rounded-2xl border border-neutral-200"
+            :class="{ 'opacity-50': loading }"
+        >
             <table class="w-full table-auto">
                 <thead>
                     <tr class="bg-neutral-100 text-neutral-800">
                         <th v-if="selectable" class="w-10 py-3 text-center">
-                            <input type="checkbox" :checked="allSelectedOnPage" :indeterminate.prop="isIndeterminate"
-                                @change="toggleSelectAllOnPage" class="accent-red-600 w-6 h-6 rounded" />
+                            <input
+                                type="checkbox"
+                                :checked="allSelectedOnPage"
+                                :indeterminate.prop="isIndeterminate"
+                                @change="toggleSelectAllOnPage"
+                                class="text-red-600 w-6 h-6 rounded focus:ring-0"
+                            />
                         </th>
 
-                        <th v-if="showRowNumber" class="w-12 py-3 text-center font-semibold">
+                        <th
+                            v-if="showRowNumber"
+                            class="w-12 py-3 text-center font-semibold"
+                        >
                             #
                         </th>
 
-                        <th v-for="col in columns" :key="col.key" class="py-3 px-3 font-semibold" :class="[
-                            col.class,
-                            col.headerClass,
-
-                        ]">
-                            <slot :name="`header-${col.key}`" :label="col.label" :column="col">
-
+                        <th
+                            v-for="col in columns"
+                            :key="col.key"
+                            class="py-3 px-3 font-semibold"
+                            :class="[col.class, col.headerClass]"
+                        >
+                            <slot
+                                :name="`header-${col.key}`"
+                                :label="col.label"
+                                :column="col"
+                            >
                                 <span>{{ col.label }}</span>
-
                             </slot>
                         </th>
 
-                        <th v-if="$slots.actions" class="w-28 py-3 text-center font-semibold">
+                        <th
+                            v-if="$slots.actions"
+                            class="w-28 py-3 text-center font-semibold"
+                        >
                             &nbsp;
                         </th>
                     </tr>
@@ -37,38 +59,76 @@
 
                 <tbody>
                     <template v-if="!loading && rows.length > 0">
-                        <tr v-for="(row, index) in rows" :key="row[rowKey] ?? index"
-                            class="border-t hover:bg-neutral-100" :class="[
-                                { 'bg-red-100': selectable && selectedSet.has(row[rowKey]) },
+                        <tr
+                            v-for="(row, index) in rows"
+                            :key="row[rowKey] ?? index"
+                            class="border-t hover:bg-neutral-100"
+                            :class="[
+                                {
+                                    'bg-red-100':
+                                        selectable &&
+                                        selectedSet.has(row[rowKey]),
+                                },
                                 rowClass(row),
-                            ]">
-                            <td v-if="selectable" class="px-2 py-2 text-center ">
-                                <input type="checkbox" :value="row[rowKey]" :checked="selectedSet.has(row[rowKey])"
-                                    :disabled="isRowDisabled(row)" @change="toggleSelectOne(row[rowKey], $event)"
-                                    class="h-6 w-6 rounded accent-red-600 disabled:accent-neutral-800 disabled:opacity-100 disabled:cursor-not-allowed " />
+                            ]"
+                        >
+                            <td v-if="selectable" class="px-2 py-2 text-center">
+                                <input
+                                    type="checkbox"
+                                    :value="row[rowKey]"
+                                    :checked="selectedSet.has(row[rowKey])"
+                                    :disabled="isRowDisabled(row)"
+                                    @change="
+                                        toggleSelectOne(row[rowKey], $event)
+                                    "
+                                    class="w-6 h-6 rounded border-gray-300 text-red-600 focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                />
                             </td>
 
-                            <td v-if="showRowNumber" class="px-2 py-2 text-center text-sm text-slate-700">
+                            <td
+                                v-if="showRowNumber"
+                                class="px-2 py-2 text-center text-sm text-slate-700"
+                            >
                                 {{ rowStartIndex + index + 1 }}
                             </td>
 
-                            <td v-for="col in columns" :key="col.key" class="px-3 py-2 text-sm text-slate-800"
-                                :class="[col.class, col.cellClass]">
-                                <slot :name="`cell-${col.key}`" :value="getValue(row, col.key)" :row="row">
+                            <td
+                                v-for="col in columns"
+                                :key="col.key"
+                                class="px-3 py-2 text-sm text-slate-800"
+                                :class="[col.class, col.cellClass]"
+                            >
+                                <slot
+                                    :name="`cell-${col.key}`"
+                                    :value="getValue(row, col.key)"
+                                    :row="row"
+                                >
                                     {{ formatValue(row, col) }}
                                 </slot>
                             </td>
 
-                            <td v-if="$slots.actions" class="px-3 py-2 text-center">
-                                <div class="flex items-center justify-center gap-1.5">
-                                    <slot name="actions" :row="row" :index="rowStartIndex + index"></slot>
+                            <td
+                                v-if="$slots.actions"
+                                class="px-3 py-2 text-center"
+                            >
+                                <div
+                                    class="flex items-center justify-center gap-1.5"
+                                >
+                                    <slot
+                                        name="actions"
+                                        :row="row"
+                                        :index="rowStartIndex + index"
+                                    ></slot>
                                 </div>
                             </td>
                         </tr>
                     </template>
 
                     <tr v-if="!loading && rows.length === 0">
-                        <td :colspan="totalColspan" class="px-3 py-6 text-center text-neutral-700">
+                        <td
+                            :colspan="totalColspan"
+                            class="px-3 py-6 text-center text-neutral-700"
+                        >
                             <slot name="empty"> No data found </slot>
                         </td>
                     </tr>
@@ -77,50 +137,90 @@
         </div>
 
         <div>
-            <div v-if="totalItems > 0" class="mt-4 flex flex-col items-center gap-4 md:flex-row md:items-center">
+            <div
+                v-if="totalItems > 0"
+                class="mt-4 flex flex-col items-center gap-4 md:flex-row md:items-center"
+            >
                 <div class="flex items-center gap-2 text-sm text-slate-700">
-                    <slot name="footer-info" :from="fromItem" :to="toItem" :total="totalItems">
+                    <slot
+                        name="footer-info"
+                        :from="fromItem"
+                        :to="toItem"
+                        :total="totalItems"
+                    >
                         <span>แสดง</span>
                         <div class="relative inline-block">
                             <select
-                                class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200"
-                                :value="pageSize" @change="onChangePageSize">
-                                <option v-for="opt in pageSizeOptions" :key="opt" :value="opt">
+                                class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 bg-none"
+                                :value="pageSize"
+                                @change="onChangePageSize"
+                            >
+                                <option
+                                    v-for="opt in pageSizeOptions"
+                                    :key="opt"
+                                    :value="opt"
+                                >
                                     {{ opt }}
                                 </option>
                             </select>
-                            <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg
+                                class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
                                 <path d="M6 9l6 6 6-6" />
                             </svg>
                         </div>
                         <span>
-                            {{ fromItem }}-{{ toItem }} จาก {{ totalItems }} รายการ
+                            {{ fromItem }}-{{ toItem }} จาก
+                            {{ totalItems }} รายการ
                         </span>
                     </slot>
                 </div>
-
             </div>
             <div class="flex items-center justify-center gap-3 md:mx-auto">
-                <button class="pg-arrow" :disabled="page === 1" @click="goToPage(page - 1)">
-                    <svg viewBox="0 0 24 24">
+                <button
+                    class="pg-arrow"
+                    :disabled="page === 1"
+                    @click="goToPage(page - 1)"
+                >
+                    <svg viewBox="0 0 24 24" class="!w-10 !h-10">
                         <path d="M6 12 L18 4 L18 20 Z" />
                     </svg>
                 </button>
 
                 <template v-for="(it, idx) in pageItems">
-                    <button v-if="it.type === 'page'" :key="`page-${it.value}`" class="pg-num"
-                        :class="{ 'pg-active': it.value === page }" @click="goToPage(it.value)">
+                    <button
+                        v-if="it.type === 'page'"
+                        :key="`page-${it.value}`"
+                        class="pg-num !w-[41px] !h-[45px]"
+                        :class="{ 'pg-active': it.value === page }"
+                        @click="goToPage(it.value)"
+                    >
                         {{ it.value }}
                     </button>
-                    <span v-else :key="`dots-${idx}`" class="pg-ellipsis">
-                        <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+                    <span
+                        v-else
+                        :key="`dots-${idx}`"
+                        class="pg-ellipsis !h-[45px] flex items-center justify-center"
+                    >
+                        <i class="dot"></i><i class="dot"></i
+                        ><i class="dot"></i>
                     </span>
                 </template>
 
-                <button class="pg-arrow" :disabled="page === totalPages || totalPages === 0"
-                    @click="goToPage(page + 1)">
-                    <svg viewBox="0 0 24 24" style="transform: scaleX(-1)">
+                <button
+                    class="pg-arrow"
+                    :disabled="page === totalPages || totalPages === 0"
+                    @click="goToPage(page + 1)"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        style="transform: scaleX(-1)"
+                        class="!w-10 !h-10"
+                    >
                         <path d="M6 12 L18 4 L18 20 Z" />
                     </svg>
                 </button>
@@ -130,9 +230,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, useSlots } from 'vue';
+import { computed, ref, watch, useSlots } from "vue";
 
-defineOptions({ name: 'DataTable' });
+defineOptions({ name: "DataTable" });
 
 // --- Props ---
 const props = defineProps({
@@ -193,7 +293,7 @@ const props = defineProps({
     /**
      * key ของ row ที่จะใช้เป็น unique identifier
      */
-    rowKey: { type: String, default: 'id' },
+    rowKey: { type: String, default: "id" },
     /**
      * เปิดใช้งานโหมดเลือก (checkbox)
      */
@@ -211,7 +311,7 @@ const props = defineProps({
     /**
      * ฟังก์ชันสำหรับกำหนด class ให้ <tr>
      */
-    rowClass: { type: Function, default: () => '' },
+    rowClass: { type: Function, default: () => "" },
 
     /**
      * ฟังก์ชันเช็คว่าแถวนี้ต้อง Disable Checkbox หรือไม่ (รับ row ส่งกลับ boolean)
@@ -221,21 +321,21 @@ const props = defineProps({
 
 // --- Emits ---
 const emit = defineEmits([
-    'update:page',
-    'update:pageSize',
-    'update:modelValue',
-    'update:sortKey',
-    'update:sortOrder',
-    'sort', // Event ใหม่สำหรับ Server-Side Sorting
-    'checkbox-checkin',
-    'check-all-page'
+    "update:page",
+    "update:pageSize",
+    "update:modelValue",
+    "update:sortKey",
+    "update:sortOrder",
+    "sort", // Event ใหม่สำหรับ Server-Side Sorting
+    "checkbox-checkin",
+    "check-all-page",
 ]);
 
 const slots = useSlots(); // (ใช้เช็ค $slots.actions)
 
 // --- Computed (Pagination) ---
-const totalPages = computed(() =>
-    Math.ceil(props.totalItems / props.pageSize) || 1
+const totalPages = computed(
+    () => Math.ceil(props.totalItems / props.pageSize) || 1
 );
 const rowStartIndex = computed(() => (props.page - 1) * props.pageSize);
 
@@ -251,11 +351,11 @@ const pageItems = computed(() => {
     const cur = props.page;
     const items = [];
     if (total <= 7) {
-        for (let i = 1; i <= total; i++) items.push({ type: 'page', value: i });
+        for (let i = 1; i <= total; i++) items.push({ type: "page", value: i });
         return items;
     }
-    const addPage = (p) => items.push({ type: 'page', value: p });
-    const addDots = () => items.push({ type: 'dots' });
+    const addPage = (p) => items.push({ type: "page", value: p });
+    const addDots = () => items.push({ type: "dots" });
     addPage(1);
     if (cur > 3) addDots();
     const s = Math.max(2, cur - 1);
@@ -278,32 +378,32 @@ const totalColspan = computed(() => {
 // --- Methods (Pagination) ---
 function goToPage(p) {
     let next = Math.max(1, Math.min(p, totalPages.value));
-    emit('update:page', next);
+    emit("update:page", next);
 }
 
 function onChangePageSize(e) {
     const nextSize = Number(e.target.value) || 10;
-    emit('update:pageSize', nextSize);
+    emit("update:pageSize", nextSize);
     goToPage(1); // Reset to page 1
 }
 
 // --- Methods (Sorting) ---
 function handleSort(key) {
-    let nextOrder = 'asc';
+    let nextOrder = "asc";
     if (props.sortKey === key) {
-        nextOrder = props.sortOrder === 'asc' ? 'desc' : 'asc';
+        nextOrder = props.sortOrder === "asc" ? "desc" : "asc";
     }
 
-    emit('update:sortKey', key);
-    emit('update:sortOrder', nextOrder);
-    emit('sort', { key, order: nextOrder });
+    emit("update:sortKey", key);
+    emit("update:sortOrder", nextOrder);
+    emit("sort", { key, order: nextOrder });
 }
 
 // --- Methods (Data Formatting) ---
 function getValue(row, key) {
-    if (!key) return '';
+    if (!key) return "";
     return key
-        .split('.')
+        .split(".")
         .reduce((acc, part) => (acc ? acc[part] : undefined), row);
 }
 
@@ -312,7 +412,7 @@ function formatValue(row, col) {
     if (col.format) {
         return col.format(value, row);
     }
-    return value ?? 'N/A';
+    return value ?? "N/A";
 }
 
 // --- Computed (Selection) ---
@@ -346,8 +446,8 @@ function toggleSelectOne(key, event) {
         next.delete(key);
     }
 
-    emit('update:modelValue', Array.from(next));
-    emit('checkbox-checkin', { keys: [key], checked }); // ✅ ส่งให้แม่ component
+    emit("update:modelValue", Array.from(next));
+    emit("checkbox-checkin", { keys: [key], checked }); // ✅ ส่งให้แม่ component
 }
 
 function toggleSelectAllOnPage(event) {
@@ -362,17 +462,17 @@ function toggleSelectAllOnPage(event) {
         }
     });
 
-    emit('update:modelValue', Array.from(next));
+    emit("update:modelValue", Array.from(next));
     //emit('checkbox-checkin', { keys: Array.from(pageRowKeys.value), checked }); // ✅ ส่งรวมทั้งหมดในหน้า
-    emit('check-all-page', {                           // ✅ เพิ่ม อีเวนต์ให้แม่
-        action: checked ? 'check' : 'uncheck',          //    บอกประเภทการกระทำ
-        pageKeys: Array.from(pageRowKeys.value),        //    คีย์ทั้งหมดบนหน้า
-        rowsOnPage: props.rows,                         //    แถวจริงบนหน้า (มี empCheckinStatus)
-        rowKey: props.rowKey,                           //    ชื่อคีย์ (เช่น 'empId')
-        checkinField: 'empCheckinStatus',               //    ฟิลด์สถานะที่ใช้กรอง
+    emit("check-all-page", {
+        // ✅ เพิ่ม อีเวนต์ให้แม่
+        action: checked ? "check" : "uncheck", //    บอกประเภทการกระทำ
+        pageKeys: Array.from(pageRowKeys.value), //    คีย์ทั้งหมดบนหน้า
+        rowsOnPage: props.rows, //    แถวจริงบนหน้า (มี empCheckinStatus)
+        rowKey: props.rowKey, //    ชื่อคีย์ (เช่น 'empId')
+        checkinField: "empCheckinStatus", //    ฟิลด์สถานะที่ใช้กรอง
     });
 }
-
 </script>
 
 <style>

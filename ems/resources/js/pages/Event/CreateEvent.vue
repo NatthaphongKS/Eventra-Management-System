@@ -129,17 +129,22 @@
                     </div>
 
                     <div>
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Duration</label>
-                        <div class="relative flex h-[52px] w-full items-center justify-between rounded-2xl border border-neutral-200 px-5 shadow-sm bg-[#F9FAFB]">
-                            <div :class="['font-medium text-[16px] z-10', eventDurationDisplay ? 'text-neutral-800' : 'text-neutral-400']">
-                                {{ eventDurationDisplay || "Auto Fill" }}
-                            </div>
-                            <div v-if="!eventDurationDisplay" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <span class="text-neutral-400 font-medium text-[16px] pl-10">Hour</span>
-                            </div>
-                            <div class="flex items-center z-10">
-                                <Icon icon="lucide:clock-fading" class="w-6 h-6 text-neutral-400" />
-                            </div>
+                        <label
+                            class="block text-neutral-800 font-semibold text-[15px] mb-2 "
+                            >Duration</label
+                        >
+                        <div
+                            class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]"
+                        >
+                            <input
+                                class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none border-0"
+                                disabled
+                                v-model="eventDurationDisplay"
+                            />
+                            <Icon
+                                icon="lucide:clock-fading"
+                                class="w-6 h-6 text-neutral-400"
+                            />
                         </div>
                     </div>
                 </div>
