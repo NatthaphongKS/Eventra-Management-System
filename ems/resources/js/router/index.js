@@ -33,10 +33,10 @@ const routes = [
 
   { path: '/add-employee', component: AddEmployee, meta: { title: 'Employee' , activeMenu: '/employee'} },
   { path: '/EditEvent/:id', component: EditEvent, meta: { title: 'Event', activeMenu: '/event' } },
-  { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'EventCheckIn' , activeMenu: '/event' } },
+  { path: '/eventCheckIn/eveId/:eveId', component: EventCheckIn, meta: { title: 'Event' , activeMenu: '/event' } },
 
   { path: '/event', component: EventPage, meta: { title: 'Event' , activeMenu: '/event' } },
-  { path: '/add-event' , component: CreateEvent, meta: { title: 'Create Event' , activeMenu: '/event' } },
+  { path: '/add-event' , component: CreateEvent, meta: { title: 'Event' , activeMenu: '/event' } },
   { path: '/employee', component: Employees, meta: { title: 'Employee', activeMenu: '/employee' } },
   { path: '/history', component: History, meta: { title: 'History' } },
   { path: '/categories', component: Category, meta: { title: 'Category', activeMenu: '/categories' } },
