@@ -455,14 +455,10 @@ export default {
       let arr = [...this.normalized];
       const q = this.search.toLowerCase().trim();
 
-      // ตัวกรองการค้นหา - ค้นหาเฉพาะข้อความ (ชื่องาน, หมวดหมู่, สถานะ)
-      // ไม่รวมการค้นหาวันที่เพราะมี EventDatePicker แล้ว
+      // ตัวกรองการค้นหา - ค้นหาเฉพาะชื่อกิจกรรม (evn_title) เท่านั้น
       if (q) {
         arr = arr.filter((e) => {
-          // ค้นหาเฉพาะใน title, category, status
-          return `${e.evn_title} ${e.cat_name} ${e.evn_status}`
-            .toLowerCase()
-            .includes(q);
+          return (e.evn_title || '').toLowerCase().includes(q);
         });
       }
 
