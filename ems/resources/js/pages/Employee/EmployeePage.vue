@@ -2,7 +2,7 @@
     <section class="p-0">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <div class="flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search ID, Name, Nickname..." @search="onSearchText"
+                <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname" @search="onSearchText"
                     class="" />
             </div>
 
@@ -155,7 +155,7 @@ export default {
             return u ? JSON.parse(u) : {};
         },
         canDelete() {
-            return this.currentUser.emp_permission === "enabled";
+            return this.currentUser.emp_permission === "admin";
         },
         optionsMap() {
             // Options สำหรับ Filter ยังคงมี Company ID อยู่

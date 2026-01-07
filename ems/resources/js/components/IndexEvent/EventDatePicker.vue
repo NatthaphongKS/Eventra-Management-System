@@ -3,7 +3,7 @@
         <button @click="showDropdown = !showDropdown" type="button"
             class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800 transition-colors duration-200 font-[Poppins] font-size-[20px]"
             ref="dateButton">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
                 <path fill="currentColor"
                     d="M8.5 14a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m0 3.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0M12 17.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0" />
                 <path fill="currentColor" fill-rule="evenodd"
@@ -13,11 +13,15 @@
             <span>Date</span>
         </button>
 
+        <Transition enter-active-class="transition ease-out duration-150"
+            enter-from-class="opacity-0 translate-y-1 scale-95" enter-to-class="opacity-100 translate-y-0  scale-100"
+            leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0  scale-100"
+            leave-to-class="opacity-0 translate-y-1  scale-95">
         <div v-if="showDropdown"
-            class="absolute z-10 mt-2 w-80 origin-top-left rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none p-4"
+            class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[259px] bg-white rounded-[10px] shadow-lg border border-gray-100 z-50 p-4 space-y-2"
             @click.stop ref="dateDropdown">
 
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-center mb-4">
                 <div class="flex gap-2 relative">
                     <div class="relative">
                         <button @click="toggleMonthDropdown"
@@ -99,6 +103,7 @@
                 </button>
             </div>
         </div>
+        </Transition>
     </div>
 </template>
 

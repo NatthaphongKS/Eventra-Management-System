@@ -9,7 +9,7 @@
                 @search="onSearch"
             />
 
-            <div class="relative z-[60] mt-6" ref="sortWrap">
+            <div class="relative z-[60] mt-8" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
                     :options="sortOptions"
