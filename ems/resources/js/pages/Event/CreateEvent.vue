@@ -126,14 +126,14 @@
 
                     <div>
                         <label
-                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
+                            class="block text-neutral-800 font-semibold text-[15px] mb-2 "
                             >Duration</label
                         >
                         <div
                             class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]"
                         >
                             <input
-                                class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none"
+                                class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none border-0"
                                 disabled
                                 v-model="eventDurationDisplay"
                             />
