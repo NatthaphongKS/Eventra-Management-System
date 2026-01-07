@@ -8,26 +8,22 @@
  */ -->
 <template>
     <section class="p-0">
-        <div class="mt-3 mb-4 flex items-center gap-4">
+        <div class="flex items-center gap-3">
 
             <div class="flex flex-1">
-                <SearchBar
-                    v-model="searchInput"
-                    placeholder="Search Event / Created by / Delete by"
-                    @search="applySearch"
-                    class="rounded-2xl [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-15 [&_button]:w-15 [&_svg]:w-8 [&_svg]:h-8"
-                />
+                <SearchBar v-model="searchInput" placeholder="Search Event / Created by / Delete by" @search="applySearch" class="" />
             </div>
 
-            <SortMenu
-                :is-open="isSortOpen"
-                :options="sortOptions"
-                :sort-by="sortBy"
-                :sort-order="sortOrder"
-                @toggle="toggleSortMenu"
-                @choose="onPickSort"
-                class="mt-0"
-            />
+            <div class="relative z-[60] mt-6" ref="sortWrap">
+                <SortMenu
+                    :is-open="sortMenuOpen"
+                    :options="sortOptions"
+                    :sort-by="sortBy.key"
+                    :sort-order="sortBy.order"
+                    @toggle="sortMenuOpen = !sortMenuOpen"
+                    @choose="onSortChoose"
+                />
+            </div>
         </div>
 
         <DataTable
@@ -48,7 +44,7 @@
             class="mt-4"
         >
             <template #cell-evn_title="{ value, row }">
-                <router-link 
+                <router-link
                     :to="{ name: 'history-event-detail', params: { id: row.id } }"
                     class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate  cursor-pointer transition-colors"
                     title="Click to view details"
@@ -121,35 +117,44 @@ export default {
             search: "",
 
             // ตัวแปรสำหรับการเรียงลำดับ (ส่งไปให้ SortMenu)
-            sortBy: "deleted_at", // คอลัมน์ตั้งต้น
-            sortOrder: "desc",    // ลำดับตั้งต้น
-            isSortOpen: false,    // ควบคุมการเปิดปิดเมนู
-
-            // รายการตัวเลือกสำหรับเมนู Sort
+            sortMenuOpen: false,
+            sortBy: { key: "evn_deleted_at", order: "desc" },
             sortOptions: [
                 {
-                    label: "วันที่ลบ (ล่าสุด)",
-                    key: "deleted_at",
-                    order: "desc",
-                    type: "date",
-                },
-                {
-                    label: "วันที่ลบ (เก่าสุด)",
-                    key: "deleted_at",
+                    key: "evn_title", 
                     order: "asc",
-                    type: "date",
+                    label: "ชื่อ A-Z",
+                    value: "az",
                 },
                 {
-                    label: "วันที่สร้าง (ล่าสุด)",
-                    key: "created_at",
+                    key: "evn_title", 
                     order: "desc",
-                    type: "date",
+                    label: "ชื่อ Z-A",
+                    value: "za",
                 },
                 {
-                    label: "ชื่อ Event (A-Z)",
-                    key: "evn_title",
+                    key: "evn_created_at", 
+                    order: "desc",
+                    label: "วันที่สร้างล่าสุด",
+                    value: "created_newest",
+                },
+                {
+                    key: "evn_created_at", 
                     order: "asc",
-                    type: "text",
+                    label: "วันที่สร้างเก่าสุด",
+                    value: "created_oldest",
+                },
+                {
+                    key: "evn_deleted_at", 
+                    order: "desc",
+                    label: "วันที่ลบล่าสุด",
+                    value: "deleted_newest",
+                },
+                {
+                    key: "evn_deleted_at", 
+                    order: "asc",
+                    label: "วันที่ลบเก่าสุด",
+                    value: "deleted_oldest",
                 },
             ],
 
@@ -232,39 +237,27 @@ export default {
 
         // เรียงลำดับข้อมูล (Client-side)
         sorted() {
-            const arr = [...this.filtered];
+            const { key, order } = this.sortBy;
+            const dir = order === "asc" ? 1 : -1;
 
-            // ใช้ sortBy และ sortOrder จาก data
-            const key = this.sortBy;
-            const order = this.sortOrder;
+            return this.filtered.slice().sort((a, b) => {
+                // แก้เงื่อนไขให้ตรงกับ Key ใหม่
+                if (key === "evn_title") { 
+                    return (
+                        (a.evn_title || "")
+                            .toLowerCase()
+                            .localeCompare((b.evn_title || "").toLowerCase()) * dir
+                    );
+                }
+                // แก้เงื่อนไขวันที่
+                if (key === "created_at" || key === "deleted_at") {
+                    const ta = new Date(a[key]).getTime() || 0;
+                    const tb = new Date(b[key]).getTime() || 0;
+                    return (ta - tb) * dir;
+                }
 
-            // หาประเภทข้อมูล (type) จาก options เพื่อเลือกวิธีเปรียบเทียบที่ถูกต้อง
-            const currentOption = this.sortOptions.find(o => o.key === key && o.order === order);
-            const type = currentOption?.type || 'text';
-
-            const dir = order === "desc" ? -1 : 1;
-
-            const parseDate = (val) => {
-                if (!val) return 0;
-                return new Date(val).getTime() || 0;
-            };
-
-            const getVal = (row) => {
-                if (type === "date") return parseDate(row[key]);
-                if (type === "text") return String(row[key] ?? "").toLowerCase();
-                return row[key];
-            };
-
-            arr.sort((a, b) => {
-                const va = getVal(a);
-                const vb = getVal(b);
-
-                if (va < vb) return -1 * dir;
-                if (va > vb) return 1 * dir;
                 return 0;
             });
-
-            return arr;
         },
 
         // คำนวณจำนวนหน้าทั้งหมด
@@ -286,22 +279,19 @@ export default {
     },
 
     methods: {
-        // จัดการการเปิดปิดเมนู Sort (รับ event @toggle จาก SortMenu)
-        toggleSortMenu() {
-            this.isSortOpen = !this.isSortOpen;
-        },
-
-        // ปิดเมนูเมื่อคลิกพื้นที่อื่น
-        closeSortMenu() {
-            this.isSortOpen = false;
-        },
-
+        
         // จัดการเมื่อเลือกตัวเลือกจากเมนู Sort (รับ event @choose จาก SortMenu)
-        onPickSort(option) {
-            this.sortBy = option.key;
-            this.sortOrder = option.order;
+        onSortChoose(option) {
+            if (!option || !option.key || !option.order) return;
+            this.sortBy = { key: option.key, order: option.order };
             this.page = 1;
-            this.closeSortMenu(); // ปิดเมนูหลังจากเลือกเสร็จ
+            this.sortMenuOpen = false;
+        },
+
+        onDocClick(e) {
+            if (!this.sortMenuOpen) return;
+            const wrap = this.$refs.sortWrap;
+            if (wrap && !wrap.contains(e.target)) this.sortMenuOpen = false;
         },
 
         // จัดการเมื่อกดค้นหา
@@ -326,8 +316,8 @@ export default {
 
         // จัดการเมื่อกดหัวตารางเพื่อเรียงลำดับ
         handleHeaderSort({ key, order }) {
-            this.sortBy = key;
-            this.sortOrder = order;
+            // อัปเดตตัวแปร sortBy ให้เป็น Object เหมือนเดิม เพื่อให้ computed sorted ทำงานได้
+            this.sortBy = { key, order }; 
             this.page = 1;
         },
 

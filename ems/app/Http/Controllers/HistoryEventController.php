@@ -32,45 +32,41 @@ class HistoryEventController extends Controller
      * วันที่จัดทำ/แก้ไข: 2025-12-14
      */
     public function eventInfo()
-    {
-        // ดึงเฉพาะ Event ที่มีสถานะ deleted
-        $events = Event::select([
-                'ems_event.id',
-                'ems_event.evn_title',
-                'ems_event.evn_created_at',
-                'ems_event.evn_deleted_at',
-                // เลือกชื่อคนสร้าง (Alias: creator)
-                'creator.emp_firstname as creator_first',
-                'creator.emp_lastname as creator_last',
-                'creator.emp_nickname as creator_nick',
-                // เลือกชื่อคนลบ (Alias: deleter)
-                'deleter.emp_firstname as deleter_first',
-                'deleter.emp_lastname as deleter_last',
-                'deleter.emp_nickname as deleter_nick',
-            ])
-            // Join เอาคนสร้าง
-            ->leftJoin('ems_employees as creator', 'ems_event.evn_create_by', '=', 'creator.id')
-            // Join เอาคนลบ
-            ->leftJoin('ems_employees as deleter', 'ems_event.evn_deleted_by', '=', 'deleter.id')
-            ->where('ems_event.evn_status', 'deleted')
-            ->orderBy('ems_event.evn_deleted_at', 'desc') // เรียงตามวันที่ลบล่าสุด
-            ->get();
+        {
+            // ใช้ with() เพื่อดึงข้อมูลจาก Relation ที่ประกาศไว้ใน Model
+            // ไม่ต้อง leftJoin เองแล้ว Laravel จะจัดการให้
+            $events = Event::with(['creator', 'deletedBy']) 
+                ->orderBy('evn_created_at', 'desc') // เรียงตามวันที่สร้างล่าสุด
+                ->get();
 
-        // จัด Format ข้อมูลส่งกลับไปให้ Vue
-        $data = $events->map(function ($ev) {
-            return [
-                'id' => $ev->id,
-                'evn_title' => $ev->evn_title,
-                'created_at' => $ev->evn_created_at,
-                'deleted_at' => $ev->evn_deleted_at,
-                // รวมชื่อ: ถ้ามีชื่อเล่นให้แสดงชื่อเล่น ถ้าไม่มีใช้ชื่อจริง
-                'created_by_name' => $ev->creator_first ? ($ev->creator_first . ' ' . $ev->creator_last) : '-',
-                'deleted_by_name' => $ev->deleter_first ? ($ev->deleter_first . ' ' . $ev->deleter_last) : '-',
-            ];
-        });
+            // จัด Format ข้อมูล
+            $data = $events->map(function ($ev) {
+                
+                // ฟังก์ชันย่อยสำหรับจัดรูปแบบชื่อ (จะได้ไม่ต้องเขียนซ้ำ)
+                $formatName = function ($employee) {
+                    if (!$employee) return '-';
+                    // ตาม Logic เดิม: ชื่อจริง + นามสกุล
+                    return $employee->emp_firstname . ' ' . $employee->emp_lastname;
+                };
 
-        return response()->json($data);
-    }
+                return [
+                    'id' => $ev->id,
+                    'evn_title'  => $ev->evn_title,
+                    'evn_status' => $ev->evn_status, // ส่งสถานะไปด้วย
+                    
+                    // เนื่องจากใน Model มี casts เป็น datetime แล้ว สามารถ format วันที่ได้เลยถ้าต้องการ
+                    // เช่น $ev->evn_created_at->format('Y-m-d H:i') 
+                    'created_at' => $ev->evn_created_at, 
+                    'deleted_at' => $ev->evn_deleted_at,
+
+                    // เข้าถึงผ่าน Relation object
+                    'created_by_name' => $formatName($ev->creator),
+                    'deleted_by_name' => $formatName($ev->deletedBy),
+                ];
+            });
+
+            return response()->json($data);
+        }
 
     /**
      * ชื่อฟังก์ชัน: show
