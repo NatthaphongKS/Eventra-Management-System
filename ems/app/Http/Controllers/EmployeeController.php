@@ -506,20 +506,15 @@ class EmployeeController extends Controller
         // 5) Update
         // =========================
         $update = collect($validated)->except('emp_status')->toArray();
-        unset($update['emp_permission']);
 
         if ($request->filled('emp_status')) {
-            $update['emp_status'] = $request->emp_status;
+            $update['emp_permission'] = $request->emp_status;
         }
 
         if (!empty($update['emp_password'] ?? null)) {
             $update['emp_password'] = Hash::make($update['emp_password']);
         } else {
             unset($update['emp_password']);
-        }
-
-        if ($request->input('emp_permission') === 'employee') {
-            $update['emp_password'] = null;
         }
 
         $emp->fill($update)->save();
