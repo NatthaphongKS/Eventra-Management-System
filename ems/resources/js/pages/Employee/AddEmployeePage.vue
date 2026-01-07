@@ -7,7 +7,7 @@
                     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
                 <div class="flex items-center justify-between gap-3 mb-6">
-                    <h2 class="text-xl font-semibold text-gray-800 ml-8">
+                    <h2 class="text-3xl font-semibold text-nutral-800 ml-8">
                         Add New Employee
                     </h2>
 
@@ -32,34 +32,34 @@
 
             <!-- Body -->
             <div class="px-2 py-0">
-                <div class="max-w-[1400px] mx-auto px-6">
+                <div class="max-w-[1400px] mx-auto px-6 text-">
                     <form @submit.prevent="handleSubmit">
                         <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5 justify-between">
                             <!-- ซ้าย -->
-                            <div class="flex flex-col gap-5">
+                            <div class="flex flex-col gap-5 ">
                                 <FormField label="Prefix" required class="w-full">
                                     <DropdownPill v-model="form.prefix" :options="prefixes" placeholder="Select prefix"
-                                        class="mt-1 block h-11 w-full" :error="errors.prefix" />
+                                        class="block h-11 w-full" :error="errors.prefix" />
                                 </FormField>
 
                                 <FormField label="First Name" required>
                                     <InputPill v-model="form.firstName" placeholder="Ex.Perapat"
-                                        class="mt-1 block h-11 w-full" :error="errors.firstName" />
+                                        class="block h-11 w-full" :error="errors.firstName" />
                                 </FormField>
 
                                 <FormField label="Last Name" required>
                                     <InputPill v-model="form.lastName" placeholder="Ex.Saimai"
-                                        class="mt-1 block h-11 w-full" :error="errors.lastName" />
+                                        class="block h-11 w-full" :error="errors.lastName" />
                                 </FormField>
 
                                 <FormField label="Nickname" required>
                                     <InputPill v-model="form.nickname" placeholder="Ex.beam"
-                                        class="mt-1 block h-11 w-full" :error="errors.nickname" />
+                                        class="block h-11 w-full" :error="errors.nickname" />
                                 </FormField>
 
                                 <FormField label="Phone" required>
                                     <InputPill v-model="form.phone" placeholder="Ex.0988900988" maxlength="10"
-                                        class="mt-1 block h-11 w-full" :error="errors.phone" />
+                                        class="block h-11 w-full" :error="errors.phone" />
                                 </FormField>
 
                                 <FormField label="Employee ID" required>
@@ -88,27 +88,27 @@
                             <div class="flex flex-col gap-5 h-full">
                                 <FormField label="Department" required>
                                     <DropdownPill v-model="form.department" :options="departments"
-                                        placeholder="Select Department" class="mt-1 block h-11 w-full"
+                                        placeholder="Select Department" class="block h-11 w-full"
                                         :error="errors.department" />
                                 </FormField>
 
                                 <FormField label="Team" required>
                                     <DropdownPill v-model="form.team" :options="teamOptions"
                                         :placeholder="form.department ? 'Select Team' : 'Please select Department first'"
-                                        class="mt-1 block h-11 w-full" :error="errors.team"
+                                        class="block h-11 w-full" :error="errors.team"
                                         :disabled="!form.department" />
                                 </FormField>
 
                                 <FormField label="Position" required>
                                     <DropdownPill v-model="form.position" :options="positionOptions"
                                         :placeholder="form.team ? 'Select Position' : 'Please select Team first'"
-                                        class="mt-1 block h-11 w-full" :error="errors.position"
+                                        class="block h-11 w-full" :error="errors.position"
                                         :disabled="!form.team" />
                                 </FormField>
 
                                 <FormField label="Email" required>
                                     <InputPill v-model="form.email" type="email" placeholder="Ex.example@gmail.com"
-                                        class="mt-1 block h-11 w-full" :error="errors.email" />
+                                        class="block h-11 w-full" :error="errors.email" />
                                 </FormField>
 
                                 <FormField label="Password" :required="!isEmployeePermission">
@@ -125,7 +125,7 @@
                                 </FormField>
 
                                 <!-- ปุ่ม Create -->
-                                <div class="mt-auto pt-2 flex justify-end">
+                                <div class=" pt-2 flex justify-end">
                                     <button type="submit" :disabled="submitting" class="inline-flex disabled:opacity-50"
                                         style="all: unset; display: inline-flex;">
                                         <CreateButton :disabled="submitting" />
