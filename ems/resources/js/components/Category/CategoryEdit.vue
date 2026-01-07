@@ -13,9 +13,9 @@
           </label>
 
           <input
-            v-model.trim="name"
+            v-model="name"
             type="text"
-            placeholder="Ex. สัมนา"
+            placeholder="Ex. สัมมนา"
             :aria-invalid="submitted && invalid"
             class="w-[653px] h-[58px] rounded-2xl border px-4 py-3 text-xl font-semibold outline-none
                    placeholder-red-300 focus:ring-2 focus:ring-red-200"
@@ -23,23 +23,33 @@
             @keydown.enter.prevent="submit"
           />
 
-          <!-- ✅ โชว์หลัง “กด Edit/Enter” เท่านั้น -->
-          <p v-if="submitted && isEmpty" class="mt-2 text-sm text-red-700">Required field</p>
-          <p v-else-if="submitted && unchanged" class="mt-2 text-sm text-red-700">The name hasn’t changed</p>
-          <p v-else-if="submitted && showDup" class="mt-2 text-sm text-red-700">This name is already use!</p>
+          <div class="mt-2 flex items-center justify-between">
+            <p v-if="submitted && isEmpty" class="text-sm text-red-700">Required field</p>
+
+            <p v-else-if="submitted && tooLong" class="text-sm text-red-700">
+              Character limit exceeded (maximum 255 characters).
+            </p>
+
+            <p v-else-if="submitted && unchanged" class="text-sm text-red-700">
+              The name hasn’t changed
+            </p>
+
+            <p v-else-if="submitted && showDup" class="text-sm text-red-700">
+              This name is already in use!
+            </p>
+
+            <!-- <p class="text-sm text-neutral-500 ml-auto">
+              {{ charCount }}/255
+            </p> -->
+          </div>
         </div>
       </div>
 
       <div class="mt-6 flex justify-between">
         <div>
-          <CancelButton
-            @click="close"
-            :disabled="saving"
-            class="inline-flex items-center gap-2"
-          />
+          <CancelButton @click="close" class="inline-flex items-center gap-2" />
         </div>
         <div>
-          <!-- ✅ ไม่ disable ตาม invalid เพื่อให้กดแล้วค่อยโชว์ validate -->
           <CreateButton
             @click="submit"
             :disabled="saving"
@@ -76,6 +86,8 @@ const emit = defineEmits<{
   (e: "submit", payload: { id: number; name: string }): void;
 }>();
 
+const MAX_LEN = 255;
+
 const name = ref("");
 const originalName = ref("");
 const saving = ref(false);
@@ -101,7 +113,6 @@ watch(
   { immediate: true }
 );
 
-// กันกรณีเปลี่ยน category ตอน modal เปิด
 watch(
   () => props.category,
   () => {
@@ -109,37 +120,39 @@ watch(
   }
 );
 
-// ✅ พอผู้ใช้พิมพ์หลังจากเคยกด submit แล้ว ให้ซ่อน validate ระหว่างพิมพ์
+// พอผู้ใช้พิมพ์หลังจากเคยกด submit แล้ว ให้ซ่อน validate ระหว่างพิมพ์
 watch(name, () => {
   if (submitted.value) submitted.value = false;
 });
 
-/* validations */
 const trimmed = computed(() => name.value.trim());
 const isEmpty = computed(() => trimmed.value.length === 0);
 const unchanged = computed(() => trimmed.value === (originalName.value ?? "").trim());
+
+const charCount = computed(() => Array.from(trimmed.value).length);
+const tooLong = computed(() => charCount.value > MAX_LEN);
 
 const showDup = computed(() => {
   if (!trimmed.value || !props.isDuplicate || !props.category) return false;
   return props.isDuplicate(trimmed.value, props.category.id);
 });
 
-const invalid = computed(() => isEmpty.value || unchanged.value || showDup.value);
+// ✅ บล็อก submit ถ้าเกิน 255
+const invalid = computed(() => isEmpty.value || unchanged.value || showDup.value || tooLong.value);
 
 function close() {
-  if (saving.value) return;
   emit("update:open", false);
   submitted.value = false;
+  saving.value = false;
 }
 
 function submit() {
   if (!props.category) return;
 
-  submitted.value = true;   // ✅ เริ่ม validate ตอนกดปุ่ม/Enter
+  submitted.value = true;
   if (invalid.value) return;
 
   saving.value = true;
   emit("submit", { id: props.category.id, name: trimmed.value });
-  // ปกติ parent จะปิด modal หลัง update สำเร็จเอง
 }
 </script>

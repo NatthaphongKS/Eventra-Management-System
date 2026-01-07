@@ -66,7 +66,7 @@
 
             <!-- ช่องกรอกคำอธิบายอีเวนต์ -->
             <div class="mt-4">
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1" >
+                <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
                     Event Description <span class="text-red-500">*</span>
                 </label><br />
                 <textarea
@@ -81,25 +81,24 @@
 
             <div class="grid grid-cols-3 mt-4 gap-4">
 
-            <!-- ช่องกรอกวัน -->
+                <!-- ช่องกรอกวัน -->
                 <div class="">
                     <label class="text-neutral-800 font-semibold font-[Poppins] text-[15px] mb-4 ml-1">
                         Date <span class="text-red-500">*</span>
                     </label><br>
                     <div class="relative w-full">
-                    <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
+                        <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
                         focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition
                         px-5 py-4
                         [&::-webkit-calendar-picker-indicator]:hidden
                         [&::-webkit-inner-spin-button]:hidden
-                        [&::-webkit-clear-button]:hidden"
-                        type="date" v-model="eventDate" :min="minDate"
-                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }"
-                        onclick="this.showPicker()"
-                        >
+                        [&::-webkit-clear-button]:hidden" type="date" v-model="eventDate" :min="minDate"
+                            :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }"
+                            onclick="this.showPicker()">
 
 
-                    <Icon icon="stash:data-date-solid" class="ml-20 w-7 h-[30px] text-red-700 shrink-0 absolute right-5 top-1/2 -translate-y-1/2  pointer-events-none" />
+                        <Icon icon="stash:data-date-solid"
+                            class="ml-20 w-7 h-[30px] text-red-700 shrink-0 absolute right-5 top-1/2 -translate-y-1/2  pointer-events-none" />
                     </div>
                     <p v-if="submitted && formErrors.eventDate" class="mt-1 text-xs text-red-600 font-medium">
                         'Required date'
@@ -119,6 +118,7 @@
                                 class="time-input w-auto bg-transparent text-[15px] font-medium text-neutral-800 outline-none text-center"
                                 @click="$event.target.showPicker()" />
                             <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
+
                         </div>
 
                         <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
@@ -129,9 +129,9 @@
                                 @click="$event.target.showPicker()" />
                             <span class="text-[15px] font-medium text-neutral-800 ml-2"></span>
                         </div>
-
-                        <Icon icon="iconamoon:clock-light" class="ml-20 w-6 h-6 text-red-700 shrink-0 " />
-
+                        <div>
+                            <span class="text-red-700"><Icon icon="iconamoon:clock-light" class="h-6 w-6" /></span>
+                        </div>
                     </div>
 
                     <p v-if="submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd)"
@@ -149,7 +149,7 @@
                         class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
                         <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
                             v-model="eventDuration" placeholder="Auto fill Hour"></input>
-                        <Icon icon="iconamoon:clock-light" class="w-6 h-6  text-neutral-400" />
+                        <Icon icon="lucide:clock-fading"  class="w-6 h-6  text-neutral-400" />
                     </div>
                 </div>
             </div>
@@ -240,76 +240,45 @@
     </div>
 
     <div class="mt-10">
-            <h3 class="text-3xl font-semibold">Add Guest</h3>
+        <h3 class="text-3xl font-semibold">Add Guest</h3>
 
-            <div class="mt-4 flex flex-col gap-3">
-                <div class="flex flex-wrap items-center gap-3 w-full">
-                    <div class="flex-1 min-w-[260px]">
-                        <SearchBar
-                            v-model="search"
-                            placeholder="Search ID / Name / Nickname"
-                            @search="() => (page = 1)"
-                            class=""
-                        />
-                    </div>
+        <div class="mt-4 flex flex-col gap-3">
+            <div class="flex flex-wrap items-center gap-3 w-full">
+                <div class="flex-1 min-w-[260px]">
+                    <SearchBar v-model="search" placeholder="Search ID / Name / Nickname" @search="() => (page = 1)"
+                        class="" />
+                </div>
 
-                    <div
-                        class="flex flex-row flex-wrap items-center gap-2 mt-8"
-                    >
-                        <EmployeeDropdown
-                            label="Company ID"
-                            v-model="selectedCompanyIds"
-                            :options="companyIdOptions"
-                        />
-                        <EmployeeDropdown
-                            label="Department"
-                            v-model="selectedDepartmentIds"
-                            :options="departmentOptions"
-                        />
-                        <EmployeeDropdown
-                            label="Team"
-                            v-model="selectedTeamIds"
-                            :options="teamOptions"
-                        />
-                        <EmployeeDropdown
-                            label="Position"
-                            v-model="selectedPositionIds"
-                            :options="positionOptions"
-                        />
-                    </div>
+                <div class="flex flex-row flex-wrap items-center gap-2 mt-8">
+                    <EmployeeDropdown label="Company ID" v-model="selectedCompanyIds" :options="companyIdOptions" />
+                    <EmployeeDropdown label="Department" v-model="selectedDepartmentIds" :options="departmentOptions" />
+                    <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" />
+                    <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions" />
                 </div>
             </div>
-
-            <div class="mt-6">
-                <DataTable
-                    :rows="pagedEmployees"
-                    :columns="columns"
-                    :loading="loadingEmployees"
-                    :totalItems="filteredEmployees.length"
-                    v-model:page="page"
-                    v-model:pageSize="perPage"
-                    :pageSizeOptions="[10, 25, 50]"
-                    :selectable="true"
-                    :showRowNumber="true"
-                    rowKey="id"
-                    :modelValue="selectedIdsArr"
-                    @update:modelValue="onUpdateSelected"
-                >
-                    <template #cell-fullname="{ row }">
-                        {{
-                            (row.emp_firstname || "") +
-                            " " +
-                            (row.emp_lastname || "")
-                        }}
-                    </template>
-                    <template #empty>
-                        <div class="py-8 text-center text-neutral-400">
-                            ไม่พบข้อมูลพนักงาน
-                        </div>
-                    </template>
-                </DataTable>
-            </div>
         </div>
+
+        <div class="mt-6">
+            <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
+                :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
+                :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id"
+                :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected" :rowClass="rowClass"
+                :isRowDisabled="(row) => lockedIds.has(row.id)">
+                <template #cell-fullname="{ row }">
+                    {{
+                        (row.emp_firstname || "") +
+                        " " +
+                        (row.emp_lastname || "")
+                    }}
+                </template>
+                <template #empty>
+                    <div class="py-8 text-center text-neutral-400">
+                        ไม่พบข้อมูลพนักงาน
+                    </div>
+                </template>
+            </DataTable>
+        </div>
+    </div>
 
 
     <!-- ปุ่มยกเลิก / ยืนยัน -->
@@ -457,39 +426,47 @@ export default {
                 //   "file_size": 158047,
                 //   "url": "http:....pdf"
                 // },
+                // ============================================================
+                // ✅ [จุดที่เติม] เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
+                // ============================================================
+                const existingGuests = payload?.guest_ids ?? []
+                const guestsMapped = existingGuests.map(id => parseInt(id))
+
+                this.selectedIds = new Set(guestsMapped) // ติ๊กถูก
+                this.lockedIds = new Set(guestsMapped) // 🔒 ล็อกห้ามแก้
 
 
                 // 1) โหลด metadata สำหรับพนักงาน/ฟิลเตอร์
-this.loadingEmployees = true
-const info = await axios.get('/event-info')
-const employeeData = info.data || {}
+                this.loadingEmployees = true
+                const info = await axios.get('/event-info')
+                const employeeData = info.data || {}
 
-// [แก้ไข 1] Map ข้อมูลให้เหมือนหน้า Create (เพิ่ม Logic Company ID)
-this.employees = (employeeData.employees || []).map(employee => {
-    // Logic หา Company จาก ID (เหมือนหน้า Create)
-    const rawId = String(employee.emp_id || employee.code || "");
-    const rawPrefixFromId = (rawId.match(/^[A-Za-z]+/) || [""])[0];
-    const companyAbbr = (rawPrefixFromId || "").toUpperCase();
+                // [แก้ไข 1] Map ข้อมูลให้เหมือนหน้า Create (เพิ่ม Logic Company ID)
+                this.employees = (employeeData.employees || []).map(employee => {
+                    // Logic หา Company จาก ID (เหมือนหน้า Create)
+                    const rawId = String(employee.emp_id || employee.code || "");
+                    const rawPrefixFromId = (rawId.match(/^[A-Za-z]+/) || [""])[0];
+                    const companyAbbr = (rawPrefixFromId || "").toUpperCase();
 
-    return {
-        id: employee.id,
-        // ใช้ emp_id หรือ code แล้วแต่ Backend ส่งมา
-        emp_id: rawId,
-        emp_firstname: employee.emp_firstname || employee.first_name || '',
-        emp_lastname: employee.emp_lastname || employee.last_name || '',
-        fullname: `${employee.emp_firstname || ''} ${employee.emp_lastname || ''}`, // เพิ่มเผื่อไว้แสดงผล
-        nickname: employee.emp_nickname || '',
-        department: employee.department_name || '',
-        team: employee.team_name || '',
-        position: employee.position_name || '',
-        // เพิ่ม Company Field เพื่อใช้ Filter
-        companyAbbr: companyAbbr,
-        companyId: employee.company_id || companyAbbr || "",
-    }
-})
-this.buildFilterOptions()
+                    return {
+                        id: employee.id,
+                        // ใช้ emp_id หรือ code แล้วแต่ Backend ส่งมา
+                        emp_id: rawId,
+                        emp_firstname: employee.emp_firstname || employee.first_name || '',
+                        emp_lastname: employee.emp_lastname || employee.last_name || '',
+                        fullname: `${employee.emp_firstname || ''} ${employee.emp_lastname || ''}`, // เพิ่มเผื่อไว้แสดงผล
+                        nickname: employee.emp_nickname || '',
+                        department: employee.department_name || '',
+                        team: employee.team_name || '',
+                        position: employee.position_name || '',
+                        // เพิ่ม Company Field เพื่อใช้ Filter
+                        companyAbbr: companyAbbr,
+                        companyId: employee.company_id || companyAbbr || "",
+                    }
+                })
+                this.buildFilterOptions()
 
-this.loadingEmployees = false
+                this.loadingEmployees = false
             } catch (err) {
                 // ถ้า error ให้แจ้งใน console + set ค่า
                 console.error(err)
@@ -497,38 +474,35 @@ this.loadingEmployees = false
             }
         },
         toOptions(arr) {
-        const uniq = [...new Set(arr.filter(Boolean))].sort();
-        return uniq.map((v) => ({ label: v, value: v }));
-    },
+            const uniq = [...new Set(arr.filter(Boolean))].sort();
+            return uniq.map((v) => ({ label: v, value: v }));
+        },
 
         // สร้างตัวเลือก Filter จากข้อมูล Employees ที่มีอยู่
-    buildFilterOptions() {
-        // Company
-        this.companyIdOptions = this.toOptions(
-            this.employees.map((r) => r.companyId)
-        );
-        // Department
-        this.departmentOptions = this.toOptions(
-            this.employees.map((r) => r.department)
-        );
-        // Team
-        this.teamOptions = this.toOptions(
-            this.employees.map((r) => r.team)
-        );
-        // Position
-        this.positionOptions = this.toOptions(
-            this.employees.map((r) => r.position)
-        );
-    },
+        buildFilterOptions() {
+            // Company
+            this.companyIdOptions = this.toOptions(
+                this.employees.map((r) => r.companyId)
+            );
+            // Department
+            this.departmentOptions = this.toOptions(
+                this.employees.map((r) => r.department)
+            );
+            // Team
+            this.teamOptions = this.toOptions(
+                this.employees.map((r) => r.team)
+            );
+            // Position
+            this.positionOptions = this.toOptions(
+                this.employees.map((r) => r.position)
+            );
+        },
 
         // ซีดแถวที่ล็อกไว้
         rowClass(row) {
-            // เช็คว่าถ้าเป็น id ที่ถูกล็อก (เชิญไปแล้ว)
             if (this.lockedIds.has(row.id)) {
-                // opacity-60: ทำให้สีจางลง
-                // pointer-events-none: ปิดการคลิกทุกอย่างในแถวนั้น (รวมถึง checkbox)
-                // bg-gray-50: ถมสีพื้นหลังให้ดูว่าเป็นสถานะ disabled
-                return 'opacity-60 pointer-events-none bg-gray-50 select-none'
+                // เติม ! หน้า bg-neutral-300 เพื่อบังคับทับสีแดง (Force Override)
+                return ' pointer-events-none !bg-neutral-300 select-none'
             }
             return ''
         },
@@ -607,15 +581,15 @@ this.loadingEmployees = false
 
         resetSearch() { //reset ค่าที่ search มา
             this.search = '';
-    this.searchDraft = '';
+            this.searchDraft = '';
 
-    // ✅ รีเซ็ต Array เป็นค่าว่าง
-    this.selectedCompanyIds = [];
-    this.selectedDepartmentIds = [];
-    this.selectedTeamIds = [];
-    this.selectedPositionIds = [];
+            // ✅ รีเซ็ต Array เป็นค่าว่าง
+            this.selectedCompanyIds = [];
+            this.selectedDepartmentIds = [];
+            this.selectedTeamIds = [];
+            this.selectedPositionIds = [];
 
-    this.page = 1;
+            this.page = 1;
         },
 
         toggleOne(id, event) {
@@ -750,7 +724,7 @@ this.loadingEmployees = false
                         })
                         // เช็คว่ามี Warning เรื่องเมลไหม?
                         if (res.data.mail_warning) {
-                             this.openAlert({
+                            this.openAlert({
                                 type: 'warning', // เปลี่ยนเป็นสีเหลือง
                                 title: 'บันทึกสำเร็จ (แต่ส่งเมลไม่ได้)',
                                 message: 'ข้อมูลถูกบันทึกแล้ว แต่ระบบส่งอีเมลขัดข้อง: ' + res.data.mail_warning,
@@ -1020,17 +994,17 @@ this.loadingEmployees = false
     watch: {
         eventTimeStart: 'calDuration',//เรียก calDuration ไม่ว่าค่าจะเปลี่ยนจากการส่งมาผ่าน controller หรือ คนใช้เลือกเปลี่ยนเองตอนเลือก Input
         eventTimeEnd: 'calDuration',// ใช้เพราะว่าต้องการคำนวณ duration ทุกครั้งที่มีการส่งข้อมูลมาจาก controller เวลาโหลดข้อมูลเก่าด้วย
-// เมื่อเปลี่ยนคำค้นหา -> รีเซ็ตหน้า
-    search() { this.page = 1 },
+        // เมื่อเปลี่ยนคำค้นหา -> รีเซ็ตหน้า
+        search() { this.page = 1 },
 
-    //  Watch ตัวแปร Array ทีละตัว
-    selectedCompanyIds() { this.page = 1 },
-    selectedDepartmentIds() { this.page = 1 },
-    selectedTeamIds() { this.page = 1 },
-    selectedPositionIds() { this.page = 1 },
+        //  Watch ตัวแปร Array ทีละตัว
+        selectedCompanyIds() { this.page = 1 },
+        selectedDepartmentIds() { this.page = 1 },
+        selectedTeamIds() { this.page = 1 },
+        selectedPositionIds() { this.page = 1 },
 
-    perPage() { this.page = 1 },
-},
+        perPage() { this.page = 1 },
+    },
     // ใช้เพื่อโหลดข้อมูลทันทีที่เปิดหน้า edit_event.vue
     mounted() {
         this.fetchData(); // เรียกฟังก์ชัน fetchData() เมื่อ component(layout.vue) ถูก mount

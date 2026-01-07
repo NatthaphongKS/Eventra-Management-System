@@ -258,6 +258,25 @@ class EmployeeSeeder extends Seeder
                 'emp_create_by' => 1,
                 'emp_delete_status' => 'active',
             ],
+            [
+                'id' => 14,
+                'emp_id' => 'CN0089',
+                'emp_company_id' => 1,
+                'emp_prefix' => 'นาย',
+                'emp_firstname' => 'HR',
+                'emp_lastname' => 'HR',
+                'emp_nickname' => 'HR',
+                'emp_email' => 'hr@hr.com',
+                'emp_phone' => '1231231233',
+                'emp_department_id' => 14,
+                'emp_team_id' => 29,
+                'emp_position_id' => 59,
+                'emp_password' => Hash::make('password'),
+                'emp_permission' => 'disabled',
+                'emp_create_at' => now(),
+                'emp_create_by' => 1,
+                'emp_delete_status' => 'active',
+            ],
         ]);
     }
 }
