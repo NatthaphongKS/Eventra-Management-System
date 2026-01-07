@@ -159,10 +159,7 @@
                                     <InputPill
                                         v-model="form.password"
                                         type="password"
-                                        :disabled="
-                                            !isAdmin ||
-                                            form.emp_permission === 'employee'
-                                        "
+                                        :disabled="!isAdmin || form.emp_permission === 'employee'"
                                         :placeholder="
                                             form.emp_permission === 'employee'
                                                 ? 'No password required'
@@ -170,14 +167,12 @@
                                                 ? 'Leave blank to keep current password'
                                                 : 'Admin only'
                                         "
-                                        class="mt-1 block h-11 w-full disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                        class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400 disabled:placeholder:!text-neutral-400"
                                         :error="errors.password"
                                     />
 
                                     <p
-                                        v-if="
-                                            form.emp_permission === 'employee'
-                                        "
+                                        v-if="form.emp_permission === 'employee'"
                                         class="text-xs text-gray-400 mt-1"
                                     >
                                         *Employee does not require password
