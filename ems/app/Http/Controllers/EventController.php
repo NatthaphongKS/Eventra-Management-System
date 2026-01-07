@@ -868,13 +868,15 @@ class EventController extends Controller
                 ')
                 ->first();
 
-            // Get actual attendance statistics (all assigned employees)
+            // Get actual attendance statistics (for Actual Attendance donut chart)
+            // Counts con_answer = 'accepted' as attended
+            // Total includes ALL assigned employees (accepted, denied, pending, invalid, not_invite)
             $actualAttendance = DB::table('ems_connect')
                 ->whereIn('con_event_id', $eventIds)
                 ->where('con_delete_status', 'active')
                 ->selectRaw('
                     COUNT(*) as total_assigned,
-                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attended
+                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attended
                 ')
                 ->first();
 
