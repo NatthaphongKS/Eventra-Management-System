@@ -2,10 +2,11 @@
     <teleport to="body">
         <div v-if="open" class="fixed inset-0 z-[70] flex items-center justify-center">
             <!-- overlay ดำ -->
-            <div class="absolute inset-0 bg-black/50" @click="$emit('close')"></div>
+            <div class="absolute inset-0 bg-black/50"></div>
 
             <!-- modal card -->
-            <div class="relative bg-white rounded-3xl shadow-xl text-center w-[480px] max-w-[90vw] p-6 flex flex-col items-center">
+            <div
+                class="relative bg-white rounded-3xl shadow-xl text-center w-[480px] max-w-[90vw] p-6 flex flex-col items-center">
 
                 <!-- ไอคอนกากบาทวงกลมทึบสีแดง -->
                 <ExclamationCircleIcon class="mt-6 h-[96px] w-[96px] text-red-600" />
@@ -18,7 +19,8 @@
                     </div>
 
                     <!-- บรรทัดล่าง: แสดงข้อความจาก Prop (ถ้าไม่มีให้ใช้ค่า Default) -->
-                    <div class="mt-6 text-[14px] font-normal text-neutral-800 normal-case px-4 break-words whitespace-pre-wrap">
+                    <div
+                        class="mt-6 text-[14px] font-normal text-neutral-800 normal-case px-4 break-words whitespace-pre-wrap">
                         {{ message }}
                     </div>
                 </div>
@@ -52,6 +54,3 @@ export default {
     emits: ['close'],
 }
 </script>
-
-
-

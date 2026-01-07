@@ -54,7 +54,8 @@ return new class extends Migration {
             $table->foreignId('emp_department_id')->constrained('ems_department')->onDelete('cascade');
             $table->foreignId('emp_team_id')->constrained('ems_team')->onDelete('cascade');
             $table->string('emp_password')->nullable();
-            $table->enum('emp_permission', ['enabled', 'disabled'])->default('disabled');
+            $table->enum('emp_permission', ['admin', 'hr', 'employee'])
+                ->default('employee');
             $table->date('emp_create_at')->useCurrent();
             $table->unsignedBigInteger('emp_create_by')->nullable();
             $table->enum('emp_delete_status', ['active', 'inactive'])->default('active');
@@ -62,6 +63,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('emp_delete_by')->nullable();
             $table->rememberToken()->nullable();
         });
+
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
