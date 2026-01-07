@@ -182,23 +182,25 @@
 
           <div class="status-cards-row">
             <StatusCard
-              type="attending"
-              title="Attending"
+              type="accepted"
+              title="Accepted"
               :count="chartData.attending || 0"
               :total="chartData.total_participation || 0"
               :loading="loadingParticipants"
               :isClickable="true"
               @click="handleCardClick"
             />
+
             <StatusCard
-              type="not-attending"
-              title="Not Attending"
+              type="declined"
+              title="Declined"
               :count="chartData.not_attending || 0"
               :total="chartData.total_participation || 0"
               :loading="loadingParticipants"
               :isClickable="true"
               @click="handleCardClick"
             />
+
             <StatusCard
               type="pending"
               title="Pending"
@@ -208,7 +210,7 @@
               :isClickable="true"
               @click="handleCardClick"
             />
-          </div> </div>
+          </div></div>
       </div>
 
       <DataTable
@@ -1286,12 +1288,12 @@
           // กรองผู้เข้าร่วมตามสถานะ
           let filteredParticipants = [];
 
-          if (status === 'attending') {
+          if (status === 'accepted') {
             // สำหรับผู้เข้าร่วม ใช้ con_checkin_status = 1 (เช็คอินจริง)
             filteredParticipants = this.eventParticipants.filter(participant => {
-              return participant.con_checkin_status === 1;
+                return participant.status === 'accepted' || participant.con_checkin_status === 1;
             });
-          } else if (status === 'not-attending') {
+          } else if (status === 'declined') {
             // สำหรับไม่เข้าร่วม ใช้ con_answer = 'denied'
             filteredParticipants = this.eventParticipants.filter(participant => {
               return participant.status === 'denied';
@@ -1299,7 +1301,7 @@
           } else if (status === 'pending') {
             // สำหรับรอตอบกลับ: คนที่ยังไม่เช็คอินและยังไม่ได้ปฏิเสธ
             filteredParticipants = this.eventParticipants.filter(participant => {
-              return participant.con_checkin_status !== 1 && participant.status !== 'denied';
+                return participant.status === 'pending' || participant.status === null;
             });
           }
 

@@ -1,72 +1,58 @@
 <template>
     <div
-        class="relative flex flex-col justify-between w-full min-h-[220px] p-6 rounded-[32px] transition-all duration-300 ease-in-out overflow-hidden shadow-lg"
+        class="relative flex flex-col justify-between w-full min-h-[220px] p-4 rounded-[20px] transition-all duration-300 ease-in-out overflow-hidden shadow-lg"
         :class="[themeConfig.bg]"
     >
-        <div class="flex items-center gap-3 mb-2">
-            <div class="flex items-center justify-center w-8 h-8 text-gray-800">
+        <div class="flex items-center gap-1 ml-2 ">
+            <div class="flex items-center justify-center w-[32px] h-[32px] text-[#444444]">
                 <svg
-                    v-if="type === 'attending'"
+                    v-if="type === 'accepted'"
+                    xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="w-7 h-7"
+                    fill="currentColor"
+                    class="w-[32px] h-[32px]"
                 >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="8.5" cy="7" r="4"></circle>
-                    <polyline points="17 11 19 13 23 9"></polyline>
+                    <path
+                        d="m21.1 12.5l1.4 1.41l-6.53 6.59L12.5 17l1.4-1.41l2.07 2.08zM10 17l3 3H3v-2c0-2.21 3.58-4 8-4l1.89.11zm1-13a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4"
+                    />
                 </svg>
 
                 <svg
-                    v-else-if="type === 'not-attending'"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
+                    v-else-if="type === 'declined'"
+                    xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    class="w-7 h-7"
+                    fill="currentColor"
+                    class="w-[32px] h-[32px]"
                 >
-                    <path
-                        d="M18 6L6 18M6 6l12 12"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
+                    <path d="M19.775 22.625L17.15 20H4v-2.8q0-.85.438-1.562T5.6 14.55q1.125-.575 2.288-.925t2.362-.525L1.375 4.225L2.8 2.8l18.4 18.4zM18.4 14.55q.725.35 1.15 1.062T20 17.15l-3.35-3.35q.45.175.888.35t.862.4m-4.2-3.2L8.65 5.8q.575-.85 1.45-1.325T12 4q1.65 0 2.825 1.175T16 8q0 1.025-.475 1.9T14.2 11.35"/>
                 </svg>
 
                 <svg
                     v-else
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
+                    xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    class="w-7 h-7"
+                    fill="currentColor"
+                    class="w-[32px] h-[32px]"
                 >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path
-                        d="M12 6v6l4 2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
+                    <path d="M19.775 22.625L17.15 20H4v-2.8q0-.85.438-1.562T5.6 14.55q1.125-.575 2.288-.925t2.362-.525L1.375 4.225L2.8 2.8l18.4 18.4zM18.4 14.55q.725.35 1.15 1.062T20 17.15l-3.35-3.35q.45.175.888.35t.862.4m-4.2-3.2L8.65 5.8q.575-.85 1.45-1.325T12 4q1.65 0 2.825 1.175T16 8q0 1.025-.475 1.9T14.2 11.35"/>
                 </svg>
             </div>
-            <span class="text-xl font-medium text-gray-700">{{ title }}</span>
+            <span class="text-[20px] font-semibold text-[#444444] ml-1">{{ title }}</span>
         </div>
 
         <div class="flex items-center justify-between w-full px-1">
             <div
-                class="text-6xl font-bold tracking-tight leading-none ml-7"
+                class="text-[56px] font-semibold tracking-tight leading-none ml-9"
                 :class="themeConfig.textMain"
             >
                 {{ percentage }}<span class="font-semibold ml-4">%</span>
             </div>
 
             <div
-                class="relative flex items-center justify-center w-[90px] h-[90px]"
+                class="relative flex items-center justify-center w-[107px] h-[107px] mr-5"
             >
                 <svg
-                    class="transform -rotate-90 w-full h-full p-1 drop-shadow-[-3px_0px_2px_rgba(0,0,0,0.15)]"
+                    class="transform -rotate-90 w-full h-full p-1 drop-shadow-[-4px_0px_1px_rgba(0,0,0,0.15)]"
                     viewBox="0 0 80 80"
                 >
                     <circle
@@ -92,12 +78,12 @@
                     />
                 </svg>
 
-                <span class="absolute text-xl font-bold text-gray-700">{{
+                <span class="absolute text-[28px] font-semibold text-gray-700">{{
                     count
                 }}</span>
             </div>
         </div>
-        <div class="flex items-center justify-between mt-4">
+        <div class="flex items-center justify-between mt-1 ml-4">
             <div
                 class="flex items-center gap-2 text-sm text-gray-600 font-medium"
             >
@@ -112,7 +98,7 @@
             </div>
 
             <button
-                class="px-5 py-2 text-sm font-semibold text-gray-600 bg-white rounded-full shadow-sm hover:shadow-md hover:text-gray-800 transition-all active:scale-95"
+                class="px-7 py-2 text-[14px] text-gray-500 bg-white rounded-full shadow-sm hover:shadow-md hover:text-gray-800 transition-all active:scale-95 border border-gray-200"
                 :class="[{ 'cursor-pointer': isClickable }]"
                 @click="handleClick"
             >
@@ -138,8 +124,9 @@ export default {
         type: {
             type: String,
             required: true,
+            // อัปเดต validator ให้รองรับ accepted และ declined
             validator: (value) =>
-                ["attending", "not-attending", "pending"].includes(value),
+                ["accepted", "declined", "pending"].includes(value),
         },
         title: {
             type: String,
@@ -178,26 +165,28 @@ export default {
         },
         themeConfig() {
             switch (this.type) {
-                case "attending":
+                // เปลี่ยนจาก 'attending' เป็น 'accepted'
+                case "accepted":
                     return {
-                        bg: "bg-green-100", // Tailwind color: bg-green-100 (ใกล้เคียง pastel green)
-                        textMain: "text-green-500", // สีตัวเลข %
-                        strokeColor: "#22c55e", // สีเส้นกราฟ (Green 500)
-                        dotBg: "bg-green-500", // สีจุดหน้า text
+                        bg: "bg-green-100",
+                        textMain: "text-[#00A73D]",
+                        strokeColor: "#00A73D",
+                        dotBg: "bg-[#00A73D]",
                     };
-                case "not-attending":
+                // เปลี่ยนจาก 'not-attending' เป็น 'declined'
+                case "declined":
                     return {
                         bg: "bg-red-100",
-                        textMain: "text-red-500",
-                        strokeColor: "#ef4444",
-                        dotBg: "bg-red-500",
+                        textMain: "text-[#C10008]",
+                        strokeColor: "#C10008",
+                        dotBg: "bg-[#C10008]",
                     };
                 case "pending":
                     return {
-                        bg: "bg-blue-100",
-                        textMain: "text-blue-500",
-                        strokeColor: "#3b82f6",
-                        dotBg: "bg-blue-500",
+                        bg: "bg-[#DFF3FE]",
+                        textMain: "text-[#0084D1]",
+                        strokeColor: "#0084D1",
+                        dotBg: "bg-[#0084D1]",
                     };
                 default:
                     return {
