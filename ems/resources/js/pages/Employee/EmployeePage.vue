@@ -1,84 +1,45 @@
 <template>
     <section class="p-0">
-        <div
-            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3"
-        >
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <div class="flex-1">
-                <SearchBar
-                    v-model="searchInput"
-                    placeholder="Search ID, Name, Nickname..."
-                    @search="onSearchText"
-                    class=""
-                />
+                <SearchBar v-model="searchInput" placeholder="Search ID, Name, Nickname..." @search="onSearchText"
+                    class="" />
             </div>
 
             <div class="flex items-stretch gap-2 flex-shrink-0 mt-[30px]">
-                <FilterEmployees
-                    ref="filterDropdown"
-                    v-model="filters"
-                    :options="optionsMap"
-                    class="[&_button]:h-full"
-                />
+                <FilterEmployees ref="filterDropdown" v-model="filters" :options="optionsMap"
+                    class="[&_button]:h-full" />
 
-                <SortMenu
-                    :is-open="sortMenuOpen"
-                    :options="sortOptions"
-                    :sort-by="sortBy.key"
-                    :sort-order="sortBy.order"
-                    @toggle="sortMenuOpen = !sortMenuOpen"
-                    @choose="onSortChoose"
-                    class="[&_button]:h-full"
-                />
+                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose"
+                    class="[&_button]:h-full" />
 
-                <AddButton
-                    @click="goAdd"
-                    class="h-full w-[44px] flex items-center justify-center"
-                />
+                <AddButton @click="goAdd" class="h-full w-[44px] flex items-center justify-center" />
             </div>
         </div>
 
-        <DataTable
-            :rows="paged"
-            :columns="EmployeeTableColumns"
-            :page="page"
-            :pageSize="pageSize"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            @update:page="page = $event"
+        <DataTable :rows="paged" :columns="EmployeeTableColumns" :page="page" :pageSize="pageSize"
+            :total-items="sorted.length" :page-size-options="[10, 20, 50, 100]" @update:page="page = $event"
             @update:pageSize="
                 (s) => {
                     pageSize = s;
                     page = 1;
                 }
-            "
-            class="mt-4"
-        >
+            " class="mt-4">
             <template #actions="{ row }">
-                <button
-                    class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600"
-                    @click="editEmployee(row.emp_id)"
-                    title="Edit"
-                    aria-label="edit"
-                >
-                    <Icon
-                        icon="material-symbols:edit-rounded"
-                        width="20"
-                        height="20"
-                    />
+                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600"
+                    @click="editEmployee(row.emp_id)" title="Edit" aria-label="edit">
+                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
                 </button>
 
-                <button
-                    :disabled="!canDelete"
-                    class="grid h-8 w-8 place-items-center rounded-full transition text-neutral-800 cursor-pointer hover:text-red-600 disabled:text-neutral-400 disabled:cursor-not-allowed disabled:opacity-40"
-                    @click="openDelete(row.emp_id)"
-                    :title="canDelete ? 'Delete' : 'You do not have permission'"
-                    aria-label="delete"
-                >
-                    <Icon
-                        icon="fluent:delete-12-filled"
-                        width="20"
-                        height="20"
-                    />
+                <button :disabled="!canDelete" class="grid h-8 w-8 place-items-center rounded-full transition
+           text-neutral-800 cursor-pointer
+           hover:text-red-600
+           disabled:text-neutral-400
+           disabled:cursor-not-allowed
+           disabled:opacity-40" @click="openDelete(row.emp_id)"
+                    :title="canDelete ? 'Delete' : 'You do not have permission'" aria-label="delete">
+                    <Icon icon="fluent:delete-12-filled" width="20" height="20" />
                 </button>
             </template>
 
@@ -87,37 +48,16 @@
             </template>
         </DataTable>
 
-        <ModalAlert
-            :open="showModalAsk"
-            type="confirm"
-            title="ARE YOU SURE TO DELETE"
-            message="This employee will be deleted permanently. Are you sure?"
-            :show-cancel="true"
-            okText="OK"
-            cancelText="Cancel"
-            @confirm="onConfirmDelete"
-            @cancel="onCancelDelete"
-        />
+        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
+            message="This employee will be deleted permanently. Are you sure?" :show-cancel="true" okText="OK"
+            cancelText="Cancel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
 
-        <ModalAlert
-            :open="showModalSuccess"
-            type="success"
-            title="DELETE SUCCESS!"
-            message="Employee has been deleted successfully."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmSuccess"
-        />
+        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
+            message="Employee has been deleted successfully." :show-cancel="false" okText="OK"
+            @confirm="onConfirmSuccess" />
 
-        <ModalAlert
-            :open="showModalFail"
-            type="error"
-            title="ERROR!"
-            message="Sorry, Please try again later."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="onConfirmFail"
-        />
+        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
+            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
     </section>
 </template>
 
@@ -148,22 +88,14 @@ export default {
     data() {
         return {
             employees: [],
-
-            // Delete Logic
             deleteId: null,
             showModalAsk: false,
             showModalSuccess: false,
             showModalFail: false,
-
-            // Search & Filter
             searchInput: "",
             search: "",
-            filters: {
-                department: "all",
-                team: "all",
-                position: "all",
-                company: "all",
-            },
+            // Filter ยังคงมี Company ID อยู่
+            filters: { "Company ID": "all", department: "all", team: "all", position: "all" },
 
             page: 1,
             pageSize: 10,
@@ -171,71 +103,31 @@ export default {
             sortBy: { key: "", order: "" },
 
             sortOptions: [
-                {
-                    key: "emp_firstname",
-                    order: "asc",
-                    label: "ชื่อพนักงาน A–Z",
-                },
-                {
-                    key: "emp_firstname",
-                    order: "desc",
-                    label: "ชื่อพนักงาน Z–A",
-                },
+                { key: "emp_firstname", order: "asc", label: "ชื่อพนักงาน A–Z" },
+                { key: "emp_firstname", order: "desc", label: "ชื่อพนักงาน Z–A" },
                 { key: "department_name", order: "asc", label: "แผนก A–Z" },
                 { key: "department_name", order: "desc", label: "แผนก Z–A" },
                 { key: "team_name", order: "asc", label: "ทีม A–Z" },
                 { key: "team_name", order: "desc", label: "ทีม Z–A" },
                 { key: "position_name", order: "asc", label: "ตำแหน่ง A–Z" },
                 { key: "position_name", order: "desc", label: "ตำแหน่ง Z–A" },
-                {
-                    key: "created_at",
-                    order: "desc",
-                    label: "วันที่เพิ่มใหม่สุด",
-                },
-                {
-                    key: "created_at",
-                    order: "asc",
-                    label: "วันที่เพิ่มเก่าสุด",
-                },
+                { key: "created_at", order: "desc", label: "วันที่เพิ่มใหม่สุด" },
+                { key: "created_at", order: "asc", label: "วันที่เพิ่มเก่าสุด" },
             ],
+            // ✅ เอา Company ID ออกจากตารางแล้ว
             EmployeeTableColumns: [
                 { key: "emp_id", label: "ID", class: "text-left w-[100px]" },
-                {
-                    key: "emp_fullname",
-                    label: "Name",
-                    class: "text-left w-[180px]",
-                },
-                {
-                    key: "emp_nickname",
-                    label: "Nickname",
-                    class: "text-left w-[120px]",
-                },
-                {
-                    key: "emp_phone",
-                    label: "Phone",
-                    class: "text-left w-[140px]",
-                },
-                {
-                    key: "department_name",
-                    label: "Department",
-                    class: "text-left w-[140px]",
-                },
-                {
-                    key: "team_name",
-                    label: "Team",
-                    class: "text-left w-[140px]",
-                },
-                {
-                    key: "position_name",
-                    label: "Position",
-                    class: "text-left w-[140px]",
-                },
+                { key: "emp_fullname", label: "Name", class: "text-left w-[180px]" },
+                { key: "emp_nickname", label: "Nickname", class: "text-left w-[120px]" },
+                { key: "emp_phone", label: "Phone", class: "text-left w-[140px]" },
+                { key: "department_name", label: "Department", class: "text-left w-[140px]" },
+                { key: "team_name", label: "Team", class: "text-left w-[140px]" },
+                { key: "position_name", label: "Position", class: "text-left w-[140px]" },
                 {
                     key: "created_at",
                     label: "Created date (D/M/Y)",
                     class: "text-center w-[160px]",
-                    format: (v) =>
-                        v ? new Date(v).toLocaleDateString("en-GB") : "-",
+                    format: (v) => (v ? new Date(v).toLocaleDateString("en-GB") : "-"),
                 },
             ],
         };
@@ -266,33 +158,23 @@ export default {
             return this.currentUser.emp_permission === "enabled";
         },
         optionsMap() {
+            // Options สำหรับ Filter ยังคงมี Company ID อยู่
             return {
-                company: [
-                    // เพิ่มส่วนนี้
+                "Company ID": [
                     ...new Set(
                         this.employees
-                            .map((e) => e.emp_company_id) // หรือ e.company_id ตามข้อมูลที่มี
-                            .filter(Boolean)
+                            .map((e) => e.company_id)
+                            .filter((v) => v && v !== "-")
                     ),
                 ],
                 department: [
-                    ...new Set(
-                        this.employees
-                            .map((e) => e.department_name)
-                            .filter(Boolean)
-                    ),
+                    ...new Set(this.employees.map((e) => e.department_name).filter(Boolean)),
                 ],
                 team: [
-                    ...new Set(
-                        this.employees.map((e) => e.team_name).filter(Boolean)
-                    ),
+                    ...new Set(this.employees.map((e) => e.team_name).filter(Boolean)),
                 ],
                 position: [
-                    ...new Set(
-                        this.employees
-                            .map((e) => e.position_name)
-                            .filter(Boolean)
-                    ),
+                    ...new Set(this.employees.map((e) => e.position_name).filter(Boolean)),
                 ],
             };
         },
@@ -303,44 +185,39 @@ export default {
             if (this.search) {
                 const q = this.search.toLowerCase();
                 result = result.filter((e) => {
-                    const fullName = `${e.emp_firstname ?? ""} ${
-                        e.emp_lastname ?? ""
-                    }`.toLowerCase();
+                    const fullName = `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""}`.toLowerCase();
                     const nickname = (e.emp_nickname ?? "").toLowerCase();
                     const empId = (e.emp_id ?? "").toString().toLowerCase();
+                    const compId = (e.company_id ?? "").toString().toLowerCase();
+
                     return (
                         empId.includes(q) ||
                         fullName.includes(q) ||
-                        nickname.includes(q)
+                        nickname.includes(q) ||
+                        compId.includes(q)
                     );
                 });
             }
 
             // Dropdown Filters
             if (this.filters.department !== "all")
-                result = result.filter(
-                    (e) => e.department_name === this.filters.department
-                );
+                result = result.filter((e) => e.department_name === this.filters.department);
+
             if (this.filters.team !== "all")
-                result = result.filter(
-                    (e) => e.team_name === this.filters.team
-                );
+                result = result.filter((e) => e.team_name === this.filters.team);
+
             if (this.filters.position !== "all")
-                result = result.filter(
-                    (e) => e.position_name === this.filters.position
-                );
-            if (this.filters.company !== "all") {
-                result = result.filter(
-                    (e) => e.emp_company_id === this.filters.company
-                );
+                result = result.filter((e) => e.position_name === this.filters.position);
+
+            if (this.filters["Company ID"] !== "all") {
+                result = result.filter((e) => e.company_id === this.filters["Company ID"]);
             }
+
             return result;
         },
         sorted() {
             const { key, order } = this.sortBy;
-            if (!key) {
-                return this.filtered;
-            }
+            if (!key) return this.filtered;
 
             const dir = order === "asc" ? 1 : -1;
             return this.filtered.slice().sort((a, b) => {
@@ -364,20 +241,29 @@ export default {
     methods: {
         async fetchEmployees() {
             try {
-                // อย่าลืมแก้ API ฝั่งหลังบ้านให้ Select มาเฉพาะ status = 'active'
                 const res = await axios.get("/get-employees");
-                const data = Array.isArray(res.data)
-                    ? res.data
-                    : res.data?.data || [];
-                this.employees = data.map((e) => ({
-                    ...e,
-                    emp_fullname: `${e.emp_firstname ?? ""} ${
-                        e.emp_lastname ?? ""
-                    }`.trim(),
-                    emp_phone: e.emp_phone ?? e.phone ?? "-",
-                    created_at:
-                        e.emp_create_at ?? e.created_at ?? e.createdAt ?? null,
-                }));
+                const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+
+                this.employees = data.map((e) => {
+                    // Logic ตัดตัวเลขออกจาก emp_id เพื่อสร้าง Company ID ยังคงอยู่
+                    let extractedId = "-";
+                    if (e.emp_id) {
+                        const match = e.emp_id.toString().match(/^[A-Za-zก-๙-]+/);
+                        if (match) {
+                            extractedId = match[0];
+                        } else {
+                            extractedId = e.emp_id.toString().replace(/[0-9]/g, '');
+                        }
+                    }
+
+                    return {
+                        ...e,
+                        company_id: extractedId || "-",
+                        emp_fullname: `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""}`.trim(),
+                        emp_phone: e.emp_phone ?? e.phone ?? "-",
+                        created_at: e.emp_create_at ?? e.created_at ?? e.createdAt ?? null,
+                    };
+                });
             } catch (err) {
                 console.error("Error fetching employees", err);
             }
@@ -387,10 +273,7 @@ export default {
         },
         onSortChoose(option) {
             if (!option || !option.key || !option.order) return;
-            if (
-                this.sortBy.key === option.key &&
-                this.sortBy.order === option.order
-            ) {
+            if (this.sortBy.key === option.key && this.sortBy.order === option.order) {
                 this.sortBy = { key: "", order: "" };
             } else {
                 this.sortBy = { key: option.key, order: option.order };
@@ -420,29 +303,20 @@ export default {
             this.deleteId = id;
             this.showModalAsk = true;
         },
-
-        // ✅ [UPDATED] ฟังก์ชันลบแบบ Soft Delete
         async onConfirmDelete() {
             const id = this.deleteId;
             if (!id) return;
-
-            // 1. ดึง ID ของคนที่ Login อยู่ (Admin)
-            // ⚠️ เช็ค: คุณเก็บใน localStorage ชื่อ 'userData' ใช่ไหม?
             const userStorage = localStorage.getItem("userData");
             const currentUser = userStorage ? JSON.parse(userStorage) : {};
-            const myId = currentUser.emp_id; // ID คนลบ
+            const myId = currentUser.emp_id;
 
             try {
-                // 2. ใช้ PUT แทน DELETE และส่งข้อมูลคนลบไปด้วย
                 await axios.put(`/employees/soft-delete/${id}`, {
                     emp_delete_by: myId,
                     emp_delete_status: "deleted",
                 });
-
                 this.showModalAsk = false;
                 this.showModalSuccess = true;
-
-                // 3. ลบข้อมูลจากหน้าจอโดยใช้ emp_id (ไม่ต้องโหลดใหม่)
                 this.employees = this.employees.filter((e) => e.emp_id !== id);
                 this.deleteId = null;
             } catch (err) {
@@ -451,7 +325,6 @@ export default {
                 this.showModalFail = true;
             }
         },
-
         onCancelDelete() {
             this.showModalAsk = false;
             this.deleteId = null;
