@@ -210,14 +210,6 @@ class EmployeeController extends Controller
         $role = $request->emp_permission ?? 'employee';
         $isEmployee = $role === 'employee';
 
-        $permissionMap = [
-            'admin' => 'enabled',
-            'hr' => 'disabled',
-            'employee' => 'disabled',
-        ];
-
-        $empPermission = $permissionMap[$role] ?? 'disabled';
-
         /*
         |----------------------------------------------------------------------
         | 2) Normalize input
@@ -238,8 +230,6 @@ class EmployeeController extends Controller
                     ->orWhere('emp_phone', $request->emp_phone);
             })
             ->first();
-
-
         /*
         |----------------------------------------------------------------------
         | 4) Custom duplicate checks (ACTIVE only)
@@ -352,7 +342,7 @@ class EmployeeController extends Controller
                     'emp_department_id' => $request->emp_department_id,
                     'emp_team_id' => $request->emp_team_id,
                     'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
-                    'emp_permission' => $empPermission,
+                    'emp_permission' => $role,
                     'emp_delete_status' => 'active',
                     'emp_delete_at' => null,
                     'emp_delete_by' => null,
@@ -405,7 +395,7 @@ class EmployeeController extends Controller
                 'emp_department_id' => $request->emp_department_id,
                 'emp_team_id' => $request->emp_team_id,
                 'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
-                'emp_permission' => $empPermission,
+                'emp_permission' => $role,
                 'emp_delete_status' => 'active',
                 'emp_create_at' => Carbon::now(),
                 'emp_create_by' => Auth::id(),
@@ -417,17 +407,36 @@ class EmployeeController extends Controller
             ], 201);
 
         } catch (QueryException $e) {
+
+            $sqlState = $e->errorInfo[0] ?? null;
+            $errorCode = $e->errorInfo[1] ?? null;
+
             Log::error('EMP_CREATE_FAIL', [
-                'sqlstate' => $e->errorInfo[0] ?? null,
-                'code' => $e->errorInfo[1] ?? null,
+                'sqlstate' => $sqlState,
+                'code' => $errorCode,
                 'msg' => $e->getMessage(),
             ]);
 
+            // default message
+            $userMessage = 'Unable to create employee. Please try again later.';
+
+            // Duplicate key (เช่น emp_id, email, phone)
+            if ($sqlState === '23000') {
+                if (str_contains($e->getMessage(), 'emp_id')) {
+                    $userMessage = 'This employee ID already exists.';
+                } elseif (str_contains($e->getMessage(), 'emp_email')) {
+                    $userMessage = 'This email is already in use.';
+                } elseif (str_contains($e->getMessage(), 'emp_phone')) {
+                    $userMessage = 'This phone number is already in use.';
+                } else {
+                    $userMessage = 'Duplicate data found. Please check the information.';
+                }
+            }
             return response()->json([
-                'error' => 'DB_ERROR',
-                'message' => $e->getMessage(),
-            ], 500);
+                'message' => $userMessage
+            ], 422);
         }
+
     }
 
     public function update(Request $request, $id)
@@ -461,10 +470,12 @@ class EmployeeController extends Controller
         // =========================
         // 3) HR แก้ Email / Password ไม่ได้
         // =========================
-        if ($loginEmployee->emp_permission !== 'enabled') {
+        if ($loginEmployee->emp_permission !== 'admin') {
+            // HR + Employee แก้ email / password / role ไม่ได้
             $request->request->remove('emp_email');
             $request->request->remove('emp_password');
-            $request->request->remove('password'); // เผื่อ FE ส่งมา
+            $request->request->remove('password');
+            $request->request->remove('emp_permission');
         }
 
         // =========================
@@ -498,22 +509,26 @@ class EmployeeController extends Controller
             'emp_department_id' => ['sometimes', 'nullable', 'exists:ems_department,id'],
             'emp_team_id' => ['sometimes', 'nullable', 'exists:ems_team,id'],
             'emp_permission' => ['sometimes', 'nullable', 'string', 'max:50'],
-            'emp_status' => ['sometimes', 'nullable', 'string', 'max:50'],
             'emp_password' => ['sometimes', 'nullable', 'min:6'],
         ]);
 
         // =========================
-        // 5) Update
-        // =========================
-        $update = collect($validated)->except('emp_status')->toArray();
+// 5) Update
+// =========================
+        $update = $validated;
 
-        if ($request->filled('emp_status')) {
-            $update['emp_permission'] = $request->emp_status;
+        // CASE 1: เปลี่ยนเป็น employee → ล้าง password
+        if ($request->emp_permission === 'employee') {
+            $update['emp_password'] = null;
         }
 
-        if (!empty($update['emp_password'] ?? null)) {
+        // CASE 2: ส่ง password มา และ role ไม่ใช่ employee → hash
+        elseif (!empty($update['emp_password'])) {
             $update['emp_password'] = Hash::make($update['emp_password']);
-        } else {
+        }
+
+        // CASE 3: ไม่ส่ง password มา → ไม่แก้ password เดิม
+        else {
             unset($update['emp_password']);
         }
 
