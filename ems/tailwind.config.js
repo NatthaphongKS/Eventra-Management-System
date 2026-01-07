@@ -2,5 +2,7 @@
 export default {
   content: ["./resources/**/*.blade.php", "./resources/**/*.{js,ts,vue}"],
   theme: { extend: {} },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
 };
