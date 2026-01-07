@@ -11,7 +11,6 @@
                     <div class="h-[44px]">
                         <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
                     </div>
-
                     <EventFilter v-model="filters" :categories="activeCategories" :status-options="statusOptions"
                         @update:modelValue="applyFilter" class="h-[44px] [&_button]:h-full" />
 
@@ -100,7 +99,6 @@
                     <!-- <Icon icon="fluent:delete-12-filled" width="20" height="20" class="text-neutral-800" /> -->
                     <Icon icon="fluent:delete-12-filled" width="20" height="20"
                         :class="!canDelete(row) ? 'text-neutral-400' : 'text-neutral-800'" />
-
                 </button>
 
                 <!-- ❌ Disabled เมื่อ upcoming หรือ (done + permission = disabled) -->
@@ -114,7 +112,7 @@
                     <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-400" />
                 </span>
 
-                <!-- ✅ ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
+                <!--  ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
                 <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
                     title="Check-in">
                     <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-800" />
