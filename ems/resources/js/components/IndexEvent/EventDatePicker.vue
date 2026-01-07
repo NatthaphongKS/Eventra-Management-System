@@ -13,11 +13,15 @@
             <span>Date</span>
         </button>
 
+        <Transition enter-active-class="transition ease-out duration-150"
+            enter-from-class="opacity-0 translate-y-1 scale-95" enter-to-class="opacity-100 translate-y-0  scale-100"
+            leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0  scale-100"
+            leave-to-class="opacity-0 translate-y-1  scale-95">
         <div v-if="showDropdown"
-            class="absolute z-10 mt-2 w-80 origin-top-left rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none p-4"
+            class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[259px] bg-white rounded-[10px] shadow-lg border border-gray-100 z-50 p-4 space-y-2"
             @click.stop ref="dateDropdown">
 
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-center mb-4">
                 <div class="flex gap-2 relative">
                     <div class="relative">
                         <button @click="toggleMonthDropdown"
@@ -99,6 +103,7 @@
                 </button>
             </div>
         </div>
+        </Transition>
     </div>
 </template>
 
