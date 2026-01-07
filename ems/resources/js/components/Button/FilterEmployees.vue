@@ -27,7 +27,7 @@
                     <div class="relative">
                         <select :value="modelValue[key]" @change="updateFilter(key, $event.target.value)"
                             class="w-full appearance-none rounded-xl border border-red-700 px-3 py-2 text-neutral-800 text-sm outline-none focus:ring-2 focus:ring-red-300">
-                            <option value="all">All</option>
+                            <option value="all">all</option>
                             <option v-for="opt in opts" :key="opt" :value="opt">{{ opt }}</option>
                         </select>
 
