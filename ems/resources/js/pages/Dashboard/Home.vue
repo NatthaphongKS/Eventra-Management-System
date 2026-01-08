@@ -1347,12 +1347,16 @@ export default {
         // แปลง Map กลับเป็น Array และเรียงข้อมูล
         const deduplicatedParticipants = Array.from(uniqueParticipants.values());
         deduplicatedParticipants.sort((a, b) => {
-          // เรียงตาม emp_id ก่อน
-          const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
-          if (empCompare !== 0) return empCompare;
+          // เรียงตามชื่อกิจกรรมก่อน
+          const eventCompare = (a.event_title || '').localeCompare(b.event_title || '');
+          if (eventCompare !== 0) return eventCompare;
           
-          // ถ้า emp_id เท่ากัน ให้เรียงตาม event_id
-          return (a.event_id || 0) - (b.event_id || 0);
+          // ถ้าชื่อกิจกรรมเท่ากัน ให้เรียงตามชื่อพนักงาน
+          const nameCompare = (a.emp_firstname || '').localeCompare(b.emp_firstname || '');
+          if (nameCompare !== 0) return nameCompare;
+          
+          // ถ้าชื่อเท่ากัน ให้เรียงตาม emp_id
+          return (a.emp_id || '').localeCompare(b.emp_id || '');
         });
         
         // แปลงเป็นรูปแบบพนักงานสำหรับตาราง พร้อม unique_key
