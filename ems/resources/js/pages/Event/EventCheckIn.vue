@@ -208,7 +208,7 @@
 
             <template #cell-status="{ row }">
                 <span
-                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    class="inline-flex items-center justify-center rounded-[5px] px-2.5 py-0.5 text-xs font-medium w-[125px] h-[30px] "
                     :class="statusClass(mapInvite(row.empInviteStatus))"
                 >
                     {{ statusLabel(mapInvite(row.empInviteStatus)) }}
