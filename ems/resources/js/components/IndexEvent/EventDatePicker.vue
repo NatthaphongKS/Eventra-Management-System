@@ -1,39 +1,44 @@
 <template>
     <div class="relative">
-        <button
-            @click="showDropdown = !showDropdown"
-            type="button"
-            class="inline-flex h-11 items-center rounded-lg bg-white px-4 font-semibold text-gray-700 focus:outline-none text-sm whitespace-nowrap"
-            ref="dateButton"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5" />
+        <button @click="showDropdown = !showDropdown" type="button"
+            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800 transition-colors duration-200 font-[Poppins] font-size-[20px]"
+            ref="dateButton">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
+                <path fill="currentColor"
+                    d="M8.5 14a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m0 3.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0M12 17.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0" />
+                <path fill="currentColor" fill-rule="evenodd"
+                    d="M8 3.25a.75.75 0 0 1 .75.75v.75h6.5V4a.75.75 0 0 1 1.5 0v.758q.228.006.425.022c.38.03.736.098 1.073.27a2.75 2.75 0 0 1 1.202 1.202c.172.337.24.693.27 1.073c.03.365.03.81.03 1.345v7.66c0 .535 0 .98-.03 1.345c-.03.38-.098.736-.27 1.073a2.75 2.75 0 0 1-1.201 1.202c-.338.172-.694.24-1.074.27c-.365.03-.81.03-1.344.03H8.17c-.535 0-.98 0-1.345-.03c-.38-.03-.736-.098-1.073-.27a2.75 2.75 0 0 1-1.202-1.2c-.172-.338-.24-.694-.27-1.074c-.03-.365-.03-.81-.03-1.344V8.67c0-.535 0-.98.03-1.345c.03-.38.098-.736.27-1.073A2.75 2.75 0 0 1 5.752 5.05c.337-.172.693-.24 1.073-.27q.197-.016.425-.022V4A.75.75 0 0 1 8 3.25m10.25 7H5.75v6.05c0 .572 0 .957.025 1.252c.023.288.065.425.111.515c.12.236.311.427.547.547c.09.046.227.088.514.111c.296.024.68.025 1.253.025h7.6c.572 0 .957 0 1.252-.025c.288-.023.425-.065.515-.111a1.25 1.25 0 0 0 .547-.547c.046-.09.088-.227.111-.515c.024-.295.025-.68.025-1.252zM10.5 7a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5z"
+                    clip-rule="evenodd" />
             </svg>
-            {{ dateRangeText }}
+            <span>Date</span>
         </button>
 
+        <Transition enter-active-class="transition ease-out duration-150"
+            enter-from-class="opacity-0 translate-y-1 scale-95" enter-to-class="opacity-100 translate-y-0  scale-100"
+            leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0  scale-100"
+            leave-to-class="opacity-0 translate-y-1  scale-95">
         <div v-if="showDropdown"
-             class="absolute z-10 mt-2 w-80 origin-top-left rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none p-4"
-             @click.stop
-             ref="dateDropdown"
-        >
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex gap-2 relative">
+            class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[259px] bg-white rounded-[10px] shadow-lg border border-gray-100 z-50 p-4 space-y-2"
+            @click.stop ref="dateDropdown">
 
+            <div class="flex items-center justify-center mb-4">
+                <div class="flex gap-2 relative">
                     <div class="relative">
                         <button @click="toggleMonthDropdown"
-                            class="text-sm font-semibold text-red-500 cursor-pointer flex items-center p-2 rounded-lg border border-gray-200"
-                            type="button"
-                        >
-                            Mount
-                            <svg class="w-4 h-4 inline ml-1 transition-transform duration-200" :class="{'rotate-180': showMonthDropdown}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            class="text-sm font-semibold text-neutral-800 cursor-pointer flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                            type="button">
+                            Month
+                            <svg class="w-4 h-4 inline ml-1 transition-transform duration-200"
+                                :class="{ 'rotate-180': showMonthDropdown }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
                         </button>
-                        <div v-if="showMonthDropdown" class="absolute z-20 w-36 bg-white border border-gray-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
-                            <div v-for="(month, index) in monthOptions" :key="index"
-                                @click="selectMonth(index)"
-                                :class="{'bg-red-500 text-white': currentCalendarMonth.month() === index}"
-                                class="p-1 text-sm hover:bg-red-100 cursor-pointer text-center"
-                            >
+                        <div v-if="showMonthDropdown"
+                            class="absolute z-20 w-36 bg-white border border-gray-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
+                            <div v-for="(month, index) in monthOptions" :key="index" @click="selectMonth(index)"
+                                :class="{ 'bg-red-500 text-white': currentCalendarMonth.month() === index }"
+                                class="p-1 text-sm hover:bg-red-100 cursor-pointer text-center">
                                 {{ month }}
                             </div>
                         </div>
@@ -41,18 +46,20 @@
 
                     <div class="relative">
                         <button @click="toggleYearDropdown"
-                            class="text-sm font-semibold text-red-500 cursor-pointer flex items-center p-2 rounded-lg border border-gray-200"
-                            type="button"
-                        >
+                            class="text-sm font-semibold text-neutral-800 cursor-pointer flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                            type="button">
                             Year
-                            <svg class="w-4 h-4 inline ml-1 transition-transform duration-200" :class="{'rotate-180': showYearDropdown}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <svg class="w-4 h-4 inline ml-1 transition-transform duration-200"
+                                :class="{ 'rotate-180': showYearDropdown }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
                         </button>
-                         <div v-if="showYearDropdown" class="absolute z-20 w-36 bg-white border border-gray-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
-                            <div v-for="year in yearOptions" :key="year"
-                                @click="selectYear(year)"
-                                :class="{'bg-red-500 text-white': currentCalendarMonth.year() === year}"
-                                class="p-1 text-sm hover:bg-red-100 cursor-pointer text-center"
-                            >
+                        <div v-if="showYearDropdown"
+                            class="absolute z-20 w-36 bg-white border border-gray-200 rounded-md shadow-lg h-32 overflow-y-scroll scrollbar-hide">
+                            <div v-for="year in yearOptions" :key="year" @click="selectYear(year)"
+                                :class="{ 'bg-red-500 text-white': currentCalendarMonth.year() === year }"
+                                class="p-1 text-sm hover:bg-red-100 cursor-pointer text-center">
                                 {{ year }}
                             </div>
                         </div>
@@ -63,44 +70,40 @@
             <div class="flex items-center justify-between text-base font-medium mb-3 px-1">
                 <span class="font-normal text-lg">{{ currentCalendarMonth.format('MMM YYYY') }}</span>
                 <div>
-                    <span @click="prevMonth" class="text-red-500 cursor-pointer p-1 rounded-full hover:bg-gray-100 inline-block mr-1">&lt;</span>
-                    <span @click="nextMonth" class="text-red-500 cursor-pointer p-1 rounded-full hover:bg-gray-100 inline-block">&gt;</span>
+                    <span @click="prevMonth"
+                        class="text-red-500 cursor-pointer p-1 rounded-full hover:bg-gray-100 inline-block mr-1">&lt;</span>
+                    <span @click="nextMonth"
+                        class="text-red-500 cursor-pointer p-1 rounded-full hover:bg-gray-100 inline-block">&gt;</span>
                 </div>
             </div>
 
-            <table class="w-full text-center text-xs">
+            <table class="w-full text-center text-xs border-collapse">
                 <thead>
                     <tr class="text-gray-500 font-medium">
-                        <th v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="font-medium pb-2">{{ day }}</th>
+                        <th v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day"
+                            class="font-medium pb-2">{{ day }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(week, weekIndex) in calendarWeeks" :key="weekIndex">
-                        <td v-for="(day, dayIndex) in week" :key="dayIndex"
-                            @click="day.isCurrentMonth ? selectDate(day.date) : null"
-                            :class="dateCellClass(day)"
-                        >
-                            {{ day.day }}
+                        <td v-for="(day, dayIndex) in week" :key="dayIndex" class="p-0 align-middle"
+                            @click="day.isCurrentMonth ? selectDate(day.date) : null">
+                            <div :class="dateCellClass(day)" class="w-full h-8 flex items-center justify-center transition duration-150">
+                                {{ day.day }}
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
 
-            <div class="mt-4 flex justify-between">
-                <button
-                    @click="clearDateRange"
-                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
-                >
-                    Clear Filter
-                </button>
-                <button
-                    @click="showDropdown = false"
-                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-                >
-                    Done
+            <div class="mt-4 flex justify-center">
+                <button @click="clearDateRange"
+                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200">
+                    Clear
                 </button>
             </div>
         </div>
+        </Transition>
     </div>
 </template>
 
@@ -133,7 +136,6 @@ export default {
             showDropdown: false,
             showMonthDropdown: false,
             showYearDropdown: false,
-
             selectedRange: this.modelValue,
             currentCalendarMonth: dayjs(),
             isSelectingStart: true,
@@ -158,7 +160,13 @@ export default {
             deep: true
         },
         showDropdown(newVal) {
-            if (!newVal) {
+            if (newVal) {
+                if (this.selectedRange.start) {
+                    this.currentCalendarMonth = dayjs(this.selectedRange.start);
+                } else {
+                    this.currentCalendarMonth = dayjs();
+                }
+            } else {
                 this.showMonthDropdown = false;
                 this.showYearDropdown = false;
             }
@@ -181,34 +189,6 @@ export default {
             return years.sort((a, b) => b - a);
         },
 
-        dateRangeText() {
-            const start = this.selectedRange.start;
-            const end = this.selectedRange.end;
-
-            const format = (dateString) => {
-                if (!dateString) return 'N/A';
-                try {
-                    return dayjs(dateString, 'YYYY-MM-DD').format('DD/MM/YYYY');
-                } catch {
-                    return 'N/A';
-                }
-            };
-
-            if (!start && !end) {
-                return "Date";
-            }
-
-            if (start && !end) {
-                return format(start);
-            }
-
-            if (start && end) {
-                 return `${format(start)} – ${format(end)}`;
-            }
-
-            return "Date";
-        },
-
         calendarWeeks() {
             const startOfMonth = this.currentCalendarMonth.startOf('month');
             const endOfMonth = this.currentCalendarMonth.endOf('month');
@@ -220,6 +200,7 @@ export default {
 
             const startDayjs = this.selectedRange.start ? dayjs(this.selectedRange.start, 'YYYY-MM-DD') : null;
             const endDayjs = this.selectedRange.end ? dayjs(this.selectedRange.end, 'YYYY-MM-DD') : null;
+            const today = dayjs().startOf('day');
 
             while (day.isBefore(endOfWeek) || day.isSame(endOfWeek, 'day')) {
                 const week = [];
@@ -234,6 +215,7 @@ export default {
 
                     const isRangeStart = startDayjs && day.isSame(startDayjs, 'day');
                     const isRangeEnd = endDayjs && day.isSame(endDayjs, 'day');
+                    const isToday = day.isSame(today, 'day');
 
                     week.push({
                         day: day.date(),
@@ -242,6 +224,7 @@ export default {
                         isRangeStart,
                         isRangeEnd,
                         isInRange,
+                        isToday,
                     });
                     day = day.add(1, 'day');
                 }
@@ -254,109 +237,18 @@ export default {
     methods: {
         handleClickOutside(event) {
             if (!this.showDropdown) return;
-
             const button = this.$refs.dateButton;
             const dropdown = this.$refs.dateDropdown;
-
             if (button && !button.contains(event.target) && dropdown && !dropdown.contains(event.target)) {
                 this.showDropdown = false;
             }
         },
-
-        toggleMonthDropdown() {
-            this.showMonthDropdown = !this.showMonthDropdown;
-            this.showYearDropdown = false;
-        },
-        toggleYearDropdown() {
-            this.showYearDropdown = !this.showYearDropdown;
-            this.showMonthDropdown = false;
-        },
-
-        selectMonth(monthIndex) {
-             this.currentCalendarMonth = dayjs(this.currentCalendarMonth).month(monthIndex);
-             this.showMonthDropdown = false;
-        },
-        selectYear(year) {
-             this.currentCalendarMonth = dayjs(this.currentCalendarMonth).year(year);
-             this.showYearDropdown = false;
-        },
-
-        selectDate(dateString) {
-            const currentStart = this.selectedRange.start;
-
-            const dayjsDate = dayjs(dateString, 'YYYY-MM-DD');
-
-            if (this.isSelectingStart || !currentStart || (currentStart && this.selectedRange.end)) {
-                // 1. เลือก Start ใหม่
-                this.selectedRange.start = dateString;
-                this.selectedRange.end = null;
-                this.isSelectingStart = false;
-
-            } else {
-                // 2. เลือก End
-                const dayjsStart = dayjs(currentStart, 'YYYY-MM-DD');
-
-                if (dayjsDate.isBefore(dayjsStart, 'day')) {
-                    // ถ้าเลือก End ก่อน Start ให้สลับ
-                    this.selectedRange.start = dateString;
-                    this.selectedRange.end = currentStart;
-                } else {
-                    // เลือก End ปกติ
-                    this.selectedRange.end = dateString;
-                }
-
-                this.isSelectingStart = true;
-                this.showDropdown = false;
-            }
-
-            this.currentCalendarMonth = dayjsDate;
-        },
-
-        // 🎯 LOGIC: Start Date และ End Date เป็นสีแดงเข้ม (ลบสีฟ้าออกทั้งหมด)
-        dateCellClass(day) {
-            let classes = 'p-1 h-8 w-8 rounded-lg cursor-pointer transition duration-150 text-xs';
-
-            if (!day.isCurrentMonth) {
-                classes += ' text-gray-400';
-            }
-
-            const isFullRange = this.selectedRange.start && this.selectedRange.end;
-
-            // 1. RED (เข้ม): Start Date หรือ End Date
-            if (day.isRangeStart || day.isRangeEnd) {
-                classes += ' bg-red-500 text-white font-semibold';
-
-                if (day.isRangeStart && day.isRangeEnd) {
-                    // วันเดียว
-                    classes += ' rounded-lg';
-                } else if (day.isRangeStart) {
-                    // จุดเริ่มต้น
-                    classes += ' rounded-l-lg rounded-r-none';
-                } else if (day.isRangeEnd) {
-                    // จุดสิ้นสุด
-                    classes += ' rounded-r-lg rounded-l-none';
-                }
-            }
-            // 2. LIGHT RED: In Range
-            else if (day.isInRange) {
-                classes += ' bg-red-100 text-red-700 rounded-none';
-            }
-
-            // 3. วันที่ปกติ (Hover)
-            else if (day.isCurrentMonth) {
-                classes += ' hover:bg-gray-100 text-gray-800';
-            }
-
-            return classes;
-        },
-
-        prevMonth() {
-            this.currentCalendarMonth = this.currentCalendarMonth.subtract(1, 'month');
-        },
-        nextMonth() {
-            this.currentCalendarMonth = this.currentCalendarMonth.add(1, 'month');
-        },
-
+        toggleMonthDropdown() { this.showMonthDropdown = !this.showMonthDropdown; this.showYearDropdown = false; },
+        toggleYearDropdown() { this.showYearDropdown = !this.showYearDropdown; this.showMonthDropdown = false; },
+        selectMonth(index) { this.currentCalendarMonth = dayjs(this.currentCalendarMonth).month(index); this.showMonthDropdown = false; },
+        selectYear(year) { this.currentCalendarMonth = dayjs(this.currentCalendarMonth).year(year); this.showYearDropdown = false; },
+        prevMonth() { this.currentCalendarMonth = this.currentCalendarMonth.subtract(1, 'month'); },
+        nextMonth() { this.currentCalendarMonth = this.currentCalendarMonth.add(1, 'month'); },
 
         clearDateRange() {
             this.selectedRange.start = null;
@@ -364,17 +256,74 @@ export default {
             this.isSelectingStart = true;
             this.showDropdown = false;
         },
+
+        selectDate(dateString) {
+            const currentStart = this.selectedRange.start;
+            const dayjsDate = dayjs(dateString, 'YYYY-MM-DD');
+
+            if (this.isSelectingStart || !currentStart || (currentStart && this.selectedRange.end)) {
+                // เลือกวันเริ่ม
+                this.selectedRange.start = dateString;
+                this.selectedRange.end = null;
+                this.isSelectingStart = false;
+            } else {
+                // เลือกวันจบ -> ไม่ปิด Dropdown (ตามที่ขอ)
+                const dayjsStart = dayjs(currentStart, 'YYYY-MM-DD');
+                if (dayjsDate.isBefore(dayjsStart, 'day')) {
+                    this.selectedRange.start = dateString;
+                    this.selectedRange.end = currentStart;
+                } else {
+                    this.selectedRange.end = dateString;
+                }
+                this.isSelectingStart = true;
+                // this.showDropdown = false; // เอาออก เพื่อไม่ให้ปิดอัตโนมัติ
+            }
+            this.currentCalendarMonth = dayjsDate;
+        },
+
+        dateCellClass(day) {
+            let classes = 'cursor-pointer text-xs ';
+
+            if (day.isRangeStart && day.isRangeEnd) {
+                classes += ' rounded-lg';
+            } else if (day.isRangeStart) {
+                classes += ' rounded-l-lg';
+            } else if (day.isRangeEnd) {
+                classes += ' rounded-r-lg';
+            } else if (day.isInRange) {
+                classes += ' rounded-none';
+            } else {
+                classes += ' rounded-lg';
+            }
+
+            if (day.isToday) {
+                classes += ' bg-blue-500 text-white font-bold';
+            }
+            else if (day.isRangeStart || day.isRangeEnd) {
+                classes += ' bg-red-500 text-white font-semibold';
+            }
+            else if (day.isInRange) {
+                classes += ' bg-red-100 text-red-700';
+            }
+            else if (day.isCurrentMonth) {
+                classes += ' text-gray-800 hover:bg-gray-100';
+            }
+            else {
+                classes += ' text-gray-300';
+            }
+
+            return classes;
+        },
     },
 };
 </script>
 
 <style>
-/* Optional: ซ่อน Scrollbar สำหรับ Dropdown ที่เป็น Selectors */
 .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari, Opera */
+    display: none;
 }
 </style>

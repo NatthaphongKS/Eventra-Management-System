@@ -5,6 +5,7 @@
     $fname   = $employee->emp_firstname ?? '';
     $lname   = $employee->emp_lastname ?? '';
     $title   = $event->evn_title ?? 'กิจกรรมพิเศษ';
+    $formURL1 = $formURL;
 
     // ปรับ Format วันที่ให้เหมือนในภาพ: "วันพฤหัสบดี 21 ส.ค. 2025"
     // D = วันที่, MMM = เดือนย่อ (ไทย), YYYY = ปี, dddd = ชื่อวันเต็ม
@@ -20,7 +21,7 @@
     $empid   = $employee->id ?? 0;
 
     // --- LINKS ---
-    $eventUrl   = url('/reply/'.$eid.'/'.$empid);
+    $eventUrl   = url($formURL1);
     // สร้างลิงก์แผนที่ Google Maps จริง
     $mapUrl     = 'https://www.google.com/maps/search/?api=1&query=' . urlencode($loc);
 @endphp
