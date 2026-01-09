@@ -12,17 +12,15 @@
                     <template v-if="model">
                         <div class="px-2">
                             <div
-                                class="flex items-center justify-between rounded-xl bg-white border border-gray-200 px-4 py-3 shadow-sm">
+                                class="flex items-center justify-between rounded-xl bg-white border border-nutral-200 px-4 py-3 shadow-sm">
                                 <div class="flex items-center gap-3 min-w-0">
-                                    <div class="flex items-center justify-center h-8 w-8 rounded-md bg-red-600">
-                                        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"
+                                        <svg class="w-10 h-10 text-red-600" viewBox="0 0 24 24" fill="currentColor"
                                             aria-hidden="true">
                                             <path
-                                                d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9.5L13.5 2H6Z" />
-                                            <path d="M14 2v6h6" fill="#fff" />
+                                                d="M14 2.25a.25.25 0 0 1 .25.25v5.647c0 .414.336.75.75.75h4.5a.25.25 0 0 1 .25.25V19A2.75 2.75 0 0 1 17 21.75H7A2.75 2.75 0 0 1 4.25 19V5A2.75 2.75 0 0 1 7 2.25z" />
+                                            <path d="M16.086 2.638c-.143-.115-.336.002-.336.186v4.323c0 .138.112.25.25.25h3.298c.118 0 .192-.124.124-.22L16.408 2.98a1.8 1.8 0 0 0-.322-.342" />
                                         </svg>
-                                    </div>
-                                    <span class="text-sm text-gray-700 truncate">{{ model.name }}</span>
+                                    <span class="text-md font-medium text-neutral-700 truncate">{{ model.name }}</span>
                                 </div>
                                 <button type="button"
                                     class="inline-flex items-center justify-center w-7 h-7 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"

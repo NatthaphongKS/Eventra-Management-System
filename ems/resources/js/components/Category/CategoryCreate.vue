@@ -49,7 +49,6 @@
         </div>
         <div>
           <CreateButton @click="submit" class="inline-flex items-center gap-2">
-            Create
           </CreateButton>
         </div>
       </div>
