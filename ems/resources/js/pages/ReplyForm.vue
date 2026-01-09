@@ -13,79 +13,48 @@
                 <form @submit.prevent="onSubmit">
                     <div class="field">
                         <label>ชื่อ–นามสกุล</label>
-                        <input
-                            type="text"
-                            :placeholder="empName || '—'"
-                            readonly
-                        />
+                        <input type="text" :placeholder="empName || '—'" readonly />
                         <!-- ไม่ต้องมี error เพราะล็อกไม่ให้แก้ -->
                     </div>
 
                     <div class="field">
                         <label>Email</label>
-                        <input
-                            type="email"
-                            :placeholder="empEmail || '—'"
-                            readonly
-                        />
+                        <input type="email" :placeholder="empEmail || '—'" readonly />
                     </div>
 
                     <div class="field">
                         <label>เบอร์โทร</label>
-                        <input
-                            type="tel"
-                            :placeholder="empPhone || '—'"
-                            readonly
-                        />
+                        <input type="tel" :placeholder="empPhone || '—'" readonly />
                     </div>
 
                     <div class="field">
                         <label>เข้าร่วมหรือไม่</label>
                         <div class="radio-row">
                             <label class="radio">
-                                <input
-                                    type="radio"
-                                    value="accepted"
-                                    v-model="form.attend"
-                                />
+                                <input type="radio" value="accepted" v-model="form.attend" />
                                 เข้าร่วม
                             </label>
                             <label class="radio">
-                                <input
-                                    type="radio"
-                                    value="denied"
-                                    v-model="form.attend"
-                                />
+                                <input type="radio" value="denied" v-model="form.attend" />
                                 ไม่เข้าร่วม
                             </label>
                         </div>
                         <small v-if="errors.attend" class="error">{{
                             errors.attend
-                        }}</small>
+                            }}</small>
                     </div>
 
-                    <div
-                        class="field"
-                        :class="{ disabled: form.attend !== 'no' }"
-                    >
+                    <div class="field" :class="{ disabled: form.attend !== 'no' }">
                         <label>หมายเหตุ (กรณีไม่เข้าร่วม)</label>
-                        <textarea
-                            v-model.trim="form.reason"
-                            :disabled="form.attend !== 'denied'"
-                            rows="3"
-                            placeholder="ระบุเหตุผลสั้น ๆ ค่ะ"
-                        />
+                        <textarea v-model.trim="form.reason" :disabled="form.attend !== 'denied'" rows="3"
+                            placeholder="ระบุเหตุผลสั้น ๆ ค่ะ" />
                         <small v-if="errors.reason" class="error">{{
                             errors.reason
-                        }}</small>
+                            }}</small>
                     </div>
 
                     <div class="actions">
-                        <button
-                            type="submit"
-                            class="primary"
-                            :disabled="submitting"
-                        >
+                        <button type="submit" class="primary" :disabled="submitting">
                             {{ submitting ? "กำลังส่ง…" : "ส่งคำตอบ" }}
                         </button>
                     </div>
@@ -220,9 +189,8 @@ export default {
                 this.location = data.event?.evn_location || "";
 
                 // employee info
-                this.empName = `${data.employee?.emp_firstname || ""} ${
-                    data.employee?.emp_lastname || ""
-                }`.trim();
+                this.empName = `${data.employee?.emp_firstname || ""} ${data.employee?.emp_lastname || ""
+                    }`.trim();
                 this.empEmail = data.employee?.emp_email || "";
                 this.empPhone = data.employee?.emp_phone || "";
             } catch (e) {

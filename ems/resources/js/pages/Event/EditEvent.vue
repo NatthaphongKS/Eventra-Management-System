@@ -716,7 +716,6 @@ export default {
                             formData.append('employee_ids[]', empId)
                         );
 
-
                         const res = await axios.post('/edit-event', formData, {
                             headers: { 'Accept': 'application/json' },
                         })
@@ -759,7 +758,6 @@ export default {
                 },
             })
         },
-
 
         calDuration() {
             const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
@@ -809,6 +807,7 @@ export default {
             }, cfg)
         },
     },
+
     computed: {
         // --- Filtering Logic (Adapted from EventCheckIn) ---
         filteredEmployees() {
@@ -878,6 +877,7 @@ export default {
             // เช็คว่า เวลาจบ ต้องมากกว่า เวลาเริ่ม ( > ) หรือ มากกว่าเท่ากับ ( >= ) แล้วแต่ requirement (ปกติ Event ควร >)
             return sumEndMin > sumStartMin;
         },
+
         // โครงคอลัมน์ของ DataTable
         columns() {
             return [
@@ -898,6 +898,7 @@ export default {
         hasAnyFiles() {
             return (this.filesExisting?.length || 0) + (this.filesNew?.length || 0) > 0
         },
+
         uploadItems() {
             const existing = (this.filesExisting || []).map(f => ({
                 key: `old-${f.id}`,
@@ -917,6 +918,7 @@ export default {
             // ให้ไฟล์เดิมขึ้นก่อน แล้วต่อด้วยไฟล์ใหม่
             return [...existing, ...news]
         },
+
         // ใช้ตัวนี้ตอนส่งจริง: รวมแขกเดิมที่ล็อก + แขกใหม่ที่เลือก
         selectedIdsForSubmit() {
             return Array.from(new Set([...this.lockedIds, ...this.selectedIds]));
@@ -944,6 +946,7 @@ export default {
             // Math.ceil() = ปัดเศษขึ้น → เผื่อพนักงานไม่ลงตัวกับจำนวนต่อหน้า
             //Ex. มี 47 คน, perPage = 10 → 47 / 10 = 4.7 → ปัดขึ้น = 5 หน้า จะแสดงว่ามี 5 หน้า
         },
+
         pagedEmployees() {
             const start = (this.page - 1) * this.perPage
             return this.filteredEmployees.slice(start, start + this.perPage)
@@ -955,6 +958,7 @@ export default {
             // Ex page = 1, perPage = 10 → slice(0, 10) → เอาคนที่ index 0–9 แสดงคนที่จะอยู่ในแต่ละหน้า
 
         },
+
         allCheckedOnPage() {
             if (this.pagedEmployees.length === 0) return false
             const unlocked = this.pagedEmployees.filter(employee => !this.lockedIds.has(employee.id))

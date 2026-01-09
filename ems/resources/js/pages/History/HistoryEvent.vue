@@ -11,44 +11,24 @@
         <div class="flex items-center gap-3">
 
             <div class="flex flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search Event / Created by / Delete by" @search="applySearch" class="" />
+                <SearchBar v-model="searchInput" placeholder="Search Event / Created by / Delete by"
+                    @search="applySearch" class="" />
             </div>
 
             <div class="relative z-[60] mt-6" ref="sortWrap">
-                <SortMenu
-                    :is-open="sortMenuOpen"
-                    :options="sortOptions"
-                    :sort-by="sortBy.key"
-                    :sort-order="sortBy.order"
-                    @toggle="sortMenuOpen = !sortMenuOpen"
-                    @choose="onSortChoose"
-                />
+                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose" />
             </div>
         </div>
 
-        <DataTable
-            :rows="paged"
-            :columns="historyTableColumns"
-            :loading="loading"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            :page="page"
-            :pageSize="pageSize"
-            :sortKey="sortBy"
-            :sortOrder="sortOrder"
-            @update:page="page = $event"
-            @update:pageSize="handlePageSizeChange"
-            @sort="handleHeaderSort"
-            row-key="id"
-            :show-row-number="true"
-            class="mt-4"
-        >
+        <DataTable :rows="paged" :columns="historyTableColumns" :loading="loading" :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]" :page="page" :pageSize="pageSize" :sortKey="sortBy"
+            :sortOrder="sortOrder" @update:page="page = $event" @update:pageSize="handlePageSizeChange"
+            @sort="handleHeaderSort" row-key="id" :show-row-number="true" class="mt-4">
             <template #cell-evn_title="{ value, row }">
-                <router-link
-                    :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
                     class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate  cursor-pointer transition-colors"
-                    title="Click to view details"
-                >
+                    title="Click to view details">
                     {{ value }}
                 </router-link>
             </template>
@@ -72,15 +52,8 @@
             </template>
         </DataTable>
 
-        <ModalAlert
-            :open="showModalFail"
-            type="error"
-            title="ERROR!"
-            message="Sorry, Please try again later."
-            :show-cancel="false"
-            okText="OK"
-            @confirm="showModalFail = false"
-        />
+        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
+            :show-cancel="false" okText="OK" @confirm="showModalFail = false" />
 
     </section>
 </template>
@@ -121,37 +94,37 @@ export default {
             sortBy: { key: "evn_deleted_at", order: "desc" },
             sortOptions: [
                 {
-                    key: "evn_title", 
+                    key: "evn_title",
                     order: "asc",
                     label: "ชื่อ A-Z",
                     value: "az",
                 },
                 {
-                    key: "evn_title", 
+                    key: "evn_title",
                     order: "desc",
                     label: "ชื่อ Z-A",
                     value: "za",
                 },
                 {
-                    key: "evn_created_at", 
+                    key: "evn_created_at",
                     order: "desc",
                     label: "วันที่สร้างล่าสุด",
                     value: "created_newest",
                 },
                 {
-                    key: "evn_created_at", 
+                    key: "evn_created_at",
                     order: "asc",
                     label: "วันที่สร้างเก่าสุด",
                     value: "created_oldest",
                 },
                 {
-                    key: "evn_deleted_at", 
+                    key: "evn_deleted_at",
                     order: "desc",
                     label: "วันที่ลบล่าสุด",
                     value: "deleted_newest",
                 },
                 {
-                    key: "evn_deleted_at", 
+                    key: "evn_deleted_at",
                     order: "asc",
                     label: "วันที่ลบเก่าสุด",
                     value: "deleted_oldest",
@@ -242,7 +215,7 @@ export default {
 
             return this.filtered.slice().sort((a, b) => {
                 // แก้เงื่อนไขให้ตรงกับ Key ใหม่
-                if (key === "evn_title") { 
+                if (key === "evn_title") {
                     return (
                         (a.evn_title || "")
                             .toLowerCase()
@@ -279,7 +252,7 @@ export default {
     },
 
     methods: {
-        
+
         // จัดการเมื่อเลือกตัวเลือกจากเมนู Sort (รับ event @choose จาก SortMenu)
         onSortChoose(option) {
             if (!option || !option.key || !option.order) return;
@@ -317,7 +290,7 @@ export default {
         // จัดการเมื่อกดหัวตารางเพื่อเรียงลำดับ
         handleHeaderSort({ key, order }) {
             // อัปเดตตัวแปร sortBy ให้เป็น Object เหมือนเดิม เพื่อให้ computed sorted ทำงานได้
-            this.sortBy = { key, order }; 
+            this.sortBy = { key, order };
             this.page = 1;
         },
 
