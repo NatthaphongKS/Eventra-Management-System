@@ -851,7 +851,6 @@ export default {
             this.departmentOptions = toOpt(this.employees.map(r => r.department));
             this.teamOptions = toOpt(this.employees.map(r => r.team));
             this.positionOptions = toOpt(this.employees.map(r => r.position));
-
         },
 
         // เปิด file picker dialog
