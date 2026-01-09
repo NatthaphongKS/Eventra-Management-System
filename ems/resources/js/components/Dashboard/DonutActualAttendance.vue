@@ -57,7 +57,7 @@
       <div class="attendance-stats">
         <div class="attendance-dot"></div>
         <span class="attendance-text">
-          Attended {{ attendancePercentage.toFixed(2) }}% Actual attendance {{ displayAttendance }} Person from {{ displayTotal }}
+          Attended {{ attendancePercentage.toFixed(2) }}% Actual attendance {{ displayAttendance }} Person from {{ displayTotal }} 
         </span>
       </div>
     </div>
