@@ -60,7 +60,6 @@
             :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
     </section>
 </template>
-
 <script>
 import axios from "axios";
 import { Icon } from "@iconify/vue";
@@ -94,8 +93,17 @@ export default {
             showModalFail: false,
             searchInput: "",
             search: "",
-            // Filter ยังคงมี Company ID อยู่
-            filters: { "Company ID": "all", department: "all", team: "all", position: "all" },
+
+            // ---------------------------------------------------------
+            // [แก้ไขจุดที่ 1] เปลี่ยนค่าเริ่มต้นเป็น Array ว่าง []
+            // เพื่อรองรับ Multi-select (ถ้าว่าง = All)
+            // ---------------------------------------------------------
+            filters: {
+                "Company ID": [],
+                department: [],
+                team: [],
+                position: []
+            },
 
             page: 1,
             pageSize: 10,
@@ -114,7 +122,6 @@ export default {
                 { key: "created_at", order: "desc", label: "วันที่เพิ่มใหม่สุด" },
                 { key: "created_at", order: "asc", label: "วันที่เพิ่มเก่าสุด" },
             ],
-            // ✅ เอา Company ID ออกจากตารางแล้ว
             EmployeeTableColumns: [
                 { key: "emp_id", label: "ID", class: "text-left w-[100px]" },
                 { key: "emp_fullname", label: "Name", class: "text-left w-[180px]" },
@@ -158,7 +165,6 @@ export default {
             return this.currentUser.emp_permission === "admin";
         },
         optionsMap() {
-            // Options สำหรับ Filter ยังคงมี Company ID อยู่
             return {
                 "Company ID": [
                     ...new Set(
@@ -181,7 +187,7 @@ export default {
         filtered() {
             let result = this.employees;
 
-            // Text Search
+            // 1. Text Search (Logic เดิม)
             if (this.search) {
                 const q = this.search.toLowerCase();
                 result = result.filter((e) => {
@@ -199,18 +205,30 @@ export default {
                 });
             }
 
-            // Dropdown Filters
-            if (this.filters.department !== "all")
-                result = result.filter((e) => e.department_name === this.filters.department);
+            // ---------------------------------------------------------
+            // [แก้ไขจุดที่ 2] เปลี่ยน Logic การ Filter เป็นแบบ Multi-Select
+            // เงื่อนไข: ถ้า Array มีสมาชิก (length > 0) ให้เช็คว่าค่าของ row
+            // อยู่ใน Array นั้นหรือไม่ (includes)
+            // ---------------------------------------------------------
 
-            if (this.filters.team !== "all")
-                result = result.filter((e) => e.team_name === this.filters.team);
+            // Department
+            if (this.filters.department && this.filters.department.length > 0) {
+                result = result.filter((e) => this.filters.department.includes(e.department_name));
+            }
 
-            if (this.filters.position !== "all")
-                result = result.filter((e) => e.position_name === this.filters.position);
+            // Team
+            if (this.filters.team && this.filters.team.length > 0) {
+                result = result.filter((e) => this.filters.team.includes(e.team_name));
+            }
 
-            if (this.filters["Company ID"] !== "all") {
-                result = result.filter((e) => e.company_id === this.filters["Company ID"]);
+            // Position
+            if (this.filters.position && this.filters.position.length > 0) {
+                result = result.filter((e) => this.filters.position.includes(e.position_name));
+            }
+
+            // Company ID
+            if (this.filters["Company ID"] && this.filters["Company ID"].length > 0) {
+                result = result.filter((e) => this.filters["Company ID"].includes(e.company_id));
             }
 
             return result;
@@ -245,7 +263,7 @@ export default {
                 const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
 
                 this.employees = data.map((e) => {
-                    // Logic ตัดตัวเลขออกจาก emp_id เพื่อสร้าง Company ID ยังคงอยู่
+                    // Logic ตัดตัวเลขออกจาก emp_id เพื่อสร้าง Company ID (Logic เดิม)
                     let extractedId = "-";
                     if (e.emp_id) {
                         const match = e.emp_id.toString().match(/^[A-Za-zก-๙-]+/);
@@ -292,7 +310,12 @@ export default {
             this.search = this.searchInput.trim();
             this.page = 1;
             if (this.$refs.filterDropdown) {
-                this.$refs.filterDropdown.close();
+                // ถ้า Component FilterEmployees มี method close() ให้เรียกใช้ได้
+                // แต่ถ้าไม่มี (ตามโค้ดล่าสุดไม่มี method close) บรรทัดนี้อาจ error ได้
+                // สามารถคอมเมนต์ออก หรือเพิ่ม method close() ใน FilterEmployees.vue ก็ได้ครับ
+                if(typeof this.$refs.filterDropdown.close === 'function') {
+                     this.$refs.filterDropdown.close();
+                }
             }
         },
         editEmployee(id) {
