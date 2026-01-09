@@ -1,6 +1,6 @@
 <!-- src/components/Button/CancelButton.vue -->
 <template>
-  <header class="max-w-6xl mx-auto px-6 pt-6">
+  <header class="max-w-6xl mx-auto pt-6">
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"

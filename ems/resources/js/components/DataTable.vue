@@ -22,7 +22,7 @@
                                 :checked="allSelectedOnPage"
                                 :indeterminate.prop="isIndeterminate"
                                 @change="toggleSelectAllOnPage"
-                                class="text-red-600 w-6 h-6 rounded focus:ring-0"
+                                class="form-checkbox text-red-600 w-6 h-6 rounded focus:ring-0"
                             />
                         </th>
 
@@ -81,7 +81,7 @@
                                     @change="
                                         toggleSelectOne(row[rowKey], $event)
                                     "
-                                    class="w-6 h-6 rounded border-gray-300 text-red-600 focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    class="form-checkbox w-6 h-6 rounded border-gray-300 text-red-600 focus:ring-0 disabled:text-neutral-700 disabled:cursor-not-allowed cursor-pointer"
                                 />
                             </td>
 

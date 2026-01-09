@@ -10,9 +10,11 @@
                 <FilterEmployees ref="filterDropdown" v-model="filters" :options="optionsMap"
                     class="[&_button]:h-full" />
 
-                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
-                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose"
-                    class="[&_button]:h-full" />
+                <div ref="sortWrap" class="h-[58px]">
+                    <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                        :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose"
+                        class="[&_button]:h-full h-full" />
+                </div>
 
                 <AddButton @click="goAdd" class="h-full w-[44px] flex items-center justify-center" />
             </div>
@@ -123,7 +125,7 @@ export default {
                 { key: "created_at", order: "asc", label: "วันที่เพิ่มเก่าสุด" },
             ],
             EmployeeTableColumns: [
-                { key: "emp_id", label: "ID", class: "text-left w-[100px]" },
+                { key: "emp_id", label: "Employee ID", class: "text-left w-[140px]" },
                 { key: "emp_fullname", label: "Name", class: "text-left w-[180px]" },
                 { key: "emp_nickname", label: "Nickname", class: "text-left w-[120px]" },
                 { key: "emp_phone", label: "Phone", class: "text-left w-[140px]" },
@@ -132,7 +134,7 @@ export default {
                 { key: "position_name", label: "Position", class: "text-left w-[140px]" },
                 {
                     key: "created_at",
-                    label: "Created date (D/M/Y)",
+                    label: "Date Add (D/M/Y)",
                     class: "text-center w-[160px]",
                     format: (v) => (v ? new Date(v).toLocaleDateString("en-GB") : "-"),
                 },
