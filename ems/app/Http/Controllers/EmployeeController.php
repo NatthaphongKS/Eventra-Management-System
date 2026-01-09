@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 
 class EmployeeController extends Controller
@@ -27,6 +28,7 @@ class EmployeeController extends Controller
             'position:id,pst_name',
             'department:id,dpm_name',
             'team:id,tm_name',
+            'company:id,com_name'
         ])
             ->where(
                 fn($q) => $q
@@ -37,6 +39,7 @@ class EmployeeController extends Controller
             ->orderByDesc('id')
             ->get([
                 'id',
+                'emp_company_id',
                 'emp_id',
                 'emp_prefix',
                 'emp_firstname',
@@ -55,6 +58,7 @@ class EmployeeController extends Controller
         $rows = $employees->map(function (Employee $e) {
             return [
                 'id' => $e->id,
+                'emp_company_id' => $e->company->com_name,
                 'emp_id' => $e->emp_id,
                 'emp_prefix' => $e->emp_prefix,
                 'emp_firstname' => $e->emp_firstname,
@@ -158,6 +162,13 @@ class EmployeeController extends Controller
             }
         }
 
+
+        $companies = DB::table('ems_company')
+            ->select('id', 'com_name')
+            ->where('com_delete_status', 'active')
+            ->orderBy('com_name')
+            ->get();
+
         $positions = Position::query()
             ->select('id', 'pst_name', 'pst_team_id')
             ->where('pst_delete_status', 'active')
@@ -178,6 +189,7 @@ class EmployeeController extends Controller
 
         return response()->json(compact(
             'prefixes',
+            'companies',
             'positions',
             'departments',
             'teams'
@@ -190,145 +202,291 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. เช็คก่อนว่ามี emp_id นี้ที่สถานะเป็น 'inactive' มั้ย
-        $existingInactiveEmp = Employee::where('emp_id', $request->emp_id)
-            ->where('emp_delete_status', 'inactive')
-            ->first();
+        /*
+        |----------------------------------------------------------------------
+        | 1) Role & Permission
+        |----------------------------------------------------------------------
+        */
+        $role = $request->emp_permission ?? 'employee';
+        $isEmployee = $role === 'employee';
 
-        // --- กรณี A: พบข้อมูลเก่าที่ถูกลบไปแล้ว (Inactive) -> ให้ทำการ Update และ Reactivate ---
+        /*
+        |----------------------------------------------------------------------
+        | 2) Normalize input
+        |----------------------------------------------------------------------
+        */
+        $firstName = trim(mb_strtolower($request->emp_firstname));
+        $lastName = trim(mb_strtolower($request->emp_lastname));
+        $empId = trim($request->emp_id); // เช่น CN001
+
+        /*
+        |----------------------------------------------------------------------
+        | 3) Check inactive duplicate (for reactivate)
+        |----------------------------------------------------------------------
+        */
+        $existingInactiveEmp = Employee::where('emp_delete_status', 'inactive')
+            ->where(function ($q) use ($request) {
+                $q->where('emp_email', $request->emp_email)
+                    ->orWhere('emp_phone', $request->emp_phone);
+            })
+            ->first();
+        /*
+        |----------------------------------------------------------------------
+        | 4) Custom duplicate checks (ACTIVE only)
+        |----------------------------------------------------------------------
+        */
+
+        $errors = [];
+
+        /*
+        | 4.1 Firstname + Lastname duplicate
+        */
+        $nameQuery = Employee::whereRaw('LOWER(TRIM(emp_firstname)) = ?', [$firstName])
+            ->whereRaw('LOWER(TRIM(emp_lastname)) = ?', [$lastName])
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $nameQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($nameQuery->exists()) {
+            $errors['firstName'] = 'First name and last name already exist.';
+            $errors['lastName'] = 'First name and last name already exist.';
+        }
+
+        /*
+        | 4.2 Phone duplicate
+        */
+        $phoneQuery = Employee::where('emp_phone', $request->emp_phone)
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $phoneQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($phoneQuery->exists()) {
+            $errors['emp_phone'] = 'This Phone is already use';
+        }
+
+        /*
+        | 4.3 Email duplicate
+        */
+        $emailQuery = Employee::where('emp_email', $request->emp_email)
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $emailQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($emailQuery->exists()) {
+            $errors['emp_email'] = 'This Email is already use';
+        }
+
+        /*
+        | 4.4 Employee ID duplicate (company + number)
+        */
+        $empIdQuery = Employee::where('emp_id', $empId)
+            ->where('emp_delete_status', 'active');
+
+        if ($existingInactiveEmp) {
+            $empIdQuery->where('id', '!=', $existingInactiveEmp->id);
+        }
+
+        if ($empIdQuery->exists()) {
+            $errors['employeeNumber'] = 'This Employee ID is already use';
+        }
+
+        /*
+        | 4.5 Throw all errors at once
+        */
+        if (!empty($errors)) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        /*
+        |----------------------------------------------------------------------
+        | A) Reactivate employee
+        |----------------------------------------------------------------------
+        */
         if ($existingInactiveEmp) {
 
-            // Validate ข้อมูลอื่น ๆ (เช่น Email, Phone) ว่าต้องไม่ซ้ำกับคนอื่นที่ Active อยู่
-            // (ใช้ ignore เพื่อข้ามการเช็คตัวเอง)
             $request->validate([
-                'emp_id' => ['required'], // ไม่ต้องเช็ค unique แล้วเพราะเราเจอตัวตนเขาแล้ว
+                'emp_id' => ['required'],
                 'emp_prefix' => ['required', 'integer'],
                 'emp_firstname' => ['required'],
                 'emp_lastname' => ['required'],
-                // Email ต้องไม่ซ้ำกับคนอื่น (ยกเว้นตัวเอง)
-                'emp_email' => ['required', 'email', Rule::unique('ems_employees')->ignore($existingInactiveEmp->id)],
-                // Phone ต้องไม่ซ้ำกับคนอื่น (ยกเว้นตัวเอง)
-                'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10', Rule::unique('ems_employees')->ignore($existingInactiveEmp->id)],
+                'emp_email' => ['required', 'email'],
+                'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10'],
                 'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
                 'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
                 'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-                'emp_password' => ['required', 'min:6'],
-                'emp_status' => ['required', 'integer'],
+                'emp_password' => ['nullable', 'min:8'],
+                'emp_permission' => ['nullable', 'in:admin,hr,employee'],
             ]);
 
             try {
-                // อัปเดตข้อมูลทับของเดิม
+                $companyId = $request->filled('emp_company_id')
+                    ? $request->emp_company_id
+                    : (auth()->user()->emp_company_id ?? 1);
+
                 $existingInactiveEmp->update([
-                    'emp_company_id' => $request->emp_company_id ?? (auth()->user()->emp_company_id ?? 1),
+                    'emp_company_id' => $companyId,
+                    'emp_id' => $empId,
                     'emp_prefix' => $request->emp_prefix,
-                    'emp_firstname' => $request->emp_firstname,
-                    'emp_lastname' => $request->emp_lastname,
+                    'emp_firstname' => $firstName,
+                    'emp_lastname' => $lastName,
                     'emp_nickname' => $request->emp_nickname,
                     'emp_email' => $request->emp_email,
                     'emp_phone' => $request->emp_phone,
                     'emp_position_id' => $request->emp_position_id,
                     'emp_department_id' => $request->emp_department_id,
                     'emp_team_id' => $request->emp_team_id,
-                    'emp_password' => Hash::make($request->emp_password),
-                    'emp_permission' => $request->emp_status,
-
-                    // **จุดสำคัญ: เปลี่ยนสถานะกลับมาเป็น active**
+                    'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
+                    'emp_permission' => $role,
                     'emp_delete_status' => 'active',
-                    'emp_delete_at' => null, // เคลียร์วันที่ลบ
-                    'emp_delete_by' => null, // เคลียร์คนลบ
-
+                    'emp_delete_at' => null,
+                    'emp_delete_by' => null,
                 ]);
 
-                return response()->json(['message' => 'Employee reactivated successfully', 'data' => $existingInactiveEmp], 201);
+                return response()->json([
+                    'message' => 'Employee reactivated successfully',
+                    'data' => $existingInactiveEmp,
+                ], 201);
 
             } catch (QueryException $e) {
                 Log::error('EMP_REACTIVATE_FAIL', ['msg' => $e->getMessage()]);
-                return response()->json(['error' => 'DB_ERROR', 'message' => $e->getMessage()], 500);
+                return response()->json([
+                    'error' => 'DB_ERROR',
+                    'message' => $e->getMessage(),
+                ], 500);
             }
         }
 
-        // --- กรณี B: ไม่พบข้อมูลเก่า (เป็นพนักงานใหม่จริงๆ) -> สร้างใหม่ตามปกติ ---
-
-        // Validate โดยระบุเงื่อนไขว่าต้องไม่ซ้ำกับคนที่มีสถานะ active เท่านั้น
+        /*
+        |----------------------------------------------------------------------
+        | B) Create new employee
+        |----------------------------------------------------------------------
+        */
         $request->validate([
-            'emp_id' => [
-                'required',
-                // เช็ค unique เฉพาะ record ที่ active (เผื่อกรณีสร้าง id ใหม่ซ้ำกับ id เก่าที่ inactive แต่เราเลือกจะไม่ restore)
-                Rule::unique('ems_employees')->where(fn($query) => $query->where('emp_delete_status', 'active'))
-            ],
+            'emp_id' => ['required'],
             'emp_prefix' => ['required', 'integer'],
             'emp_firstname' => ['required'],
             'emp_lastname' => ['required'],
-            'emp_email' => [
-                'required',
-                'email',
-                Rule::unique('ems_employees')->where(fn($query) => $query->where('emp_delete_status', 'active'))
-            ],
-            'emp_phone' => [
-                'required',
-                'regex:/^[0-9]+$/',
-                'size:10',
-                Rule::unique('ems_employees')->where(fn($query) => $query->where('emp_delete_status', 'active'))
-            ],
+            'emp_email' => ['required', 'email'],
+            'emp_phone' => ['required', 'regex:/^[0-9]+$/', 'size:10'],
             'emp_position_id' => ['required', 'integer', 'exists:ems_position,id'],
             'emp_department_id' => ['required', 'integer', 'exists:ems_department,id'],
             'emp_team_id' => ['required', 'integer', 'exists:ems_team,id'],
-            'emp_password' => ['required', 'min:6'],
-            'emp_status' => ['required', 'integer'],
+            'emp_password' => ['nullable', 'min:8'],
+            'emp_permission' => ['nullable', 'in:admin,hr,employee'],
         ]);
 
         try {
             $employee = Employee::create([
                 'emp_company_id' => $request->emp_company_id ?? (auth()->user()->emp_company_id ?? 1),
-                'emp_id' => $request->emp_id,
+                'emp_id' => $empId,
                 'emp_prefix' => $request->emp_prefix,
-                'emp_firstname' => $request->emp_firstname,
-                'emp_lastname' => $request->emp_lastname,
+                'emp_firstname' => $firstName,
+                'emp_lastname' => $lastName,
                 'emp_nickname' => $request->emp_nickname,
                 'emp_email' => $request->emp_email,
                 'emp_phone' => $request->emp_phone,
                 'emp_position_id' => $request->emp_position_id,
                 'emp_department_id' => $request->emp_department_id,
                 'emp_team_id' => $request->emp_team_id,
-                'emp_password' => Hash::make($request->emp_password),
-                'emp_permission' => $request->emp_status,
+                'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
+                'emp_permission' => $role,
                 'emp_delete_status' => 'active',
                 'emp_create_at' => Carbon::now(),
                 'emp_create_by' => Auth::id(),
             ]);
 
-            return response()->json(['message' => 'Employee created', 'data' => $employee], 201);
+            return response()->json([
+                'message' => 'Employee created',
+                'data' => $employee,
+            ], 201);
 
         } catch (QueryException $e) {
+
+            $sqlState = $e->errorInfo[0] ?? null;
+            $errorCode = $e->errorInfo[1] ?? null;
+
             Log::error('EMP_CREATE_FAIL', [
-                'sqlstate' => $e->errorInfo[0] ?? null,
-                'code' => $e->errorInfo[1] ?? null,
-                'msg' => $e->getMessage()
+                'sqlstate' => $sqlState,
+                'code' => $errorCode,
+                'msg' => $e->getMessage(),
             ]);
-            return response()->json(['error' => 'DB_ERROR', 'message' => $e->getMessage()], 500);
+
+            // default message
+            $userMessage = 'Unable to create employee. Please try again later.';
+
+            // Duplicate key (เช่น emp_id, email, phone)
+            if ($sqlState === '23000') {
+                if (str_contains($e->getMessage(), 'emp_id')) {
+                    $userMessage = 'This employee ID already exists.';
+                } elseif (str_contains($e->getMessage(), 'emp_email')) {
+                    $userMessage = 'This email is already in use.';
+                } elseif (str_contains($e->getMessage(), 'emp_phone')) {
+                    $userMessage = 'This phone number is already in use.';
+                } else {
+                    $userMessage = 'Duplicate data found. Please check the information.';
+                }
+            }
+            return response()->json([
+                'message' => $userMessage
+            ], 422);
         }
+
     }
 
-    /**
-     * อัปเดตข้อมูลพนักงาน
-     */
     public function update(Request $request, $id)
     {
-        // ค้นหาพนักงานจาก ID หรือ emp_id
-        $emp = Employee::where('id', $id)->orWhere('emp_id', $id)->first();
+        // =========================
+        // 1) หา user ที่ login
+        // =========================
+        $user = Auth::user();
+
+        if (!$user || empty($user->emp_id)) {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        $loginEmployee = Employee::where('emp_id', $user->emp_id)->first();
+
+        if (!$loginEmployee) {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        // =========================
+        // 2) หา employee ที่ถูกแก้ไข
+        // =========================
+        $emp = Employee::where('id', $id)
+            ->orWhere('emp_id', $id)
+            ->first();
 
         if (!$emp) {
             return response()->json(['message' => 'Employee not found'], 404);
         }
 
+        // =========================
+        // 3) HR แก้ Email / Password ไม่ได้
+        // =========================
+        if ($loginEmployee->emp_permission !== 'admin') {
+            // HR + Employee แก้ email / password / role ไม่ได้
+            $request->request->remove('emp_email');
+            $request->request->remove('emp_password');
+            $request->request->remove('password');
+            $request->request->remove('emp_permission');
+        }
+
+        // =========================
+        // 4) Validate
+        // =========================
         $validated = $request->validate([
-            // --- [แก้ไข] เพิ่ม Rule::unique สำหรับ emp_id ---
             'emp_id' => [
                 'sometimes',
                 'required',
-                Rule::unique('ems_employees', 'emp_id')->ignore($emp->id) // ห้ามซ้ำ ยกเว้นของตัวเอง
+                Rule::unique('ems_employees', 'emp_id')->ignore($emp->id)
             ],
-            // ---------------------------------------------
             'emp_prefix' => ['sometimes', 'required'],
             'emp_firstname' => ['sometimes', 'required'],
             'emp_lastname' => ['sometimes', 'required'],
@@ -337,7 +495,7 @@ class EmployeeController extends Controller
                 'sometimes',
                 'nullable',
                 'email',
-                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id) // ใช้ ID จริงที่หาเจอ
+                Rule::unique('ems_employees', 'emp_email')->ignore($emp->id)
             ],
             'emp_phone' => [
                 'sometimes',
@@ -345,25 +503,32 @@ class EmployeeController extends Controller
                 'regex:/^[0-9]+$/',
                 'min:10',
                 'max:10',
-                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id) // ใช้ ID จริงที่หาเจอ
+                Rule::unique('ems_employees', 'emp_phone')->ignore($emp->id)
             ],
             'emp_position_id' => ['sometimes', 'nullable', 'exists:ems_position,id'],
             'emp_department_id' => ['sometimes', 'nullable', 'exists:ems_department,id'],
             'emp_team_id' => ['sometimes', 'nullable', 'exists:ems_team,id'],
             'emp_permission' => ['sometimes', 'nullable', 'string', 'max:50'],
-            'emp_status' => ['sometimes', 'nullable', 'string', 'max:50'],
             'emp_password' => ['sometimes', 'nullable', 'min:6'],
         ]);
 
-        $update = collect($validated)->except('emp_status')->toArray();
+        // =========================
+// 5) Update
+// =========================
+        $update = $validated;
 
-        if ($request->filled('emp_status')) {
-            $update['emp_permission'] = $request->emp_status;
+        // CASE 1: เปลี่ยนเป็น employee → ล้าง password
+        if ($request->emp_permission === 'employee') {
+            $update['emp_password'] = null;
         }
 
-        if (!empty($update['emp_password'] ?? null)) {
+        // CASE 2: ส่ง password มา และ role ไม่ใช่ employee → hash
+        elseif (!empty($update['emp_password'])) {
             $update['emp_password'] = Hash::make($update['emp_password']);
-        } else {
+        }
+
+        // CASE 3: ไม่ส่ง password มา → ไม่แก้ password เดิม
+        else {
             unset($update['emp_password']);
         }
 
@@ -374,6 +539,7 @@ class EmployeeController extends Controller
             'data' => $emp->fresh(),
         ]);
     }
+
 
     /**
      * ลบแบบ soft (Standard)
@@ -397,19 +563,43 @@ class EmployeeController extends Controller
      */
     public function softDelete($id)
     {
-        // ค้นหาทั้ง ID และ emp_id เพื่อความยืดหยุ่น
-        $emp = Employee::where('id', $id)->orWhere('emp_id', $id)->first();
+        $user = Auth::user();
 
-        if (!$emp) {
-            return response()->json(['message' => 'Employee not found (id: ' . $id . ')'], 404);
+        // 🔒 ต้องมี emp_id เท่านั้น
+        if (empty($user->emp_id)) {
+            return response()->json(['message' => 'Permission denied'], 403);
         }
 
+        // 🔑 employee ของคนที่ login
+        $loginEmployee = Employee::where('emp_id', $user->emp_id)->first();
+
+        if (!$loginEmployee) {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        // ✅ เช็ค permission ตาม requirement
+        if ($loginEmployee->emp_permission !== 'admin') {
+            return response()->json(['message' => 'Permission denied'], 403);
+        }
+
+        // 👤 employee ที่จะถูกลบ
+        $emp = Employee::where('id', $id)
+            ->orWhere('emp_id', $id)
+            ->first();
+
+        if (!$emp) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        // 🗑️ soft delete
         $emp->emp_delete_status = 'inactive';
         $emp->emp_delete_at = now();
-        $emp->emp_delete_by = Auth::id();
+        $emp->emp_delete_by = $loginEmployee->id;
         $emp->save();
 
-        return response()->json(['message' => 'Employee soft deleted successfully']);
+        return response()->json([
+            'message' => 'Employee soft deleted successfully'
+        ]);
     }
 
     // --- ส่วน Import / Helper เดิม ไม่ได้แก้ไข logic ---

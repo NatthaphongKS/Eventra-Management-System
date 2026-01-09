@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
                 'emp_department_id' => 1,
                 'emp_team_id' => 1,
                 'emp_password' => Hash::make('Pass1234'),
-                'emp_permission' => 'enabled',
+                'emp_permission' => 'admin',
                 'emp_delete_status' => 'active',
                 'emp_create_at' => now(),
             ]
