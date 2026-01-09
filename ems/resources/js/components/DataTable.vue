@@ -22,7 +22,7 @@
                                 :checked="allSelectedOnPage"
                                 :indeterminate.prop="isIndeterminate"
                                 @change="toggleSelectAllOnPage"
-                                class="text-red-600 w-6 h-6 rounded focus:ring-0"
+                                class="form-checkbox text-red-600 w-6 h-6 rounded focus:ring-0"
                             />
                         </th>
 
