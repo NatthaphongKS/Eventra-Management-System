@@ -168,7 +168,7 @@ export default {
                     key: "evn_title",
                     label: "Event",
                     class: "text-left",
-                    headerClass: "w-[30%]",
+                    headerClass: "w-[50%]",
                     sortable: true,
                 },
                 {
