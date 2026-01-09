@@ -185,10 +185,8 @@
         <DonutActualAttendance
           :eventId="Array.from(selectedEventIds)[0]"
           :attendanceData="{
-            attending: chartData.attending || 0,
-            notAttending: chartData.not_attending || 0,
-            pending: chartData.pending || 0,
-            total: chartData.total_participation || 0
+            attending: chartData.actual_attendance?.attended || 0,
+            total: chartData.actual_attendance?.total_assigned || 0
           }"
           :loading="loadingParticipants"
         />
@@ -346,7 +344,6 @@ export default {
       ],
       // Event ที่เลือกสำหรับแสดงสถิติ
       selectedEventIds: new Set(),
-      selectAll: false,
       // กรองตามวันที่
       selectedDate: { start: null, end: null },
       // สถานะตารางพนักงาน
@@ -362,7 +359,8 @@ export default {
         attending: 0,
         not_attending: 0,
         pending: 0,
-        departments: []
+        departments: [],
+        actual_attendance: { attended: 0, total_assigned: 0 }
       },
       // ข้อมูลทดสอบปุ่ม
       loadingTest: false,
@@ -384,10 +382,12 @@ export default {
         eventName: ''
       }
     };
-  },
+  }, // <--- แก้ไขจุดที่ผิด: เอา } ที่เกินมาออก และให้ created() อยู่ต่อจากนี้ภายใน object เดียวกัน
+
   async created() {
-  await Promise.all([this.fetchEvent(), this.fetchCategories(), this.fetchEmployees()]);
+    await Promise.all([this.fetchEvent(), this.fetchCategories(), this.fetchEmployees()]);
   },
+
   watch: {
     search() {
       this.page = 1;
@@ -410,11 +410,6 @@ export default {
       if (newPage < 1) this.page = 1;
       else if (newPage > total) this.page = total;
     },
-    pageSize() {
-      if (this.page > this.totalPages) {
-        this.page = this.totalPages;
-      }
-    },
     filteredEmployeesForTable() {
       this.currentPage = 1;
     },
@@ -422,6 +417,7 @@ export default {
       this.currentPage = 1;
     },
   },
+
   computed: {
     normalized() {
       return this.event.map(e => {
@@ -508,7 +504,6 @@ export default {
 
       return arr;
     },
-
     sorted() {
       const arr = [...this.filtered];
       const { key, order, type } = this.selectedSort || {};
@@ -578,7 +573,6 @@ export default {
     totalPages() {
       return Math.ceil(this.sorted.length / this.pageSize) || 1;
     },
-
     paged() {
       const start = (this.page - 1) * this.pageSize;
       const items = this.sorted.slice(start, start + this.pageSize);
@@ -588,7 +582,11 @@ export default {
         row_number: start + index + 1
       }));
     },
-
+    // Check if all visible rows on current page are selected
+    selectAll() {
+      if (this.paged.length === 0) return false;
+      return this.paged.every(row => this.selectedEventIds.has(row.id || row.evn_id));
+    },
     eventTableColumns() {
       return [
         {
@@ -769,14 +767,12 @@ export default {
       const start = (this.empPage - 1) * this.empPageSize;
       return arr.slice(start, start + this.empPageSize);
     },
-
     // ดึงข้อมูลอีเวนต์ที่เลือก (อีเวนต์ที่เลือกแรก)
     selectedEventData() {
       if (this.selectedEventIds.size === 0) return null;
       const firstEventId = Array.from(this.selectedEventIds)[0];
       return this.normalized.find(event => (event.id || event.evn_id) == firstEventId);
     },
-
     // ดึงข้อมูลทุกอีเวนต์ที่เลือก (สำหรับ Export)
     selectedEventsArray() {
       if (this.selectedEventIds.size === 0) return [];
@@ -785,7 +781,6 @@ export default {
         selectedIds.includes(event.id || event.evn_id)
       );
     },
-
     // Export progress message
     exportMessage() {
       if (this.exportProgress.total === 0) {
@@ -793,67 +788,54 @@ export default {
       }
       return `กำลัง Export: ${this.exportProgress.eventName}\n(${this.exportProgress.current} จาก ${this.exportProgress.total})`;
     },
-
     // Export progress percentage
     exportProgressPercent() {
       if (this.exportProgress.total === 0) return 0;
       return Math.round((this.exportProgress.current / this.exportProgress.total) * 100);
     }
   },
+
   methods: {
     // Search handling
     handleSearch(searchValue) {
       this.search = searchValue;
     },
-
     // Filter handling
     handleFilter(filterData) {
-      this.filterValue = filterData;
-      this.page = 1; // รีเซ็ตกลับไปหน้าแรกเมื่อมีการกรอง
+      this.filters = { ...this.filters, ...filterData }; // Updated to merge filters properly
+      this.page = 1;
     },
-
     // Sort handling
     handleSort(sortData) {
-      this.sortValue = sortData;
-      this.sortBy = sortData.key;
-      this.sortOrder = sortData.order;
-      this.page = 1; // Reset to first page when sorting
+      this.handleClientSort(sortData);
     },
-
     // เมธอดคำนวณข้อมูลสำหรับแสดงกราฟ (ย้ายมาจาก computed)
     getAttendingProgress() {
-      if (this.chartData.totalParticipation === 0) return 0;
-      return Math.round((this.chartData.attending / this.chartData.totalParticipation) * 251);
+      if (this.chartData.total_participation === 0) return 0;
+      return Math.round((this.chartData.attending / this.chartData.total_participation) * 251);
     },
-
     getNotAttendingProgress() {
-      if (this.chartData.totalParticipation === 0) return 0;
-      return Math.round((this.chartData.notAttending / this.chartData.totalParticipation) * 251);
+      if (this.chartData.total_participation === 0) return 0;
+      return Math.round((this.chartData.not_attending / this.chartData.total_participation) * 251);
     },
-
     getPendingProgress() {
-      if (this.chartData.totalParticipation === 0) return 0;
-      return Math.round((this.chartData.pending / this.chartData.totalParticipation) * 251);
+      if (this.chartData.total_participation === 0) return 0;
+      return Math.round((this.chartData.pending / this.chartData.total_participation) * 251);
     },
-
     getAttendingPercentage() {
       return Math.round((this.chartData.attending / 100) * 251);
     },
-
     getNotAttendingPercentage() {
-      return Math.round((this.chartData.notAttending / 100) * 251);
+      return Math.round((this.chartData.not_attending / 100) * 251);
     },
-
     getPendingPercentage() {
       return Math.round((this.chartData.pending / 100) * 251);
     },
-
     getAttendancePercentage() {
-      const total = this.chartData.attending + this.chartData.notAttending + this.chartData.pending;
+      const total = this.chartData.attending + this.chartData.not_attending + this.chartData.pending;
       if (total === 0) return 0;
       return Math.round((this.chartData.attending / total) * 100);
     },
-
     async fetchEmployees() {
       try {
         const res = await axios.get("/get-employees", {
@@ -934,24 +916,20 @@ export default {
         this.catMap = {};
       }
     },
-
     goToPage(p) {
       if (p < 1) p = 1;
       if (p > this.totalPages) p = this.totalPages || 1;
       this.page = p;
     },
-
     editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
       this.$router.push(`/edit-event/${id}`)
     },
-
     async deleteEvent(id) {
       if (confirm("Delete?")) {
         try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
         catch (err) { console.error("Error deleting event", err); }
       }
-    }
-    ,
+    },
     formatDate(val) {
       if (!val) return 'N/A';
       const d = new Date(val); if (isNaN(d)) return val;
@@ -980,16 +958,14 @@ export default {
     onAddEvent() {
       // ฟังก์ชันสำหรับเพิ่ม event ใหม่
       console.log('Add Event clicked!');
-      alert('Add Event button clicked! 🎉');
+      this.$router.push('/create-event');
     },
-
     // Date filter method
     filterByDate() {
       // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
       // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
       this.page = 1;
     },
-
     // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
     async fetchEventStatistics() {
       console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
@@ -1002,7 +978,8 @@ export default {
           attending: 0,
           not_attending: 0,
           pending: 0,
-          departments: []
+          departments: [],
+          actual_attendance: { attended: 0, total_assigned: 0 }
         };
         this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
@@ -1028,7 +1005,8 @@ export default {
             attending: res.data.attending || 0,
             not_attending: res.data.not_attending || 0,
             pending: res.data.pending || 0,
-            departments: res.data.departments || []
+            departments: res.data.departments || [],
+            actual_attendance: res.data.actual_attendance || { attended: 0, total_assigned: 0 }
           };
 
           // อัพเดตข้อมูลกราฟแท่ง
@@ -1065,7 +1043,8 @@ export default {
           attending: 0,
           not_attending: 0,
           pending: 0,
-          departments: []
+          departments: [],
+          actual_attendance: { attended: 0, total_assigned: 0 }
         };
         this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
@@ -1073,84 +1052,69 @@ export default {
         this.loadingParticipants = false;
       }
     },
-
     // ฟังก์ชันจัดการ checkbox เลือกหลาย event - สำหรับ highlight row
     getRowClass(row) {
       const eventId = row.id || row.evn_id;
       return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
     },
-
     toggleEventSelection(event) {
       const eventId = event.id || event.evn_id;
       if (!eventId) {
         console.error('No event ID found in:', event);
         return;
       }
-
       if (this.selectedEventIds.has(eventId)) {
         this.selectedEventIds.delete(eventId);
       } else {
         this.selectedEventIds.add(eventId);
       }
-
-      // อัพเดตสถานะ select-all checkbox
-      this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
-
       // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
       this.showStatistics = false;
-
-      console.log('Updated selected events:', Array.from(this.selectedEventIds));
-
-      // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
-
     selectAllEvents(event) {
-      // สลับสถานะ selectAll ตามสถานะ checkbox
-      this.selectAll = event.target.checked;
+      const isChecked = event.target.checked;
 
-      if (this.selectAll) {
-        // เลือกทุกอีเวนต์ในรายการที่เรียงแล้ว
-        this.selectedEventIds = new Set(this.sorted.map(e => e.id || e.evn_id));
+      if (isChecked) {
+         // เลือกทุกอีเวนต์ในหน้าปัจจุบัน (Visible Page)
+        this.paged.forEach(row => {
+          const eventId = row.id || row.evn_id;
+          if (eventId) {
+            this.selectedEventIds.add(eventId);
+          }
+        });
       } else {
-        // ยกเลิกการเลือกทั้งหมด
-        this.selectedEventIds.clear();
+        // ยกเลิกการเลือกเฉพาะแถวที่แสดงในหน้าปัจจุบัน
+        this.paged.forEach(row => {
+          const eventId = row.id || row.evn_id;
+          if (eventId) {
+            this.selectedEventIds.delete(eventId);
+          }
+        });
       }
-
       // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
       this.showStatistics = false;
-
-      console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
-
-      // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
-
     // ดึงชื่ออีเวนต์มาแสดงผล
     getEventTitlesText() {
       if (this.selectedEventIds.size === 0) return 'N/A';
-
       const selectedEvents = this.normalized.filter(event =>
         this.selectedEventIds.has(event.id || event.evn_id)
       );
-
       if (selectedEvents.length === 1) {
         return selectedEvents[0].evn_title || 'N/A';
       } else if (selectedEvents.length > 1) {
         return `${selectedEvents.length} events selected`;
       }
-
       return 'N/A';
     },
-
     // Filter & Sort handlers
     applySearch() {
       this.search = this.searchInput;
       this.page = 1;
     },
-
     applyFilter() {
       this.page = 1;
     },
-
     onPickSort(opt) {
       if (!opt) return;
       this.selectedSort = opt;
@@ -1158,7 +1122,6 @@ export default {
       this.sortOrder = opt.order;
       this.page = 1;
     },
-
     handleClientSort({ key, order }) {
       this.sortBy = key;
       this.sortOrder = order;
@@ -1168,26 +1131,11 @@ export default {
           (opt) => opt.key === key && opt.order === order
         ) || this.selectedSort;
     },
-
     // เมธอดสำหรับจัดรูปแบบข้อมูล
-    formatDate(val) {
-      if (!val) return "N/A";
-      try {
-        const d = new Date(val);
-        const dd = String(d.getDate()).padStart(2, "0");
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const yyyy = d.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
-      } catch {
-        return "Invalid Date";
-      }
-    },
-
     timeText(startTime, endTime) {
       const format = (t) => (t ? String(t).slice(0, 5) : "??:??");
       return `${format(startTime)}-${format(endTime)}`;
     },
-
     badgeClass(status) {
       const base =
         "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
@@ -1202,7 +1150,6 @@ export default {
           return `${base} bg-slate-100 text-slate-700`;
       }
     },
-
     // Navigation
     goDetails(id) {
       try {
@@ -1214,44 +1161,25 @@ export default {
         this.$router.push({ path: `/events/${id}` });
       }
     },
-
-    // ไม่ใช้แล้ว เก็บไว้เป็นตัวอย่าง ให้ใช้ toggleEventSelection แทน
     onEventSelect(event) {
-      console.log('Event selected:', event);
-      console.log('Event keys:', Object.keys(event));
-
-      // ลองหา ID field ที่ถูกต้อง - ใช้ id แทน evn_id
       const eventId = event.id || event.evn_id;
-
-      if (!eventId) {
-        console.error('No event ID found in:', event);
-        return;
-      }
-
-      this.toggleEventSelection(event);
-      if (this.selectedEventIds.size > 0) {
-        this.loadEventStatistics(eventId);
-      }
+      if(eventId) this.toggleEventSelection(event);
     },
-
     async loadEventStatistics(eventId) {
       this.isLoading = true;
       try {
         // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
         const response = await axios.get(`/api/event/${eventId}/participants`);
-
         console.log('Event statistics response:', response.data);
 
         if (response.data.success) {
           const statistics = response.data.data.statistics;
-
           // อัปเดตข้อมูลกราฟด้วยสถิติจริง
           this.chartData = {
             attending: statistics.attending || 0,
             notAttending: statistics.not_attending || 0,
             pending: statistics.pending || 0
           };
-
           // อัพเดตกราฟ
           this.participationData = {
             labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
@@ -1264,7 +1192,6 @@ export default {
               backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
             }]
           };
-
           console.log('Updated chart data:', this.chartData);
         } else {
           console.error('Failed to load event statistics:', response.data.message);
@@ -1281,8 +1208,6 @@ export default {
         this.isLoading = false;
       }
     },
-
-
     async showEmployeesByStatus(status) {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมก่อน');
@@ -1292,7 +1217,6 @@ export default {
       console.log('showEmployeesByStatus called with status:', status);
       this.employeeTableType = status;
       this.showEmployeeTable = true;
-
       try {
         //  ตรวจสอบว่ามีข้อมูล participants หรือไม่
         if (!this.eventParticipants || this.eventParticipants.length === 0) {
@@ -1303,11 +1227,10 @@ export default {
 
         // กรองผู้เข้าร่วมตามสถานะ
         let filteredParticipants = [];
-
         if (status === 'attending') {
-          // สำหรับผู้เข้าร่วม ใช้ con_checkin_status = 1 (เช็คอินจริง)
+          // สำหรับผู้เข้าร่วม ใช้ con_answer = 'accepted' (ตอบรับ)
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.con_checkin_status === 1;
+            return participant.status === 'accepted';
           });
         } else if (status === 'not-attending') {
           // สำหรับไม่เข้าร่วม ใช้ con_answer = 'denied'
@@ -1315,9 +1238,9 @@ export default {
             return participant.status === 'denied';
           });
         } else if (status === 'pending') {
-          // สำหรับรอตอบกลับ: คนที่ยังไม่เช็คอินและยังไม่ได้ปฏิเสธ
+          // สำหรับรอตอบกลับ: คนที่ยังไม่ตอบรับหรือปฏิเสธ
           filteredParticipants = this.eventParticipants.filter(participant => {
-            return participant.con_checkin_status !== 1 && participant.status !== 'denied';
+            return participant.status !== 'accepted' && participant.status !== 'denied';
           });
         }
 
@@ -1330,11 +1253,18 @@ export default {
             uniqueParticipants.set(uniqueKey, participant);
           }
         });
-
         // แปลง Map กลับเป็น Array และเรียงข้อมูล
         const deduplicatedParticipants = Array.from(uniqueParticipants.values());
         deduplicatedParticipants.sort((a, b) => {
-          // เรียงตาม emp_id ก่อน
+          // เรียงตามชื่อกิจกรรมก่อน
+          const eventCompare = (a.event_title || '').localeCompare(b.event_title || '');
+          if (eventCompare !== 0) return eventCompare;
+
+          // ถ้าชื่อกิจกรรมเท่ากัน ให้เรียงตามชื่อพนักงาน
+          const nameCompare = (a.emp_firstname || '').localeCompare(b.emp_firstname || '');
+          if (nameCompare !== 0) return nameCompare;
+
+          // ถ้าชื่อเท่ากัน ให้เรียงตาม emp_id
           const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
           if (empCompare !== 0) return empCompare;
 
@@ -1359,7 +1289,6 @@ export default {
           event_title: participant.event_title || 'N/A',
           emp_delete_status: 'active'
         }));
-
         // Reset pagination เมื่อโหลดข้อมูลใหม่
         this.currentPage = 1;
 
@@ -1373,13 +1302,11 @@ export default {
 
       } catch (error) {
         console.error('Error loading employees:', error);
-
         // ใช้ array ว่างหากการกรองล้มเหลว
         this.filteredEmployeesForTable = [];
         alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
       }
     },
-
     mapStatusForAPI(status) {
       const statusMap = {
         'attending': 'accepted',
@@ -1388,13 +1315,11 @@ export default {
       };
       return statusMap[status] || 'pending';
     },
-
     // Button testing methods
     testClick(buttonType) {
       console.log(`Button clicked: ${buttonType}`);
       alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
     },
-
     testLoading() {
       this.loadingTest = true;
       setTimeout(() => {
@@ -1402,20 +1327,16 @@ export default {
         alert('Loading test completed!');
       }, 2000);
     },
-
     // Show data handler - scroll to charts and fetch statistics
     showDataHandler() {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
         return;
       }
-
       // เปิดการแสดงผลกราฟและตาราง
       this.showStatistics = true;
-
       // เรียก fetch statistics
       this.fetchEventStatistics();
-
       // Scroll to summary section
       this.$nextTick(() => {
         const summaryCard = document.querySelector('.summary-card');
@@ -1424,561 +1345,35 @@ export default {
         }
       });
     },
-
     // Export handlers
     handleExportStart() {
       this.isExporting = true;
       this.exportProgress = { current: 0, total: 0, eventName: '' };
     },
-
     handleExportProgress(progress) {
       this.exportProgress = progress;
     },
-
     handleExportComplete(result) {
       console.log('Export completed:', result);
     },
-
     handleExportError(error) {
       console.error('Export error:', error);
     },
-
     handleExportEnd() {
       this.isExporting = false;
       this.exportProgress = { current: 0, total: 0, eventName: '' };
     }
-  }
-};
+  } // End methods
+} // End export default
 </script>
 
 <style scoped>
-/* Event Card Styling - Clean and minimal like EventPage */
-.event-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-}
-
-.event-card .toolbar--pill {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
-}
-
-.event-card .toolbar--pill > div:first-child {
-  flex: 1;
-}
-
-.event-card .export-label {
-  display: none; /* Hide the label */
-}
-
-/* Event Table Styling - Similar to Employee Table */
-.event-table-wrap {
-  overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-  margin-top: 1rem;
-  background: #fff;
-}
-
-.event-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-spacing: 0;
-  background: #ffffff;
-  font-size: 14px;
-}
-
-/* Event Table Header */
-.event-th {
-  background: #ffffff;
-  color: #374151;
-  font-weight: 600;
-  font-size: 13px;
-  text-align: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  white-space: nowrap;
-}
-
-/* Event Table Data */
-.event-td {
-  padding: 12px 16px;
-  text-align: center;
-  border-bottom: 1px solid #e5e7eb;
-  color: #374151;
-  vertical-align: middle;
-}
-
-/* Event Table Rows */
-.event-row:nth-child(odd) {
-  background-color: #ffffff;
-}
-
-.event-row:nth-child(even) {
-  background-color: #ffffff;
-}
-
-.event-row:hover {
-  background-color: #f9fafb;
-  transition: background-color 0.2s ease;
-}
-
-/* No Data Row for Event Table */
-.event-td.no-data {
-  text-align: center;
-  color: #6b7280;
-  font-style: italic;
-  padding: 24px;
-  background-color: #f9fafb;
-}
-
-/* Employee Table Styling */
-.employee-table-container {
-  background: #ffffff;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  margin-top: 1.5rem;
-  border: 1px solid #e5e7eb;
-}
-
-.employee-table-wrap {
-  overflow-x: auto;
-}
-
-.employee-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-spacing: 0;
-  background: #ffffff;
-}
-
-/* Employee Table Header */
-.employee-th {
-  background: #f8fafc;
-  color: #374151;
-  font-weight: 600;
-  font-size: 14px;
-  text-align: center;
-  padding: 16px 12px;
-  border-bottom: 2px solid #e5e7eb;
-  border-right: none;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-/* Employee Table Data */
-.employee-td {
-  padding: 14px 12px;
-  text-align: center;
-  border-bottom: 1px solid #f1f5f9;
-  border-right: none;
-  font-size: 14px;
-  color: #374151;
-  vertical-align: middle;
-}
-
-/* Employee Table Rows */
-.employee-row:nth-child(even) {
-  background-color: #f9fafb;
-}
-
-.employee-row:nth-child(odd) {
-  background-color: #ffffff;
-}
-
-.employee-row:hover {
-  background-color: #f3f4f6;
-  transition: background-color 0.2s ease;
-}
-
-/* No Data Row */
-.employee-td.no-data {
-  text-align: center;
-  color: #6b7280;
-  font-style: italic;
-  padding: 24px;
-  background-color: #f9fafb;
-}
-
-/* Column Specific Styling */
-.emp-col-idx {
-  width: 60px;
-  min-width: 60px;
-}
-
-.emp-col-id {
-  width: 80px;
-  min-width: 80px;
-}
-
-.emp-col-name {
-  width: 150px;
-  min-width: 150px;
-}
-
-.emp-col-nickname {
-  width: 100px;
-  min-width: 100px;
-}
-
-.emp-col-phone {
-  width: 120px;
-  min-width: 120px;
-}
-
-.emp-col-department,
-.emp-col-team {
-  width: 160px;
-  min-width: 160px;
-}
-
-.emp-col-position {
-  width: 180px;
-  min-width: 180px;
-}
-
-.emp-col-event {
-  width: 200px;
-  min-width: 200px;
-}
-
-/* Responsive Design for Event Table */
-@media (max-width: 1024px) {
-  .event-table-wrap {
-    margin: 10px -1rem 0 -1rem;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-  }
-
-  .event-th,
-  .event-td {
-    padding: 10px 8px;
-    font-size: 13px;
-  }
-
-  .evt-col-title {
-    width: 160px;
-    min-width: 160px;
-  }
-
-  .evt-col-cat,
-  .evt-col-time {
-    width: 120px;
-    min-width: 120px;
-  }
-}
-
-@media (max-width: 768px) {
-  .event-th,
-  .event-td {
-    padding: 8px 6px;
-    font-size: 12px;
-  }
-
-  .evt-col-title {
-    width: 140px;
-    min-width: 140px;
-  }
-
-  .evt-col-cat,
-  .evt-col-time {
-    width: 100px;
-    min-width: 100px;
-  }
-
-  .evt-col-date {
-    width: 90px;
-    min-width: 90px;
-  }
-}
-
-/* Text Overflow Protection for Event Table */
-.event-td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Hover Effects for Event Table */
-.event-table {
-  transition: all 0.3s ease;
-}
-
-.event-row {
-  transition: all 0.2s ease;
-}
-
-/* Responsive Design for Employee Table */
-@media (max-width: 1024px) {
-  .employee-table-container {
-    margin: 1rem -1rem 0 -1rem;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-  }
-
-  .employee-th,
-  .employee-td {
-    padding: 10px 8px;
-    font-size: 13px;
-  }
-
-  .emp-col-position,
-  .emp-col-department,
-  .emp-col-team,
-  .emp-col-event {
-    width: 120px;
-    min-width: 120px;
-  }
-}
-
-@media (max-width: 768px) {
-  .employee-th,
-  .employee-td {
-    padding: 8px 6px;
-    font-size: 12px;
-  }
-
-  .emp-col-name {
-    width: 120px;
-    min-width: 120px;
-  }
-
-  .emp-col-department,
-  .emp-col-team {
-    width: 110px;
-    min-width: 110px;
-  }
-
-  .emp-col-position {
-    width: 140px;
-    min-width: 140px;
-  }
-
-  .emp-col-event {
-    width: 150px;
-    min-width: 150px;
-  }
-
-  .employee-table-footer {
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
-  }
-
-  .employee-table-info {
-    justify-content: center;
-  }
-}
-
-/* Text Overflow Protection */
-.employee-td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Hover Effects */
-.employee-table {
-  transition: all 0.3s ease;
-}
-
-.employee-row {
-  transition: all 0.2s ease;
-}
-
-/* Focus States */
-.employee-table:focus-within {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-
-
-
-
-.export-label {
-  text-align: center;
-  color: #e5e7eb;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-  font-style: italic;
-  opacity: 0.8;
-}
-
-.employee-table .badge {
-  min-width: 70px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: lowercase;
-  background: #e5e7eb;
-  color: #374151;
-}
-.employee-table .badge.enabled {
-  background: #dcfce7;
-  color: #166534;
-}
-.employee-table .badge.deleted {
-  background: #fee2e2;
-  color: #991b1b;
-}
-/* Layout grid สำหรับ dashboard */
-.dashboard-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  width: 100%;
-  background: #f5f5f5; /* neutral-100 ตาม Color Palette */
-  min-height: 100vh;
-  padding: 1rem;
-}
-/* Card สำหรับ Event */
-.event-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-}
 /* Card สำหรับ Summary/Graph */
 .summary-card {
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   padding: 2rem 2rem 1.5rem 2rem;
-}
-/* Chart Styles */
-.donut-chart {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 0 auto;
-}
-
-.donut-chart.small {
-  width: 100px;
-  height: 100px;
-}
-
-.donut-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(0deg);
-}
-
-.donut-ring {
-  stroke-width: 8;
-}
-
-.donut-segment {
-  stroke-width: 8;
-  stroke-linecap: round;
-  transition: stroke-dasharray 0.6s ease;
-}
-
-.donut-chart-inner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: none;
-}
-
-.chart-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  line-height: 1;
-}
-
-.donut-chart.small .chart-number {
-  font-size: 1.8rem;
-}
-
-.chart-label {
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-weight: 500;
-  margin-top: 2px;
-}
-
-.chart-icon {
-  font-size: 1.2rem;
-  margin-top: 0.25rem;
-  color: #6b7280;
-}
-
-/* Bar Chart Styles */
-.bar-chart-container {
-  display: flex;
-  justify-content: space-around;
-  align-items: end;
-  height: 180px;
-  padding: 20px 10px;
-  gap: 8px;
-}
-
-.bar-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  max-width: 60px;
-}
-
-.bar-label {
-  font-size: 0.7rem;
-  color: #6b7280;
-  margin-bottom: 8px;
-  text-align: center;
-  word-wrap: break-word;
-  line-height: 1.2;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bars {
-  display: flex;
-  gap: 2px;
-  align-items: end;
-  height: 120px;
-  justify-content: center;
-}
-
-.bar {
-  width: 8px;
-  border-radius: 4px 4px 0 0;
-  transition: height 0.6s ease;
-  min-height: 8px;
-}
-
-.bar.attending {
-  background: linear-gradient(180deg, #f8bbd9 0%, #e91e63 100%);
-}
-
-.bar.not-attending {
-  background: linear-gradient(180deg, #ffccbc 0%, #ff5722 100%);
-}
-
-.bar.pending {
-  background: linear-gradient(180deg, #e1bee7 0%, #9c27b0 100%);
 }
 
 .summary-grid {
@@ -2146,8 +1541,6 @@ export default {
   line-height: 1.5;
 }
 
-/* Employee Table Card */
-
 /* Override checkbox style to match DataTable component */
 :deep(input[type="checkbox"]) {
   accent-color: #dc2626 !important;
@@ -2155,343 +1548,14 @@ export default {
 
 /* Highlight selected rows - match DataTable component style */
 :deep(tr.selected-row) {
-  background-color: #fee2e2 !important; /* bg-red-100 equivalent */
+  background-color: #fee2e2 !important;
 }
 
 :deep(tr.selected-row:hover) {
-  background-color: #ffffff !important; /* white on hover */
+  background-color: #ffffff !important;
 }
 
-.employee-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-  padding: 2rem 2rem 1.5rem 2rem;
-}
-/* Divider ระหว่าง Card */
-.card-divider {
-  width: 100%;
-  height: 48px;
-  background: linear-gradient(90deg, #f3f4f6 0%, #e0e7ef 100%);
-  border-radius: 18px;
-  margin: 2.5rem 0 2.5rem 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-/* Card สำหรับ Employee */
-.employee-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-  padding: 2rem 2rem 1.5rem 2rem;
-  margin-top: 2.5rem;
-}
-.employee-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #22c55e;
-  margin-bottom: 1rem;
-  letter-spacing: 0.03em;
-  text-align: left;
-  background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-/* สไตล์หัวข้อ Event ด้านบนตาราง */
-.event-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #f43f5e;
-  margin-bottom: 1rem;
-  letter-spacing: 0.03em;
-  text-align: left;
-  background: linear-gradient(90deg, #f43f5e 0%, #f87171 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-/* ปุ่มใหม่สำหรับ View Report และ Export */
-.custom-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  padding: 0.5em 1.2em;
-  border-radius: 999px;
-  font-weight: 500;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-.custom-btn .icon {
-  width: 1.2em;
-  height: 1.2em;
-  vertical-align: middle;
-}
-.report-btn {
-  background: linear-gradient(90deg, #f43f5e 0%, #f87171 100%);
-  color: #fff;
-  margin-right: 0.5em;
-}
-.report-btn:hover {
-  background: linear-gradient(90deg, #be185d 0%, #f43f5e 100%);
-  box-shadow: 0 4px 16px rgba(244,63,94,0.12);
-  transform: translateY(-2px) scale(1.03);
-}
-
-/* Legacy export-btn (keeping for compatibility) */
-.export-btn {
-  background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%);
-  color: #fff;
-}
-.export-btn:hover {
-  background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
-  box-shadow: 0 4px 16px rgba(34,197,94,0.12);
-  transform: translateY(-2px) scale(1.03);
-}
-/* ตัวช่วย layout */
-.toolbar--pill {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0;
-  flex-wrap: wrap;
-}
-
-/* ปุ่ม + Add New เป็น pill และชิดขวา */
-.pill-add {
-  margin-left:auto; height:44px; padding:0 18px; border-radius:999px;
-  background:#e11d48; color:#fff; text-decoration:none; display:inline-flex; align-items:center; font-weight:600;
-}
-.pill-add:hover { background:#be123c; }
-
-/* Summary */
-.summary { font-size:12px; color:#666; margin-left:16px; }
-
-/* Table */
-.table-wrap { overflow-x:auto; }
-.table { width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; margin-top:10px; }
-thead th { position:sticky; top:0; z-index:1; }
-.th { cursor:default; user-select:none; background:#f9fafb; font-weight:600; border-bottom:1px solid #e5e7eb; }
-th, td { vertical-align:middle; padding:7px 10px; border-top:1px solid #eee; font-size:14px; }
-
-/* Column widths */
-.col-idx{ width:48px; text-align:center; }
-.col-id{ width:80px; text-align:center; }
-.col-title{ width:24%; text-align:center; }
-.col-cat{ width:12%; text-align:center; }
-.col-date{ width:110px; text-align:center; white-space:nowrap; }
-.col-time{ width:92px; text-align:center; white-space:nowrap; }
-.col-num{ width:80px; text-align:center; }
-.col-status{ width:110px; text-align:center; }
-.col-action{ width:120px; text-align:center; }
-
-/* Employee table columns */
-.col-id{ width:100px; text-align:center; }
-.col-name{ width:150px; text-align:left; }
-.col-last{ width:150px; text-align:left; }
-.col-nickname{ width:100px; text-align:center; }
-.col-phone{ width:120px; text-align:center; }
-.col-position{ width:140px; text-align:left; }
-.col-department{ width:140px; text-align:left; }
-.col-team{ width:120px; text-align:left; }
-.col-event{ width:180px; text-align:left; }
-
-/* Rows */
-tbody tr:nth-child(odd){ background:#fff; }
-tbody tr:nth-child(even){ background:#fafafa; }
-tbody tr:hover{ background:#f3f4f6; }
-
-/* Text overflow */
-.truncate{ display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-/* Action buttons */
-.btn-link{ background:transparent; border:none; color:#0ea5e9; font-weight:600; cursor:pointer; padding:2px 4px; font-size:13px; }
-.btn-link:hover{ text-decoration:underline; }
-.btn-link.danger{ color:#ef4444; }
-
-/* Badge - ใช้สีตาม Color Palette */
-.badge {
-  display:inline-block;
-  min-width:70px;
-  padding:3px 8px;
-  border-radius:4px;
-  font-size:12px;
-  font-weight:700;
-  text-transform:lowercase;
-  background:#f5f5f5; /* neutral-100 */
-  color:#525252; /* neutral-600 */
-}
-.badge.deleted{
-  background:#fecaca; /* red-100 */
-  color:#991b1b; /* red-800 */
-}
-.badge.done{
-  background:#bbf7d0; /* green-200 */
-  color:#059669; /* green-600 */
-}
-.badge.upcoming{
-  background:#fef3c7; /* yellow-200 */
-  color:#d97706; /* yellow-400 */
-}
-
-/* Pager - ใช้สี red-700 ตาม Color Palette */
-.pager2 { display:flex; gap:.5rem; align-items:center; justify-content:center; margin-top:14px; }
-.page-btn {
-  min-width:36px;
-  height:36px;
-  padding:0 10px;
-  border-radius:10px;
-  border:2px solid #b91c1c; /* red-700 */
-  background:transparent;
-  color:#b91c1c; /* red-700 */
-  font-weight:700;
-  line-height:1;
-}
-.page-btn.active {
-  background:#b91c1c; /* red-700 */
-  color:#fff;
-  border-color:#b91c1c; /* red-700 */
-}
-.page-btn:hover:not(.active){
-  background:#fecaca; /* red-100 */
-}
-.arrow-btn {
-  width:36px;
-  height:36px;
-  border-radius:10px;
-  border:none;
-  background:#b91c1c; /* red-700 */
-  color:#fff;
-  font-weight:700;
-}
-.arrow-btn:disabled{ opacity:.5; cursor:not-allowed; }
-.dots{
-  padding:0 6px;
-  color:#b91c1c; /* red-700 */
-  font-weight:700;
-}
-
-.employee-table th.col-idx,
-.employee-table th.col-id,
-.employee-table th.col-phone {
-  text-align: center;
-}
-.employee-table th.col-prefix,
-.employee-table th.col-name,
-.employee-table th.col-last,
-.employee-table th.col-nickname,
-.employee-table th.col-email,
-.employee-table th.col-position,
-.employee-table th.col-department,
-.employee-table th.col-team {
-  text-align: left;
-}
-.employee-table td.col-idx,
-.employee-table td.col-id,
-.employee-table td.col-phone {
-  text-align: center;
-}
-.employee-table td.col-prefix,
-.employee-table td.col-name,
-.employee-table td.col-last,
-.employee-table td.col-nickname,
-.employee-table td.col-email,
-.employee-table td.col-position,
-.employee-table td.col-department,
-.employee-table td.col-team {
-  text-align: left;
-}
-
-/* Employee Table Footer */
-.employee-table-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background: #f8fafc;
-  border-top: 1px solid #e5e7eb;
-  border-radius: 0 0 16px 16px;
-}
-
-.employee-table-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #374151;
-  font-weight: 500;
-}
-
-.employee-page-size-select {
-  padding: 6px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  font-size: 14px;
-  color: #374151;
-  cursor: pointer;
-  min-width: 60px;
-  transition: all 0.2s ease;
-}
-
-.employee-page-size-select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.employee-page-size-select:hover {
-  border-color: #9ca3af;
-}
-
-.table-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #333;
-}
-
-.page-size-select {
-  padding: 4px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  min-width: 50px;
-}
-
-.page-size-select:focus {
-  outline: none;
-  border-color: #dc2626;
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
-}
-
-/* Event table footer with centered pagination */
-.event-table-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 0 1rem 0;
-  margin-top: 1rem;
-  position: relative;
-}
-
-.event-table-footer .pager2 {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.event-table-footer .table-info {
-  z-index: 1;
-}
-
-/* Status Cards - New Design */
+/* Status Cards - Used by AttendingCard, NotAttendingCard, PendingCard */
 .status-card {
   background: white;
   border-radius: 16px;
@@ -2505,615 +1569,6 @@ tbody tr:hover{ background:#f3f4f6; }
 .status-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.attending-card {
-  background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
-  border-left: 4px solid #16a34a;
-}
-
-.not-attending-card {
-  background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
-  border-left: 4px solid #dc2626;
-}
-
-.pending-card {
-  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
-  border-left: 4px solid #2563eb;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.card-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.attending-card .card-icon {
-  color: #16a34a;
-}
-
-.not-attending-card .card-icon {
-  color: #dc2626;
-}
-
-.pending-card .card-icon {
-  color: #2563eb;
-}
-
-.icon {
-  width: 24px;
-  height: 24px;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.card-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.percentage {
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.attending-card .percentage {
-  color: #16a34a;
-}
-
-.not-attending-card .percentage {
-  color: #dc2626;
-}
-
-.pending-card .percentage {
-  color: #2563eb;
-}
-
-.progress-ring {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.progress-svg {
-  width: 80px;
-  height: 80px;
-  transform: rotate(0deg);
-}
-
-.progress-bg {
-  stroke-linecap: round;
-}
-
-.progress-bar {
-  stroke-linecap: round;
-  transition: stroke-dasharray 0.6s ease;
-}
-
-.progress-number {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.bullet {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.bullet.green {
-  background: #16a34a;
-}
-
-.bullet.red {
-  background: #dc2626;
-}
-
-.bullet.blue {
-  background: #2563eb;
-}
-
-.count {
-  flex: 1;
-}
-
-.view-link {
-  color: #3b82f6;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.view-link:hover {
-  color: #1d4ed8;
-}
-
-/* Chart Header */
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.team-filter select {
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: white;
-  font-size: 14px;
-  color: #374151;
-  cursor: pointer;
-}
-
-.team-filter select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Attendance Info */
-.attendance-info {
-  margin-top: 16px;
-}
-
-.attendance-stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.attendance-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #16a34a;
-}
-
-.attendance-text {
-  font-weight: 500;
-}
-
-/* ========================================
-   Dashboard Reference UI Styling
-   ======================================== */
-
-.dashboard-container {
-  padding: 24px;
-  background: #f9fafb;
-  min-height: 100vh;
-}
-
-.dashboard-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 20px 0;
-}
-
-.dashboard-card {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-/* Search Section */
-.search-section {
-  padding: 24px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.search-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 12px;
-}
-
-.search-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.search-input {
-  flex: 1;
-  height: 42px;
-  padding: 0 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #111827;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.search-input:focus {
-  border-color: #dc2626;
-}
-
-.search-input::placeholder {
-  color: #9ca3af;
-}
-
-.clear-btn {
-  width: 42px;
-  height: 42px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #6b7280;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.clear-btn:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.search-btn {
-  height: 42px;
-  padding: 0 20px;
-  border: none;
-  border-radius: 8px;
-  background: #dc2626;
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.search-btn:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-.search-btn .material-symbols-outlined {
-  font-size: 18px;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  height: 38px;
-  padding: 0 18px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #374151;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.action-btn:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.action-btn .material-symbols-outlined {
-  font-size: 18px;
-}
-
-.show-data-btn {
-  height: 38px;
-  padding: 0 20px;
-  border: none;
-  border-radius: 8px;
-  background: #dc2626;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.show-data-btn:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-/* Table */
-.table-wrapper {
-  overflow-x: auto;
-}
-
-.event-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.event-table thead {
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.event-table th {
-  padding: 14px 16px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  white-space: nowrap;
-}
-
-.event-table th.col-checkbox {
-  width: 50px;
-  text-align: center;
-}
-
-.event-table th.col-number {
-  width: 60px;
-  text-align: center;
-}
-
-.event-table th.col-event {
-  min-width: 200px;
-}
-
-.event-table th.col-category {
-  width: 140px;
-}
-
-.event-table th.col-date {
-  width: 120px;
-}
-
-.event-table th.col-time {
-  width: 130px;
-}
-
-.event-table th.col-invited,
-.event-table th.col-accepted {
-  width: 100px;
-  text-align: center;
-}
-
-.event-table th.col-status {
-  width: 120px;
-  text-align: center;
-}
-
-.event-table tbody tr {
-  border-bottom: 1px solid #e5e7eb;
-  transition: background-color 0.2s;
-}
-
-.event-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.event-table td {
-  padding: 14px 16px;
-  font-size: 14px;
-  color: #111827;
-}
-
-.event-table td:nth-child(1),
-.event-table td:nth-child(2) {
-  text-align: center;
-}
-
-.event-table td:nth-child(7),
-.event-table td:nth-child(8),
-.event-table td:nth-child(9) {
-  text-align: center;
-}
-
-/* Checkbox */
-.table-checkbox {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #dc2626;
-}
-
-/* Status Badge */
-.status-badge {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.status-ongoing {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.status-upcoming {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.status-done {
-  background: #d1fae5;
-  color: #059669;
-}
-
-/* No Data */
-.no-data {
-  padding: 48px 24px;
-  text-align: center;
-  color: #9ca3af;
-  font-size: 14px;
-}
-
-/* Pagination */
-.pagination-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
-
-.page-size-selector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #374151;
-}
-
-.page-size-select {
-  height: 36px;
-  padding: 0 32px 0 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #111827;
-  font-size: 14px;
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.page-arrow {
-  width: 36px;
-  height: 36px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #374151;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.page-arrow:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
-}
-
-.page-arrow:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.page-number {
-  min-width: 36px;
-  height: 36px;
-  padding: 0 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.page-number:hover:not(.active) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
-}
-
-.page-number.active {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.page-dots {
-  padding: 0 8px;
-  color: #9ca3af;
-  font-weight: 600;
-}
-
-/* Export Dropdown Styles */
-.rotate-180 {
-  transform: rotate(180deg);
-  transition: transform 0.2s ease;
-}
-
-/* Dropdown animation */
-@keyframes dropdown-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.relative > div[class*="absolute"] {
-  animation: dropdown-fade-in 0.2s ease-out;
 }
 
 /* Export Progress Overlay */

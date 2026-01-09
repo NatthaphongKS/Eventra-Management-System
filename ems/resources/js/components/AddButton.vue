@@ -12,9 +12,9 @@
     @click="$emit('click')"
     class="inline-flex items-center
            h-[58px] gap-[10px] px-[22px] py-[12px]
-           rounded-[20px] border border-neutral-200
+           rounded-[20px]
            bg-red-700 text-white font-medium leading-none
-           shadow-sm transition
+           shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition
            hover:border-black/20 hover:shadow-md
            active:translate-y-px active:shadow-inner
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35"

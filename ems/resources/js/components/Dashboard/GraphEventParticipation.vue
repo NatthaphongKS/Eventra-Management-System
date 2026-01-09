@@ -126,7 +126,7 @@ export default {
     getBarHeight(value) {
       if (!value || value === 0) return 0;
       const maxValue = this.getMaxValue();
-      return Math.max((value / maxValue) * 100, 5); // Minimum 5% height for visibility
+      return Math.max((value / maxValue) * 100, 100); // Minimum 5% height for visibility
     },
 
     onViewTypeChange() {
@@ -241,7 +241,8 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  min-width: 100px;
+  min-width: 200px;
+  min-height: 200px;
   flex: 1;
 }
 
@@ -532,5 +533,5 @@ export default {
   }
   
   .bar {
-    width: 12px;
+    width: 30px;
   }

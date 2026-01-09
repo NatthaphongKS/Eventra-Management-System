@@ -54,7 +54,7 @@ const routes = [
 
 
     { path: '/reply-form', component: reply_form, meta: { blank: true, title: 'Reply Form' } },
-    { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Upload Employees', activeMenu: '/employee' } },
+    { path: '/employees/upload', name: 'upload-file', component: UploadFile, meta: { title: 'Employees', activeMenu: '/employee' } },
 
 
     // [เพิ่ม] เส้นทางหน้าแก้ไขพนักงาน
