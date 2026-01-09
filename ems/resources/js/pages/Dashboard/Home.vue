@@ -6,11 +6,11 @@
   <div class="mt-3 mb-1 flex items-center gap-3">
     <!-- SearchBar -->
     <div class="flex flex-1">
-      <SearchBar 
-        v-model="searchInput" 
-        placeholder="Search event..." 
+      <SearchBar
+        v-model="searchInput"
+        placeholder="Search event..."
         @search="applySearch"
-        class="[&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
+        class=""
       />
     </div>
 
@@ -23,24 +23,24 @@
     </div>
 
     <!-- Filter -->
-    <EventFilter 
-      v-model="filters" 
-      :categories="categories" 
+    <EventFilter
+      v-model="filters"
+      :categories="categories"
       :status-options="statusOptions"
-      @update:modelValue="applyFilter" 
-      class="mt-6" 
+      @update:modelValue="applyFilter"
+      class="mt-6"
     />
-    
+
     <!-- Sort -->
-    <EventSort 
-      v-model="selectedSort" 
-      :options="sortOptions" 
-      @change="onPickSort" 
-      class="mt-6" 
+    <EventSort
+      v-model="selectedSort"
+      :options="sortOptions"
+      @change="onPickSort"
+      class="mt-6"
     />
-    
+
     <!-- Export Dropdown -->
-    <ExportDropdown 
+    <ExportDropdown
       :selectedEvents="selectedEventsArray"
       :disabled="selectedEventIds.size === 0"
       @export-start="handleExportStart"
@@ -50,9 +50,9 @@
       @export-end="handleExportEnd"
       class="mt-6"
     />
-    
+
     <!-- Show Data Button -->
-    <button 
+    <button
       @click="showDataHandler"
       class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-6 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6 transition-colors"
       :disabled="selectedEventIds.size === 0"
@@ -63,36 +63,36 @@
   </div>
 
   <!-- DataTable -->
-  <DataTable 
-    :rows="paged" 
-    :columns="eventTableColumns" 
-    :loading="false" 
+  <DataTable
+    :rows="paged"
+    :columns="eventTableColumns"
+    :loading="false"
     :total-items="sorted.length"
-    :page-size-options="[10, 20, 50, 100]" 
-    :page="page" 
-    :pageSize="pageSize" 
+    :page-size-options="[10, 20, 50, 100]"
+    :page="page"
+    :pageSize="pageSize"
     :sortKey="sortBy"
-    :sortOrder="sortOrder" 
-    @update:page="page = $event" 
-    @update:pageSize="pageSize = $event; page = 1;" 
-    @sort="handleClientSort" 
-    row-key="id" 
+    :sortOrder="sortOrder"
+    @update:page="page = $event"
+    @update:pageSize="pageSize = $event; page = 1;"
+    @sort="handleClientSort"
+    row-key="id"
     :show-row-number="false"
     :row-class="getRowClass"
     class="mt-4">
-    
+
     <!-- Header checkbox for select all -->
     <template #header-checkbox>
-      <input 
+      <input
         type="checkbox"
         :checked="selectAll"
         @change="selectAllEvents"
       />
     </template>
-    
+
     <!-- Checkbox column for multi-select -->
     <template #cell-checkbox="{ row }">
-      <input 
+      <input
         type="checkbox"
         :checked="selectedEventIds.has(row.id || row.evn_id)"
         @change="toggleEventSelection(row)"
@@ -108,9 +108,9 @@
     <template #cell-evn_title="{ row, value }">
       <span role="button" tabindex="0"
         class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-        @click="goDetails(row.id)" 
+        @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
-        @keydown.space.prevent="goDetails(row.id)" 
+        @keydown.space.prevent="goDetails(row.id)"
         title="ดูรายละเอียด">
         {{ value }}
       </span>
@@ -120,7 +120,7 @@
     <template #cell-cat_name="{ row, value }">
       <span role="button" tabindex="0"
         class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-        @click="goDetails(row.id)" 
+        @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
         {{ value }}
@@ -131,7 +131,7 @@
     <template #cell-evn_num_guest="{ row, value }">
       <span role="button" tabindex="0"
         class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-        @click="goDetails(row.id)" 
+        @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
         {{ value }}
@@ -142,7 +142,7 @@
     <template #cell-evn_sum_accept="{ row, value }">
       <span role="button" tabindex="0"
         class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-        @click="goDetails(row.id)" 
+        @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
         {{ value }}
@@ -153,7 +153,7 @@
     <template #cell-evn_status="{ row, value }">
       <span role="button" tabindex="0"
         class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
-        @click="goDetails(row.id)" 
+        @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
         <span :class="badgeClass(value)">
@@ -182,7 +182,7 @@
     <div class="summary-grid">
       <!-- Actual Attendance -->
       <div class="summary-item chart-container actual-attendance-card">
-        <DonutActualAttendance 
+        <DonutActualAttendance
           :eventId="Array.from(selectedEventIds)[0]"
           :attendanceData="{
             attending: chartData.actual_attendance?.attended || 0,
@@ -194,7 +194,7 @@
 
       <!-- Event Participation Graph -->
       <div class="summary-item chart-container event-participation-card">
-        <GraphEventParticipation 
+        <GraphEventParticipation
           :eventId="Array.from(selectedEventIds)[0]"
           :data="participationData"
           :loading="loadingParticipants"
@@ -203,22 +203,22 @@
 
       <!-- Status Cards Row -->
       <div class="status-cards-row">
-        <AttendingCard 
-          :attending="chartData.attending || 0" 
+        <AttendingCard
+          :attending="chartData.attending || 0"
           :total="chartData.total_participation || 0"
           :loading="loadingParticipants"
           :isClickable="true"
           @showAttendingEmployees="showEmployeesByStatus('attending')"
         />
-        <NotAttendingCard 
-          :notAttending="chartData.not_attending || 0" 
+        <NotAttendingCard
+          :notAttending="chartData.not_attending || 0"
           :total="chartData.total_participation || 0"
           :loading="loadingParticipants"
           :isClickable="true"
           @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
         />
-        <PendingCard 
-          :pending="chartData.pending || 0" 
+        <PendingCard
+          :pending="chartData.pending || 0"
           :total="chartData.total_participation || 0"
           :loading="loadingParticipants"
           :isClickable="true"
@@ -272,7 +272,7 @@ axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
 
 export default {
-  components: { 
+  components: {
     MagnifyingGlassIcon,
     AttendingCard,
     NotAttendingCard,
@@ -292,7 +292,7 @@ export default {
       event: [],
       categories: [],
       catMap: {},
-      
+
       searchInput: "",
       search: "",
       sortBy: "evn_status",
@@ -315,17 +315,17 @@ export default {
         { id: "status_asc", label: "สถานะ (Ongoing → Done)", key: "evn_status", order: "asc", type: "custom" },
         { id: "status_desc", label: "สถานะ (Done → Ongoing)", key: "evn_status", order: "desc", type: "custom" },
       ],
-      
+
       page: 1,
       pageSize: 10,
-      
+
       filters: { category: [], status: [] },
       statusOptions: [
         { label: "Done", value: "done" },
         { label: "Ongoing", value: "ongoing" },
         { label: "Upcoming", value: "upcoming" },
       ],
-      
+
       employees: [],
       empPage: 1,
       empPageSize: 10,
@@ -427,12 +427,12 @@ export default {
         const catId = e.evn_cat_id ?? e.evn_category_id ?? e.evn_category ?? "";
         // ดึง category name โดยให้ความสำคัญกับข้อมูลที่มาจาก API ก่อน
         let catName = e.cat_name ?? e.category_name ?? "";
-        
+
         // ถ้ายังไม่มี category name ให้ลองหาจาก catMap
         if (!catName && catId) {
           catName = this.catMap[String(catId)] ?? "";
         }
-        
+
         return {
           ...e,
           evn_title: e.evn_title ?? e.evn_name ?? "",
@@ -483,10 +483,10 @@ export default {
           // ดึงส่วนวันที่จากวันที่ของอีเวนต์ (รูปแบบ: YYYY-MM-DD)
           const eventDate = String(e.evn_date).split(' ')[0];
           const eventTime = new Date(eventDate).getTime();
-          
+
           const startTime = this.selectedDate.start ? new Date(this.selectedDate.start).getTime() : null;
           const endTime = this.selectedDate.end ? new Date(this.selectedDate.end).getTime() : null;
-          
+
           // ถ้ามีทั้ง start และ end
           if (startTime && endTime) {
             return eventTime >= startTime && eventTime <= endTime;
@@ -499,7 +499,7 @@ export default {
           if (!startTime && endTime) {
             return eventTime <= endTime;
           }
-          
+
           return true;
         });
       }
@@ -785,7 +785,7 @@ export default {
     selectedEventsArray() {
       if (this.selectedEventIds.size === 0) return [];
       const selectedIds = Array.from(this.selectedEventIds);
-      return this.normalized.filter(event => 
+      return this.normalized.filter(event =>
         selectedIds.includes(event.id || event.evn_id)
       );
     },
@@ -816,7 +816,7 @@ export default {
       this.page = 1; // รีเซ็ตกลับไปหน้าแรกเมื่อมีการกรอง
     },
 
-    // Sort handling  
+    // Sort handling
     handleSort(sortData) {
       this.sortValue = sortData;
       this.sortBy = sortData.key;
@@ -829,12 +829,12 @@ export default {
       if (this.chartData.totalParticipation === 0) return 0;
       return Math.round((this.chartData.attending / this.chartData.totalParticipation) * 251);
     },
-    
+
     getNotAttendingProgress() {
       if (this.chartData.totalParticipation === 0) return 0;
       return Math.round((this.chartData.notAttending / this.chartData.totalParticipation) * 251);
     },
-    
+
     getPendingProgress() {
       if (this.chartData.totalParticipation === 0) return 0;
       return Math.round((this.chartData.pending / this.chartData.totalParticipation) * 251);
@@ -843,11 +843,11 @@ export default {
     getAttendingPercentage() {
       return Math.round((this.chartData.attending / 100) * 251);
     },
-    
+
     getNotAttendingPercentage() {
       return Math.round((this.chartData.notAttending / 100) * 251);
     },
-    
+
     getPendingPercentage() {
       return Math.round((this.chartData.pending / 100) * 251);
     },
@@ -922,13 +922,13 @@ export default {
       try {
         const res = await axios.get("/event-info-dashboard");
         const cats = res.data?.categories || [];
-        
+
         // แปลงเป็นรูปแบบที่ EventFilter ต้องการ
         this.categories = cats.map(c => ({
           id: String(c.id),
           cat_name: c.cat_name
         }));
-        
+
         this.catMap = Object.fromEntries(
           cats.map(c => [String(c.id), c.cat_name])
         );
@@ -986,7 +986,7 @@ export default {
       console.log('Add Event clicked!');
       alert('Add Event button clicked! 🎉');
     },
-    
+
     // Date filter method
     filterByDate() {
       // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
@@ -997,7 +997,7 @@ export default {
     // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
     async fetchEventStatistics() {
       console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
-      
+
       if (this.selectedEventIds.size === 0) {
         console.log('No events selected, resetting data');
         // รีเซ็ตเป็นค่าว่าง
@@ -1018,14 +1018,14 @@ export default {
       this.loadingParticipants = true;
       try {
         const eventIds = Array.from(this.selectedEventIds);
-        
+
         console.log('Sending POST /event-statistics with event_ids:', eventIds);
-        
+
         // ดึงสถิติจาก API
         const res = await axios.post('/event-statistics', { event_ids: eventIds });
-        
+
         console.log('API Response:', res.data);
-        
+
         if (res.data) {
           // อัพเดตข้อมูลกราฟ
           this.chartData = {
@@ -1036,7 +1036,7 @@ export default {
             departments: res.data.departments || [],
             actual_attendance: res.data.actual_attendance || { attended: 0, total_assigned: 0 }
           };
-          
+
           // อัพเดตข้อมูลกราฟแท่ง
           this.participationData = {
             departments: (res.data.departments || []).map(dept => ({
@@ -1052,11 +1052,11 @@ export default {
               pending: team.pending || 0
             }))
           };
-          
+
           // อัพเดตรายชื่อผู้เข้าร่วม
           this.eventParticipants = res.data.participants || [];
           this.showEmployeeTable = true;
-          
+
           console.log('Chart data updated:', this.chartData);
           console.log('Participation data updated:', this.participationData);
           console.log('Participants count:', this.eventParticipants.length);
@@ -1093,18 +1093,21 @@ export default {
         console.error('No event ID found in:', event);
         return;
       }
-      
+
       if (this.selectedEventIds.has(eventId)) {
         this.selectedEventIds.delete(eventId);
       } else {
         this.selectedEventIds.add(eventId);
       }
-      
+
+      // อัพเดตสถานะ select-all checkbox
+      this.selectAll = this.selectedEventIds.size === this.sorted.length && this.sorted.length > 0;
+
       // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
       this.showStatistics = false;
-      
+
       console.log('Updated selected events:', Array.from(this.selectedEventIds));
-      
+
       // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
 
@@ -1119,6 +1122,12 @@ export default {
             this.selectedEventIds.add(eventId);
           }
         });
+      // สลับสถานะ selectAll ตามสถานะ checkbox
+      this.selectAll = event.target.checked;
+
+      if (this.selectAll) {
+        // เลือกทุกอีเวนต์ในรายการที่เรียงแล้ว
+        this.selectedEventIds = new Set(this.sorted.map(e => e.id || e.evn_id));
       } else {
         // ยกเลิกการเลือกเฉพาะแถวที่แสดงในหน้าปัจจุบัน
         this.paged.forEach(row => {
@@ -1128,29 +1137,32 @@ export default {
           }
         });
       }
-      
+
       // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
       this.showStatistics = false;
       
       console.log('Select all toggled on current page:', isChecked, 'Total selected count:', this.selectedEventIds.size);
       
+
+      console.log('Select all toggled:', this.selectAll, 'Selected count:', this.selectedEventIds.size);
+
       // ไม่เรียก fetch อัตโนมัติ ให้รอกดปุ่ม Show Data แทน
     },
 
     // ดึงชื่ออีเวนต์มาแสดงผล
     getEventTitlesText() {
       if (this.selectedEventIds.size === 0) return 'N/A';
-      
-      const selectedEvents = this.normalized.filter(event => 
+
+      const selectedEvents = this.normalized.filter(event =>
         this.selectedEventIds.has(event.id || event.evn_id)
       );
-      
+
       if (selectedEvents.length === 1) {
         return selectedEvents[0].evn_title || 'N/A';
       } else if (selectedEvents.length > 1) {
         return `${selectedEvents.length} events selected`;
       }
-      
+
       return 'N/A';
     },
 
@@ -1232,15 +1244,15 @@ export default {
     onEventSelect(event) {
       console.log('Event selected:', event);
       console.log('Event keys:', Object.keys(event));
-      
+
       // ลองหา ID field ที่ถูกต้อง - ใช้ id แทน evn_id
       const eventId = event.id || event.evn_id;
-      
+
       if (!eventId) {
         console.error('No event ID found in:', event);
         return;
       }
-      
+
       this.toggleEventSelection(event);
       if (this.selectedEventIds.size > 0) {
         this.loadEventStatistics(eventId);
@@ -1252,19 +1264,19 @@ export default {
       try {
         // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
         const response = await axios.get(`/api/event/${eventId}/participants`);
-        
+
         console.log('Event statistics response:', response.data);
-        
+
         if (response.data.success) {
           const statistics = response.data.data.statistics;
-          
+
           // อัปเดตข้อมูลกราฟด้วยสถิติจริง
           this.chartData = {
             attending: statistics.attending || 0,
             notAttending: statistics.not_attending || 0,
             pending: statistics.pending || 0
           };
-          
+
           // อัพเดตกราฟ
           this.participationData = {
             labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
@@ -1277,7 +1289,7 @@ export default {
               backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
             }]
           };
-          
+
           console.log('Updated chart data:', this.chartData);
         } else {
           console.error('Failed to load event statistics:', response.data.message);
@@ -1295,7 +1307,7 @@ export default {
       }
     },
 
-    
+
     async showEmployeesByStatus(status) {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมก่อน');
@@ -1305,7 +1317,7 @@ export default {
       console.log('showEmployeesByStatus called with status:', status);
       this.employeeTableType = status;
       this.showEmployeeTable = true;
-      
+
       try {
         //  ตรวจสอบว่ามีข้อมูล participants หรือไม่
         if (!this.eventParticipants || this.eventParticipants.length === 0) {
@@ -1313,10 +1325,10 @@ export default {
           this.filteredEmployeesForTable = [];
           return;
         }
-        
+
         // กรองผู้เข้าร่วมตามสถานะ
         let filteredParticipants = [];
-        
+
         if (status === 'attending') {
           // สำหรับผู้เข้าร่วม ใช้ con_answer = 'accepted' (ตอบรับ)
           filteredParticipants = this.eventParticipants.filter(participant => {
@@ -1333,7 +1345,7 @@ export default {
             return participant.status !== 'accepted' && participant.status !== 'denied';
           });
         }
-        
+
         // กรองข้อมูลซ้ำโดยใช้ Map กับ unique key (emp_id + event_id + status)
         const uniqueParticipants = new Map();
         filteredParticipants.forEach(participant => {
@@ -1343,7 +1355,7 @@ export default {
             uniqueParticipants.set(uniqueKey, participant);
           }
         });
-        
+
         // แปลง Map กลับเป็น Array และเรียงข้อมูล
         const deduplicatedParticipants = Array.from(uniqueParticipants.values());
         deduplicatedParticipants.sort((a, b) => {
@@ -1357,8 +1369,14 @@ export default {
           
           // ถ้าชื่อเท่ากัน ให้เรียงตาม emp_id
           return (a.emp_id || '').localeCompare(b.emp_id || '');
+          // เรียงตาม emp_id ก่อน
+          const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
+          if (empCompare !== 0) return empCompare;
+
+          // ถ้า emp_id เท่ากัน ให้เรียงตาม event_id
+          return (a.event_id || 0) - (b.event_id || 0);
         });
-        
+
         // แปลงเป็นรูปแบบพนักงานสำหรับตาราง พร้อม unique_key
         this.filteredEmployeesForTable = deduplicatedParticipants.map(participant => ({
           id: participant.id,
@@ -1376,21 +1394,21 @@ export default {
           event_title: participant.event_title || 'N/A',
           emp_delete_status: 'active'
         }));
-        
+
         // Reset pagination เมื่อโหลดข้อมูลใหม่
         this.currentPage = 1;
-        
+
         console.log(`Filtered ${filteredParticipants.length} raw participants`);
         console.log(`After deduplication: ${this.filteredEmployeesForTable.length} unique participations for status: ${status}`);
-        
+
         // แสดงตัวอย่างข้อมูล 3 รายการแรกเพื่อ debug
         if (this.filteredEmployeesForTable.length > 0) {
           console.log('Sample data (first 3):', this.filteredEmployeesForTable.slice(0, 3));
         }
-        
+
       } catch (error) {
         console.error('Error loading employees:', error);
-        
+
         // ใช้ array ว่างหากการกรองล้มเหลว
         this.filteredEmployeesForTable = [];
         alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
@@ -1400,7 +1418,7 @@ export default {
     mapStatusForAPI(status) {
       const statusMap = {
         'attending': 'accepted',
-        'not-attending': 'denied', 
+        'not-attending': 'denied',
         'pending': 'pending'
       };
       return statusMap[status] || 'pending';
@@ -1432,7 +1450,7 @@ export default {
 
       // เรียก fetch statistics
       this.fetchEventStatistics();
-      
+
       // Scroll to summary section
       this.$nextTick(() => {
         const summaryCard = document.querySelector('.summary-card');
@@ -1513,20 +1531,20 @@ export default {
     grid-template-rows: auto auto auto;
     gap: 20px;
   }
-  
+
   .actual-attendance-card,
   .event-participation-card {
     grid-column: 1;
   }
-  
+
   .actual-attendance-card {
     grid-row: 1;
   }
-  
+
   .event-participation-card {
     grid-row: 2;
   }
-  
+
   .status-cards-row {
     grid-row: 3;
     margin-top: 0;
