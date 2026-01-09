@@ -17,15 +17,13 @@ services:
       - appnet
     depends_on:
       - db
-      
-
 
   node:
     image: node:20
     container_name: ems_vite_dev2
     working_dir: /app
     command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 7222"
-    ports: 
+    ports:
       - "7222:7222"
       - "7223:7223"
     environment:
