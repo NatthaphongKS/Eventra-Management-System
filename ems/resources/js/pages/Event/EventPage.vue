@@ -518,7 +518,6 @@ export default {
         },
 
         applySearch() { this.search = this.searchInput; this.page = 1; },
-
         editEvent(id) { this.$router.push(`/EditEvent/${id}`); },
 
         async deleteEvent(id) {

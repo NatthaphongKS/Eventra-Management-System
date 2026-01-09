@@ -5,13 +5,11 @@
                 Create Event
             </h2>
         </div>
-
         <div class="grid grid-cols-12 gap-8 border-b border-neutral-100 pb-10 mb-10">
             <div class="col-span-12 lg:col-span-8">
                 <h3 class="text-xl font-semibold text-neutral-800 mb-6">
                     Event Details
                 </h3>
-
                 <!-- Event Title -->
                 <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start">
                     <div>
@@ -26,7 +24,6 @@
                         <p v-if="errors.eventTitle" class="text-red-500 text-xs mt-1 ml-1 font-medium">Required field
                         </p>
                     </div>
-
                     <div>
                         <!-- Event Category -->
                         <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
@@ -53,7 +50,6 @@
                             field</p>
                     </div>
                 </div>
-
                 <!-- Event Description -->
                 <div class="mt-6">
                     <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
@@ -69,14 +65,12 @@
                     <p v-if="errors.eventDescription" class="text-red-500 text-xs mt-1 ml-1 font-medium">Required field
                     </p>
                 </div>
-
                 <!-- Date, Time, Duration, Location -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                     <div class="relative" ref="datePickerContainer">
                         <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
                             Date <span class="text-red-600">*</span>
                         </label>
-
                         <div @click="toggleCalendar" :class="[
                             'flex items-center justify-between px-[20px] font-medium rounded-2xl border h-[52px] cursor-pointer transition bg-white select-none',
                             eventDate ? 'text-neutral-800' : 'text-red-300',
@@ -95,7 +89,6 @@
                                     clip-rule="evenodd" />
                             </svg>
                         </div>
-
                         <Transition enter-active-class="transition ease-out duration-150"
                             enter-from-class="opacity-0 translate-y-1 scale-95"
                             enter-to-class="opacity-100 translate-y-0 scale-100"
@@ -127,9 +120,8 @@
                                             </button>
                                             <div v-if="showMonthDropdown"
                                                 class="absolute z-20 w-24 bg-white border border-gray-200 rounded-md shadow-lg h-48 overflow-y-auto scrollbar-hide top-full mt-1 left-0">
-                                                <div v-for="(
-m, i
-                                                    ) in monthOptions" :key="i" @click.stop="selectMonth(i)" :class="{
+                                                <div v-for="(m, i) in monthOptions" :key="i"
+                                                    @click.stop="selectMonth(i)" :class="{
                                                         'bg-red-500 text-white':
                                                             currentCalendarMonth.month() ===
                                                             i,
@@ -139,7 +131,6 @@ m, i
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="relative">
                                             <button @click.stop="toggleYearDropdown" type="button"
                                                 class="text-sm font-semibold text-neutral-800 cursor-pointer flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50">
@@ -172,7 +163,6 @@ m, i
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="flex items-center justify-between text-base font-medium px-1 mb-2">
                                     <span class="font-normal text-sm text-gray-500">{{
                                         currentCalendarMonth.format(
@@ -186,7 +176,6 @@ m, i
                                             class="text-red-500 cursor-pointer p-1 rounded-full hover:bg-gray-100 inline-block">&gt;</span>
                                     </div>
                                 </div>
-
                                 <table class="w-full text-center text-xs border-collapse">
                                     <thead>
                                         <tr class="text-gray-500 font-medium">
@@ -204,9 +193,7 @@ m, i
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(
-week, wIndex
-                                            ) in calendarWeeks" :key="wIndex">
+                                        <tr v-for="(week, wIndex) in calendarWeeks" :key="wIndex">
                                             <td v-for="(day, dIndex) in week" :key="dIndex" class="p-0 align-middle"
                                                 @click.stop="
                                                     day.isCurrentMonth
@@ -230,15 +217,13 @@ week, wIndex
                                                     day.isToday &&
                                                         day.date !== eventDate
                                                         ? 'bg-blue-500 text-white font-bold'
-                                                        : '',
-                                                ]">
+                                                        : '',]">
                                                     {{ day.day }}
                                                 </div>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-
                                 <div class="mt-2 flex justify-center pt-2 border-t border-gray-100">
                                     <button @click.stop="clearDate"
                                         class="text-xs text-gray-500 hover:text-red-500 font-medium px-3 py-1 rounded hover:bg-gray-50 transition">
@@ -251,7 +236,6 @@ week, wIndex
                             Required field
                         </p>
                     </div>
-
                     <!-- Time Input -->
                     <div>
                         <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Time <span
@@ -283,7 +267,6 @@ week, wIndex
                             Required field
                         </p>
                     </div>
-
                     <div>
                         <!-- Duration -->
                         <label class="block text-neutral-800 font-semibold text-[15px] mb-2 ">Duration</label>
@@ -296,7 +279,6 @@ week, wIndex
                         </div>
                     </div>
                 </div>
-
                 <!-- Location -->
                 <div class="mt-6">
                     <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Location <span
@@ -310,12 +292,10 @@ week, wIndex
                     <p v-if="errors.eventLocation" class="text-red-500 text-xs mt-1 ml-1 font-medium">Required field</p>
                 </div>
             </div>
-
             <!-- Upload attachments -->
             <div class="col-span-4 mx-5 mt-5 mb-2">
                 <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
                 <p class="text-sm text-neutral-800 mb-2">Drag and drop document to your support task</p>
-
                 <!-- ▼ Drop zone -->
                 <div class="group relative rounded-2xl border-2 border-dashed border-red-700 bg-red-100 p-6 transition-all"
                     :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
@@ -330,7 +310,6 @@ week, wIndex
                                 </div>
                                 <span class="truncate text-[16px] text-neutral-800">{{ file.name }}</span>
                             </div>
-
                             <button type="button"
                                 class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100"
                                 @click="removeFile(index)" aria-label="Remove file" title="Remove">
@@ -338,7 +317,6 @@ week, wIndex
                             </button>
                         </div>
                     </div>
-
                     <!-- เมฆ + ข้อความ: โชว์เฉพาะตอน “ยังไม่มีไฟล์เลย” -->
                     <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
                         <Icon icon="ep:upload-filled" class="w-40 h-28 mb-3 text-red-300" />
@@ -346,7 +324,6 @@ week, wIndex
                         </p>
                         <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx</p>
                     </div>
-
                     <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
                     <div class="flex justify-center mt-1 mb-12">
                         <button type="button"
@@ -355,14 +332,12 @@ week, wIndex
                             <span class="text-sm font-medium">Browse files</span>
                         </button>
                     </div>
-
                     <!-- input file (ซ่อน) -->
                     <input ref="fileInput" type="file" multiple class="hidden"
                         accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
                 </div>
             </div>
         </div>
-
         <!-- Add Guest Section -->
         <div class="mt-4"> <!-- คุมจากด้านบนแทน -->
             <h3 class="text-3xl font-semibold text-neutral-800 mb-4">Add Guest</h3>
@@ -383,7 +358,6 @@ week, wIndex
                         <Icon icon="ic:baseline-search" class="w-6 h-6" />
                     </button>
                 </div>
-
                 <!-- Employee Filters -->
                 <div class="flex flex-row flex-wrap items-center gap-2">
                     <EmployeeDropdown label="Company ID" v-model="selectedCompanyIds" :options="companyIdOptions" />
@@ -392,7 +366,6 @@ week, wIndex
                     <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions" />
                 </div>
             </div>
-
             <!-- Employee Data Table -->
             <div class="mt-8">
                 <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
@@ -414,7 +387,6 @@ week, wIndex
                 </DataTable>
             </div>
         </div>
-
         <!-- Cancel Buttons -->
         <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
             <div class="flex-none">
@@ -434,7 +406,6 @@ week, wIndex
                 </button>
             </div>
         </div>
-
         <!-- Confirm Create Modal -->
         <ModalAlert v-model:open="showConfirmCreate" title="Confirm Creation"
             message="Are you sure you want to create this event?" type="confirm" :showCancel="true"
@@ -443,7 +414,6 @@ week, wIndex
         <!-- Success Alert Modal -->
         <ModalAlert v-model:open="showSuccessAlert" title="Success" message="New event has been created." type="success"
             :showCancel="false" @confirm="onSuccessConfirm" />
-
     </div>
 </template>
 
@@ -550,17 +520,20 @@ export default {
             currentCalendarMonth: dayjs(),
         };
     },
+
     computed: {
         formattedDateDisplay() {
             if (!this.eventDate) return "";
             return dayjs(this.eventDate).format("DD/MM/YY");
         },
+
         // --- Calendar Computed ---
         monthOptions() {
             return Array.from({ length: 12 }, (v, i) =>
                 dayjs().month(i).format("MMM")
             );
         },
+
         yearOptions() {
             const currentYear = dayjs().year();
             const years = [];
@@ -568,6 +541,7 @@ export default {
                 years.push(i);
             return years;
         },
+
         calendarWeeks() {
             const startOfMonth = this.currentCalendarMonth.startOf("month");
             const endOfMonth = this.currentCalendarMonth.endOf("month");
@@ -613,267 +587,290 @@ export default {
         // -------------------------
 
         columns() {
-        return [
-            {
-                key: "emp_id",
-                label: "ID",
-                class: "text-left min-w-[100px]",
-            },
-            {
-                key: "fullname",
-                label: "Name",
-                class: "text-left min-w-[200px]",
-            },
-            {
-                key: "nickname",
-                label: "Nickname",
-                class: "text-left min-w-[100px]",
-            },
-            {
-                key: "department",
-                label: "Department",
-                class: "text-left min-w-[180px]",
-            },
-            {
-                key: "team",
-                label: "Team",
-                class: "text-left min-w-[140px]",
-            },
-            {
-                key: "position",
-                label: "Position",
-                class: "text-left min-w-[240px]",
-            },
-        ];
-    },
-    // กรองพนักงานตามคำค้นหาและตัวเลือกตัวกรอง
-    filteredEmployees() {
-        const q = (this.search || "").toLowerCase().trim();
-        let list = this.employees;
+            return [
+                {
+                    key: "emp_id",
+                    label: "ID",
+                    class: "text-left min-w-[100px]",
+                },
+                {
+                    key: "fullname",
+                    label: "Name",
+                    class: "text-left min-w-[200px]",
+                },
+                {
+                    key: "nickname",
+                    label: "Nickname",
+                    class: "text-left min-w-[100px]",
+                },
+                {
+                    key: "department",
+                    label: "Department",
+                    class: "text-left min-w-[180px]",
+                },
+                {
+                    key: "team",
+                    label: "Team",
+                    class: "text-left min-w-[140px]",
+                },
+                {
+                    key: "position",
+                    label: "Position",
+                    class: "text-left min-w-[240px]",
+                },
+            ];
+        },
 
-        if (q) {
-            list = list.filter(
-                (e) =>
-                    (e.emp_firstname || "").toLowerCase().includes(q) ||
-                    (e.emp_id || "").toLowerCase().includes(q) ||
-                    (e.nickname || "").toLowerCase().includes(q)
-            );
+        // กรองพนักงานตามคำค้นหาและตัวเลือกตัวกรอง
+        filteredEmployees() {
+            const q = (this.search || "").toLowerCase().trim();
+            let list = this.employees;
+
+            if (q) {
+                list = list.filter(
+                    (e) =>
+                        (e.emp_firstname || "").toLowerCase().includes(q) ||
+                        (e.emp_id || "").toLowerCase().includes(q) ||
+                        (e.nickname || "").toLowerCase().includes(q)
+                );
+            }
+
+            if (this.selectedCompanyIds.length) list = list.filter(r => this.selectedCompanyIds.includes(r.companyId));
+            if (this.selectedDepartmentIds.length) list = list.filter(r => this.selectedDepartmentIds.includes(r.department));
+            if (this.selectedTeamIds.length) list = list.filter(r => this.selectedTeamIds.includes(r.team));
+            if (this.selectedPositionIds.length) list = list.filter(r => this.selectedPositionIds.includes(r.position));
+
+            return list;
+        },
+
+        // แบ่งหน้าพนักงานตามจำนวนรายการต่อหน้า
+        pagedEmployees() {
+            const start = (this.page - 1) * this.perPage;
+            return this.filteredEmployees.slice(start, start + this.perPage);
+        },
+
+        // แปลง Set เป็น Array สำหรับ DataTable
+        selectedIdsArr: {
+            get() { return Array.from(this.selectedIds); },
+            set(arr) { this.selectedIds = new Set(arr); }
         }
+    },
 
-        if (this.selectedCompanyIds.length) list = list.filter(r => this.selectedCompanyIds.includes(r.companyId));
-        if (this.selectedDepartmentIds.length) list = list.filter(r => this.selectedDepartmentIds.includes(r.department));
-        if (this.selectedTeamIds.length) list = list.filter(r => this.selectedTeamIds.includes(r.team));
-        if (this.selectedPositionIds.length) list = list.filter(r => this.selectedPositionIds.includes(r.position));
+    watch: {
+        eventTimeStart() {
+            this.calDuration();
+        },
+        eventTimeEnd() {
+            this.calDuration();
+        },
+    },
 
-        return list;
+    mounted() {
+        this.fetchInfo();
+        document.addEventListener("click", this.closeCalendarOnClickOutside);
     },
-    // แบ่งหน้าพนักงานตามจำนวนรายการต่อหน้า
-    pagedEmployees() {
-        const start = (this.page - 1) * this.perPage;
-        return this.filteredEmployees.slice(start, start + this.perPage);
+
+    beforeUnmount() {
+        document.removeEventListener("click", this.closeCalendarOnClickOutside);
     },
-    // แปลง Set เป็น Array สำหรับ DataTable
-    selectedIdsArr: {
-        get() { return Array.from(this.selectedIds); },
-        set(arr) { this.selectedIds = new Set(arr); }
-    }
-},
-watch: {
-    eventTimeStart() {
-        this.calDuration();
-    },
-    eventTimeEnd() {
-        this.calDuration();
-    },
-},
-mounted() {
-    this.fetchInfo();
-    document.addEventListener("click", this.closeCalendarOnClickOutside);
-},
-beforeUnmount() {
-    document.removeEventListener("click", this.closeCalendarOnClickOutside);
-},
-methods: {
-    // --- Calendar Methods ---
-    closeCalendarOnClickOutside(e) {
-        if (
-            this.$refs.datePickerContainer &&
-            !this.$refs.datePickerContainer.contains(e.target)
-        ) {
-            this.showCalendar = false;
-            this.showMonthDropdown = false;
+
+    methods: {
+        // --- Calendar Methods ---
+        closeCalendarOnClickOutside(e) {
+            if (
+                this.$refs.datePickerContainer &&
+                !this.$refs.datePickerContainer.contains(e.target)
+            ) {
+                this.showCalendar = false;
+                this.showMonthDropdown = false;
+                this.showYearDropdown = false;
+            }
+        },
+
+        toggleCalendar() {
+            this.showCalendar = !this.showCalendar;
+        },
+
+        toggleMonthDropdown() {
+            this.showMonthDropdown = !this.showMonthDropdown;
             this.showYearDropdown = false;
-        }
-    },
-    toggleCalendar() {
-        this.showCalendar = !this.showCalendar;
-    },
-    toggleMonthDropdown() {
-        this.showMonthDropdown = !this.showMonthDropdown;
-        this.showYearDropdown = false;
-    },
-    toggleYearDropdown() {
-        this.showYearDropdown = !this.showYearDropdown;
-        this.showMonthDropdown = false;
-    },
-    selectMonth(index) {
-        this.currentCalendarMonth = this.currentCalendarMonth.month(index);
-        this.showMonthDropdown = false;
-    },
-    selectYear(year) {
-        this.currentCalendarMonth = this.currentCalendarMonth.year(year);
-        this.showYearDropdown = false;
-    },
-    prevMonth() {
-        this.currentCalendarMonth = this.currentCalendarMonth.subtract(
-            1,
-            "month"
-        );
-    },
-    nextMonth() {
-        this.currentCalendarMonth = this.currentCalendarMonth.add(
-            1,
-            "month"
-        );
-    },
-    selectDate(dateStr) {
-        this.eventDate = dateStr;
-        this.errors.eventDate = false;
-        this.showCalendar = false;
-    },
-    clearDate() {
-        this.eventDate = "";
-        this.showCalendar = false;
-    },
-    // ------------------------
+        },
 
-    performSearch() {
-        this.search = this.searchRaw;
-        this.page = 1;
-    },
-    // คำนวณระยะเวลาอีเวนต์จากเวลาเริ่มและเวลาสิ้นสุด
-    calDuration() {
-        if (!this.eventTimeStart || !this.eventTimeEnd) {
-            this.eventDurationDisplay = "";
-            return;
-        }
-        const [sh, sm] = this.eventTimeStart.split(":").map(Number);
-        const [eh, em] = this.eventTimeEnd.split(":").map(Number);
-        let diff = eh * 60 + em - (sh * 60 + sm);
-        if (diff < 0) diff += 24 * 60;
-        this.eventDurationMinutes = diff;
-        const h = Math.floor(diff / 60);
-        const m = diff % 60;
-        this.eventDurationDisplay =
-            h > 0 ? `${h} Hour ${m} Min` : `${m} Min`;
-    },
-    // ตรวจสอบฟิลด์ที่จำเป็นและแสดง modal ยืนยัน
-    saveEvent() {
-        this.errors.eventTitle = !this.eventTitle;
-        this.errors.eventCategoryId = !this.eventCategoryId;
-        this.errors.eventDescription = !this.eventDescription;
-        this.errors.eventDate = !this.eventDate;
-        this.errors.eventTime = !this.eventTimeStart || !this.eventTimeEnd;
-        this.errors.eventLocation = !this.eventLocation;
-        if (Object.values(this.errors).some((v) => v)) return;
-        this.showConfirmCreate = true;
-    },
+        toggleYearDropdown() {
+            this.showYearDropdown = !this.showYearDropdown;
+            this.showMonthDropdown = false;
+        },
+
+        selectMonth(index) {
+            this.currentCalendarMonth = this.currentCalendarMonth.month(index);
+            this.showMonthDropdown = false;
+        },
+
+        selectYear(year) {
+            this.currentCalendarMonth = this.currentCalendarMonth.year(year);
+            this.showYearDropdown = false;
+        },
+
+        prevMonth() {
+            this.currentCalendarMonth = this.currentCalendarMonth.subtract(
+                1,
+                "month"
+            );
+        },
+
+        nextMonth() {
+            this.currentCalendarMonth = this.currentCalendarMonth.add(
+                1,
+                "month"
+            );
+        },
+
+        selectDate(dateStr) {
+            this.eventDate = dateStr;
+            this.errors.eventDate = false;
+            this.showCalendar = false;
+        },
+
+        clearDate() {
+            this.eventDate = "";
+            this.showCalendar = false;
+        },
+
+        // ------------------------
+        performSearch() {
+            this.search = this.searchRaw;
+            this.page = 1;
+        },
+
+        // คำนวณระยะเวลาอีเวนต์จากเวลาเริ่มและเวลาสิ้นสุด
+        calDuration() {
+            if (!this.eventTimeStart || !this.eventTimeEnd) {
+                this.eventDurationDisplay = "";
+                return;
+            }
+            const [sh, sm] = this.eventTimeStart.split(":").map(Number);
+            const [eh, em] = this.eventTimeEnd.split(":").map(Number);
+            let diff = eh * 60 + em - (sh * 60 + sm);
+            if (diff < 0) diff += 24 * 60;
+            this.eventDurationMinutes = diff;
+            const h = Math.floor(diff / 60);
+            const m = diff % 60;
+            this.eventDurationDisplay =
+                h > 0 ? `${h} Hour ${m} Min` : `${m} Min`;
+        },
+
+        // ตรวจสอบฟิลด์ที่จำเป็นและแสดง modal ยืนยัน
+        saveEvent() {
+            this.errors.eventTitle = !this.eventTitle;
+            this.errors.eventCategoryId = !this.eventCategoryId;
+            this.errors.eventDescription = !this.eventDescription;
+            this.errors.eventDate = !this.eventDate;
+            this.errors.eventTime = !this.eventTimeStart || !this.eventTimeEnd;
+            this.errors.eventLocation = !this.eventLocation;
+            if (Object.values(this.errors).some((v) => v)) return;
+            this.showConfirmCreate = true;
+        },
+
         // สร้างอีเวนต์และส่งข้อมูลไปยัง API
         async executeCreateEvent() {
-        this.showConfirmCreate = false;
-        this.saving = true;
-        try {
-            // สร้าง FormData สำหรับส่งข้อมูลพร้อมไฟล์
-            const formData = new FormData();
-            // เพิ่มข้อมูลอีเวนต์พื้นฐาน
-            formData.append("event_title", this.eventTitle.trim());
-            formData.append("event_category_id", this.eventCategoryId);
-            formData.append("event_description", this.eventDescription);
-            formData.append("event_date", this.eventDate);
-            formData.append("event_timestart", this.eventTimeStart);
-            formData.append("event_timeend", this.eventTimeEnd);
-            formData.append("event_duration", this.eventDurationMinutes);
-            formData.append("event_location", this.eventLocation);
-            // เพิ่มไฟล์แนบทั้งหมด
-            this.filesNew.forEach(f => formData.append("attachments[]", f));
-            // เพิ่ม ID พนักงานที่เลือกทั้งหมด
-            this.selectedIds.forEach(id => formData.append("employee_ids[]", id));
-            // ส่งข้อมูลไปยัง API
-            await axios.post("/event-save", formData, { headers: { "Content-Type": "multipart/form-data" } });
-            this.showSuccessAlert = true;
-        } catch (err) {
-            console.error(err);
-            alert("Failed to create event.");
-        } finally {
-            this.saving = false;
-        }
-    },
-    // ปิด modal และกลับไปหน้ารายการอีเวนต์
-    onSuccessConfirm() {
-        this.showSuccessAlert = false;
-        this.$router.push("/event");
-    },
+            this.showConfirmCreate = false;
+            this.saving = true;
+            try {
+                // สร้าง FormData สำหรับส่งข้อมูลพร้อมไฟล์
+                const formData = new FormData();
+                // เพิ่มข้อมูลอีเวนต์พื้นฐาน
+                formData.append("event_title", this.eventTitle.trim());
+                formData.append("event_category_id", this.eventCategoryId);
+                formData.append("event_description", this.eventDescription);
+                formData.append("event_date", this.eventDate);
+                formData.append("event_timestart", this.eventTimeStart);
+                formData.append("event_timeend", this.eventTimeEnd);
+                formData.append("event_duration", this.eventDurationMinutes);
+                formData.append("event_location", this.eventLocation);
+                // เพิ่มไฟล์แนบทั้งหมด
+                this.filesNew.forEach(f => formData.append("attachments[]", f));
+                // เพิ่ม ID พนักงานที่เลือกทั้งหมด
+                this.selectedIds.forEach(id => formData.append("employee_ids[]", id));
+                // ส่งข้อมูลไปยัง API
+                await axios.post("/event-save", formData, { headers: { "Content-Type": "multipart/form-data" } });
+                this.showSuccessAlert = true;
+            } catch (err) {
+                console.error(err);
+                alert("Failed to create event.");
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        // ปิด modal และกลับไปหน้ารายการอีเวนต์
+        onSuccessConfirm() {
+            this.showSuccessAlert = false;
+            this.$router.push("/event");
+        },
+
         // ดึงข้อมูลหมวดหมู่และพนักงานจาก API
         async fetchInfo() {
-        try {
-            this.loadingEmployees = true;
-            const res = await axios.get("/event-info");
-            // เก็บข้อมูลหมวดหมู่อีเวนต์
-            this.selectCategory = res.data?.categories || [];
-            // แปลงข้อมูลพนักงานและสร้าง companyId จากรหัสพนักงาน
-            this.employees = (res.data?.employees || []).map(e => {
-                // ดึงตัวอักษรนำหน้าจากรหัสพนักงานเป็นรหัสบริษัท (เช่น ABC123 -> ABC)
-                const rawId = String(e.emp_id || "").trim();
-                const prefixMatch = rawId.match(/^[A-Za-z]+/);
-                const companyPrefix = prefixMatch
-                    ? prefixMatch[0].toUpperCase()
-                    : "";
-                return {
-                    id: e.id,
-                    emp_id: e.emp_id || "",
-                    emp_firstname: e.emp_firstname || "",
-                    emp_lastname: e.emp_lastname || "",
-                    nickname: e.emp_nickname || "",
-                    department: e.department_name || "",
-                    companyId: companyPrefix || e.company_id || "",
-                    team: e.team_name || "",
-                    position: e.position_name || "",
-                };
-            });
-            // สร้างตัวเลือกสำหรับตัวกรอง
-            this.buildFilterOptions();
-        } catch (err) {
-            console.error(err);
-        } finally {
-            this.loadingEmployees = false;
-        }
-    },
-    // สร้างตัวเลือกสำหรับ dropdown ตัวกรองจากข้อมูลพนักงาน
-    buildFilterOptions() {
-        const toOpt = (arr) => [...new Set(arr.filter(Boolean))].sort().map(v => ({ label: v, value: v }));
-        this.companyIdOptions = toOpt(this.employees.map(r => r.companyId));
-        this.departmentOptions = toOpt(this.employees.map(r => r.department));
-        this.teamOptions = toOpt(this.employees.map(r => r.team));
-        this.positionOptions = toOpt(this.employees.map(r => r.position));
-    },
-    // เปิด file picker dialog
-    pickFiles() { this.$refs.fileInput.click(); },
-    // จัดการเมื่อเลือกไฟล์จาก file picker
-    onPick(e) { this.addFiles([...e.target.files]); e.target.value = ""; },
-    // จัดการเมื่อ drop ไฟล์ลงใน drop zone
-    onDrop(e) { this.dragging = false; this.addFiles([...e.dataTransfer.files]); },
-    // เพิ่มไฟล์ที่มีขนาดไม่เกิน 50MB
-    addFiles(files) { files.forEach(f => { if (f.size <= 50 * 1024 * 1024) this.filesNew.push(f); }); },
-    // ลบไฟล์ออกจากรายการ
-    removeFile(idx) { this.filesNew.splice(idx, 1); },
-    // แปลงขนาดไฟล์เป็น MB
-    prettySize(byte) { return (byte / (1024 * 1024)).toFixed(2) + " MB"; },
-    // อัปเดต ID พนักงานที่เลือก
-    onUpdateSelected(ids) { this.selectedIds = new Set(ids); },
-    // ยกเลิกและกลับหน้าก่อนหน้า
-    onCancel() { this.$router.back(); },
-    onRootPointer() { }
-}
+            try {
+                this.loadingEmployees = true;
+                const res = await axios.get("/event-info");
+                // เก็บข้อมูลหมวดหมู่อีเวนต์
+                this.selectCategory = res.data?.categories || [];
+                // แปลงข้อมูลพนักงานและสร้าง companyId จากรหัสพนักงาน
+                this.employees = (res.data?.employees || []).map(e => {
+                    // ดึงตัวอักษรนำหน้าจากรหัสพนักงานเป็นรหัสบริษัท (เช่น ABC123 -> ABC)
+                    const rawId = String(e.emp_id || "").trim();
+                    const prefixMatch = rawId.match(/^[A-Za-z]+/);
+                    const companyPrefix = prefixMatch
+                        ? prefixMatch[0].toUpperCase()
+                        : "";
+                    return {
+                        id: e.id,
+                        emp_id: e.emp_id || "",
+                        emp_firstname: e.emp_firstname || "",
+                        emp_lastname: e.emp_lastname || "",
+                        nickname: e.emp_nickname || "",
+                        department: e.department_name || "",
+                        companyId: companyPrefix || e.company_id || "",
+                        team: e.team_name || "",
+                        position: e.position_name || "",
+                    };
+                });
+                // สร้างตัวเลือกสำหรับตัวกรอง
+                this.buildFilterOptions();
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loadingEmployees = false;
+            }
+        },
+
+        // สร้างตัวเลือกสำหรับ dropdown ตัวกรองจากข้อมูลพนักงาน
+        buildFilterOptions() {
+            const toOpt = (arr) => [...new Set(arr.filter(Boolean))].sort().map(v => ({ label: v, value: v }));
+            this.companyIdOptions = toOpt(this.employees.map(r => r.companyId));
+            this.departmentOptions = toOpt(this.employees.map(r => r.department));
+            this.teamOptions = toOpt(this.employees.map(r => r.team));
+            this.positionOptions = toOpt(this.employees.map(r => r.position));
+        },
+
+        // เปิด file picker dialog
+        pickFiles() { this.$refs.fileInput.click(); },
+        // จัดการเมื่อเลือกไฟล์จาก file picker
+        onPick(e) { this.addFiles([...e.target.files]); e.target.value = ""; },
+        // จัดการเมื่อ drop ไฟล์ลงใน drop zone
+        onDrop(e) { this.dragging = false; this.addFiles([...e.dataTransfer.files]); },
+        // เพิ่มไฟล์ที่มีขนาดไม่เกิน 50MB
+        addFiles(files) { files.forEach(f => { if (f.size <= 50 * 1024 * 1024) this.filesNew.push(f); }); },
+        // ลบไฟล์ออกจากรายการ
+        removeFile(idx) { this.filesNew.splice(idx, 1); },
+        // แปลงขนาดไฟล์เป็น MB
+        prettySize(byte) { return (byte / (1024 * 1024)).toFixed(2) + " MB"; },
+        // อัปเดต ID พนักงานที่เลือก
+        onUpdateSelected(ids) { this.selectedIds = new Set(ids); },
+        // ยกเลิกและกลับหน้าก่อนหน้า
+        onCancel() { this.$router.back(); },
+        onRootPointer() { }
+    }
 };
 </script>
 
