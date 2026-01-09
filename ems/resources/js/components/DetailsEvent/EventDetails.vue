@@ -190,7 +190,7 @@
           <div @click.stop class="flex justify-center">
             <input
               type="checkbox"
-              class="accent-slate-700 size-5 cursor-not-allowed"
+              class="accent-neutral-700 size-5 cursor-not-allowed"
               :checked="selectedIds.has(row.id)"
               @click.prevent
             />
