@@ -7,10 +7,9 @@
                 v-model="searchInput"
                 placeholder="Search Employee / Department / Team / Position"
                 @search="onSearch"
-                class="!w-full [&_input]:h-[44px] [&_input]:text-sm [&_button]:h-10 [&_button]:w-10 [&_svg]:w-5 [&_svg]:h-5"
             />
 
-            <div class="relative z-[60] mt-6" ref="sortWrap">
+            <div class="relative z-[60] mt-8" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
                     :options="sortOptions"
@@ -37,7 +36,7 @@
             <template #empty>
                 {{
                     sorted.length === 0
-                        ? "ไม่พบข้อมูลประวัติพนักงาน"
+                        ? "ไม่พบข้อมูลพนักงาน"
                         : "ไม่มีข้อมูลในหน้านี้"
                 }}
             </template>
@@ -126,11 +125,6 @@ export default {
                     class: 'text-center w-[120px]',
                 },
                 {
-                    key: 'emp_delete_status',
-                    label: 'Status',
-                    class: 'text-center w-[100px]',
-                },
-                {
                     key: 'department_name',
                     label: 'Department',
                     class: 'text-center w-[120px]',
@@ -181,7 +175,6 @@ export default {
                     (r.emp_firstname || '').toLowerCase().includes(q) ||
                     (r.emp_lastname || '').toLowerCase().includes(q) ||
                     (r.emp_nickname || '').toLowerCase().includes(q) ||
-                    (r.emp_delete_status || '').toLowerCase().includes(q) ||
                     (r.department_name || '').toLowerCase().includes(q) ||
                     (r.team_name || '').toLowerCase().includes(q) ||
                     (r.position_name || '').toLowerCase().includes(q)
