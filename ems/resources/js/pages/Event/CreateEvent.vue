@@ -212,9 +212,6 @@
                         </button>
                     </div>
 
-                    <!-- error (ถ้ามี) -->
-                    <!-- <p v-if="uploadError" class="mt-2 text-xs text-red-600 text-center">{{ uploadError }}</p> -->
-
                     <!-- input file (ซ่อน) -->
                     <input ref="fileInput" type="file" multiple class="hidden"
                         accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
