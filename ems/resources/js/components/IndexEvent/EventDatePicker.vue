@@ -3,7 +3,7 @@
         <button @click="showDropdown = !showDropdown" type="button"
             class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800 transition-colors duration-200 font-[Poppins] font-size-[20px]"
             ref="dateButton">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
                 <path fill="currentColor"
                     d="M8.5 14a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m0 3.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0M12 17.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0" />
                 <path fill="currentColor" fill-rule="evenodd"
