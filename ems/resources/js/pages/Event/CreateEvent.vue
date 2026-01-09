@@ -14,6 +14,7 @@
                     Event Details
                 </h3>
 
+                <!-- Event Title -->
                 <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start">
                     <div>
                         <label
@@ -21,51 +22,30 @@
                         >
                             Event Title <span class="text-red-600">*</span>
                         </label>
-                        <InputPill
-                            v-model="eventTitle"
-                            placeholder="Enter event title"
-                            :class="[
-                                'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
-                                errors.eventTitle
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-neutral-200 focus:border-rose-400',
-                            ]"
-                            @input="errors.eventTitle = false"
-                        />
-                        <p
-                            v-if="errors.eventTitle"
-                            class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                        >
-                            Required field
+                        <InputPill v-model="eventTitle" placeholder="Enter event title" :class="[
+                            'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
+                            'placeholder:text-red-300',
+                            errors.eventTitle ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
+                        ]" @input="errors.eventTitle = false" />
+                        <p v-if="errors.eventTitle" class="text-red-500 text-xs mt-1 ml-1 font-medium">Required field
                         </p>
                     </div>
 
                     <div>
-                        <label
-                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
-                        >
+                        <!-- Event Category -->
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
                             Category <span class="text-red-600">*</span>
                         </label>
                         <div class="relative">
-                            <select
-                                v-model="eventCategoryId"
-                                :class="[
-                                    'appearance-none border rounded-[20px] px-[20px] w-full h-[52px] font-medium focus:outline-none transition bg-white cursor-pointer',
-                                    errors.eventCategoryId
-                                        ? 'border-red-500 bg-red-50'
-                                        : 'border-neutral-200 focus:border-rose-400',
-                                ]"
-                                @change="errors.eventCategoryId = false"
-                            >
-                                <option value="" disabled selected>
-                                    Select
-                                </option>
-                                <option
-                                    v-for="cat in selectCategory"
-                                    :key="cat.id"
-                                    :value="cat.id"
-                                    class="text-neutral-800"
-                                >
+                            <select v-model="eventCategoryId" :class="[
+                                'appearance-none border rounded-[20px] px-[20px] w-full h-[52px] font-medium focus:outline-none transition bg-white cursor-pointer',
+                                eventCategoryId ? 'text-neutral-800' : 'text-red-300',
+                                errors.eventCategoryId ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
+                            ]" @change="errors.eventCategoryId = false">
+                                <!-- Event Category Options -->
+                                <option value="" disabled selected>Select</option>
+                                <option v-for="cat in selectCategory" :key="cat.id" :value="cat.id"
+                                    class="text-neutral-800">
                                     {{ cat.cat_name }}
                                 </option>
                             </select>
@@ -78,40 +58,30 @@
                                 />
                             </div>
                         </div>
-                        <p
-                            v-if="errors.eventCategoryId"
-                            class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                        >
-                            Required field
-                        </p>
+                        <p v-if="errors.eventCategoryId" class="text-red-500 text-xs mt-1 ml-1 font-medium">Required
+                            field</p>
                     </div>
                 </div>
 
+                <!-- Event Description -->
                 <div class="mt-6">
                     <label
                         class="block text-neutral-800 font-semibold text-[15px] mb-2"
                     >
                         Event Description <span class="text-red-600">*</span>
                     </label>
-                    <textarea
-                        v-model.trim="eventDescription"
-                        placeholder="Write some description... (255 words)"
+                    <textarea v-model.trim="eventDescription" placeholder="Write some description... (255 words)"
                         :class="[
                             'w-full h-[160px] rounded-2xl p-5 font-medium text-neutral-800 focus:outline-none transition resize-none border',
-                            errors.eventDescription
-                                ? 'border-red-500 bg-red-50'
-                                : 'border-neutral-200 focus:border-rose-400',
-                        ]"
-                        @input="errors.eventDescription = false"
-                    ></textarea>
-                    <p
-                        v-if="errors.eventDescription"
-                        class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                    >
-                        Required field
+                            'placeholder:text-red-300',
+                            errors.eventDescription ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
+                        ]" @input="errors.eventDescription = false"></textarea>
+                    <!-- Required -->
+                    <p v-if="errors.eventDescription" class="text-red-500 text-xs mt-1 ml-1 font-medium">Required field
                     </p>
                 </div>
 
+                <!-- Date, Time, Duration, Location -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                     <div class="relative" ref="datePickerContainer">
                         <label
@@ -383,73 +353,32 @@
                         </p>
                     </div>
 
+                    <!-- Time Input -->
                     <div>
-                        <label
-                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
-                            >Time <span class="text-red-600">*</span></label
-                        >
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Time <span
+                                class="text-red-600">*</span></label>
                         <div
-                            :class="[
-                                'flex h-[52px] w-full items-center rounded-2xl border px-2 shadow-sm bg-white transition',
-                                errors.eventTime
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-neutral-200 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400',
-                            ]"
-                        >
-                            <div
-                                class="relative flex-1 flex items-center justify-center h-full overflow-hidden"
-                            >
-                                <span
-                                    v-if="!eventTimeStart"
-                                    class="absolute pointer-events-none text-red-300 text-[15px] font-medium z-10"
-                                    >Start</span
-                                >
-                                <input
-                                    type="time"
-                                    v-model="eventTimeStart"
-                                    step="300"
-                                    :class="[
-                                        'time-input w-full bg-transparent text-[15px] font-medium outline-none text-center cursor-pointer caret-transparent z-20',
-                                        eventTimeStart
-                                            ? 'text-neutral-800'
-                                            : 'text-transparent',
-                                    ]"
-                                    @click="$event.target.showPicker()"
-                                    @change="errors.eventTime = false"
-                                    @keydown.prevent
-                                />
+                            :class="['flex h-[52px] w-full items-center rounded-2xl border px-2 shadow-sm bg-white transition', errors.eventTime ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400']">
+                            <div class="relative flex-1 flex items-center justify-center h-full overflow-hidden">
+                                <span v-if="!eventTimeStart"
+                                    class="absolute pointer-events-none text-red-300 text-[15px] font-medium z-10">Start</span>
+                                <input type="time" v-model="eventTimeStart" step="300"
+                                    :class="['time-input w-full bg-transparent text-[15px] font-medium outline-none text-center cursor-pointer caret-transparent z-20', eventTimeStart ? 'text-neutral-800' : 'text-transparent']"
+                                    @click="$event.target.showPicker()" @change="errors.eventTime = false"
+                                    @keydown.prevent />
                             </div>
-                            <span
-                                class="flex-none text-[16px] font-bold text-red-300 px-1"
-                                >:</span
-                            >
-                            <div
-                                class="relative flex-1 flex items-center justify-center h-full overflow-hidden"
-                            >
-                                <span
-                                    v-if="!eventTimeEnd"
-                                    class="absolute pointer-events-none text-red-300 text-[15px] font-medium z-10"
-                                    >End</span
-                                >
-                                <input
-                                    type="time"
-                                    v-model="eventTimeEnd"
-                                    step="300"
-                                    :class="[
-                                        'time-input w-full bg-transparent text-[15px] font-medium outline-none text-center cursor-pointer caret-transparent z-20',
-                                        eventTimeEnd
-                                            ? 'text-neutral-800'
-                                            : 'text-transparent',
-                                    ]"
-                                    @click="$event.target.showPicker()"
-                                    @change="errors.eventTime = false"
-                                    @keydown.prevent
-                                />
+                            <!-- Time Separator -->
+                            <span class="flex-none text-[16px] font-bold text-red-300 px-1">:</span>
+                            <div class="relative flex-1 flex items-center justify-center h-full overflow-hidden">
+                                <span v-if="!eventTimeEnd"
+                                    class="absolute pointer-events-none text-red-300 text-[15px] font-medium z-10">End</span>
+                                <input type="time" v-model="eventTimeEnd" step="300"
+                                    :class="['time-input w-full bg-transparent text-[15px] font-medium outline-none text-center cursor-pointer caret-transparent z-20', eventTimeEnd ? 'text-neutral-800' : 'text-transparent']"
+                                    @click="$event.target.showPicker()" @change="errors.eventTime = false"
+                                    @keydown.prevent />
                             </div>
-                            <Icon
-                                icon="mdi:clock-outline"
-                                class="flex-none w-5 h-5 text-red-700 mr-2 pointer-events-none"
-                            />
+                            <Icon icon="mdi:clock-outline"
+                                class="flex-none w-5 h-5 text-red-700 mr-2 pointer-events-none" />
                         </div>
                         <p
                             v-if="errors.eventTime"
@@ -460,152 +389,121 @@
                     </div>
 
                     <div>
-                        <label
-                            class="block text-neutral-800 font-semibold text-[15px] mb-2"
-                            >Duration</label
-                        >
+                        <!-- Duration -->
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2 ">Duration</label>
                         <div
-                            class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]"
-                        >
+                            class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]">
                             <input
                                 class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none border-0"
-                                disabled
-                                v-model="eventDurationDisplay"
-                            />
-                            <Icon
-                                icon="lucide:clock-fading"
-                                class="w-6 h-6 text-neutral-400"
-                            />
+                                disabled v-model="eventDurationDisplay" />
+                            <Icon icon="lucide:clock-fading" class="w-6 h-6 text-neutral-400" />
                         </div>
                     </div>
                 </div>
 
+                <!-- Location -->
                 <div class="mt-6">
-                    <label
-                        class="block text-neutral-800 font-semibold text-[15px] mb-2"
-                        >Location <span class="text-red-600">*</span></label
-                    >
-                    <InputPill
-                        v-model="eventLocation"
-                        placeholder="Location/Building/Room Name"
-                        :class="[
-                            'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
-                            errors.eventLocation
-                                ? 'border-red-500 bg-red-50'
-                                : 'border-neutral-200 focus:border-rose-400',
-                        ]"
-                        @input="errors.eventLocation = false"
-                    />
-                    <p
-                        v-if="errors.eventLocation"
-                        class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                    >
-                        Required field
-                    </p>
+                    <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Location <span
+                            class="text-red-600">*</span></label>
+                    <!-- Location Input -->
+                    <InputPill v-model="eventLocation" placeholder="Location/Building/Room Name" :class="[
+                        'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
+                        'placeholder:text-red-300',
+                        errors.eventLocation ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300'
+                    ]" @input="errors.eventLocation = false" />
+                    <p v-if="errors.eventLocation" class="text-red-500 text-xs mt-1 ml-1 font-medium">Required field</p>
                 </div>
             </div>
 
-            <div class="col-span-12 lg:col-span-4">
-                <label
-                    class="block text-neutral-800 font-semibold text-[15px] mb-2"
-                    >Upload attachments</label
-                >
-                <div
-                    class="group relative flex flex-col min-h-[300px] rounded-[24px] border-2 border-dashed border-rose-200 bg-rose-50/50 p-5 transition-all hover:border-rose-400"
-                    :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }"
-                    @dragover.prevent="dragging = true"
-                    @dragleave.prevent="dragging = false"
-                    @drop.prevent="onDrop"
-                >
-                    <div
-                        v-if="filesNew.length > 0"
-                        class="flex flex-col gap-2 mb-4"
-                    >
-                        <div
-                            v-for="(item, index) in filesNew"
-                            :key="index"
-                            class="w-full flex items-center justify-between rounded-2xl bg-white border border-rose-100 px-3 py-2.5 shadow-sm"
-                        >
+            <!-- Upload attachments -->
+            <div class="col-span-4 mx-5 mt-5 mb-2">
+                <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
+                <p class="text-sm text-neutral-800 mb-2">Drag and drop document to your support task</p>
+
+                <!-- ▼ Drop zone -->
+                <div class="group relative rounded-2xl border-2 border-dashed border-red-700 bg-red-100 p-6 transition-all"
+                    :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
+                    @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
+                    <!-- รายการไฟล์ (เดิม + ใหม่) เต็มความกว้าง เรียงลงมา -->
+                    <div v-if="hasAnyFiles" class="mb-4 space-y-2">
+                        <div v-for="item in uploadItems" :key="item.key"
+                            class="w-full flex items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 shadow-sm">
                             <div class="flex items-center gap-3 min-w-0">
-                                <Icon
-                                    icon="basil:file-solid"
-                                    class="h-6 w-6 text-rose-600"
-                                />
-                                <div class="truncate">
-                                    <span
-                                        class="block truncate text-sm font-medium text-neutral-800"
-                                        >{{ item.name }}</span
-                                    >
-                                    <span class="text-xs text-rose-500">{{
-                                        prettySize(item.size)
-                                    }}</span>
+                                <div class="flex h-8 w-8 items-center justify-center rounded-md ">
+                                    <Icon icon="basil:file-solid" class="h-10 w-10 text-red-700" />
                                 </div>
+
+                                <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
+                                <template v-if="item.kind === 'existing'">
+                                    <a :href="item.url" target="_blank" rel="noopener"
+                                        class="truncate text-[16px]  text-red-700 hover:underline">
+                                        {{ item.name }}
+                                    </a>
+                                    <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span> -->
+                                </template>
+                                <template v-else>
+                                    <span class="truncate text-[16px]  text-neutral-800">{{ item.name }}</span>
+                                    <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span> -->
+                                </template>
                             </div>
-                            <button type="button" @click="removeFile(index)">
-                                <Icon
-                                    icon="mdi:close"
-                                    class="h-4 w-4 text-neutral-400"
-                                />
+
+                            <button type="button"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100"
+                                @click="item.kind === 'existing' ? removeExisting(item.id) : removeFile(item.index)"
+                                aria-label="Remove file" title="Remove">
+                                ✕
                             </button>
                         </div>
                     </div>
-                    <div
-                        v-else
-                        class="flex flex-1 flex-col items-center justify-center text-center"
-                    >
-                        <Icon
-                            icon="entypo:upload-to-cloud"
-                            class="h-8 w-8 text-rose-500 mb-2"
-                        />
-                        <p class="text-sm font-medium text-neutral-800">
-                            Choose a file or drag & drop it here
+
+                    <!-- เมฆ + ข้อความ: โชว์เฉพาะตอน “ยังไม่มีไฟล์เลย” -->
+                    <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
+                        <Icon icon="ep:upload-filled" class="w-40 h-28 mb-3 text-red-300" />
+                        <p class="text-[16px]  font-medium text-neutral-800">Choose a file or drag &amp; drop it here
                         </p>
+                        <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx</p>
                     </div>
-                    <div class="mt-auto flex justify-center pt-4">
-                        <button
-                            type="button"
-                            class="rounded-xl border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm"
-                            @click="pickFiles"
-                        >
-                            Browse files
+
+                    <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
+                    <div class="flex justify-center mt-1 mb-12">
+                        <button type="button"
+                            class="inline-flex items-center rounded-[10px] border  bg-white border-rose-500 px-2 py-1  text-neutral-800 hover:bg-rose-50 active:bg-rose-100 "
+                            @click="pickFiles">
+                            <span class="text-sm font-medium">Browse files</span>
                         </button>
                     </div>
-                    <input
-                        ref="fileInput"
-                        type="file"
-                        multiple
-                        class="hidden"
-                        accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls"
-                        @change="onPick"
-                    />
+
+                    <!-- input file (ซ่อน) -->
+                    <input ref="fileInput" type="file" multiple class="hidden"
+                        accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
                 </div>
             </div>
         </div>
 
-        <div class="mb-10">
-            <h3 class="text-3xl font-semibold text-neutral-800 mb-4">
-                Add Guest
-            </h3>
+        <!-- Add Guest Section -->
+        <div class="mt-4"> <!-- คุมจากด้านบนแทน -->
+            <h3 class="text-3xl font-semibold text-neutral-800 mb-4">Add Guest</h3>
+
             <h4 class="text-xl font-medium text-neutral-800 mb-3">Search</h4>
             <div class="flex flex-wrap items-center gap-4 w-full">
                 <div class="flex items-center gap-2 flex-1 min-w-[320px]">
                     <div class="relative w-full">
-                        <input
-                            v-model="searchRaw"
-                            type="text"
-                            placeholder="Search ID / Name / Nickname"
+                        <!-- Search Input -->
+                        <input v-model="searchRaw" type="text" placeholder="Search ID / Name / Nickname"
                             class="w-full h-[48px] rounded-[30px] border border-neutral-200 px-6 text-[15px] text-neutral-800 placeholder:text-rose-300 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200 transition bg-white"
-                            @keyup.enter="performSearch"
-                        />
+                            @keyup.enter="performSearch" />
                     </div>
-                    <button
-                        type="button"
+                    <!-- Search Button -->
+                    <button type="button"
                         class="flex-none grid place-items-center w-[48px] h-[48px] rounded-full bg-[#B91C1C] text-white hover:bg-red-800 transition shadow-sm"
-                        @click="performSearch"
-                    >
+                        @click="performSearch">
                         <Icon icon="ic:baseline-search" class="w-6 h-6" />
                     </button>
                 </div>
+
+                <!-- Employee Filters -->
                 <div class="flex flex-row flex-wrap items-center gap-2">
                     <EmployeeDropdown
                         label="Company ID"
@@ -630,21 +528,12 @@
                 </div>
             </div>
 
+            <!-- Employee Data Table -->
             <div class="mt-8">
-                <DataTable
-                    :rows="pagedEmployees"
-                    :columns="columns"
-                    :loading="loadingEmployees"
-                    :totalItems="filteredEmployees.length"
-                    v-model:page="page"
-                    v-model:pageSize="perPage"
-                    :pageSizeOptions="[10, 25, 50]"
-                    :selectable="true"
-                    :showRowNumber="true"
-                    rowKey="id"
-                    :modelValue="selectedIdsArr"
-                    @update:modelValue="onUpdateSelected"
-                >
+                <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
+                    :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
+                    :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id"
+                    :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected">
                     <template #cell-fullname="{ row }">
                         {{
                             (row.emp_firstname || "") +
@@ -661,52 +550,35 @@
             </div>
         </div>
 
-        <div
-            class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8"
-        >
+        <!-- Cancel Buttons -->
+        <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
             <div class="flex-none">
-                <button
-                    type="button"
-                    @click="onCancel"
-                    :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#C10008] text-white font-semibold hover:bg-red-700 w-[140px] h-[48px] transition shadow-sm"
-                >
-                    <Icon
-                        icon="ic:baseline-plus"
-                        class="w-5 h-5 text-white rotate-45"
-                    />
+                <button type="button" @click="onCancel" :disabled="saving"
+                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#C10008] text-white font-semibold hover:bg-red-700 w-[140px] h-[48px] transition shadow-sm">
+                    <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white rotate-45" />
                     <span>Cancel</span>
                 </button>
             </div>
+
+            <!-- Create Button -->
             <div class="flex-none">
-                <button
-                    type="button"
-                    @click="saveEvent"
-                    :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm"
-                >
+                <button type="button" @click="saveEvent" :disabled="saving"
+                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
                     <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
                     <span>Create</span>
                 </button>
             </div>
         </div>
 
-        <ModalAlert
-            v-model:open="showConfirmCreate"
-            title="Confirm Creation"
-            message="Are you sure you want to create this event?"
-            type="confirm"
-            :showCancel="true"
-            @confirm="executeCreateEvent"
-        />
-        <ModalAlert
-            v-model:open="showSuccessAlert"
-            title="Success"
-            message="New event has been created."
-            type="success"
-            :showCancel="false"
-            @confirm="onSuccessConfirm"
-        />
+        <!-- Confirm Create Modal -->
+        <ModalAlert v-model:open="showConfirmCreate" title="Confirm Creation"
+            message="Are you sure you want to create this event?" type="confirm" :showCancel="true"
+            @confirm="executeCreateEvent" />
+
+        <!-- Success Alert Modal -->
+        <ModalAlert v-model:open="showSuccessAlert" title="Success" message="New event has been created." type="success"
+            :showCancel="false" @confirm="onSuccessConfirm" />
+
     </div>
 </template>
 
@@ -749,42 +621,56 @@ export default {
         const day = String(now.getDate()).padStart(2, "0");
 
         return {
+            // ฟิลด์ข้อมูลอีเวนต์
             eventTitle: "",
             eventCategoryId: "",
             eventDescription: "",
-
-            // Event Date Variables
             eventDate: "",
-
             eventTimeStart: "",
             eventTimeEnd: "",
             eventDurationDisplay: "",
             eventDurationMinutes: 0,
             eventLocation: "",
+
+            // การตรวจสอบวันที่
             minDate: `${year}-${month}-${day}`,
+
+            // ข้อผิดพลาดในการตรวจสอบฟอร์ม
             errors: {
                 eventTitle: false,
                 eventCategoryId: false,
                 eventDescription: false,
                 eventDate: false,
                 eventTime: false,
-                eventLocation: false,
+                eventLocation: false
             },
+
+            // การจัดการไฟล์แนบ
             selectCategory: [],
             filesNew: [],
             dragging: false,
+
+            // ข้อมูลพนักงานและสถานะการโหลด
             employees: [],
             loadingEmployees: false,
-            search: "",
-            searchRaw: "",
+
+            // ฟังก์ชันการค้นหา
+            search: "",    // ค่าตัวกรองที่ใช้งานจริง
+            searchRaw: "", // ค่า v-model ของช่องค้นหา
+
+            // ตัวกรองพนักงานที่เลือก
             selectedCompanyIds: [],
             selectedDepartmentIds: [],
             selectedTeamIds: [],
             selectedPositionIds: [],
+
+            // ตัวเลือกสำหรับ dropdown ตัวกรอง
             companyIdOptions: [],
             departmentOptions: [],
             teamOptions: [],
             positionOptions: [],
+
+            // สถานะตารางและการเลือก
             selectedIds: new Set(),
             page: 1,
             perPage: 10,
@@ -881,9 +767,11 @@ export default {
                 },
             ];
         },
+        // กรองพนักงานตามคำค้นหาและตัวเลือกตัวกรอง
         filteredEmployees() {
             const q = (this.search || "").toLowerCase().trim();
             let list = this.employees;
+
             if (q) {
                 list = list.filter(
                     (e) =>
@@ -892,36 +780,24 @@ export default {
                         (e.nickname || "").toLowerCase().includes(q)
                 );
             }
-            if (this.selectedCompanyIds.length)
-                list = list.filter((r) =>
-                    this.selectedCompanyIds.includes(r.companyId)
-                );
-            if (this.selectedDepartmentIds.length)
-                list = list.filter((r) =>
-                    this.selectedDepartmentIds.includes(r.department)
-                );
-            if (this.selectedTeamIds.length)
-                list = list.filter((r) =>
-                    this.selectedTeamIds.includes(r.team)
-                );
-            if (this.selectedPositionIds.length)
-                list = list.filter((r) =>
-                    this.selectedPositionIds.includes(r.position)
-                );
+
+            if (this.selectedCompanyIds.length) list = list.filter(r => this.selectedCompanyIds.includes(r.companyId));
+            if (this.selectedDepartmentIds.length) list = list.filter(r => this.selectedDepartmentIds.includes(r.department));
+            if (this.selectedTeamIds.length) list = list.filter(r => this.selectedTeamIds.includes(r.team));
+            if (this.selectedPositionIds.length) list = list.filter(r => this.selectedPositionIds.includes(r.position));
+
             return list;
         },
+        // แบ่งหน้าพนักงานตามจำนวนรายการต่อหน้า
         pagedEmployees() {
             const start = (this.page - 1) * this.perPage;
             return this.filteredEmployees.slice(start, start + this.perPage);
         },
+        // แปลง Set เป็น Array สำหรับ DataTable
         selectedIdsArr: {
-            get() {
-                return Array.from(this.selectedIds);
-            },
-            set(arr) {
-                this.selectedIds = new Set(arr);
-            },
-        },
+            get() { return Array.from(this.selectedIds); },
+            set(arr) { this.selectedIds = new Set(arr); }
+        }
     },
     watch: {
         eventTimeStart() {
@@ -996,6 +872,7 @@ export default {
             this.search = this.searchRaw;
             this.page = 1;
         },
+        // คำนวณระยะเวลาอีเวนต์จากเวลาเริ่มและเวลาสิ้นสุด
         calDuration() {
             if (!this.eventTimeStart || !this.eventTimeEnd) {
                 this.eventDurationDisplay = "";
@@ -1011,6 +888,7 @@ export default {
             this.eventDurationDisplay =
                 h > 0 ? `${h} Hour ${m} Min` : `${m} Min`;
         },
+        // ตรวจสอบฟิลด์ที่จำเป็นและแสดง modal ยืนยัน
         saveEvent() {
             this.errors.eventTitle = !this.eventTitle;
             this.errors.eventCategoryId = !this.eventCategoryId;
@@ -1021,11 +899,14 @@ export default {
             if (Object.values(this.errors).some((v) => v)) return;
             this.showConfirmCreate = true;
         },
+        // สร้างอีเวนต์และส่งข้อมูลไปยัง API
         async executeCreateEvent() {
             this.showConfirmCreate = false;
             this.saving = true;
             try {
+                // สร้าง FormData สำหรับส่งข้อมูลพร้อมไฟล์
                 const formData = new FormData();
+                // เพิ่มข้อมูลอีเวนต์พื้นฐาน
                 formData.append("event_title", this.eventTitle.trim());
                 formData.append("event_category_id", this.eventCategoryId);
                 formData.append("event_description", this.eventDescription);
@@ -1034,15 +915,12 @@ export default {
                 formData.append("event_timeend", this.eventTimeEnd);
                 formData.append("event_duration", this.eventDurationMinutes);
                 formData.append("event_location", this.eventLocation);
-                this.filesNew.forEach((f) =>
-                    formData.append("attachments[]", f)
-                );
-                this.selectedIds.forEach((id) =>
-                    formData.append("employee_ids[]", id)
-                );
-                await axios.post("/event-save", formData, {
-                    headers: { "Content-Type": "multipart/form-data" },
-                });
+                // เพิ่มไฟล์แนบทั้งหมด
+                this.filesNew.forEach(f => formData.append("attachments[]", f));
+                // เพิ่ม ID พนักงานที่เลือกทั้งหมด
+                this.selectedIds.forEach(id => formData.append("employee_ids[]", id));
+                // ส่งข้อมูลไปยัง API
+                await axios.post("/event-save", formData, { headers: { "Content-Type": "multipart/form-data" } });
                 this.showSuccessAlert = true;
             } catch (err) {
                 console.error(err);
@@ -1051,16 +929,21 @@ export default {
                 this.saving = false;
             }
         },
+        // ปิด modal และกลับไปหน้ารายการอีเวนต์
         onSuccessConfirm() {
             this.showSuccessAlert = false;
             this.$router.push("/event");
         },
+        // ดึงข้อมูลหมวดหมู่และพนักงานจาก API
         async fetchInfo() {
             try {
                 this.loadingEmployees = true;
                 const res = await axios.get("/event-info");
+                // เก็บข้อมูลหมวดหมู่อีเวนต์
                 this.selectCategory = res.data?.categories || [];
-                this.employees = (res.data?.employees || []).map((e) => {
+                // แปลงข้อมูลพนักงานและสร้าง companyId จากรหัสพนักงาน
+                this.employees = (res.data?.employees || []).map(e => {
+                    // ดึงตัวอักษรนำหน้าจากรหัสพนักงานเป็นรหัสบริษัท (เช่น ABC123 -> ABC)
                     const rawId = String(e.emp_id || "").trim();
                     const prefixMatch = rawId.match(/^[A-Za-z]+/);
                     const companyPrefix = prefixMatch
@@ -1078,6 +961,7 @@ export default {
                         position: e.position_name || "",
                     };
                 });
+                // สร้างตัวเลือกสำหรับตัวกรอง
                 this.buildFilterOptions();
             } catch (err) {
                 console.error(err);
@@ -1085,50 +969,32 @@ export default {
                 this.loadingEmployees = false;
             }
         },
+        // สร้างตัวเลือกสำหรับ dropdown ตัวกรองจากข้อมูลพนักงาน
         buildFilterOptions() {
-            const toOpt = (arr) =>
-                [...new Set(arr.filter(Boolean))]
-                    .sort()
-                    .map((v) => ({ label: v, value: v }));
-            this.companyIdOptions = toOpt(
-                this.employees.map((r) => r.companyId)
-            );
-            this.departmentOptions = toOpt(
-                this.employees.map((r) => r.department)
-            );
-            this.teamOptions = toOpt(this.employees.map((r) => r.team));
-            this.positionOptions = toOpt(this.employees.map((r) => r.position));
+            const toOpt = (arr) => [...new Set(arr.filter(Boolean))].sort().map(v => ({ label: v, value: v }));
+            this.companyIdOptions = toOpt(this.employees.map(r => r.companyId));
+            this.departmentOptions = toOpt(this.employees.map(r => r.department));
+            this.teamOptions = toOpt(this.employees.map(r => r.team));
+            this.positionOptions = toOpt(this.employees.map(r => r.position));
         },
-        pickFiles() {
-            this.$refs.fileInput.click();
-        },
-        onPick(e) {
-            this.addFiles([...e.target.files]);
-            e.target.value = "";
-        },
-        onDrop(e) {
-            this.dragging = false;
-            this.addFiles([...e.dataTransfer.files]);
-        },
-        addFiles(files) {
-            files.forEach((f) => {
-                if (f.size <= 50 * 1024 * 1024) this.filesNew.push(f);
-            });
-        },
-        removeFile(idx) {
-            this.filesNew.splice(idx, 1);
-        },
-        prettySize(byte) {
-            return (byte / (1024 * 1024)).toFixed(2) + " MB";
-        },
-        onUpdateSelected(ids) {
-            this.selectedIds = new Set(ids);
-        },
-        onCancel() {
-            this.$router.back();
-        },
-        onRootPointer() {},
-    },
+        // เปิด file picker dialog
+        pickFiles() { this.$refs.fileInput.click(); },
+        // จัดการเมื่อเลือกไฟล์จาก file picker
+        onPick(e) { this.addFiles([...e.target.files]); e.target.value = ""; },
+        // จัดการเมื่อ drop ไฟล์ลงใน drop zone
+        onDrop(e) { this.dragging = false; this.addFiles([...e.dataTransfer.files]); },
+        // เพิ่มไฟล์ที่มีขนาดไม่เกิน 50MB
+        addFiles(files) { files.forEach(f => { if (f.size <= 50 * 1024 * 1024) this.filesNew.push(f); }); },
+        // ลบไฟล์ออกจากรายการ
+        removeFile(idx) { this.filesNew.splice(idx, 1); },
+        // แปลงขนาดไฟล์เป็น MB
+        prettySize(byte) { return (byte / (1024 * 1024)).toFixed(2) + " MB"; },
+        // อัปเดต ID พนักงานที่เลือก
+        onUpdateSelected(ids) { this.selectedIds = new Set(ids); },
+        // ยกเลิกและกลับหน้าก่อนหน้า
+        onCancel() { this.$router.back(); },
+        onRootPointer() { }
+    }
 };
 </script>
 
@@ -1141,19 +1007,35 @@ input[type="time"]::-webkit-datetime-edit-text {
     color: inherit;
     padding: 0;
 }
+
 input[type="time"]::-webkit-datetime-edit-hour-field:focus,
 input[type="time"]::-webkit-datetime-edit-minute-field:focus {
     background-color: transparent !important;
     color: inherit;
     outline: none;
 }
+
 input[type="time"]::selection {
     background: transparent;
 }
+
 input[type="time"]::-webkit-calendar-picker-indicator {
     display: none;
     -webkit-appearance: none;
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
+}
+
 .caret-transparent {
     caret-color: transparent;
 }
