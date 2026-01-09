@@ -17,7 +17,7 @@
                     <EventSort v-model="selectedSort" :options="sortOptions" @change="onPickSort"
                         class="h-[44px] [&_button]:h-full" />
                 </div>
-                <!-- ✅ Add Button -->
+                <!-- Add Button -->
                 <AddButton @click="$router.push('/add-event')" />
             </div>
         </div>
@@ -78,44 +78,36 @@
             </template>
 
             <template #actions="{ row }">
-                <!-- ปุ่มแก้ไข (disabled ถ้า ongoing หรือ done) -->
-                <button @click="
-                    !['ongoing', 'done'].includes((row.evn_status || '').toLowerCase()) &&
-                    editEvent(row.id)
-                    " :disabled="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())"
-                    class="rounded-lg p-1.5" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
+                <!-- Edit -->
+                <button @click="canEdit(row) && editEvent(row.id)" :disabled="!canEdit(row)"
+                    class="rounded-lg p-1.5 transition-colors" :class="!canEdit(row)
                         ? 'cursor-not-allowed opacity-40'
-                        : 'hover:bg-slate-100 cursor-pointer'" :title="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
-                            ? 'Cannot edit ongoing/done event'
-                            : 'Edit'">
-                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" :class="['ongoing', 'done'].includes((row.evn_status || '').toLowerCase())
+                        : 'cursor-pointer'" title="Edit">
+                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" :class="!canEdit(row)
                         ? 'text-neutral-400'
-                        : 'text-neutral-800'" />
+                        : 'text-neutral-725 hover:text-[#059669]'" />
                 </button>
 
-                <button @click="openDelete(row.id)" class="rounded-lg p-1.5" :disabled="!canDelete(row)" :class="!canDelete(row)
-                    ? 'cursor-not-allowed opacity-40'
-                    : 'hover:bg-slate-100 cursor-pointer'" :title="!canDelete(row) ? 'Cannot delete' : 'Delete'">
-                    <!-- <Icon icon="fluent:delete-12-filled" width="20" height="20" class="text-neutral-800" /> -->
-                    <Icon icon="fluent:delete-12-filled" width="20" height="20"
-                        :class="!canDelete(row) ? 'text-neutral-400' : 'text-neutral-800'" />
+                <!-- Delete -->
+                <button @click="canDelete(row) && openDelete(row.id)" :disabled="!canDelete(row)"
+                    class="rounded-lg p-1.5 transition-colors" :class="!canDelete(row)
+                        ? 'cursor-not-allowed opacity-40'
+                        : 'cursor-pointer'" title="Delete">
+                    <Icon icon="fluent:delete-12-filled" width="20" height="20" :class="!canDelete(row)
+                        ? 'text-neutral-400'
+                        : 'text-neutral-725 hover:text-[#dc2626]'" />
                 </button>
 
-                <!-- ❌ Disabled เมื่อ upcoming หรือ (done + permission = disabled) -->
-                <span v-if="
-                    (row.evn_status || '').toLowerCase() === 'upcoming' ||
-                    ((row.evn_status || '').toLowerCase() === 'done' &&
-                        (empPermission || '').toLowerCase() === 'disabled')
-                " class="rounded-lg p-1.5 cursor-not-allowed opacity-40" :title="(row.evn_status || '').toLowerCase() === 'upcoming'
-                    ? 'not available for upcoming event'
-                    : 'No permission to check-in'">
+                <!-- Check-in -->
+                <span v-if="!canCheckin(row)" class="rounded-lg p-1.5 cursor-not-allowed opacity-40"
+                    :title="checkinDisabledTitle(row)">
                     <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-400" />
                 </span>
 
-                <!--  ใช้งานได้ เมื่อไม่ใช่ upcoming และไม่ใช่ (done + disabled) -->
-                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 hover:bg-slate-100"
+                <router-link v-else :to="`/EventCheckIn/eveId/${row.id}`" class="rounded-lg p-1.5 transition-colors"
                     title="Check-in">
-                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20" class="text-neutral-800" />
+                    <Icon icon="material-symbols:fact-check-rounded" width="20" height="20"
+                        class="text-neutral-725 hover:text-[#0084d1]" />
                 </router-link>
             </template>
         </DataTable>
@@ -140,7 +132,6 @@ import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import AddButton from "@/components/AddButton.vue";
 import EventDatePicker from "@/components/IndexEvent/EventDatePicker.vue";
-
 import { Icon } from '@iconify/vue'
 
 axios.defaults.baseURL = "/api";
@@ -163,6 +154,7 @@ export default {
     data() {
         return {
             selectedDate: { start: null, end: null },
+            empPermission: "employee",
 
             showModalBlockedDone: false,
             showModalBlockedOngoing: false,
@@ -393,15 +385,7 @@ export default {
     watch: {
         search() { this.page = 1; },
         pageSize() { this.page = 1; },
-        // 🔴🔴 จุดที่แก้ 2: ลบ selectedDate ออกจาก watch (เพราะย้ายไปทำใน onDateChange แล้ว)
-        /*
-        selectedDate: {
-            deep: true,
-            handler() {
-                this.page = 1;
-            },
-        },
-        */
+
         selectedSort: {
             handler(v) {
                 if (!v) return;
@@ -425,7 +409,6 @@ export default {
     },
 
     methods: {
-        // 🔴🔴 จุดที่แก้ 3: สร้างฟังก์ชันรับค่าจากปฏิทินโดยเฉพาะ
         onDateChange(newDateVal) {
             // รับค่ามาแล้วอัปเดตตัวแปรทันที
             this.selectedDate = newDateVal;
@@ -441,31 +424,55 @@ export default {
 
         applyFilter() { this.page = 1; },
 
-        canDelete(row) {
-            const status = (row.evn_status || "").toLowerCase();
-            const perm = (this.empPermission || "disabled").toLowerCase();
-            if (status === "ongoing") return false;
-
-            // enabled ลบได้ upcoming + done
-            if (perm === "enabled")
-                return status === "upcoming" || status === "done";
-
-            // disabled ลบได้แค่ upcoming
-            return status === "upcoming";
+        statusOf(row) {
+            return (row?.evn_status || "").toLowerCase();
+        },
+        roleOf() {
+            return (this.empPermission || "employee").toLowerCase();
         },
 
-        canCheckIn(row) {
-            const status = (row.evn_status || "").toLowerCase();
-            const perm = (this.empPermission || "disabled").toLowerCase();
+        canEdit(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
 
-            // upcoming ห้ามทุกกรณี
-            if (status === "upcoming") return false;
+            if (r === "employee") return false;
+            if (s === "upcoming") return r === "admin" || r === "hr";
+            // ongoing / done แก้ไม่ได้ทุกกรณี
+            return false;
+        },
 
-            // done → disabled ห้าม, enabled ได้
-            if (status === "done" && perm === "disabled") return false;
+        canDelete(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
 
-            // ที่เหลือ (ongoing, done+enabled)
-            return true;
+            if (r === "employee") return false;
+
+            if (s === "upcoming") return r === "admin" || r === "hr";
+            if (s === "done") return r === "admin";     // hr ทำไม่ได้
+            // ongoing ลบไม่ได้
+            return false;
+        },
+
+        canCheckin(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
+
+            if (r === "employee") return false;
+
+            if (s === "ongoing") return r === "admin" || r === "hr";
+            if (s === "done") return r === "admin";     // hr ทำไม่ได้
+            // upcoming เช็คชื่อไม่ได้
+            return false;
+        },
+
+        checkinDisabledTitle(row) {
+            const s = this.statusOf(row);
+            const r = this.roleOf();
+
+            if (r === "employee") return "No permission";
+            if (s === "upcoming") return "not available for upcoming event";
+            if (s === "done" && r === "hr") return "No permission to check-in";
+            return "No permission to check-in";
         },
 
         async fetchEvent() {
@@ -503,13 +510,10 @@ export default {
         async fetchPermission() {
             try {
                 const res = await axios.get("/permission");
-                // ตัวอย่าง response: { emp_permission: "enabled" }
-                this.empPermission = (
-                    res.data?.emp_permission || "disabled"
-                ).toLowerCase();
+                this.empPermission = (res.data?.emp_permission || "employee").toLowerCase();
             } catch (err) {
                 console.error("fetchPermission error", err);
-                this.empPermission = "disabled";
+                this.empPermission = "employee";
             }
         },
 
