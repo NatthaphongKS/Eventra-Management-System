@@ -147,8 +147,7 @@
                 <!-- ช่องกรอกแสดงช่วงเวลา -->
                 <div>
                     <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">Duration</label>
-                    <div
-                        class="flex h-[52px] w-full items-center gap-3 rounded-xl  px-4 shadow-sm bg-[#F5F5F5]">
+                    <div class="flex h-[52px] w-full items-center gap-3 rounded-xl  px-4 shadow-sm bg-[#F5F5F5]">
                         <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
                             v-model="eventDuration" placeholder="Auto fill Hour"></input>
                         <Icon icon="mingcute:time-duration-line" class="w-7 h-7  text-neutral-400" />
@@ -171,6 +170,7 @@
             </div>
 
         </div>
+
         <!-- Upload attachments -->
         <div class="col-span-4 m-5">
             <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
@@ -224,7 +224,7 @@
                 <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
                 <div class="flex justify-center mt-1 mb-12">
                     <button type="button"
-                        class="inline-flex items-center rounded-[12px] border  bg-white border-rose-500 px-2 py-1  text-neutral-800 hover:bg-rose-50 active:bg-rose-100"
+                        class="inline-flex items-center rounded-[10px] border  bg-white border-rose-500 px-2 py-1  text-neutral-800 hover:bg-rose-50 active:bg-rose-100"
                         @click="pickFiles">
                         <span class="text-sm font-medium">Browse files</span>
                     </button>
@@ -237,7 +237,6 @@
                 <input ref="fileInput" type="file" multiple class="hidden"
                     accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
             </div>
-
         </div>
     </div>
 
@@ -282,7 +281,6 @@
         </div>
     </div>
 
-
     <!-- ปุ่มยกเลิก / ยืนยัน -->
 
     <!-- แถบปุ่ม -->
@@ -319,7 +317,6 @@ import DataTable from '@/components/DataTable.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
-
 
 export default {
     components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert, EmployeeDropdown },
