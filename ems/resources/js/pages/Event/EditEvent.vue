@@ -130,7 +130,9 @@
                             <span class="text-[16px]  font-medium text-neutral-800 ml-2"></span>
                         </div>
                         <div>
-                            <span class="text-red-700"><Icon icon="iconamoon:clock-light" class="h-6 w-6" /></span>
+                            <span class="text-red-700">
+                                <Icon icon="iconamoon:clock-light" class="h-6 w-6" />
+                            </span>
                         </div>
                     </div>
 
@@ -146,10 +148,10 @@
                 <div>
                     <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">Duration</label>
                     <div
-                        class="flex h-[52px] w-full items-center gap-3 rounded-xl border border-neutral-200 px-4 shadow-sm bg-[#F5F5F5]">
+                        class="flex h-[52px] w-full items-center gap-3 rounded-xl  px-4 shadow-sm bg-[#F5F5F5]">
                         <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
                             v-model="eventDuration" placeholder="Auto fill Hour"></input>
-                        <Icon icon="mingcute:time-duration-line"  class="w-7 h-7  text-neutral-400" />
+                        <Icon icon="mingcute:time-duration-line" class="w-7 h-7  text-neutral-400" />
                     </div>
                 </div>
             </div>
@@ -284,24 +286,23 @@
     <!-- ปุ่มยกเลิก / ยืนยัน -->
 
     <!-- แถบปุ่ม -->
-    <div class="mt-6 w-full flex justify-between items-center">
-        <!-- ปุ่มยกเลิก (ซ้าย) -->
-        <div>
-            <CancelButton size="md" :disabled="saving" @click="onCancel">
-                Cancel
-            </CancelButton>
-        </div>
-        <div>
-            <!-- ปุ่มบันทึก (ขวา) -->
-            <button type="button" @click="saveEvent" :disabled="saving" class="inline-flex items-center justify-center gap-2
-         rounded-[20px] px-4 py-2 bg-[#00A73D] text-white font-semibold
-         hover:bg-green-700 w-[140px] h-[45px] transition">
-                <span>Confirm</span>
+    <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
+        <div class="flex-none">
+            <button type="button" @click="onCancel" :disabled="saving"
+                class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#C10008] text-white font-semibold hover:bg-red-700 w-[140px] h-[48px] transition shadow-sm">
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white rotate-45" />
+                <span>Cancel</span>
             </button>
+        </div>
 
+        <div class="flex-none">
+            <button type="button" @click="saveEvent" :disabled="saving"
+                class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
+                <span>Create</span>
+            </button>
         </div>
     </div>
-
     <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
         :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText" @confirm="alert.onConfirm"
         @cancel="alert.onCancel" />
@@ -884,11 +885,11 @@ export default {
         columns() {
             return [
                 { key: 'emp_id', label: 'Employee ID', sortable: false, class: 'min-w-[120px] text-left' },
-                { key: 'fullname', label: 'Name', sortable: false , class: 'min-w-[120px] text-left'}, // เรนเดอร์ผ่าน slot
+                { key: 'fullname', label: 'Name', sortable: false, class: 'min-w-[120px] text-left' }, // เรนเดอร์ผ่าน slot
                 { key: 'nickname', label: 'Nickname', sortable: false, class: 'min-w-[120px] text-left' },
                 { key: 'department', label: 'Department', sortable: false, class: 'min-w-[120px] text-left' },
                 { key: 'team', label: 'Team', sortable: false, class: 'min-w-[120px] text-left' },
-                { key: 'position', label: 'Position', sortable: false , class: 'min-w-[120px] text-left'},
+                { key: 'position', label: 'Position', sortable: false, class: 'min-w-[120px] text-left' },
             ]
         },
 
