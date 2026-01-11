@@ -189,8 +189,7 @@ export default {
                 this.location = data.event?.evn_location || "";
 
                 // employee info
-                this.empName = `${data.employee?.emp_firstname || ""} ${data.employee?.emp_lastname || ""
-                    }`.trim();
+                this.empName = `${data.employee?.emp_firstname || ""} ${data.employee?.emp_lastname || ""}`.trim();
                 this.empEmail = data.employee?.emp_email || "";
                 this.empPhone = data.employee?.emp_phone || "";
             } catch (e) {
