@@ -24,14 +24,5 @@ class File extends Model
         'file_upload_at' => 'datetime',
     ];
 
-    // เพิ่มส่วนนี้เข้าไปใน Model Event
-    public function files()
-    {
-        return $this->hasMany(File::class, 'file_event_id', 'id');
-    }
-
-    public function connects()
-    {
-        return $this->hasMany(Connect::class, 'con_event_id', 'id');
-    }
+    
 }
