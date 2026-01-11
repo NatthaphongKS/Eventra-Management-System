@@ -374,7 +374,7 @@ export default {
     methods: {
         openFile(url) {
             if (!url) return;
-            window.open(f.url, "_blank");
+            window.open(url, "_blank");
         },
         toOptions(arr) {
             return [...new Set(arr.filter(Boolean))]
