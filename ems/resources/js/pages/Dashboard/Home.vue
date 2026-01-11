@@ -185,7 +185,7 @@
     <!-- Actual Attendance (Left) -->
     <div class="lg:col-span-5">
       <div
-        class="h-full min-h-[320px] rounded-2xl bg-white p-5 shadow-[0_10px_25px_-12px_rgba(0,0,0,0.25)] ring-1 ring-black/5"
+        class=""
       >
         <DonutActualAttendance
           :eventId="Array.from(selectedEventIds)[0]"
