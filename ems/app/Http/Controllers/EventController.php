@@ -371,18 +371,21 @@ class EventController extends Controller
 
                 // 2) จัดการไฟล์แนบ (จุดที่แก้ไขให้ตรงกับ Model File)
                 // 2) จัดการไฟล์แนบ
+                // 2) จัดการไฟล์แนบ
                 $savedFiles = [];
                 if ($request->hasFile('attachments')) {
                     foreach ($request->file('attachments') as $file) {
-                        // เก็บไฟล์ลง storage และดึง path มา
+                        // เก็บไฟล์ลง storage
                         $path = $file->store("events/{$event->id}", 'public');
-                        dd($path);
-                        // บันทึกโดยใช้ชื่อคอลัมน์ที่ตรงกับ $fillable ใน Model File ของคุณ
+
+                        // บันทึกข้อมูลลงฐานข้อมูล
+                        // มั่นใจว่าได้ย้าย public function files() ไปไว้ที่ Model Event แล้ว
                         $fileRecord = $event->files()->create([
-                            'file_name' => $file->getClientOriginalName(),
-                            'file_path' => $path,              // ตรวจสอบใน DB ว่าเป็น varchar/text ไม่ใช่ int
-                            'file_type' => $file->getClientMimeType(),
+                            'file_name' => (string) $file->getClientOriginalName(),
+                            'file_path' => (string) $path, // บังคับ casting ป้องกันค่ากลายเป็น 0
+                            'file_type' => (string) $file->getClientMimeType(),
                             'file_size' => $file->getSize(),
+                            'uploaded_at' => now(), // เปลี่ยนจาก file_upload_at เป็น uploaded_at ตามภาพ DB
                         ]);
 
                         $savedFiles[] = $fileRecord;
