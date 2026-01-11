@@ -28,15 +28,14 @@ class File extends Model
         'file_upload_at' => 'datetime',
     ];
 
+    // เพิ่มส่วนนี้เข้าไปใน Model Event
     public function files()
     {
-        // 'file_event_id' คือ Foreign Key ในตาราง ems_event_files
         return $this->hasMany(File::class, 'file_event_id', 'id');
     }
 
     public function connects()
     {
-        // 'con_event_id' คือ Foreign Key ในตาราง ems_connect
         return $this->hasMany(Connect::class, 'con_event_id', 'id');
     }
 }
