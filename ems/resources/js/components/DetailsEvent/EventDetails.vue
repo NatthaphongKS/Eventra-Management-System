@@ -121,7 +121,7 @@
                             v-for="(f, i) in files"
                             :key="i"
                             href="javascript:void(0)"
-                            @click.stop="openFile(f.url)"
+                            @click.stop="openFile(f)"
                             class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors cursor-pointer hover:bg-gray-50 no-underline"
                         >
                             <Icon
@@ -372,9 +372,28 @@ export default {
         ]);
     },
     methods: {
-        openFile(url) {
-            if (!url) return;
-            window.open(url, "_blank");
+        // เปลี่ยนฟังก์ชันเดิมในบรรทัดที่ 262 เป็นชุดนี้
+        openFile(file) {
+            if (!file || !file.url) return;
+
+            const url = file.url;
+            const fileName = file.file_name || file.name || "attachment";
+
+            // ตรวจสอบนามสกุลไฟล์ (แปลงเป็นตัวพิมพ์เล็กทั้งหมดเพื่อป้องกันความผิดพลาด)
+            const isTxt = fileName.toLowerCase().endsWith(".txt");
+
+            if (isTxt) {
+                // กรณีเป็นไฟล์ .txt ให้ทำการดาวน์โหลด
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", fileName); // บังคับดาวน์โหลดและกำหนดชื่อไฟล์
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                // กรณีไฟล์ประเภทอื่น (PDF, Image) ให้เปิดใน Tab ใหม่ตามปกติ
+                window.open(url, "_blank");
+            }
         },
         toOptions(arr) {
             return [...new Set(arr.filter(Boolean))]
