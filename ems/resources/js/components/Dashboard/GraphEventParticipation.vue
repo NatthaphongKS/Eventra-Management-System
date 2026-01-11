@@ -1,537 +1,394 @@
 <template>
-  <div class="event-participation-graph">
-    <!-- Header with dropdown -->
-    <div class="chart-header">
-      <h3 class="chart-title">Event Participation</h3>
-      <div class="filter-dropdown">
-        <!-- View Type Selector -->
-        <select v-model="viewType" @change="onViewTypeChange" class="department-select">
-          <option value="department">Department</option>
-          <option value="team">Team</option>
-        </select>
-      </div>
-    </div>
-    
-    <!-- Bar chart -->
-    <div class="bar-chart-container">
-      <div class="bar-chart">
-        <div class="bar-group" v-for="(item, index) in displayData" :key="index">
-          <div class="bars">
-            <div class="bar attending" 
-                 :style="{ height: getBarHeight(item.attending) + '%' }"
-                 :title="`Attending: ${item.attending}`">
-              <span class="bar-value" v-if="item.attending > 0">{{ item.attending }}</span>
+    <div class="event-participation-graph">
+        <div class="chart-header">
+            <div>
+                <h3 class="chart-title">Event Participation</h3>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-indicator attending"></div>
+                        <span class="legend-text">Attending</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-indicator not-attending"></div>
+                        <span class="legend-text">Not Attending</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-indicator pending"></div>
+                        <span class="legend-text">Pending</span>
+                    </div>
+                </div>
             </div>
-            <div class="bar not-attending" 
-                 :style="{ height: getBarHeight(item.notAttending) + '%' }"
-                 :title="`Not Attending: ${item.notAttending}`">
-              <span class="bar-value" v-if="item.notAttending > 0">{{ item.notAttending }}</span>
+
+            <div class="filter-dropdown">
+                <select v-model="viewType" @change="onViewTypeChange" class="department-select">
+                    <option value="department">Department</option>
+                    <option value="team">Team</option>
+                </select>
             </div>
-            <div class="bar pending" 
-                 :style="{ height: getBarHeight(item.pending) + '%' }"
-                 :title="`Pending: ${item.pending}`">
-              <span class="bar-value" v-if="item.pending > 0">{{ item.pending }}</span>
-            </div>
-          </div>
-          <div class="bar-label">{{ item.name }}</div>
         </div>
-      </div>
+
+        <div class="chart-body">
+            <div class="y-axis">
+                <div class="y-label" v-for="(tick, index) in yAxisTicks" :key="index">
+                    {{ tick }}
+                </div>
+            </div>
+
+            <div class="bar-chart-scroll-area" :class="{ 'is-compact': displayData.length < 4 }">
+
+                <div class="grid-lines">
+                    <div class="grid-line" v-for="n in 5" :key="n"></div>
+                </div>
+
+                <div class="bar-chart-content">
+                    <div class="bar-group" v-for="(item, index) in displayData" :key="index">
+                        <div class="bars">
+                            <div class="bar attending" :style="{ height: getBarHeight(item.attending) + '%' }"
+                                :title="`Attending: ${item.attending}`">
+                            </div>
+
+                            <div class="bar not-attending" :style="{ height: getBarHeight(item.notAttending) + '%' }"
+                                :title="`Not Attending: ${item.notAttending}`">
+                            </div>
+
+                            <div class="bar pending" :style="{ height: getBarHeight(item.pending) + '%' }"
+                                :title="`Pending: ${item.pending}`">
+                            </div>
+                        </div>
+
+                        <div class="bar-label">{{ item.name }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <!-- Modern Legend -->
-    <div class="chart-legend">
-      <div class="legend-item">
-        <div class="legend-indicator attending"></div>
-        <span class="legend-text">Attending</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-indicator not-attending"></div>
-        <span class="legend-text">Not Attending</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-indicator pending"></div>
-        <span class="legend-text">Pending</span>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
-  name: 'GraphEventParticipation',
-  props: {
-    eventId: {
-      type: [Number, String],
-      required: true
+    name: 'GraphEventParticipation',
+    props: {
+        eventId: { type: [Number, String], required: true },
+        data: { type: Object, default: () => ({ departments: [] }) },
+        options: { type: Object, default: () => ({}) }
     },
-    data: {
-      type: Object,
-      required: false,
-      default: () => ({
-        departments: []
-      })
+    data() {
+        return {
+            viewType: 'department',
+            originalDepartments: [],
+            originalTeams: [],
+            filteredData: []
+        };
     },
-    options: {
-      type: Object,
-      default: () => ({})
-    }
-  },
-  data() {
-    return {
-      viewType: 'department', // 'department' or 'team'
-      originalDepartments: [],
-      originalTeams: [],
-      filteredData: [],
-      isLoading: false
-    };
-  },
-  computed: {
-    displayData() {
-      return this.filteredData;
-    }
-  },
-  watch: {
-    data: {
-      immediate: true,
-      deep: true,
-      handler(newData) {
-        if (newData) {
-          // Store original data
-          this.originalDepartments = newData.departments ? [...newData.departments] : [];
-          this.originalTeams = newData.teams ? [...newData.teams] : [];
-          
-          // Update displayed data based on current view type
-          this.updateDisplayData();
+    computed: {
+        displayData() {
+            return this.filteredData;
+        },
+        yAxisTicks() {
+            const max = this.getMaxValue();
+            return [
+                max,                    // 100%
+                Math.round(max * 0.75), // 75%
+                Math.round(max * 0.5),  // 50%
+                Math.round(max * 0.25), // 25%
+                0                       // 0%
+            ];
         }
-      }
-    }
-  },
-  methods: {
-    getMaxValue() {
-      if (this.filteredData.length === 0) return 1;
-      
-      let maxValue = 0;
-      this.filteredData.forEach(item => {
-        const total = (item.attending || 0) + (item.notAttending || 0) + (item.pending || 0);
-        if (total > maxValue) {
-          maxValue = total;
+    },
+    watch: {
+        data: {
+            immediate: true,
+            deep: true,
+            handler(newData) {
+                if (newData) {
+                    this.originalDepartments = newData.departments ? [...newData.departments] : [];
+                    this.originalTeams = newData.teams ? [...newData.teams] : [];
+                    this.updateDisplayData();
+                }
+            }
         }
-      });
-      
-      return maxValue || 1;
     },
-    
-    getBarHeight(value) {
-      if (!value || value === 0) return 0;
-      const maxValue = this.getMaxValue();
-      return Math.max((value / maxValue) * 100, 100); // Minimum 5% height for visibility
-    },
-
-    onViewTypeChange() {
-      this.updateDisplayData();
-    },
-
-    updateDisplayData() {
-      // Get the source data based on view type and show all items
-      const sourceData = this.viewType === 'department' ? this.originalDepartments : this.originalTeams;
-      this.filteredData = [...sourceData];
+    methods: {
+        getMaxValue() {
+            if (this.filteredData.length === 0) return 10;
+            let maxSingleValue = 0;
+            this.filteredData.forEach(item => {
+                const maxInItem = Math.max(
+                    item.attending || 0,
+                    item.notAttending || 0,
+                    item.pending || 0
+                );
+                if (maxInItem > maxSingleValue) {
+                    maxSingleValue = maxInItem;
+                }
+            });
+            return maxSingleValue || 10;
+        },
+        getBarHeight(value) {
+            if (!value || value === 0) return 0;
+            const maxValue = this.getMaxValue();
+            return (value / maxValue) * 100;
+        },
+        onViewTypeChange() {
+            this.updateDisplayData();
+        },
+        updateDisplayData() {
+            const sourceData = this.viewType === 'department' ? this.originalDepartments : this.originalTeams;
+            this.filteredData = [...sourceData];
+        }
     }
-  }
 };
 </script>
 
 <style scoped>
+/* พื้นหลังและกรอบหลัก */
 .event-participation-graph {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e2e8f0;
-  font-family: 'Inter', 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    font-family: 'Inter', 'Poppins', sans-serif;
+
+    /*  บังคับไม่ให้ Component ดันตัวเองจนเกินพื้นที่พ่อแม่ */
+    max-width: 100%;
+    box-sizing: border-box;
+    /* เพื่อให้ padding ไม่ดัน size */
 }
 
-/* Header */
+/* Header Styles */
 .chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
 }
 
 .chart-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
-}
-
-.filter-dropdown {
-  position: relative;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
 }
 
 .department-select {
-  background: #ffffff;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  outline: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-width: 160px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    outline: none;
+    cursor: pointer;
 }
 
-.department-select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+/* --- Layout ระบบกราฟ --- */
+.chart-body {
+    display: flex;
+    align-items: flex-start;
+    height: 250px;
+    margin-bottom: 20px;
+    /* จำเป็นสำหรับ Flexbox เพื่อให้ส่วนขวาจัดการพื้นที่ถูกต้อง */
+    min-width: 0;
 }
 
-.department-select:hover {
-  border-color: #d1d5db;
+/* 1. แกน Y ด้านซ้าย */
+.y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 200px;
+    padding-right: 12px;
+    border-right: 1px solid #e2e8f0;
+    min-width: 40px;
+    text-align: right;
+    flex-shrink: 0;
 }
 
-/* Chart Container */
-.bar-chart-container {
-  margin-bottom: 24px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 4px;
-  -webkit-overflow-scrolling: touch;
+.y-label {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+    line-height: 1;
+    transform: translateY(-50%);
 }
 
-.bar-chart-container::-webkit-scrollbar {
-  height: 8px;
+.y-label:last-child {
+    transform: translateY(50%);
 }
 
-.bar-chart-container::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
+.y-label:first-child {
+    transform: translateY(0);
 }
 
-.bar-chart-container::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+/* 2. พื้นที่แสดงผลกราฟด้านขวา */
+.bar-chart-scroll-area {
+    /* กรณีข้อมูลเยอะ (>= 4): ขยายเต็มพื้นที่ (flex: 1) แล้ว Scroll */
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+    padding-left: 16px;
+
+    /* [เจอสักที omg ส่วนนี้ถ้าไม่กำหนด แล้วใช้ flex กล่องก็ขยายไปเรื่อย scroll bar ไม่ขึ้นสักที ] */
+    max-width: 560px;
+
+    /* Webkit Scrollbar Logic */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-.bar-chart-container::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+/* กรณีข้อมูลน้อย */
+.bar-chart-scroll-area.is-compact {
+    flex: 0 0 auto;
+    max-width: 100%;
 }
 
-.bar-chart {
-  display: flex;
-  justify-content: flex-start;
-  align-items: end;
-  height: 280px;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid #e2e8f0;
-  min-width: max-content;
-  gap: 16px;
+/* เส้น Grid Background */
+.grid-lines {
+    position: absolute;
+    top: 0;
+    left: 16px;
+    width: calc(100% - 16px);
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.grid-line {
+    width: 100%;
+    border-bottom: 1px dashed #e2e8f0;
+    height: 0;
+}
+
+/* Content */
+.bar-chart-content {
+    display: flex;
+
+    /* 1. เปลี่ยนจาก flex-end เป็น flex-start เพื่อยึดด้านบนเป็นหลัก */
+    align-items: flex-start;
+
+    min-width: max-content;
+
+    /* 2. เปลี่ยน height เป็น min-height หรือเพิ่มความสูง
+       เพื่อให้มีที่ว่างพอสำหรับข้อความ 2-3 บรรทัดโดยไม่ตกขอบ */
+    height: auto;
+    /* ให้ยืดหดตามเนื้อหา */
+    min-height: 250px;
+    /* ความสูงขั้นต่ำ (200px กราฟ + gap + ข้อความ) */
+
+    position: relative;
+    z-index: 1;
+    justify-content: flex-start;
 }
 
 .bar-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  min-width: 200px;
-  min-height: 200px;
-  flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-right: 32px;
+    flex-shrink: 0;
+    min-width: 80px;
+}
+
+.bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+    height: 200px;
+}
+
+.bar {
+    width: 40px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+}
+
+.bar:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.bar.attending {
+    background: linear-gradient(180deg, #DCFCE7 0%, #00A73D 100%);
+}
+
+.bar.not-attending {
+    background: linear-gradient(180deg, #FFE2E3 0%, #C10008 100%);
+}
+
+.bar.pending {
+    background: linear-gradient(180deg, #DFF3FE 0%, #0084D1 100%);
 }
 
 .bar-label {
-  font-size: 11px;
-  color: #6b7280;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-  max-width: 90px;
-  padding: 0 4px;
-  word-wrap: break-word;
-  hyphens: auto;
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 600;
+    text-align: center;
+    max-width: 90px;
+    word-wrap: break-word;
 }
 
-.bars {
-  display: flex;
-  align-items: end;
-  gap: 4px;
-  height: 200px;
-}
-
-.bar {
-  width: 18px;
-  min-height: 8px;
-  border-radius: 4px 4px 0 0;
-  transition: all 0.3s ease;
-  position: relative;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.bar:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.bar.attending {
-  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-}
-
-.bar.not-attending {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-.bar.pending {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-}
-
-.bar-value {
-  font-size: 11px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  padding: 2px 4px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.2);
-  margin-bottom: 4px;
-  min-width: 16px;
-  text-align: center;
-}
-
-/* Modern Legend */
+/* Legend */
 .chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 24px;
+    margin-top: 8px;
 }
 
 .legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #f8fafc;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.legend-item:hover {
-  background: #e2e8f0;
-  transform: translateY(-1px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #4b5563;
 }
 
 .legend-indicator {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
 }
 
 .legend-indicator.attending {
-  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    background: #22c55e;
 }
 
 .legend-indicator.not-attending {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: #ef4444;
 }
 
 .legend-indicator.pending {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    background: #3b82f6;
 }
 
-.legend-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
+/* Custom Webkit Scrollbar */
+.bar-chart-scroll-area::-webkit-scrollbar {
+    height: 8px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .chart-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .chart-title {
-    text-align: center;
-  }
-  
-  .department-select {
-    width: 100%;
-  }
-  
-  .bar-chart {
-    padding: 16px;
-    height: 240px;
-  }
-  
-  .bars {
-    height: 160px;
-  }
-  
-  .bar {
-    width: 14px;
-  }
-  
-  .bar-label {
-    font-size: 11px;
-    max-width: 60px;
-  }
-  
-  .chart-legend {
-    gap: 16px;
-  }
-  
-  .legend-item {
-    padding: 6px 10px;
-  }
-  
-  .legend-text {
-    font-size: 12px;
-  }
+.bar-chart-scroll-area::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
 }
 
-/* Scrollbar styling */
-.bar-chart-container::-webkit-scrollbar {
-  height: 8px;
+.bar-chart-scroll-area::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    border: 2px solid #f1f5f9;
 }
 
-.bar-chart-container::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-.bar-chart-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
-  border-radius: 4px;
-}
-
-.bar-chart-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+.bar-chart-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 </style>
-  text-align: center;
-  word-break: break-all;
-  line-height: 1.2;
-}
-
-.bars {
-  display: flex;
-  align-items: end;
-  gap: 2px;
-  height: 200px;
-}
-
-.bar {
-  width: 16px;
-  min-height: 4px;
-  border-radius: 2px 2px 0 0;
-  transition: all 0.3s ease;
-  position: relative;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.bar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.bar.attending {
-  background: linear-gradient(to top, #16a34a 0%, #22c55e 100%);
-}
-
-.bar.not-attending {
-  background: linear-gradient(to top, #dc2626 0%, #ef4444 100%);
-}
-
-.bar.pending {
-  background: linear-gradient(to top, #d97706 0%, #f59e0b 100%);
-}
-
-.bar-value {
-  position: absolute;
-  bottom: 100%;
-  margin-bottom: 2px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #374151;
-  background: rgba(255,255,255,0.9);
-  padding: 1px 3px;
-  border-radius: 2px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.bar:hover .bar-value {
-  opacity: 1;
-}
-
-.chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.legend-color.attending {
-  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-}
-
-.legend-color.not-attending {
-  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-}
-
-.legend-color.pending {
-  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-}
-
-.legend-text {
-  color: #374151;
-  font-weight: 500;
-}
-
-@media (max-width: 768px) {
-  .bar-chart {
-    height: 250px;
-    padding: 0.75rem;
-  }
-  
-  .bars {
-    height: 150px;
-  }
-  
-  .bar {
-    width: 30px;
-  }

@@ -336,19 +336,19 @@ export default {
         .sort()
         .map((v) => ({ label: v, value: v }));
     },
-    async fetchCategories() {
-      try {
-        const r = await axios.get("/categoriesAll", {
-          params: { withTrashed: 1, includeInactive: 1 },
-        });
-        const arr = Array.isArray(r.data) ? r.data : r.data?.data ?? [];
-        this.Categories = arr.map(this._normCat);
-        this.idToCat = {};
-        for (const cat of this.Categories) this.idToCat[String(cat.id)] = cat;
-      } catch (e) {
-        console.warn("fetchCategories failed", e);
-      }
-    },
+    // async fetchCategories() {
+    //   try {
+    //     const r = await axios.get("/categoriesAll", {
+    //       params: { withTrashed: 1, includeInactive: 1 },
+    //     });
+    //     const arr = Array.isArray(r.data) ? r.data : r.data?.data ?? [];
+    //     this.Categories = arr.map(this._normCat);
+    //     this.idToCat = {};
+    //     for (const cat of this.Categories) this.idToCat[String(cat.id)] = cat;
+    //   } catch (e) {
+    //     console.warn("fetchCategories failed", e);
+    //   }
+    // },
     _normCat(c, i) {
       const id = c.id ?? c.categoryId ?? i + 1;
       const name = c.name ?? c.cat_name ?? c.title ?? "";
