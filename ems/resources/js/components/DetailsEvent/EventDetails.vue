@@ -1,12 +1,12 @@
 <!-- /**
- * ชื่อไฟล์: EventDetails.vue
- * คำอธิบาย: Component สำหรับแสดงรายละเอียดกิจกรรม (Event Details)
- * Http request: GET /event/:id
- * Input: id (รหัสกิจกรรม)
- * Output: JSON Object ของ Event พร้อมข้อมูลรายละเอียด
- * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
- * วันที่จัดทำ/แก้ไข: 2025-12-28
- */ -->
+    * ชื่อไฟล์: EventDetails.vue
+    * คำอธิบาย: Component สำหรับแสดงรายละเอียดกิจกรรม (Event Details)
+    * Http request: GET /event/:id
+    * Input: id (รหัสกิจกรรม)
+    * Output: JSON Object ของ Event พร้อมข้อมูลรายละเอียด
+    * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
+    * วันที่จัดทำ/แก้ไข: 2025-12-28
+    */ -->
 <template>
     <div class="p-6" @pointerdown.capture="onRootPointer">
         <div class="mb-6 flex items-center gap-3">
@@ -120,16 +120,16 @@
                         <a
                             v-for="(f, i) in files"
                             :key="i"
-                            :href="f.url"
-                            target="_blank"
+                            href="javascript:void(0)"
+                            @click.stop="openFile(f.url)"
                             class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors cursor-pointer hover:bg-gray-50 no-underline"
                         >
                             <Icon
                                 icon="basil:file-solid"
-                                class="h-10 w-10 text-slat-700"
+                                class="h-10 w-10 text-slate-700"
                             />
                             <span
-                                class="truncate text-md text-neutral-400 hover:text-slat-700 flex-1"
+                                class="truncate text-md text-neutral-400 hover:text-slate-700 flex-1 text-left"
                                 :title="f.file_name || f.name"
                             >
                                 {{ f.file_name || f.name }}
@@ -248,7 +248,7 @@ import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 import BaseReadonlyField from "@/components/DetailsEvent/BaseReadonlyField.vue";
 import SearchBar from "../SearchBar.vue";
 
-axios.defaults.baseURL = "/api";
+// axios.defaults.baseURL = "/api";
 axios.defaults.withCredentials = true;
 
 export default {
@@ -372,9 +372,8 @@ export default {
         ]);
     },
     methods: {
-        downloadFile(f) {
-            if (!f || !f.url) return;
-            // สั่งเปิด/โหลดจาก URL ที่แก้แล้ว
+        openFile(url) {
+            if (!url) return;
             window.open(f.url, "_blank");
         },
         toOptions(arr) {
