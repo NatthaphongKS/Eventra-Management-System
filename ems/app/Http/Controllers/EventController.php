@@ -383,8 +383,6 @@ class EventController extends Controller
                             'file_path' => $path,              // ตรวจสอบใน DB ว่าเป็น varchar/text ไม่ใช่ int
                             'file_type' => $file->getClientMimeType(),
                             'file_size' => $file->getSize(),
-                            'file_upload_at' => now(),              // แก้จาก uploaded_at เป็น file_upload_at
-                            'file_upload_by' => Auth::id(),         // เพิ่มผู้บันทึก
                             'file_delete_status' => 'active',
                         ]);
 
