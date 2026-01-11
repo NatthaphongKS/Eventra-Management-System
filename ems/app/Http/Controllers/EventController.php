@@ -383,7 +383,6 @@ class EventController extends Controller
                             'file_path' => $path,              // ตรวจสอบใน DB ว่าเป็น varchar/text ไม่ใช่ int
                             'file_type' => $file->getClientMimeType(),
                             'file_size' => $file->getSize(),
-                            'file_delete_status' => 'active',
                         ]);
 
                         $savedFiles[] = $fileRecord;
