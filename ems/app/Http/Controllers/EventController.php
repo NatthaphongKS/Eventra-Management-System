@@ -376,7 +376,7 @@ class EventController extends Controller
                     foreach ($request->file('attachments') as $file) {
                         // เก็บไฟล์ลง storage และดึง path มา
                         $path = $file->store("events/{$event->id}", 'public');
-
+                        dd($path);
                         // บันทึกโดยใช้ชื่อคอลัมน์ที่ตรงกับ $fillable ใน Model File ของคุณ
                         $fileRecord = $event->files()->create([
                             'file_name' => $file->getClientOriginalName(),
