@@ -397,7 +397,7 @@ class EventController extends Controller
                     ->unique()
                     ->map(fn($eid) => [
                         'con_employee_id' => $eid,
-                        'con_answer' => 'invalid',
+                        'con_answer' => 'pending',
                         'con_reason' => null,
                         'con_delete_status' => 'active',
                     ])->all();
