@@ -1,62 +1,60 @@
 services:
-  app:
-    image: php:8.2-apache
-    container_name: ems_app2
-    ports: ["7111:80"]
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
-    environment:
-      DB_CONNECTION: mysql
-      DB_HOST: 10.80.7.17
-      DB_PORT: 7333
-      DB_DATABASE: Byteforge
-      DB_USERNAME: Byteforge
-      DB_PASSWORD: Byteforge_Secret2307
-    networks:
-      - appnet
-    depends_on:
-      - db
-      
+    app:
+        image: php:8.2-apache
+        container_name: ems_app2
+        ports: ["7111:80"]
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        environment:
+            DB_CONNECTION: mysql
+            DB_HOST: 10.80.7.17
+            DB_PORT: 7333
+            DB_DATABASE: Byteforge
+            DB_USERNAME: Byteforge
+            DB_PASSWORD: Byteforge_Secret2307
+        networks:
+            - appnet
+        depends_on:
+            - db
 
+    node:
+        image: node:20
+        container_name: ems_vite_dev2
+        working_dir: /app
+        command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 7222"
+        ports:
+            - "7222:7222"
+            - "7223:7223"
+        environment:
+            CHOKIDAR_USEPOLLING: "true"
+        volumes:
+            - .:/app
+        networks: [appnet]
 
-  node:
-    image: node:20
-    container_name: ems_vite_dev2
-    working_dir: /app
-    command: sh -lc "([ -f package-lock.json ] && npm ci || npm i) && npm run dev -- --host 0.0.0.0 --port 7222"
-    ports: 
-      - "7222:7222"
-      - "7223:7223"
-    environment:
-      CHOKIDAR_USEPOLLING: "true"
-    volumes:
-      - .:/app
-    networks: [appnet]
-
-  db:
-    image: mariadb:10.11
-    container_name: ems_db2
-    environment:
-      MARIADB_DATABASE: Byteforge
-      MARIADB_USER: Byteforge
-      MARIADB_PASSWORD: Byteforge_Secret2307
-      MARIADB_ROOT_PASSWORD: Byteforge_Secret2307
-    ports: ["7333:3306"]
-    volumes:
-      - dbdata:/var/lib/mysql
-    networks: [appnet]
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: ems_pma2
-    ports: ["7444:80"]
-    environment:
-      PMA_HOST: db
-    depends_on: [db]
-    networks: [appnet]
+    db:
+        image: mariadb:10.11
+        container_name: ems_db2
+        environment:
+            MARIADB_DATABASE: Byteforge
+            MARIADB_USER: Byteforge
+            MARIADB_PASSWORD: Byteforge_Secret2307
+            MARIADB_ROOT_PASSWORD: Byteforge_Secret2307
+        ports: ["7333:3306"]
+        volumes:
+            - dbdata:/var/lib/mysql
+        networks: [appnet]
+    phpmyadmin:
+        image: phpmyadmin:latest
+        container_name: ems_pma2
+        ports: ["7444:80"]
+        environment:
+            PMA_HOST: db
+        depends_on: [db]
+        networks: [appnet]
 
 networks:
-  appnet:
+    appnet:
 
 volumes:
-  dbdata:
+    dbdata:

@@ -125,7 +125,7 @@ class EventController extends Controller
             ->orderBy('id', 'asc')
             ->get() //ส่วนดึงข้อมูลจาก DB
             ->map(function ($f) { //ใช้สร้าง URL ให้ frontend โหลดไฟล์จริง ต้องมี php artisan storage:link
-
+    
                 //ข้อมูลจาก file_path ก่อน Map { id: 1, file_name: "contract.pdf", file_path: "events/12/contract.pdf", file_size: 120000 }
                 $f->url = asset('storage/' . $f->file_path); //เพิ่มข้อมูล Link url เข้าไป เพื่อให้ frontend  url: "http://localhost:8000/storage/events/12/contract.pdf"
                 return $f;
@@ -147,180 +147,188 @@ class EventController extends Controller
     }
 
     public function Update(Request $request)
-{
-    $data = $request->validate([
-        'id' => 'required|integer|exists:ems_event,id',
-        'evn_title' => 'required|string|max:255',
-        'evn_category_id' => 'sometimes|integer|exists:ems_categories,id',
-        'evn_description' => 'sometimes|nullable|string',
-        'evn_date' => 'sometimes|date',
-        'evn_timestart' => 'sometimes',
-        'evn_timeend' => 'sometimes',
-        'evn_location' => 'sometimes|string|max:255',
-        'evn_duration' => 'sometimes|integer|min:0',
-        'attachments' => 'sometimes|array',
-        'delete_file_ids' => 'sometimes|array',
-        'employee_ids' => 'sometimes|array',
-    ]);
+    {
+        $data = $request->validate([
+            'id' => 'required|integer|exists:ems_event,id',
+            'evn_title' => 'required|string|max:255',
+            'evn_category_id' => 'sometimes|integer|exists:ems_categories,id',
+            'evn_description' => 'sometimes|nullable|string',
+            'evn_date' => 'sometimes|date',
+            'evn_timestart' => 'sometimes',
+            'evn_timeend' => 'sometimes',
+            'evn_location' => 'sometimes|string|max:255',
+            'evn_duration' => 'sometimes|integer|min:0',
+            'attachments' => 'sometimes|array',
+            'delete_file_ids' => 'sometimes|array',
+            'employee_ids' => 'sometimes|array',
+        ]);
 
-    return DB::transaction(function () use ($request, $data) {
-        $event = Event::lockForUpdate()->findOrFail($data['id']);
+        return DB::transaction(function () use ($request, $data) {
+            $event = Event::lockForUpdate()->findOrFail($data['id']);
 
-        // =========================================================
-        // 1. เก็บค่าเดิมไว้เปรียบเทียบ (ใช้ Carbon เพื่อ Format ให้เป็นกลาง)
-        // =========================================================
-        $oldDate      = $event->evn_date;
-        // ใช้ Carbon แปลงเวลาเป็น H:i (เช่น 09:30) เพื่อตัดปัญหาเรื่อง Date ที่ติดมา
-        $oldStart     = $event->evn_timestart ? Carbon::parse($event->evn_timestart)->format('H:i') : null;
-        $oldEnd       = $event->evn_timeend ? Carbon::parse($event->evn_timeend)->format('H:i') : null;
-        $oldLocation  = $event->evn_location;
+            // =========================================================
+            // 1. เก็บค่าเดิมไว้เปรียบเทียบ (ใช้ Carbon เพื่อ Format ให้เป็นกลาง)
+            // =========================================================
+            $oldDate = $event->evn_date;
+            // ใช้ Carbon แปลงเวลาเป็น H:i (เช่น 09:30) เพื่อตัดปัญหาเรื่อง Date ที่ติดมา
+            $oldStart = $event->evn_timestart ? Carbon::parse($event->evn_timestart)->format('H:i') : null;
+            $oldEnd = $event->evn_timeend ? Carbon::parse($event->evn_timeend)->format('H:i') : null;
+            $oldLocation = $event->evn_location;
 
-        // =========================================================
-        // 2. อัปเดตข้อมูล
-        // =========================================================
-        $event->evn_title = $data['evn_title'];
-        if ($request->has('evn_category_id')) $event->evn_category_id = $data['evn_category_id'];
-        if ($request->has('evn_description')) $event->evn_description = $data['evn_description'];
-        if ($request->has('evn_date'))        $event->evn_date = $data['evn_date'];
-        if ($request->has('evn_timestart'))   $event->evn_timestart = $data['evn_timestart'];
-        if ($request->has('evn_timeend'))     $event->evn_timeend = $data['evn_timeend'];
-        if ($request->has('evn_location'))    $event->evn_location = $data['evn_location'];
-        if ($request->has('evn_duration')) {
-            $minutes = max(0, (int) $data['evn_duration']);
-            $event->evn_duration = (int) ceil($minutes / 60);
-        }
-        $event->save();
-
-        // =========================================================
-        // 3. ตรวจสอบค่าใหม่ และเทียบกับค่าเก่า
-        // =========================================================
-        $newStart = $event->evn_timestart ? Carbon::parse($event->evn_timestart)->format('H:i') : null;
-        $newEnd   = $event->evn_timeend ? Carbon::parse($event->evn_timeend)->format('H:i') : null;
-
-        $isCriticalChange = (
-            $oldDate != $event->evn_date ||
-            $oldStart != $newStart ||
-            $oldEnd != $newEnd ||
-            $oldLocation != $event->evn_location
-        );
-
-        // ... (ส่วนจัดการไฟล์ - ลบ/เพิ่มไฟล์ คงเดิม) ...
-        if ($request->filled('delete_file_ids')) {
-            $ids = array_values(array_unique($request->input('delete_file_ids', [])));
-            $files = DB::table('ems_event_files')->where('file_event_id', $event->id)->whereIn('id', $ids)->get();
-            foreach ($files as $f) Storage::disk('public')->delete($f->file_path);
-            DB::table('ems_event_files')->where('file_event_id', $event->id)->whereIn('id', $ids)->delete();
-        }
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store("events/{$event->id}", 'public');
-                DB::table('ems_event_files')->insert([
-                    'file_event_id' => $event->id,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'file_type' => $file->getClientMimeType(),
-                    'file_size' => $file->getSize(),
-                    'uploaded_at' => now(),
-                ]);
+            // =========================================================
+            // 2. อัปเดตข้อมูล
+            // =========================================================
+            $event->evn_title = $data['evn_title'];
+            if ($request->has('evn_category_id'))
+                $event->evn_category_id = $data['evn_category_id'];
+            if ($request->has('evn_description'))
+                $event->evn_description = $data['evn_description'];
+            if ($request->has('evn_date'))
+                $event->evn_date = $data['evn_date'];
+            if ($request->has('evn_timestart'))
+                $event->evn_timestart = $data['evn_timestart'];
+            if ($request->has('evn_timeend'))
+                $event->evn_timeend = $data['evn_timeend'];
+            if ($request->has('evn_location'))
+                $event->evn_location = $data['evn_location'];
+            if ($request->has('evn_duration')) {
+                $minutes = max(0, (int) $data['evn_duration']);
+                $event->evn_duration = (int) ceil($minutes / 60);
             }
-        }
-        $remain = DB::table('ems_event_files')->where('file_event_id', $event->id)->count();
-        $event->evn_file = $remain > 0 ? 'have' : 'not_have';
-        $event->save();
+            $event->save();
 
-        // =========================================================
-        // 4. จัดการพนักงาน
-        // =========================================================
-        $idsToAdd = [];
+            // =========================================================
+            // 3. ตรวจสอบค่าใหม่ และเทียบกับค่าเก่า
+            // =========================================================
+            $newStart = $event->evn_timestart ? Carbon::parse($event->evn_timestart)->format('H:i') : null;
+            $newEnd = $event->evn_timeend ? Carbon::parse($event->evn_timeend)->format('H:i') : null;
 
-        if ($request->has('employee_ids')) {
-            $incomingIds = collect($request->input('employee_ids') ?? [])->map(fn($id) => (int)$id)->unique()->values()->all();
-            $currentActiveIds = DB::table('ems_connect')
-                ->where('con_event_id', $event->id)
-                ->where('con_delete_status', 'active')
-                ->pluck('con_employee_id')->map(fn($id) => (int)$id)->all();
+            $isCriticalChange = (
+                $oldDate != $event->evn_date ||
+                $oldStart != $newStart ||
+                $oldEnd != $newEnd ||
+                $oldLocation != $event->evn_location
+            );
 
-            $idsToAdd = array_values(array_diff($incomingIds, $currentActiveIds));
-            $idsToRemove = array_values(array_diff($currentActiveIds, $incomingIds));
-
-            // 4.1 เพิ่มคนใหม่
-            if (!empty($idsToAdd)) {
-                foreach ($idsToAdd as $empId) {
-                    $exists = DB::table('ems_connect')->where('con_event_id', $event->id)->where('con_employee_id', $empId)->first();
-                    if ($exists) {
-                        DB::table('ems_connect')->where('id', $exists->id)->update(['con_delete_status' => 'active', 'con_answer' => 'invalid', 'con_reason' => null]);
-                    } else {
-                        DB::table('ems_connect')->insert(['con_event_id' => $event->id, 'con_employee_id' => $empId, 'con_answer' => 'invalid', 'con_delete_status' => 'active']);
-                    }
-                }
-
-                $newEmployees = Employee::whereIn('id', $idsToAdd)->get();
-                $currentFiles = DB::table('ems_event_files')->where('file_event_id', $event->id)->get();
-
-                foreach ($newEmployees as $emp) {
-                    if ($emp->emp_email) {
-                        $formURL = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
-                        Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $currentFiles, $formURL));
-                    }
+            // ... (ส่วนจัดการไฟล์ - ลบ/เพิ่มไฟล์ คงเดิม) ...
+            if ($request->filled('delete_file_ids')) {
+                $ids = array_values(array_unique($request->input('delete_file_ids', [])));
+                $files = DB::table('ems_event_files')->where('file_event_id', $event->id)->whereIn('id', $ids)->get();
+                foreach ($files as $f)
+                    Storage::disk('public')->delete($f->file_path);
+                DB::table('ems_event_files')->where('file_event_id', $event->id)->whereIn('id', $ids)->delete();
+            }
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $path = $file->store("events/{$event->id}", 'public');
+                    DB::table('ems_event_files')->insert([
+                        'file_event_id' => $event->id,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'file_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'uploaded_at' => now(),
+                    ]);
                 }
             }
+            $remain = DB::table('ems_event_files')->where('file_event_id', $event->id)->count();
+            $event->evn_file = $remain > 0 ? 'have' : 'not_have';
+            $event->save();
 
-            // 4.2 ลบคนเก่า
-            if (!empty($idsToRemove)) {
-                DB::table('ems_connect')->where('con_event_id', $event->id)->whereIn('con_employee_id', $idsToRemove)->update(['con_delete_status' => 'inactive']);
-                $removedEmployees = Employee::whereIn('id', $idsToRemove)->get();
-                foreach ($removedEmployees as $emp) {
-                    if ($emp->emp_email) Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
-                }
-            }
-        }
+            // =========================================================
+            // 4. จัดการพนักงาน
+            // =========================================================
+            $idsToAdd = [];
 
-        // =========================================================
-        // 5. แจ้งเตือนคนเดิม (เมื่อมี Critical Change)
-        // =========================================================
-        if ($isCriticalChange) {
-            $existingParticipants = DB::table('ems_connect')
-                ->where('con_event_id', $event->id)
-                ->where('con_delete_status', 'active')
-                ->whereNotIn('con_employee_id', $idsToAdd)
-                ->pluck('con_employee_id');
-
-            if ($existingParticipants->isNotEmpty()) {
-                // รีเซ็ตสถานะคนเดิม
-                DB::table('ems_connect')
+            if ($request->has('employee_ids')) {
+                $incomingIds = collect($request->input('employee_ids') ?? [])->map(fn($id) => (int) $id)->unique()->values()->all();
+                $currentActiveIds = DB::table('ems_connect')
                     ->where('con_event_id', $event->id)
-                    ->whereIn('con_employee_id', $existingParticipants)
-                    ->update(['con_answer' => 'invalid', 'con_reason' => null]);
+                    ->where('con_delete_status', 'active')
+                    ->pluck('con_employee_id')->map(fn($id) => (int) $id)->all();
 
-                $employeesToUpdate = Employee::whereIn('id', $existingParticipants)->get();
-                $filesToSend = DB::table('ems_event_files')->where('file_event_id', $event->id)->get();
+                $idsToAdd = array_values(array_diff($incomingIds, $currentActiveIds));
+                $idsToRemove = array_values(array_diff($currentActiveIds, $incomingIds));
 
-                foreach ($employeesToUpdate as $emp) {
-                    if ($emp->emp_email) {
-                        $formURL = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
-                        Mail::to($emp->emp_email)->send(new EventUpdateMail($emp, $event, $filesToSend, $formURL));
+                // 4.1 เพิ่มคนใหม่
+                if (!empty($idsToAdd)) {
+                    foreach ($idsToAdd as $empId) {
+                        $exists = DB::table('ems_connect')->where('con_event_id', $event->id)->where('con_employee_id', $empId)->first();
+                        if ($exists) {
+                            DB::table('ems_connect')->where('id', $exists->id)->update(['con_delete_status' => 'active', 'con_answer' => 'invalid', 'con_reason' => null]);
+                        } else {
+                            DB::table('ems_connect')->insert(['con_event_id' => $event->id, 'con_employee_id' => $empId, 'con_answer' => 'invalid', 'con_delete_status' => 'active']);
+                        }
+                    }
+
+                    $newEmployees = Employee::whereIn('id', $idsToAdd)->get();
+                    $currentFiles = DB::table('ems_event_files')->where('file_event_id', $event->id)->get();
+
+                    foreach ($newEmployees as $emp) {
+                        if ($emp->emp_email) {
+                            $formURL = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
+                            Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $currentFiles, $formURL));
+                        }
+                    }
+                }
+
+                // 4.2 ลบคนเก่า
+                if (!empty($idsToRemove)) {
+                    DB::table('ems_connect')->where('con_event_id', $event->id)->whereIn('con_employee_id', $idsToRemove)->update(['con_delete_status' => 'inactive']);
+                    $removedEmployees = Employee::whereIn('id', $idsToRemove)->get();
+                    foreach ($removedEmployees as $emp) {
+                        if ($emp->emp_email)
+                            Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
                     }
                 }
             }
-        }
 
-        // 6. ส่ง Response
-        $files = DB::table('ems_event_files')
-            ->where('file_event_id', $event->id)
-            ->select('id', 'file_name', 'file_path', 'file_type', 'file_size', 'uploaded_at')
-            ->orderBy('id', 'asc')->get()
-            ->map(function ($f) {
-                $f->url = asset('storage/' . $f->file_path);
-                return $f;
-            });
+            // =========================================================
+            // 5. แจ้งเตือนคนเดิม (เมื่อมี Critical Change)
+            // =========================================================
+            if ($isCriticalChange) {
+                $existingParticipants = DB::table('ems_connect')
+                    ->where('con_event_id', $event->id)
+                    ->where('con_delete_status', 'active')
+                    ->whereNotIn('con_employee_id', $idsToAdd)
+                    ->pluck('con_employee_id');
 
-        return response()->json([
-            'message' => 'บันทึกข้อมูลสำเร็จ',
-            'event' => $event,
-            'files' => $files,
-        ], 200);
-    });
-}
+                if ($existingParticipants->isNotEmpty()) {
+                    // รีเซ็ตสถานะคนเดิม
+                    DB::table('ems_connect')
+                        ->where('con_event_id', $event->id)
+                        ->whereIn('con_employee_id', $existingParticipants)
+                        ->update(['con_answer' => 'invalid', 'con_reason' => null]);
+
+                    $employeesToUpdate = Employee::whereIn('id', $existingParticipants)->get();
+                    $filesToSend = DB::table('ems_event_files')->where('file_event_id', $event->id)->get();
+
+                    foreach ($employeesToUpdate as $emp) {
+                        if ($emp->emp_email) {
+                            $formURL = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
+                            Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $filesToSend, $formURL));
+                        }
+                    }
+                }
+            }
+
+            // 6. ส่ง Response
+            $files = DB::table('ems_event_files')
+                ->where('file_event_id', $event->id)
+                ->select('id', 'file_name', 'file_path', 'file_type', 'file_size', 'uploaded_at')
+                ->orderBy('id', 'asc')->get()
+                ->map(function ($f) {
+                    $f->url = asset('storage/' . $f->file_path);
+                    return $f;
+                });
+
+            return response()->json([
+                'message' => 'บันทึกข้อมูลสำเร็จ',
+                'event' => $event,
+                'files' => $files,
+            ], 200);
+        });
+    }
     /**
      * สร้างกิจกรรมใหม่ + อัปโหลดไฟล์ + ผูกผู้เข้าร่วม + ส่งอีเมลเชิญ
      * - เก็บ evn_duration เป็น "ชั่วโมง" (รับมาหน่วยนาที)
@@ -330,18 +338,16 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'event_title'        => 'required|string|max:255',
-            'event_category_id'  => 'required|exists:ems_categories,id',
-            'event_description'  => 'nullable|string',
-            'event_date'         => 'required|date',
-            'event_timestart'    => 'required|date_format:H:i',
-            'event_timeend'      => 'required|date_format:H:i',
-            'event_duration'     => 'required|integer|min:0', // นาที
-            'event_location'     => 'required|string|max:255',
-
-            'attachments' => 'array',
+            'event_title' => 'required|string|max:255',
+            'event_category_id' => 'required|exists:ems_categories,id',
+            'event_description' => 'nullable|string',
+            'event_date' => 'required|date',
+            'event_timestart' => 'required|date_format:H:i',
+            'event_timeend' => 'required|date_format:H:i',
+            'event_duration' => 'required|integer|min:0',
+            'event_location' => 'required|string|max:255',
+            'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:51200|mimes:pdf,txt,doc,docx,jpg,jpeg,png,xlsx,xls',
-
             'employee_ids' => 'required|array|min:1',
             'employee_ids.*' => 'integer|exists:ems_employees,id',
         ]);
@@ -351,89 +357,74 @@ class EventController extends Controller
 
                 // 1) สร้างกิจกรรม
                 $event = Event::create([
-                    'evn_title'        => $data['event_title'],
-                    'evn_category_id'  => $data['event_category_id'],
-                    'evn_description'  => $data['event_description'] ?? null,
-                    'evn_date'         => $data['event_date'],
-                    'evn_timestart'    => $data['event_timestart'],
-                    'evn_timeend'      => $data['event_timeend'],
-                    'evn_duration'     => $data['event_duration'],
-                    'evn_location'     => $data['event_location'],
-                    'evn_file'         => $request->hasFile('attachments') ? 'have' : 'not_have',
-                    'evn_create_by'    => Auth::id(),
-                    'evn_status'       => 'upcoming',
+                    'evn_title' => $data['event_title'],
+                    'evn_category_id' => $data['event_category_id'],
+                    'evn_description' => $data['event_description'] ?? null,
+                    'evn_date' => $data['event_date'],
+                    'evn_timestart' => $data['event_timestart'],
+                    'evn_timeend' => $data['event_timeend'],
+                    'evn_duration' => $data['event_duration'],
+                    'evn_location' => $data['event_location'],
+                    'evn_file' => $request->hasFile('attachments') ? 'have' : 'not_have',
+                    'evn_create_by' => Auth::id(),
+                    'evn_status' => 'upcoming',
                 ]);
 
-                // 2) อัปโหลดไฟล์ + บันทึกผ่านความสัมพันธ์ files()
+                // 2) จัดการไฟล์แนบ (จุดที่แก้ไขให้ตรงกับ Model File)
+                // 2) จัดการไฟล์แนบ
+                // 2) จัดการไฟล์แนบ
                 $savedFiles = [];
                 if ($request->hasFile('attachments')) {
                     foreach ($request->file('attachments') as $file) {
+                        // เก็บไฟล์ลง storage
                         $path = $file->store("events/{$event->id}", 'public');
 
-                        $fileRow = $event->files()->create([
-                            'file_name'   => $file->getClientOriginalName(),
-                            'file_path'   => $path,
-                            'file_type'   => $file->getClientMimeType(),
-                            'file_size'   => $file->getSize(),
-                            'uploaded_at' => now(),
+                        // บันทึกข้อมูลลงฐานข้อมูล
+                        // มั่นใจว่าได้ย้าย public function files() ไปไว้ที่ Model Event แล้ว
+                        $fileRecord = $event->files()->create([
+                            'file_name' => (string) $file->getClientOriginalName(),
+                            'file_path' => (string) $path, // บังคับ casting ป้องกันค่ากลายเป็น 0
+                            'file_type' => (string) $file->getClientMimeType(),
+                            'file_size' => $file->getSize(),
+                            'uploaded_at' => now(), // เปลี่ยนจาก file_upload_at เป็น uploaded_at ตามภาพ DB
                         ]);
 
-                        // บันทึกลงตาราง File (Table: ems_file)
-                        // ต้องแน่ใจว่า import App\Models\File แล้ว
-                        $fileRecord = new File();
-                        $fileRecord->file_name      = $file->getClientOriginalName(); // ชื่อเดิม
-                        $fileRecord->file_path      = $path;                          // path ที่เก็บ
-                        $fileRecord->file_event_id  = $event->id;                     // ID กิจกรรม
-                        $fileRecord->file_type      = $file->getMimeType(); // เพิ่ม: file_type
-                        $fileRecord->file_size      = $file->getSize();     // เพิ่ม: file_size (จำเป็น)
-                        $fileRecord->save();
+                        $savedFiles[] = $fileRecord;
                     }
                 }
 
-                // 3) ผูกผู้เข้าร่วม (ems_connect) ผ่านความสัมพันธ์ connects()
+                // 3) ผูกพนักงาน
                 $connectRows = collect($data['employee_ids'])
                     ->unique()
                     ->map(fn($eid) => [
-                        // 'con_event_id' จะถูกใส่อัตโนมัติจากความสัมพันธ์
-                        'con_employee_id'   => $eid,
-                        'con_answer'        => 'invalid',
-                        'con_reason'        => null,
+                        'con_employee_id' => $eid,
+                        'con_answer' => 'pending',
+                        'con_reason' => null,
                         'con_delete_status' => 'active',
-                    ])
-                    ->values()
-                    ->all();
+                    ])->all();
 
                 $event->connects()->createMany($connectRows);
 
-                // 4) ส่งอีเมลเชิญ
+                // 4) ส่งอีเมล (ส่งก้อนไฟล์แนบไปด้วย)
                 $employees = Employee::whereIn('id', $data['employee_ids'])
                     ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
                 foreach ($employees as $emp) {
-                    if (!$emp->emp_email) {
-                        continue;
+                    if ($emp->emp_email) {
+                        $formURL = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
+                        Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles, $formURL));
                     }
-                    $formURL = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
-                    Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles, $formURL));
-                    // หรือใช้คิว: Mail::to(...)->queue(new EventInvitationMail(...));
                 }
 
                 return response()->json([
-                    'message'  => 'สร้างกิจกรรมและส่งอีเมลเชิญแล้ว',
-                    'event'    => $event,
-                    'redirect' => '/event',
+                    'success' => true,
+                    'message' => 'สร้างกิจกรรมเรียบร้อยแล้ว',
+                    'event_id' => $event->id
                 ], 201);
             });
         } catch (\Exception $e) {
-            DB::rollBack(); // ย้อนกลับข้อมูลทั้งหมดถ้ามี Error
-
-            // Log Error ไว้ดู
-            \Illuminate\Support\Facades\Log::error('Create Event Error: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create event: ' . $e->getMessage()
-            ], 500);
+            Log::error('Create Event Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -449,16 +440,16 @@ class EventController extends Controller
         $this->syncEventStatus();
         // อนุญาตให้ sort ตามชื่อคอลัมน์/alias ที่ select มา
         $allowSort = [
-            'evn_title'      => 'ems_event.evn_title',
-            'cat_name'       => 'cat_name',
-            'evn_date'       => 'ems_event.evn_date',
-            'evn_duration'   => 'ems_event.evn_duration',
-            'evn_num_guest'  => 'evn_num_guest',
+            'evn_title' => 'ems_event.evn_title',
+            'cat_name' => 'cat_name',
+            'evn_date' => 'ems_event.evn_date',
+            'evn_duration' => 'ems_event.evn_duration',
+            'evn_num_guest' => 'evn_num_guest',
             'evn_sum_accept' => 'evn_sum_accept',
-            'evn_status'     => 'ems_event.evn_status',
+            'evn_status' => 'ems_event.evn_status',
         ];
 
-        $sortBy  = $request->query('sortBy', 'evn_date');
+        $sortBy = $request->query('sortBy', 'evn_date');
         $sortDir = strtolower($request->query('sortDir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $sortCol = $allowSort[$sortBy] ?? 'ems_event.evn_date';
 
@@ -495,7 +486,7 @@ class EventController extends Controller
                 'ems_event.evn_duration',
                 DB::raw('COALESCE(ems_event.evn_status, "") as evn_status'),
             ])
-            ->selectSub($subTotal,  'evn_num_guest')
+            ->selectSub($subTotal, 'evn_num_guest')
             ->selectSub($subAccept, 'evn_sum_accept')
 
             // ไม่เอา status = deleted (ไม่ต้องพึ่ง scope ในโมเดล)
@@ -578,10 +569,12 @@ class EventController extends Controller
     public function permission()
     {
         $empId = Auth::id();
-        if (!$empId) return response()->json(['message' => 'Unauthenticated'], 401);
+        if (!$empId)
+            return response()->json(['message' => 'Unauthenticated'], 401);
 
         $perm = DB::table('ems_employees')->where('id', $empId)->value('emp_permission');
-        if ($perm === null) return response()->json(['message' => 'Employee not found'], 404);
+        if ($perm === null)
+            return response()->json(['message' => 'Employee not found'], 404);
 
         return response()->json([
             'emp_permission' => strtolower((string) $perm),
@@ -616,7 +609,7 @@ class EventController extends Controller
 
             // 4. ทำการ Soft Delete (อัปเดตสถานะใน DB)
             $event->update([
-                'evn_status'     => 'deleted',
+                'evn_status' => 'deleted',
                 'evn_deleted_at' => Carbon::now(),
                 'evn_deleted_by' => Auth::id(),
             ]);
@@ -676,20 +669,20 @@ class EventController extends Controller
 
             ->map(function (Employee $e) {
                 return [
-                    'id'               => $e->id,
-                    'emp_id'           => $e->emp_id,
-                    'emp_prefix'       => $e->emp_prefix,
-                    'emp_firstname'    => $e->emp_firstname,
-                    'emp_lastname'     => $e->emp_lastname,
-                    'emp_nickname'     => $e->emp_nickname,
-                    'emp_email'        => $e->emp_email,
-                    'emp_phone'        => $e->emp_phone,
-                    'emp_position_id'  => $e->emp_position_id,
+                    'id' => $e->id,
+                    'emp_id' => $e->emp_id,
+                    'emp_prefix' => $e->emp_prefix,
+                    'emp_firstname' => $e->emp_firstname,
+                    'emp_lastname' => $e->emp_lastname,
+                    'emp_nickname' => $e->emp_nickname,
+                    'emp_email' => $e->emp_email,
+                    'emp_phone' => $e->emp_phone,
+                    'emp_position_id' => $e->emp_position_id,
                     'emp_department_id' => $e->emp_department_id,
-                    'emp_team_id'      => $e->emp_team_id,
-                    'position_name'    => optional($e->position)->pst_name,
-                    'department_name'  => optional($e->department)->dpm_name,
-                    'team_name'        => optional($e->team)->tm_name,
+                    'emp_team_id' => $e->emp_team_id,
+                    'position_name' => optional($e->position)->pst_name,
+                    'department_name' => optional($e->department)->dpm_name,
+                    'team_name' => optional($e->team)->tm_name,
                 ];
             });
 
@@ -869,16 +862,23 @@ class EventController extends Controller
                 ->first();
 
             // Get actual attendance statistics (for Actual Attendance donut chart)
-            // Counts con_answer = 'accepted' as attended
+            // ✅ แก้ไข: นับจาก con_checkin_status = 1 (คนที่เช็คชื่อจริง)
             // Total includes ALL assigned employees (accepted, denied, pending, invalid, not_invite)
             $actualAttendance = DB::table('ems_connect')
                 ->whereIn('con_event_id', $eventIds)
                 ->where('con_delete_status', 'active')
                 ->selectRaw('
                     COUNT(*) as total_assigned,
-                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attended
+                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attended
                 ')
                 ->first();
+
+            \Log::info('📊 Actual Attendance Data:', [
+                'event_ids' => $eventIds,
+                'total_assigned' => $actualAttendance->total_assigned,
+                'attended' => $actualAttendance->attended,
+                'query' => 'Using con_checkin_status = 1 for attended count'
+            ]);
 
             // Get department breakdown (กรองเฉพาะคนที่ถูกเชิญ)
             $departments = DB::table('ems_connect')
