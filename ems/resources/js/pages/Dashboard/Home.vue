@@ -54,7 +54,7 @@
     <!-- Show Data Button -->
     <button
       @click="showDataHandler"
-      class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-6 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6 transition-colors"
+      class="h-[58px] w-[170px] items-center rounded-[20px] bg-red-700 px-6 font-medium text-[20px] text-white hover:bg-red-800 flex-shrink-0 mt-6 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       :disabled="selectedEventIds.size === 0"
       :class="{'opacity-50 cursor-not-allowed': selectedEventIds.size === 0}"
     >
@@ -156,73 +156,65 @@
 <!-- Summary/Graph Section - แสดงเมื่อเลือก event และกดปุ่ม Show Data แล้ว -->
   <div
   v-if="selectedEventIds.size > 0 && showStatistics"
-  class="summary-card mt-6 w-full scroll-mt-24">
+  class="summary-card mt-6 w-full scroll-mt-24"
+>
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-    <!-- Actual Attendance (Left) -->
+
+    <!-- Actual Attendance -->
     <div class="lg:col-span-5">
-      <div
-        class=""
-      >
-        <DonutActualAttendance
-          :eventId="Array.from(selectedEventIds)[0]"
-          :attendanceData="{
-            attending: chartData.actual_attendance?.attended || 0,
-            total: chartData.actual_attendance?.total_assigned || 0
-          }"
-          :loading="loadingParticipants"
-        />
-      </div>
+      <DonutActualAttendance
+        :eventId="Array.from(selectedEventIds)[0]"
+        :attendanceData="{
+          attending: chartData.actual_attendance?.attended || 0,
+          total: chartData.actual_attendance?.total_assigned || 0
+        }"
+        :loading="loadingParticipants"
+      />
     </div>
 
-    <!-- Event Participation Graph (Right) -->
+    <!-- Event Participation Graph -->
     <div class="lg:col-span-7">
-      <div
-        class="h-full min-h-[320px] rounded-2xl p-5 "
-      >
-        <GraphEventParticipation
-          :eventId="Array.from(selectedEventIds)[0]"
-          :data="participationData"
-          :loading="loadingParticipants"
-        />
-      </div>
+      <GraphEventParticipation
+        :eventId="Array.from(selectedEventIds)[0]"
+        :data="participationData"
+        :loading="loadingParticipants"
+      />
     </div>
 
-    <!-- Status Cards Row (Bottom) -->
+    <!-- Bottom cards -->
     <div class="lg:col-span-12">
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-3 ">
-        <div class="h-full">
-          <AttendingCard
-            :attending="chartData.attending || 0"
-            :total="chartData.total_participation || 0"
-            :loading="loadingParticipants"
-            :isClickable="true"
-            @showAttendingEmployees="showEmployeesByStatus('attending')"
-          />
-        </div>
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
 
-        <div class="h-full">
-          <NotAttendingCard
-            :notAttending="chartData.not_attending || 0"
-            :total="chartData.total_participation || 0"
-            :loading="loadingParticipants"
-            :isClickable="true"
-            @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
-          />
-        </div>
+        <AttendingCard
+          :attending="chartData.attending || 0"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
+          :isClickable="true"
+          @showAttendingEmployees="showEmployeesByStatus('attending')"
+        />
 
-        <div class="h-full">
-          <PendingCard
-            :pending="chartData.pending || 0"
-            :total="chartData.total_participation || 0"
-            :loading="loadingParticipants"
-            :isClickable="true"
-            @showPendingEmployees="showEmployeesByStatus('pending')"
-          />
-        </div>
+        <NotAttendingCard
+          :notAttending="chartData.not_attending || 0"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
+          :isClickable="true"
+          @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
+        />
+
+        <PendingCard
+          :pending="chartData.pending || 0"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
+          :isClickable="true"
+          @showPendingEmployees="showEmployeesByStatus('pending')"
+        />
+
       </div>
     </div>
+
   </div>
 </div>
+
 <DataTable
     v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics"
     :rows="paginatedEmployees"
@@ -608,7 +600,7 @@ export default {
         {
           key: "cat_name",
           label: "Category",
-          class: "text-left",
+          class: "text-left w-32",
           headerClass: "pl-2",
           cellClass: "pl-3",
           sortable: true,
@@ -616,33 +608,33 @@ export default {
         {
           key: "evn_date",
           label: "Date (D/M/Y)",
-          class: "w-[120px] text-center whitespace-nowrap",
+          class: "w-24 text-center whitespace-nowrap",
           format: this.formatDate,
           sortable: true,
         },
         {
           key: "evn_timestart",
           label: "Time",
-          class: "w-[110px] whitespace-nowrap ",
+          class: "w-24 whitespace-nowrap ",
           cellClass: "justify-center",
           format: (v, r) => this.timeText(v, r.evn_timeend),
         },
         {
           key: "evn_num_guest",
           label: "Invited",
-          class: "w-20 text-center",
+          class: "w-24 items-center",
           sortable: true,
         },
         {
           key: "evn_sum_accept",
           label: "Accepted",
-          class: "w-20 text-center",
+          class: "w-24 text-center items-center",
           sortable: true,
         },
         {
           key: "evn_status",
           label: "Status",
-          class: "text-center",
+          class: "text-center items-center w-32",
           sortable: true,
         },
       ];
@@ -792,6 +784,15 @@ export default {
   },
 
   methods: {
+    showEmployees(status) {
+    this.selectedStatus = status; // attending / not-attending / pending
+    this.showEmployeeTable = true;
+  },
+
+  closeEmployeeTable() {
+    this.showEmployeeTable = false;
+    this.selectedStatus = null;
+  },
     handleEventCheck({ keys, checked }) {
   keys.forEach(id => {
     if (checked) {
