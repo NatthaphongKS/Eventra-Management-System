@@ -2,10 +2,10 @@
     <div class="w-full">
         <label
             :for="id"
-            class="block text-xl font-regular text-neutral-800 mb-1"
+            class="block text-xl font-medium text-neutral-800 mb-1"
         >
             {{ label }}
-            <span v-if="required" class="text-red-800"> *</span>
+            <span v-if="required" class="text-rose-700"> *</span>
         </label>
 
         <div class="w-full">

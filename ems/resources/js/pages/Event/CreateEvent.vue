@@ -37,7 +37,6 @@
                             Required field
                         </p>
                     </div>
-
                     <div>
                         <label
                             class="block text-neutral-800 font-semibold text-[15px] mb-2"
@@ -87,7 +86,7 @@
                         </p>
                     </div>
                 </div>
-
+                <!-- Event Description -->
                 <div class="mt-6">
                     <label
                         class="block text-neutral-800 font-semibold text-[15px] mb-2"
@@ -113,7 +112,7 @@
                         Required field
                     </p>
                 </div>
-
+                <!-- Date, Time, Duration, Location -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                     <div>
                         <label
@@ -168,7 +167,6 @@
                             Required field
                         </p>
                     </div>
-
                     <div>
                         <label
                             class="block text-neutral-800 font-semibold text-[15px] mb-2"
@@ -251,8 +249,7 @@
                             >Duration</label
                         >
                         <div
-                            class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]"
-                        >
+                            class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]">
                             <input
                                 class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none border-0"
                                 disabled
@@ -265,7 +262,7 @@
                         </div>
                     </div>
                 </div>
-
+                <!-- Location -->
                 <div class="mt-6">
                     <label
                         class="block text-neutral-800 font-semibold text-[15px] mb-2"
@@ -332,6 +329,7 @@
                                         prettySize(item.size)
                                     }}</span>
                                 </div>
+                                <span class="truncate text-[16px] text-neutral-800">{{ file.name }}</span>
                             </div>
 
                             <button
@@ -394,23 +392,19 @@
             <div class="flex flex-wrap items-center gap-4 w-full">
                 <div class="flex items-center gap-2 flex-1 min-w-[320px]">
                     <div class="relative w-full">
-                        <input
-                            v-model="searchRaw"
-                            type="text"
-                            placeholder="Search ID / Name / Nickname"
+                        <!-- Search Input -->
+                        <input v-model="searchRaw" type="text" placeholder="Search ID / Name / Nickname"
                             class="w-full h-[48px] rounded-[30px] border border-neutral-200 px-6 text-[15px] text-neutral-800 placeholder:text-rose-300 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200 transition bg-white"
-                            @keyup.enter="performSearch"
-                        />
+                            @keyup.enter="performSearch" />
                     </div>
-                    <button
-                        type="button"
+                    <!-- Search Button -->
+                    <button type="button"
                         class="flex-none grid place-items-center w-[48px] h-[48px] rounded-full bg-[#B91C1C] text-white hover:bg-red-800 transition shadow-sm"
-                        @click="performSearch"
-                    >
+                        @click="performSearch">
                         <Icon icon="ic:baseline-search" class="w-6 h-6" />
                     </button>
                 </div>
-
+                <!-- Employee Filters -->
                 <div class="flex flex-row flex-wrap items-center gap-2">
                     <EmployeeDropdown
                         label="Company ID"
@@ -434,7 +428,7 @@
                     />
                 </div>
             </div>
-
+            <!-- Employee Data Table -->
             <div class="mt-8">
                 <DataTable
                     :rows="pagedEmployees"
@@ -485,17 +479,17 @@
             </div>
 
             <div class="flex-none">
-                <button
-                    type="button"
-                    @click="saveEvent"
-                    :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm"
-                >
+                <button type="button" @click="saveEvent" :disabled="saving"
+                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
                     <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
                     <span>Create</span>
                 </button>
             </div>
         </div>
+        <!-- Confirm Create Modal -->
+        <ModalAlert v-model:open="showConfirmCreate" title="Confirm Creation"
+            message="Are you sure you want to create this event?" type="confirm" :showCancel="true"
+            @confirm="executeCreateEvent" />
 
         <ModalAlert
             v-model:open="showConfirmCreate"
@@ -525,6 +519,20 @@ import DataTable from "@/components/DataTable.vue";
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 import CancelButton from "@/components/Button/CancelButton.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
+
+// Day.js imports for Calendar Logic
+import dayjs from "dayjs";
+import "dayjs/locale/en";
+import weekday from "dayjs/plugin/weekday";
+import weekOfYear from "dayjs/plugin/weekOfYear";
+import isBetween from "dayjs/plugin/isBetween";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(weekday);
+dayjs.extend(weekOfYear);
+dayjs.extend(isBetween);
+dayjs.extend(customParseFormat);
+dayjs.locale("en");
 
 export default {
     components: {
@@ -558,11 +566,13 @@ export default {
                 eventDescription: false,
                 eventDate: false,
                 eventTime: false,
-                eventLocation: false,
+                eventLocation: false
             },
             selectCategory: [],
             filesNew: [],
             dragging: false,
+
+            // ข้อมูลพนักงานและสถานะการโหลด
             employees: [],
             loadingEmployees: false,
             search: "", // Filter value
@@ -571,10 +581,14 @@ export default {
             selectedDepartmentIds: [],
             selectedTeamIds: [],
             selectedPositionIds: [],
+
+            // ตัวเลือกสำหรับ dropdown ตัวกรอง
             companyIdOptions: [],
             departmentOptions: [],
             teamOptions: [],
             positionOptions: [],
+
+            // สถานะตารางและการเลือก
             selectedIds: new Set(),
             page: 1,
             perPage: 10,
@@ -583,12 +597,72 @@ export default {
             showSuccessAlert: false,
         };
     },
+
     computed: {
         formattedDateDisplay() {
             if (!this.eventDate) return "";
-            const [y, m, d] = this.eventDate.split("-");
-            return `${d}/${m}/${y.slice(-2)}`;
+            return dayjs(this.eventDate).format("DD/MM/YY");
         },
+
+        // --- Calendar Computed ---
+        monthOptions() {
+            return Array.from({ length: 12 }, (v, i) =>
+                dayjs().month(i).format("MMM")
+            );
+        },
+
+        yearOptions() {
+            const currentYear = dayjs().year();
+            const years = [];
+            for (let i = currentYear - 10; i <= currentYear + 10; i++)
+                years.push(i);
+            return years;
+        },
+
+        calendarWeeks() {
+            const startOfMonth = this.currentCalendarMonth.startOf("month");
+            const endOfMonth = this.currentCalendarMonth.endOf("month");
+            const startOfWeek = startOfMonth.startOf("week");
+            const endOfWeek = endOfMonth.endOf("week");
+
+            const calendar = [];
+            let day = startOfWeek;
+            const today = dayjs();
+
+            while (day.isBefore(endOfWeek) || day.isSame(endOfWeek, "day")) {
+                const week = [];
+                for (let i = 0; i < 7; i++) {
+                    week.push({
+                        day: day.date(),
+                        date: day.format("YYYY-MM-DD"),
+                        isCurrentMonth: day.isSame(
+                            this.currentCalendarMonth,
+                            "month"
+                        ),
+                        isToday: day.isSame(today, "day"),
+                    });
+                    day = day.add(1, "day");
+                }
+                calendar.push(week);
+            }
+            return calendar;
+        },
+
+        hasAnyFiles() {
+            return this.filesNew.length > 0; // ถ้ามีของเดิมด้วย ค่อย OR เพิ่มภายหลัง
+        },
+
+        uploadItems() {
+            // ตอนนี้เอาเฉพาะไฟล์ใหม่ก่อน
+            return this.filesNew.map((f, index) => ({
+                kind: "new",
+                key: `new-${index}-${f.name}`,
+                name: f.name,
+                index,
+            }));
+        },
+        // -------------------------
+
         columns() {
             return [
                 {
@@ -623,9 +697,12 @@ export default {
                 },
             ];
         },
+
+        // กรองพนักงานตามคำค้นหาและตัวเลือกตัวกรอง
         filteredEmployees() {
             const q = (this.search || "").toLowerCase().trim();
             let list = this.employees;
+
             if (q) {
                 list = list.filter(
                     (e) =>
@@ -652,6 +729,8 @@ export default {
                 );
             return list;
         },
+
+        // แบ่งหน้าพนักงานตามจำนวนรายการต่อหน้า
         pagedEmployees() {
             const start = (this.page - 1) * this.perPage;
             return this.filteredEmployees.slice(start, start + this.perPage);
@@ -677,10 +756,74 @@ export default {
         this.fetchInfo();
     },
     methods: {
+        // --- Calendar Methods ---
+        closeCalendarOnClickOutside(e) {
+            if (
+                this.$refs.datePickerContainer &&
+                !this.$refs.datePickerContainer.contains(e.target)
+            ) {
+                this.showCalendar = false;
+                this.showMonthDropdown = false;
+                this.showYearDropdown = false;
+            }
+        },
+
+        toggleCalendar() {
+            this.showCalendar = !this.showCalendar;
+        },
+
+        toggleMonthDropdown() {
+            this.showMonthDropdown = !this.showMonthDropdown;
+            this.showYearDropdown = false;
+        },
+
+        toggleYearDropdown() {
+            this.showYearDropdown = !this.showYearDropdown;
+            this.showMonthDropdown = false;
+        },
+
+        selectMonth(index) {
+            this.currentCalendarMonth = this.currentCalendarMonth.month(index);
+            this.showMonthDropdown = false;
+        },
+
+        selectYear(year) {
+            this.currentCalendarMonth = this.currentCalendarMonth.year(year);
+            this.showYearDropdown = false;
+        },
+
+        prevMonth() {
+            this.currentCalendarMonth = this.currentCalendarMonth.subtract(
+                1,
+                "month"
+            );
+        },
+
+        nextMonth() {
+            this.currentCalendarMonth = this.currentCalendarMonth.add(
+                1,
+                "month"
+            );
+        },
+
+        selectDate(dateStr) {
+            this.eventDate = dateStr;
+            this.errors.eventDate = false;
+            this.showCalendar = false;
+        },
+
+        clearDate() {
+            this.eventDate = "";
+            this.showCalendar = false;
+        },
+
+        // ------------------------
         performSearch() {
             this.search = this.searchRaw;
             this.page = 1;
         },
+
+        // คำนวณระยะเวลาอีเวนต์จากเวลาเริ่มและเวลาสิ้นสุด
         calDuration() {
             if (!this.eventTimeStart || !this.eventTimeEnd) {
                 this.eventDurationDisplay = "";
@@ -696,6 +839,8 @@ export default {
             this.eventDurationDisplay =
                 h > 0 ? `${h} Hour ${m} Min` : `${m} Min`;
         },
+
+        // ตรวจสอบฟิลด์ที่จำเป็นและแสดง modal ยืนยัน
         saveEvent() {
             this.errors.eventTitle = !this.eventTitle;
             this.errors.eventCategoryId = !this.eventCategoryId;
@@ -706,11 +851,15 @@ export default {
             if (Object.values(this.errors).some((v) => v)) return;
             this.showConfirmCreate = true;
         },
+
+        // สร้างอีเวนต์และส่งข้อมูลไปยัง API
         async executeCreateEvent() {
             this.showConfirmCreate = false;
             this.saving = true;
             try {
+                // สร้าง FormData สำหรับส่งข้อมูลพร้อมไฟล์
                 const formData = new FormData();
+                // เพิ่มข้อมูลอีเวนต์พื้นฐาน
                 formData.append("event_title", this.eventTitle.trim());
                 formData.append("event_category_id", this.eventCategoryId);
                 formData.append("event_description", this.eventDescription);
@@ -736,10 +885,14 @@ export default {
                 this.saving = false;
             }
         },
+
+        // ปิด modal และกลับไปหน้ารายการอีเวนต์
         onSuccessConfirm() {
             this.showSuccessAlert = false;
             this.$router.push("/event");
         },
+
+        // ดึงข้อมูลหมวดหมู่และพนักงานจาก API
         async fetchInfo() {
             try {
                 this.loadingEmployees = true;
@@ -763,6 +916,7 @@ export default {
                         position: e.position_name || "",
                     };
                 });
+                // สร้างตัวเลือกสำหรับตัวกรอง
                 this.buildFilterOptions();
             } catch (err) {
                 console.error(err);
@@ -826,19 +980,23 @@ input[type="time"]::-webkit-datetime-edit-text {
     color: inherit;
     padding: 0;
 }
+
 input[type="time"]::-webkit-datetime-edit-hour-field:focus,
 input[type="time"]::-webkit-datetime-edit-minute-field:focus {
     background-color: transparent !important;
     color: inherit;
     outline: none;
 }
+
 input[type="time"]::selection {
     background: transparent;
 }
+
 input[type="time"]::-webkit-calendar-picker-indicator {
     display: none;
     -webkit-appearance: none;
 }
+
 input[type="date"]::-webkit-calendar-picker-indicator {
     position: absolute;
     left: 0;
@@ -850,6 +1008,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0;
 }
+
 .caret-transparent {
     caret-color: transparent;
 }
