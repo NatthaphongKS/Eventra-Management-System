@@ -437,7 +437,7 @@ export default {
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">เข้าร่วมจริง (เช็คอิน)</div>
-                  <div class="stat-value">${participants.filter(p => p.con_checkin_status === 1).length}</div>
+                  <div class="stat-value">${participants.filter(p => p.__isCheckedIn).length}</div>
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">ปฏิเสธ</div>
@@ -485,7 +485,7 @@ export default {
                             ${guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
                           </span>
                         </td>
-                        <td>${guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม'}</td>
+                        <td>${guest.__isCheckedIn ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม'}</td>
                         <td class="left">${guest.con_reason || '-'}</td>
                       </tr>
                     `).join('')}
@@ -660,7 +660,7 @@ export default {
         const stats = [
           ['ผู้ได้รับเชิญทั้งหมด', participants.length],
           ['ตอบรับเข้าร่วม', participants.filter(p => p.status === 'accepted').length],
-          ['เข้าร่วมจริง (เช็คอิน)', participants.filter(p => p.con_checkin_status === 1).length],
+          ['เข้าร่วมจริง (เช็คอิน)', participants.filter(p => p.__isCheckedIn).length],
           ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length],
           ['รอตอบรับ', participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length]
         ];
@@ -736,7 +736,7 @@ export default {
             guest.team || '-',
             guest.position || '-',
             statusLabel,
-            guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม',
+            guest.__isCheckedIn ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม',
             guest.con_reason || '-'
           ];
           
@@ -782,6 +782,7 @@ export default {
 
     async fetchEventParticipants(eventId) {
       try {
+        console.log(`📥 Fetching participants for event ${eventId}`);
         const response = await axios.get(`/events/${eventId}/connects`);
         
         // จัดการ response ที่อาจมีโครงสร้างต่างกัน
@@ -799,7 +800,30 @@ export default {
           participants = [response.data];
         }
         
-        return participants;
+        // Normalize participant data to handle backend variations
+        const normalized = participants.map(p => {
+          // Normalize status field (backend may use 'status' or 'con_answer')
+          const rawStatus = p.status ?? p.con_answer ?? 'invalid';
+          const normalizedStatus = String(rawStatus).toLowerCase();
+          
+          // Normalize check-in status (can be number 1/0 or string "checked_in"/"not_checked_in")
+          const isCheckedIn = Number(p.con_checkin_status) === 1 || 
+                             String(p.con_checkin_status).toLowerCase() === 'checked_in';
+          
+          return {
+            ...p,
+            status: normalizedStatus,
+            __isCheckedIn: isCheckedIn
+          };
+        });
+        
+        const acceptedCount = normalized.filter(p => p.status === 'accepted').length;
+        const deniedCount = normalized.filter(p => p.status === 'denied').length;
+        const pendingCount = normalized.filter(p => p.status !== 'accepted' && p.status !== 'denied').length;
+        
+        console.log(`✅ Loaded ${normalized.length} participants: ${acceptedCount} accepted, ${deniedCount} denied, ${pendingCount} pending`);
+        
+        return normalized;
       } catch (error) {
         console.error('Error fetching participants:', error);
         return [];
@@ -857,7 +881,7 @@ export default {
     getStatusLabel(status) {
       const statusMap = {
         'accepted': 'ยืนยันเข้าร่วม',
-        'rejected': 'ปฏิเสธ',
+        'denied': 'ปฏิเสธ',
         'pending': 'รอตอบรับ'
       };
       return statusMap[status] || 'ไม่ระบุ';
