@@ -263,12 +263,20 @@ class EventController extends Controller
                     $newEmployees = Employee::whereIn('id', $idsToAdd)->get();
                     $currentFiles = DB::table('ems_event_files')->where('file_event_id', $event->id)->get();
 
+                    // foreach ($newEmployees as $emp) {
+                    //     if ($emp->emp_email) {
+                    //         $formURL = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
+                    //         Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, files: $currentFiles, $formURL));
+                    //     }
+                    // }
+
                     foreach ($newEmployees as $emp) {
                         if ($emp->emp_email) {
-                            $formURL = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
+                            $formURL = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
                             Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $currentFiles, $formURL));
                         }
                     }
+
                 }
 
                 // 4.2 ลบคนเก่า
