@@ -40,7 +40,7 @@ class EventController extends Controller
     //คืนชุด employee_ids และข้อมูลผู้เข้าร่วมของอีเวนต์นั้น
     public function connectList($id)
     {
-        // ดึงข้อมูลผู้เข้าร่วมทั้งหมด (รวมทั้งที่เช็คอินและไม่เช็คอิน)
+        // ดึงข้อมูลผู้เข้าร่วมที่ถูกเชิญเท่านั้น (ไม่รวม not_invite)
         $participants = DB::table('ems_connect')
             ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
             ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
@@ -48,6 +48,7 @@ class EventController extends Controller
             ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
             ->where('ems_connect.con_event_id', $id)
             ->where('ems_connect.con_delete_status', 'active')
+            ->where('ems_connect.con_answer', '!=', 'not_invite')
             ->select(
                 'ems_employees.id',
                 'ems_employees.emp_id',
@@ -454,11 +455,12 @@ class EventController extends Controller
 
         $q = trim((string) $request->query('q', ''));
 
-        // สร้าง subquery สำหรับนับทั้งหมด (active)
+        // สร้าง subquery สำหรับนับทั้งหมด (active และไม่ใช่ not_invite)
         $subTotal = DB::table('ems_connect')
             ->selectRaw('COUNT(*)')
             ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
-            ->where('con_delete_status', 'active');
+            ->where('con_delete_status', 'active')
+            ->where('con_answer', '!=', 'not_invite');
 
         // สร้าง subquery สำหรับนับที่ตอบรับเข้าร่วม (accepted)
         $subAccept = DB::table('ems_connect')
@@ -623,10 +625,11 @@ class EventController extends Controller
     public function getEventParticipants($eventId)
     {
         try {
-            // ดึงข้อมูลสถิติการเข้าร่วม
+            // ดึงข้อมูลสถิติการเข้าร่วม (กรองเฉพาะคนที่ถูกเชิญ)
             $statistics = DB::table('ems_connect')
                 ->where('con_event_id', $eventId)
                 ->where('con_delete_status', 'active')
+                ->where('con_answer', '!=', 'not_invite')
                 ->selectRaw('
                     COUNT(*) as total,
                     SUM(CASE WHEN con_answer = "accept" THEN 1 ELSE 0 END) as attending,
@@ -700,7 +703,7 @@ class EventController extends Controller
             }
 
             $statusFilter = $request->get('status'); // accepted, declined, pending
-            // ดึงข้อมูล participants จาก ems_connect และ join กับ employees
+            // ดึงข้อมูล participants จาก ems_connect และ join กับ employees (กรองเฉพาะคนที่ถูกเชิญ)
             $query = DB::table('ems_connect as c')
                 ->join('ems_employees as e', 'c.con_employee_id', '=', 'e.id')
                 ->leftJoin('ems_position as p', 'e.emp_position_id', '=', 'p.id')
@@ -710,6 +713,7 @@ class EventController extends Controller
                 ->where(function ($q) {
                     $q->where('c.con_delete_status', 'active');
                 })
+                ->where('c.con_answer', '!=', 'not_invite')
                 ->select([
                     'e.id',
                     'e.emp_id',
@@ -789,7 +793,7 @@ class EventController extends Controller
                 ], 404);
             }
 
-            // ดึงข้อมูลการตอบรับจาก ems_connect table
+            // ดึงข้อมูลการตอบรับจาก ems_connect table (กรองเฉพาะคนที่ถูกเชิญ)
             $attendanceStats = DB::table('ems_connect')
                 ->where('con_event_id', $eventId)
                 ->where(function ($query) {
@@ -797,6 +801,7 @@ class EventController extends Controller
                         ->orWhere('con_delete_status', '')
                         ->orWhere('con_delete_status', 'active');
                 })
+                ->where('con_answer', '!=', 'not_invite')
                 ->selectRaw('
                     COUNT(CASE WHEN con_answer = "accept" THEN 1 END) as actual_attendance,
                     COUNT(CASE WHEN con_answer = "decline" THEN 1 END) as declined,
@@ -843,49 +848,71 @@ class EventController extends Controller
                 ]);
             }
 
-            // Get aggregated statistics
+            // Get aggregated statistics (กรองเฉพาะคนที่ถูกเชิญ)
             $stats = DB::table('ems_connect')
                 ->whereIn('con_event_id', $eventIds)
                 ->where('con_delete_status', 'active')
+                ->where('con_answer', '!=', 'not_invite')
                 ->selectRaw('
                     COUNT(*) as total_participation,
-                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
-                    SUM(CASE WHEN con_checkin_status != 1 AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN con_answer != "accepted" AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->first();
 
-            // Get department breakdown
+            // Get actual attendance statistics (for Actual Attendance donut chart)
+            // ✅ แก้ไข: นับจาก con_checkin_status = 1 (คนที่เช็คชื่อจริง)
+            // Total includes ALL assigned employees (accepted, denied, pending, invalid, not_invite)
+            $actualAttendance = DB::table('ems_connect')
+                ->whereIn('con_event_id', $eventIds)
+                ->where('con_delete_status', 'active')
+                ->selectRaw('
+                    COUNT(*) as total_assigned,
+                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attended
+                ')
+                ->first();
+
+            \Log::info('📊 Actual Attendance Data:', [
+                'event_ids' => $eventIds,
+                'total_assigned' => $actualAttendance->total_assigned,
+                'attended' => $actualAttendance->attended,
+                'query' => 'Using con_checkin_status = 1 for attended count'
+            ]);
+
+            // Get department breakdown (กรองเฉพาะคนที่ถูกเชิญ)
             $departments = DB::table('ems_connect')
                 ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
                 ->join('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
                 ->whereIn('ems_connect.con_event_id', $eventIds)
                 ->where('ems_connect.con_delete_status', 'active')
+                ->where('ems_connect.con_answer', '!=', 'not_invite')
                 ->groupBy('ems_department.id', 'ems_department.dpm_name')
                 ->selectRaw('
                     ems_department.dpm_name as name,
-                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_answer != "accepted" AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
-            // Get team breakdown
+            // Get team breakdown (กรองเฉพาะคนที่ถูกเชิญ)
             $teams = DB::table('ems_connect')
                 ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
                 ->join('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
                 ->whereIn('ems_connect.con_event_id', $eventIds)
                 ->where('ems_connect.con_delete_status', 'active')
+                ->where('ems_connect.con_answer', '!=', 'not_invite')
                 ->groupBy('ems_team.id', 'ems_team.tm_name')
                 ->selectRaw('
                     ems_team.tm_name as name,
-                    SUM(CASE WHEN ems_connect.con_checkin_status = 1 THEN 1 ELSE 0 END) as attending,
+                    SUM(CASE WHEN ems_connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
                     SUM(CASE WHEN ems_connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-                    SUM(CASE WHEN ems_connect.con_checkin_status != 1 AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+                    SUM(CASE WHEN ems_connect.con_answer != "accepted" AND ems_connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
                 ')
                 ->get();
 
-            // Get all participants (including same person in multiple events)
+            // Get all participants (including same person in multiple events, กรองเฉพาะคนที่ถูกเชิญ)
             $participants = DB::table('ems_connect')
                 ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
                 ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
@@ -894,6 +921,7 @@ class EventController extends Controller
                 ->leftJoin('ems_event', 'ems_connect.con_event_id', '=', 'ems_event.id')
                 ->whereIn('ems_connect.con_event_id', $eventIds)
                 ->where('ems_connect.con_delete_status', 'active')
+                ->where('ems_connect.con_answer', '!=', 'not_invite')
                 ->select(
                     'ems_employees.id',
                     'ems_employees.emp_id',
@@ -919,6 +947,10 @@ class EventController extends Controller
                 'attending' => $stats->attending ?? 0,
                 'not_attending' => $stats->not_attending ?? 0,
                 'pending' => $stats->pending ?? 0,
+                'actual_attendance' => [
+                    'attended' => $actualAttendance->attended ?? 0,
+                    'total_assigned' => $actualAttendance->total_assigned ?? 0
+                ],
                 'departments' => $departments,
                 'teams' => $teams,
                 'participants' => $participants

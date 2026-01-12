@@ -6,7 +6,14 @@
       class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800 hover:bg-gray-50"
       :class="{ 'bg-gray-100': isOpen }"
     >
-      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg
+        class="w-6 h-6"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <line x1="4" y1="7" x2="20" y2="7" />
         <line x1="6" y1="12" x2="16" y2="12" />
         <line x1="8" y1="17" x2="12" y2="17" />
@@ -42,7 +49,14 @@
               <span class="truncate pr-2 font-medium">
                 {{ getSelectedLabel(key, opts) }}
               </span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4 text-red-700 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
               </svg>
             </div>
@@ -55,7 +69,7 @@
                 class="flex items-center pl-5 py-2 text-[15px] font-bold cursor-pointer hover:bg-gray-50 transition-colors"
                 @click="toggleSelectAll(key, opts)"
               >
-                <span style="color: #20B5FF">Select All</span>
+                <span style="color: #20b5ff">Select All</span>
               </div>
 
               <div
@@ -114,10 +128,11 @@
 </style>
 
 <script>
+
 export default {
   props: {
     modelValue: { type: Object, required: true },
-    options: { type: Object, required: true }
+    options: { type: Object, required: true },
   },
   emits: ["update:modelValue"],
   data() {
@@ -134,24 +149,38 @@ export default {
     toggleDropdown(key) {
       this.openKey = this.openKey === key ? null : key;
     },
-    // แก้ไข Logic: ถ้าเลือกบางอย่างให้แสดงชื่อ ถ้าว่างหรือครบให้แสดง All
-    getSelectedLabel(key, opts) {
-      const selected = this.modelValue[key] || [];
 
-      if (selected.length === 0 || selected.length === opts.length) {
+    // --- ส่วนแสดงผลชื่อ (Logic: All <-> ชื่อตัวเลือก) ---
+    getSelectedLabel(key, opts) {
+      // 1. ตรวจสอบและดึงค่า (ป้องกัน null/undefined)
+      let selected = Array.isArray(this.modelValue[key]) ? this.modelValue[key] : [];
+
+      // 2. ถ้าไม่ได้เลือกอะไรเลย (length 0) -> แสดง "All"
+      if (selected.length === 0) {
         return "All";
       }
 
-      // แสดงรายการที่เลือก เช่น "WA, CN"
+      // 3. ถ้าเลือกครบทุกตัว -> แสดง "All" (ถ้าไม่อยากได้ให้ลบ 3 บรรทัดนี้ออก)
+      if (opts && selected.length === opts.length) {
+        return "All";
+      }
+
+      // 4. แสดงชื่อตัวเลือกที่ถูกเลือก
       return selected.join(", ");
     },
+
+    // --- ส่วนกดเลือก (Toggle) ---
     toggleOption(key, value) {
-      const current = [...(this.modelValue[key] || [])];
+      // 1. ดึง Array ปัจจุบัน (ป้องกัน null/undefined)
+      let current = Array.isArray(this.modelValue[key]) ? [...this.modelValue[key]] : [];
+
       const index = current.indexOf(value);
 
       if (index > -1) {
+        // มีอยู่แล้ว -> เอาออก (ถ้าเหลือ 0 จะกลับไปเป็น All เอง)
         current.splice(index, 1);
       } else {
+        // ยังไม่มี -> ใส่เพิ่ม (All จะหายไป)
         current.push(value);
       }
 
@@ -160,6 +189,7 @@ export default {
         [key]: current,
       });
     },
+
     toggleSelectAll(key, options) {
       const isAll = this.isAllSelected(key, options);
       this.$emit("update:modelValue", {
@@ -167,21 +197,28 @@ export default {
         [key]: isAll ? [] : [...options],
       });
     },
+
     isAllSelected(key, options) {
-      return this.modelValue[key]?.length === options.length;
+      const selected = Array.isArray(this.modelValue[key]) ? this.modelValue[key] : [];
+      return selected.length === options.length && options.length > 0;
     },
+
     handleClickOutside(event) {
-      if (this.$refs.filterBox && !this.$refs.filterBox.contains(event.target)) {
+      if (
+        this.$refs.filterBox &&
+        !this.$refs.filterBox.contains(event.target)
+      ) {
         this.isOpen = false;
         this.openKey = null;
       }
-    }
+    },
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
-  }
+  },
 };
+
 </script>

@@ -2,65 +2,45 @@
     <section class="p-0">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <div class="flex-1">
-                <SearchBar
-                    v-model="searchInput"
-                    placeholder="Search Employee ID / Name / Nickname"
-                    @search="onSearchText"
-                />
+                <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname" @search="onSearchText"
+                    class="" />
             </div>
 
             <div class="flex items-stretch gap-2 flex-shrink-0 mt-[30px]">
-                <FilterEmployees
-                    ref="filterDropdown"
-                    v-model="filters"
-                    :options="optionsMap"
-                    @toggle="onFilterToggle"
-                    class="[&_button]:h-full"
-                />
+                <FilterEmployees ref="filterDropdown" v-model="filters" :options="optionsMap"
+                    class="[&_button]:h-full" />
 
-                <div ref="sortWrap" @click.stop class="flex items-center">
-                    <SortMenu
-                        :is-open="sortMenuOpen"
-                        :options="sortOptions"
-                        :sort-by="sortBy.key"
-                        :sort-order="sortBy.order"
-                        @toggle="toggleSort"
-                        @choose="onSortChoose"
-                        class="[&_button]:h-full transition-all duration-200 ease-in-out"
-                    />
+                <div ref="sortWrap" class="h-[58px]">
+                    <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                        :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose"
+                        class="[&_button]:h-full h-full" />
                 </div>
 
                 <AddButton @click="goAdd" class="h-full w-[44px] flex items-center justify-center" />
             </div>
         </div>
 
-        <DataTable
-            :rows="paged"
-            :columns="EmployeeTableColumns"
-            :page="page"
-            :pageSize="pageSize"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            @update:page="page = $event"
+        <DataTable :rows="paged" :columns="EmployeeTableColumns" :page="page" :pageSize="pageSize"
+            :total-items="sorted.length" :page-size-options="[10, 20, 50, 100]" @update:page="page = $event"
             @update:pageSize="
                 (s) => {
                     pageSize = s;
                     page = 1;
                 }
-            "
-            class="mt-4"
-        >
+            " class="mt-4">
             <template #actions="{ row }">
                 <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600"
-                    @click="editEmployee(row.emp_id)" title="Edit">
+                    @click="editEmployee(row.emp_id)" title="Edit" aria-label="edit">
                     <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
                 </button>
 
                 <button :disabled="!canDelete" class="grid h-8 w-8 place-items-center rounded-full transition
-                   text-neutral-800 cursor-pointer hover:text-red-600 disabled:text-neutral-400
-                   disabled:cursor-not-allowed disabled:opacity-40"
-                    @click="openDelete(row.emp_id)"
-                    :title="canDelete ? 'Delete' : 'You do not have permission'">
+           text-neutral-800 cursor-pointer
+           hover:text-red-600
+           disabled:text-neutral-400
+           disabled:cursor-not-allowed
+           disabled:opacity-40" @click="openDelete(row.emp_id)"
+                    :title="canDelete ? 'Delete' : 'You do not have permission'" aria-label="delete">
                     <Icon icon="fluent:delete-12-filled" width="20" height="20" />
                 </button>
             </template>
@@ -72,16 +52,16 @@
 
         <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
             message="This employee will be deleted permanently. Are you sure?" :show-cancel="true" okText="OK"
-            @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+            cancelText="Cancel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
 
         <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
-            message="Employee has been deleted successfully." @confirm="onConfirmSuccess" />
+            message="Employee has been deleted successfully." :show-cancel="false" okText="OK"
+            @confirm="onConfirmSuccess" />
 
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
-            @confirm="onConfirmFail" />
+            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
     </section>
 </template>
-
 <script>
 import axios from "axios";
 import { Icon } from "@iconify/vue";
@@ -92,10 +72,19 @@ import AddButton from "@/components/AddButton.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
 import FilterEmployees from "@/components/Button/FilterEmployees.vue";
 
+axios.defaults.baseURL = "/api";
+axios.defaults.headers.common["Accept"] = "application/json";
+
 export default {
     name: "EmployeesPage",
     components: {
-        Icon, SearchBar, DataTable, SortMenu, AddButton, ModalAlert, FilterEmployees,
+        Icon,
+        SearchBar,
+        DataTable,
+        SortMenu,
+        AddButton,
+        ModalAlert,
+        FilterEmployees,
     },
     data() {
         return {
@@ -106,17 +95,23 @@ export default {
             showModalFail: false,
             searchInput: "",
             search: "",
-            // ✅ แก้ไข: เปลี่ยนจาก "all" เป็น Array ว่าง []
+
+            // ---------------------------------------------------------
+            // [แก้ไขจุดที่ 1] เปลี่ยนค่าเริ่มต้นเป็น Array ว่าง []
+            // เพื่อรองรับ Multi-select (ถ้าว่าง = All)
+            // ---------------------------------------------------------
             filters: {
                 "Company ID": [],
                 department: [],
                 team: [],
                 position: []
             },
+
             page: 1,
             pageSize: 10,
             sortMenuOpen: false,
             sortBy: { key: "", order: "" },
+
             sortOptions: [
                 { key: "emp_firstname", order: "asc", label: "ชื่อพนักงาน A–Z" },
                 { key: "emp_firstname", order: "desc", label: "ชื่อพนักงาน Z–A" },
@@ -130,7 +125,7 @@ export default {
                 { key: "created_at", order: "asc", label: "วันที่เพิ่มเก่าสุด" },
             ],
             EmployeeTableColumns: [
-                { key: "emp_id", label: "ID", class: "text-left w-[100px]" },
+                { key: "emp_id", label: "Employee ID", class: "text-left w-[140px]" },
                 { key: "emp_fullname", label: "Name", class: "text-left w-[180px]" },
                 { key: "emp_nickname", label: "Nickname", class: "text-left w-[120px]" },
                 { key: "emp_phone", label: "Phone", class: "text-left w-[140px]" },
@@ -139,7 +134,7 @@ export default {
                 { key: "position_name", label: "Position", class: "text-left w-[140px]" },
                 {
                     key: "created_at",
-                    label: "Created date (D/M/Y)",
+                    label: "Date Add (D/M/Y)",
                     class: "text-center w-[160px]",
                     format: (v) => (v ? new Date(v).toLocaleDateString("en-GB") : "-"),
                 },
@@ -148,7 +143,9 @@ export default {
     },
     watch: {
         filters: {
-            handler() { this.page = 1; },
+            handler() {
+                this.page = 1;
+            },
             deep: true,
         },
     },
@@ -171,38 +168,68 @@ export default {
         },
         optionsMap() {
             return {
-                "Company ID": [...new Set(this.employees.map((e) => e.company_id).filter((v) => v && v !== "-"))],
-                department: [...new Set(this.employees.map((e) => e.department_name).filter(Boolean))],
-                team: [...new Set(this.employees.map((e) => e.team_name).filter(Boolean))],
-                position: [...new Set(this.employees.map((e) => e.position_name).filter(Boolean))],
+                "Company ID": [
+                    ...new Set(
+                        this.employees
+                            .map((e) => e.company_id)
+                            .filter((v) => v && v !== "-")
+                    ),
+                ],
+                department: [
+                    ...new Set(this.employees.map((e) => e.department_name).filter(Boolean)),
+                ],
+                team: [
+                    ...new Set(this.employees.map((e) => e.team_name).filter(Boolean)),
+                ],
+                position: [
+                    ...new Set(this.employees.map((e) => e.position_name).filter(Boolean)),
+                ],
             };
         },
         filtered() {
             let result = this.employees;
 
-            // 1. Text Search
+            // 1. Text Search (Logic เดิม)
             if (this.search) {
                 const q = this.search.toLowerCase();
                 result = result.filter((e) => {
-                    const fullName = (e.emp_fullname || "").toLowerCase();
-                    const nickname = (e.emp_nickname || "").toLowerCase();
-                    const empId = (e.emp_id || "").toString().toLowerCase();
-                    const compId = (e.company_id || "").toString().toLowerCase();
-                    return empId.includes(q) || fullName.includes(q) || nickname.includes(q) || compId.includes(q);
+                    const fullName = `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""}`.toLowerCase();
+                    const nickname = (e.emp_nickname ?? "").toLowerCase();
+                    const empId = (e.emp_id ?? "").toString().toLowerCase();
+                    const compId = (e.company_id ?? "").toString().toLowerCase();
+
+                    return (
+                        empId.includes(q) ||
+                        fullName.includes(q) ||
+                        nickname.includes(q) ||
+                        compId.includes(q)
+                    );
                 });
             }
 
-            // 2. Dropdown Filters (✅ แก้ไข Logic การ Filter เป็นแบบ Array)
-            if (this.filters.department.length > 0) {
+            // ---------------------------------------------------------
+            // [แก้ไขจุดที่ 2] เปลี่ยน Logic การ Filter เป็นแบบ Multi-Select
+            // เงื่อนไข: ถ้า Array มีสมาชิก (length > 0) ให้เช็คว่าค่าของ row
+            // อยู่ใน Array นั้นหรือไม่ (includes)
+            // ---------------------------------------------------------
+
+            // Department
+            if (this.filters.department && this.filters.department.length > 0) {
                 result = result.filter((e) => this.filters.department.includes(e.department_name));
             }
-            if (this.filters.team.length > 0) {
+
+            // Team
+            if (this.filters.team && this.filters.team.length > 0) {
                 result = result.filter((e) => this.filters.team.includes(e.team_name));
             }
-            if (this.filters.position.length > 0) {
+
+            // Position
+            if (this.filters.position && this.filters.position.length > 0) {
                 result = result.filter((e) => this.filters.position.includes(e.position_name));
             }
-            if (this.filters["Company ID"].length > 0) {
+
+            // Company ID
+            if (this.filters["Company ID"] && this.filters["Company ID"].length > 0) {
                 result = result.filter((e) => this.filters["Company ID"].includes(e.company_id));
             }
 
@@ -211,6 +238,7 @@ export default {
         sorted() {
             const { key, order } = this.sortBy;
             if (!key) return this.filtered;
+
             const dir = order === "asc" ? 1 : -1;
             return this.filtered.slice().sort((a, b) => {
                 if (key.includes("create")) {
@@ -224,7 +252,10 @@ export default {
             });
         },
         paged() {
-            return this.sorted.slice((this.page - 1) * this.pageSize, this.page * this.pageSize);
+            return this.sorted.slice(
+                (this.page - 1) * this.pageSize,
+                this.page * this.pageSize
+            );
         },
     },
     methods: {
@@ -232,12 +263,19 @@ export default {
             try {
                 const res = await axios.get("/get-employees");
                 const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+
                 this.employees = data.map((e) => {
+                    // Logic ตัดตัวเลขออกจาก emp_id เพื่อสร้าง Company ID (Logic เดิม)
                     let extractedId = "-";
                     if (e.emp_id) {
                         const match = e.emp_id.toString().match(/^[A-Za-zก-๙-]+/);
-                        extractedId = match ? match[0] : e.emp_id.toString().replace(/[0-9]/g, '');
+                        if (match) {
+                            extractedId = match[0];
+                        } else {
+                            extractedId = e.emp_id.toString().replace(/[0-9]/g, '');
+                        }
                     }
+
                     return {
                         ...e,
                         company_id: extractedId || "-",
@@ -250,28 +288,23 @@ export default {
                 console.error("Error fetching employees", err);
             }
         },
-        goAdd() { this.$router.push("/add-employee"); },
-        toggleSort() {
-            this.sortMenuOpen = !this.sortMenuOpen;
-            if (this.sortMenuOpen && this.$refs.filterDropdown) {
-                // ต้องมั่นใจว่าใน FilterEmployees มี method close()
-                this.$refs.filterDropdown.close();
-            }
-        },
-        onFilterToggle() {
-            this.sortMenuOpen = false;
+        goAdd() {
+            this.$router.push("/add-employee");
         },
         onSortChoose(option) {
-            if (!option || !option.key) return;
-            this.sortBy = (this.sortBy.key === option.key && this.sortBy.order === option.order)
-                ? { key: "", order: "" }
-                : { key: option.key, order: option.order };
+            if (!option || !option.key || !option.order) return;
+            if (this.sortBy.key === option.key && this.sortBy.order === option.order) {
+                this.sortBy = { key: "", order: "" };
+            } else {
+                this.sortBy = { key: option.key, order: option.order };
+            }
             this.page = 1;
             this.sortMenuOpen = false;
         },
         onDocClick(e) {
             if (!this.sortMenuOpen) return;
-            if (this.$refs.sortWrap && !this.$refs.sortWrap.contains(e.target)) {
+            const wrap = this.$refs.sortWrap;
+            if (wrap && !wrap.contains(e.target)) {
                 this.sortMenuOpen = false;
             }
         },
@@ -279,32 +312,54 @@ export default {
             this.search = this.searchInput.trim();
             this.page = 1;
             if (this.$refs.filterDropdown) {
-                this.$refs.filterDropdown.close();
+                // ถ้า Component FilterEmployees มี method close() ให้เรียกใช้ได้
+                // แต่ถ้าไม่มี (ตามโค้ดล่าสุดไม่มี method close) บรรทัดนี้อาจ error ได้
+                // สามารถคอมเมนต์ออก หรือเพิ่ม method close() ใน FilterEmployees.vue ก็ได้ครับ
+                if(typeof this.$refs.filterDropdown.close === 'function') {
+                     this.$refs.filterDropdown.close();
+                }
             }
         },
-        editEmployee(id) { this.$router.push(`/edit-employee/${id}`); },
+        editEmployee(id) {
+            if (!id) return;
+            this.$router.push(`/edit-employee/${id}`);
+        },
         openDelete(id) {
             this.deleteId = id;
             this.showModalAsk = true;
         },
         async onConfirmDelete() {
+            const id = this.deleteId;
+            if (!id) return;
+            const userStorage = localStorage.getItem("userData");
+            const currentUser = userStorage ? JSON.parse(userStorage) : {};
+            const myId = currentUser.emp_id;
+
             try {
-                const user = JSON.parse(localStorage.getItem("userData") || "{}");
-                await axios.put(`/employees/soft-delete/${this.deleteId}`, {
-                    emp_delete_by: user.emp_id,
+                await axios.put(`/employees/soft-delete/${id}`, {
+                    emp_delete_by: myId,
                     emp_delete_status: "deleted",
                 });
                 this.showModalAsk = false;
                 this.showModalSuccess = true;
-                this.employees = this.employees.filter((e) => e.emp_id !== this.deleteId);
+                this.employees = this.employees.filter((e) => e.emp_id !== id);
+                this.deleteId = null;
             } catch (err) {
+                console.error("Delete failed:", err);
                 this.showModalAsk = false;
                 this.showModalFail = true;
             }
         },
-        onCancelDelete() { this.showModalAsk = false; },
-        onConfirmSuccess() { this.showModalSuccess = false; },
-        onConfirmFail() { this.showModalFail = false; },
+        onCancelDelete() {
+            this.showModalAsk = false;
+            this.deleteId = null;
+        },
+        onConfirmSuccess() {
+            this.showModalSuccess = false;
+        },
+        onConfirmFail() {
+            this.showModalFail = false;
+        },
     },
 };
 </script>
