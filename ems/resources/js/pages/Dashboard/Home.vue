@@ -65,44 +65,19 @@
   <!-- DataTable -->
   <DataTable
     :rows="paged"
-    :columns="eventTableColumns"
-    :loading="false"
-    :total-items="sorted.length"
-    :page-size-options="[10, 20, 50, 100]"
-    :page="page"
-    :pageSize="pageSize"
-    :sortKey="sortBy"
-    :sortOrder="sortOrder"
-    @update:page="page = $event"
-    @update:pageSize="pageSize = $event; page = 1;"
-    @sort="handleClientSort"
-    row-key="id"
-    :show-row-number="false"
-    :row-class="getRowClass"
-    class="mt-4">
+  :columns="eventTableColumns"
+  rowKey="id"
+  selectable
+  v-model="selectedEventIdsArray"
+  :totalItems="sorted.length"
+  v-model:page="page"
+  v-model:pageSize="pageSize"
+  v-model:sortKey="sortBy"
+  v-model:sortOrder="sortOrder"
+  @sort="handleClientSort"
+  @checkbox-checkin="handleEventCheck"
+  @check-all-page="handleCheckAllEvents" >
 
-    <!-- Header checkbox for select all -->
-    <template #header-checkbox>
-      <input
-        type="checkbox"
-        :checked="selectAll"
-        @change="selectAllEvents"
-      />
-    </template>
-
-    <!-- Checkbox column for multi-select -->
-    <template #cell-checkbox="{ row }">
-      <input
-        type="checkbox"
-        :checked="selectedEventIds.has(row.id || row.evn_id)"
-        @change="toggleEventSelection(row)"
-      />
-    </template>
-
-    <!-- Row number column -->
-    <template #cell-row_number="{ value }">
-      {{ value }}
-    </template>
 
     <!-- Title cell (clickable) -->
     <template #cell-evn_title="{ row, value }">
@@ -255,10 +230,9 @@
     v-model:page="currentPage"
     v-model:pageSize="itemsPerPage"
     :totalItems="totalEmployees"
-    :pageSizeOptions="[10, 25, 50, 100]"
+    :pageSizeOptions="[10, 20, 50, 100]"
     rowKey="unique_key"
     :showRowNumber="true"
-    class="mt-6"
   >
     <template #empty>
       <div class="py-6 text-center text-neutral-700">
@@ -620,8 +594,8 @@ export default {
         {
           key: "checkbox",
           label: "",
-          class: "w-12 text-center",
-          headerClass: "w-12",
+          class: "text-center",
+          headerClass: "",
         },
         {
           key: "row_number",
