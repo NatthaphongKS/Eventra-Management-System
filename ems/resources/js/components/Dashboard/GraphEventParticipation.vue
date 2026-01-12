@@ -233,7 +233,7 @@ export default {
     padding-left: 16px;
 
     /* [เจอสักที omg ส่วนนี้ถ้าไม่กำหนด แล้วใช้ flex กล่องก็ขยายไปเรื่อย scroll bar ไม่ขึ้นสักที ] */
-    max-width: 560px;
+    max-width: 100%;
 
     /* Webkit Scrollbar Logic */
     scrollbar-width: thin;
