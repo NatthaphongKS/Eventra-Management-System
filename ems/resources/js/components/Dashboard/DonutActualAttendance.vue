@@ -97,12 +97,20 @@ export default {
       return this.circumference - (percentage / 100) * this.circumference;
     },
     displayAttendance() {
-      // Use props data directly
+      // Use props data from parent
       return this.attendanceData?.attending || 0;
     },
     displayTotal() {
-      // Use props data directly
+      // Use props data from parent
       return this.attendanceData?.total || 0;
+    }
+  },
+  watch: {
+    loading: {
+      handler(newVal) {
+        this.isLoading = newVal;
+      },
+      immediate: true
     }
   },
   methods: {}
