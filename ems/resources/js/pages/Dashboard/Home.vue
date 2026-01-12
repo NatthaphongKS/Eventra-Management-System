@@ -74,6 +74,7 @@
   v-model:pageSize="pageSize"
   v-model:sortKey="sortBy"
   v-model:sortOrder="sortOrder"
+  class="mt-4"
   @sort="handleClientSort"
   @checkbox-checkin="handleEventCheck"
   @check-all-page="handleCheckAllEvents" >
@@ -82,7 +83,7 @@
     <!-- Title cell (clickable) -->
     <template #cell-evn_title="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)"
@@ -94,7 +95,7 @@
     <!-- Category cell (clickable) -->
     <template #cell-cat_name="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -105,7 +106,7 @@
     <!-- Invited cell (clickable) -->
     <template #cell-evn_num_guest="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -116,7 +117,7 @@
     <!-- Accepted cell (clickable) -->
     <template #cell-evn_sum_accept="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -127,7 +128,7 @@
     <!-- Status cell (with badge) -->
     <template #cell-evn_status="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -188,7 +189,7 @@
 
     <!-- Status Cards Row (Bottom) -->
     <div class="lg:col-span-12">
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3 ">
         <div class="h-full">
           <AttendingCard
             :attending="chartData.attending || 0"
@@ -599,9 +600,9 @@ export default {
         {
           key: "evn_title",
           label: "Event",
-          class: "text-left",
+          class: "text-left h-[60px]",
           headerClass: "w-[450px]",
-          cellClass: "pl-3 text-slate-800 font-medium truncate",
+          cellClass: "pl-3",
           sortable: true,
         },
         {
@@ -622,7 +623,7 @@ export default {
         {
           key: "evn_timestart",
           label: "Time",
-          class: "w-[110px] text-center whitespace-nowrap justify-center",
+          class: "w-[110px] whitespace-nowrap ",
           cellClass: "justify-center",
           format: (v, r) => this.timeText(v, r.evn_timeend),
         },
@@ -651,7 +652,7 @@ export default {
         {
           key: "emp_id",
           label: "ID",
-          class: "w-20 text-center",
+          class: "w-20 h-[60px] text-center",
           cellClass: "text-center",
           format: (v) => v || 'N/A',
         },
