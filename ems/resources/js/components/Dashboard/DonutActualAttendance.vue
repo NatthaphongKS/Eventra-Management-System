@@ -60,21 +60,21 @@
               <stop offset="100%" stop-color="#00A73D" />
             </linearGradient>
             <defs>
-  <filter
-    id="softDonutShadow"
-    x="-15%"
-    y="-15%"
-    width="130%"
-    height="130%"
-  >
-    <feDropShadow
-      dx="0"
-      dy="4"
-      stdDeviation="2"
-      flood-color="rgba(0,0,0,0.25)"
-    />
-  </filter>
-</defs>
+          <filter
+            id="softDonutShadow"
+            x="-15%"
+            y="-15%"
+            width="130%"
+            height="130%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="4"
+              stdDeviation="2"
+              flood-color="rgba(0,0,0,0.25)"
+            />
+          </filter>
+        </defs>
 
           </defs>
         </svg>
