@@ -125,7 +125,7 @@ class EventController extends Controller
             ->orderBy('id', 'asc')
             ->get() //ส่วนดึงข้อมูลจาก DB
             ->map(function ($f) { //ใช้สร้าง URL ให้ frontend โหลดไฟล์จริง ต้องมี php artisan storage:link
-    
+
                 //ข้อมูลจาก file_path ก่อน Map { id: 1, file_name: "contract.pdf", file_path: "events/12/contract.pdf", file_size: 120000 }
                 $f->url = asset('storage/' . $f->file_path); //เพิ่มข้อมูล Link url เข้าไป เพื่อให้ frontend  url: "http://localhost:8000/storage/events/12/contract.pdf"
                 return $f;
@@ -336,65 +336,64 @@ class EventController extends Controller
      * - แนบไฟล์ใน Mailable จาก path ที่อัปโหลด
      */
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'event_title' => 'required|string|max:255',
-            'event_category_id' => 'required|exists:ems_categories,id',
-            'event_description' => 'nullable|string',
-            'event_date' => 'required|date',
-            'event_timestart' => 'required|date_format:H:i',
-            'event_timeend' => 'required|date_format:H:i',
-            'event_duration' => 'required|integer|min:0',
-            'event_location' => 'required|string|max:255',
-            'attachments' => 'nullable|array',
-            'attachments.*' => 'file|max:51200|mimes:pdf,txt,doc,docx,jpg,jpeg,png,xlsx,xls',
-            'employee_ids' => 'required|array|min:1',
-            'employee_ids.*' => 'integer|exists:ems_employees,id',
-        ]);
+{
+    $data = $request->validate([
+        'event_title' => 'required|string|max:255',
+        'event_category_id' => 'required|exists:ems_categories,id',
+        'event_description' => 'nullable|string',
+        'event_date' => 'required|date',
+        'event_timestart' => 'required|date_format:H:i',
+        'event_timeend' => 'required|date_format:H:i',
+        'event_duration' => 'required|integer|min:0',
+        'event_location' => 'required|string|max:255',
+        'attachments' => 'nullable|array',
+        'attachments.*' => 'file|max:51200|mimes:pdf,txt,doc,docx,jpg,jpeg,png,xlsx,xls',
 
-        try {
-            return DB::transaction(function () use ($request, $data) {
+        // ---  ปรับ Validation ---
+        'employee_ids' => 'nullable|array', // เปลี่ยน required -> nullable, ลบ min:1 ออก
+        'employee_ids.*' => 'integer|exists:ems_employees,id',
+    ]);
 
-                // 1) สร้างกิจกรรม
-                $event = Event::create([
-                    'evn_title' => $data['event_title'],
-                    'evn_category_id' => $data['event_category_id'],
-                    'evn_description' => $data['event_description'] ?? null,
-                    'evn_date' => $data['event_date'],
-                    'evn_timestart' => $data['event_timestart'],
-                    'evn_timeend' => $data['event_timeend'],
-                    'evn_duration' => $data['event_duration'],
-                    'evn_location' => $data['event_location'],
-                    'evn_file' => $request->hasFile('attachments') ? 'have' : 'not_have',
-                    'evn_create_by' => Auth::id(),
-                    'evn_status' => 'upcoming',
-                ]);
+    try {
+        return DB::transaction(function () use ($request, $data) {
 
-                // 2) จัดการไฟล์แนบ (จุดที่แก้ไขให้ตรงกับ Model File)
-                // 2) จัดการไฟล์แนบ
-                // 2) จัดการไฟล์แนบ
-                $savedFiles = [];
-                if ($request->hasFile('attachments')) {
-                    foreach ($request->file('attachments') as $file) {
-                        // เก็บไฟล์ลง storage
-                        $path = $file->store("events/{$event->id}", 'public');
+            // 1) สร้างกิจกรรม (เหมือนเดิม)
+            $event = Event::create([
+                'evn_title' => $data['event_title'],
+                'evn_category_id' => $data['event_category_id'],
+                'evn_description' => $data['event_description'] ?? null,
+                'evn_date' => $data['event_date'],
+                'evn_timestart' => $data['event_timestart'],
+                'evn_timeend' => $data['event_timeend'],
+                'evn_duration' => $data['event_duration'],
+                'evn_location' => $data['event_location'],
+                'evn_file' => $request->hasFile('attachments') ? 'have' : 'not_have',
+                'evn_create_by' => Auth::id(),
+                'evn_status' => 'upcoming',
+            ]);
 
-                        // บันทึกข้อมูลลงฐานข้อมูล
-                        // มั่นใจว่าได้ย้าย public function files() ไปไว้ที่ Model Event แล้ว
-                        $fileRecord = $event->files()->create([
-                            'file_name' => (string) $file->getClientOriginalName(),
-                            'file_path' => (string) $path, // บังคับ casting ป้องกันค่ากลายเป็น 0
-                            'file_type' => (string) $file->getClientMimeType(),
-                            'file_size' => $file->getSize(),
-                            'uploaded_at' => now(), // เปลี่ยนจาก file_upload_at เป็น uploaded_at ตามภาพ DB
-                        ]);
-
-                        $savedFiles[] = $fileRecord;
-                    }
+            // 2) จัดการไฟล์แนบ (เหมือนเดิม)
+            $savedFiles = [];
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $path = $file->store("events/{$event->id}", 'public');
+                    $fileRecord = $event->files()->create([
+                        'file_name' => (string) $file->getClientOriginalName(),
+                        'file_path' => (string) $path,
+                        'file_type' => (string) $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'uploaded_at' => now(),
+                    ]);
+                    $savedFiles[] = $fileRecord;
                 }
+            }
 
-                // 3) ผูกพนักงาน
-                $connectRows = collect($data['employee_ids'])
+            // --- เตรียมตัวแปร employee_ids (ป้องกันกรณีไม่มี key นี้ส่งมา) ---
+            $employeeIds = $data['employee_ids'] ?? [];
+
+            // ---เช็คก่อนว่ามีพนักงานไหม ก่อนจะบันทึก Connect ---
+            if (!empty($employeeIds)) {
+                $connectRows = collect($employeeIds)
                     ->unique()
                     ->map(fn($eid) => [
                         'con_employee_id' => $eid,
@@ -404,9 +403,11 @@ class EventController extends Controller
                     ])->all();
 
                 $event->connects()->createMany($connectRows);
+            }
 
-                // 4) ส่งอีเมล (ส่งก้อนไฟล์แนบไปด้วย)
-                $employees = Employee::whereIn('id', $data['employee_ids'])
+            // --- เช็คก่อนว่ามีพนักงานไหม ก่อนจะส่งเมล ---
+            if (!empty($employeeIds)) {
+                $employees = Employee::whereIn('id', $employeeIds)
                     ->get(['id', 'emp_email', 'emp_firstname', 'emp_lastname']);
 
                 foreach ($employees as $emp) {
@@ -415,18 +416,19 @@ class EventController extends Controller
                         Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $savedFiles, $formURL));
                     }
                 }
+            }
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'สร้างกิจกรรมเรียบร้อยแล้ว',
-                    'event_id' => $event->id
-                ], 201);
-            });
-        } catch (\Exception $e) {
-            Log::error('Create Event Error: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
+            return response()->json([
+                'success' => true,
+                'message' => 'สร้างกิจกรรมเรียบร้อยแล้ว',
+                'event_id' => $event->id
+            ], 201);
+        });
+    } catch (\Exception $e) {
+        Log::error('Create Event Error: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
+}
 
     /**
      * ตารางกิจกรรม (server-side query + ค้นหา + เรียงลำดับ)
