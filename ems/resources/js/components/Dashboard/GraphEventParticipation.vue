@@ -31,7 +31,7 @@
         <!-- Selected -->
         <button
           @click="isOpen = !isOpen"
-          class="flex w-full h-[48px] items-center justify-between rounded-[20px] border border-neutral-300 bg-white px-5 py-3 text-[22px] font-semibold text-neutral-700"
+          class="flex w-full h-[48px] items-center justify-between rounded-[20px] border border-neutral-300 bg-white px-5 py-3 text-[18px] font-semibold text-neutral-700"
         >
           {{ viewType === 'team' ? 'Team' : 'Department' }}
 
@@ -67,7 +67,7 @@
             @click="select('department')"
             class="mt-1 cursor-pointer rounded-xl px-4 py-3 text-[20px] h-[48px] font-medium"
             :class="viewType === 'department'
-              ? 'bg-roredse-100 text-neutral-800'
+              ? 'bg-red-100 text-neutral-800'
               : 'text-neutral-500 hover:bg-neutral-100'"
           >
             Department
@@ -172,6 +172,7 @@ export default {
   },
   data() {
     return {
+    isOpen: false, 
       viewType: "department",
       originalDepartments: [],
       originalTeams: [],
@@ -207,6 +208,11 @@ export default {
     },
   },
   methods: {
+    select(type) {
+    this.viewType = type;
+    this.isOpen = false;
+    this.updateDisplayData();
+  },
     getMaxValue() {
       if (this.filteredData.length === 0) return 10;
       let maxSingleValue = 0;
