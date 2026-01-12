@@ -421,6 +421,15 @@ export default {
   },
 
   computed: {
+       selectedEventIdsArray: {
+    get() {
+      return Array.from(this.selectedEventIds);
+    },
+    set(val) {
+      this.selectedEventIds = new Set(val);
+      this.showStatistics = false;
+    }
+  },
     normalized() {
       return this.event.map(e => {
         // ดึง category ID ที่ถูกต้อง
@@ -435,6 +444,7 @@ export default {
 
         return {
           ...e,
+          id: e.id ?? e.evn_id,
           evn_title: e.evn_title ?? e.evn_name ?? "",
           evn_cat_id: catId,
           cat_name: catName || "ไม่มีหมวดหมู่",
@@ -584,25 +594,8 @@ export default {
         row_number: start + index + 1
       }));
     },
-    // Check if all visible rows on current page are selected
-    selectAll() {
-      if (this.paged.length === 0) return false;
-      return this.paged.every(row => this.selectedEventIds.has(row.id || row.evn_id));
-    },
     eventTableColumns() {
       return [
-        {
-          key: "checkbox",
-          label: "",
-          class: "text-center",
-          headerClass: "",
-        },
-        {
-          key: "row_number",
-          label: "#",
-          class: "w-12 text-center",
-          headerClass: "w-12",
-        },
         {
           key: "evn_title",
           label: "Event",
@@ -798,6 +791,28 @@ export default {
   },
 
   methods: {
+    handleEventCheck({ keys, checked }) {
+  keys.forEach(id => {
+    if (checked) {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+},
+
+handleCheckAllEvents({ pageKeys, action }) {
+  pageKeys.forEach(id => {
+    if (action === 'check') {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+},
+
     // Search handling
     handleSearch(searchValue) {
       this.search = searchValue;
@@ -1072,43 +1087,6 @@ export default {
       const eventId = row.id || row.evn_id;
       return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
     },
-    toggleEventSelection(event) {
-      const eventId = event.id || event.evn_id;
-      if (!eventId) {
-        console.error('No event ID found in:', event);
-        return;
-      }
-      if (this.selectedEventIds.has(eventId)) {
-        this.selectedEventIds.delete(eventId);
-      } else {
-        this.selectedEventIds.add(eventId);
-      }
-      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
-      this.showStatistics = false;
-    },
-    selectAllEvents(event) {
-      const isChecked = event.target.checked;
-
-      if (isChecked) {
-         // เลือกทุกอีเวนต์ในหน้าปัจจุบัน (Visible Page)
-        this.paged.forEach(row => {
-          const eventId = row.id || row.evn_id;
-          if (eventId) {
-            this.selectedEventIds.add(eventId);
-          }
-        });
-      } else {
-        // ยกเลิกการเลือกเฉพาะแถวที่แสดงในหน้าปัจจุบัน
-        this.paged.forEach(row => {
-          const eventId = row.id || row.evn_id;
-          if (eventId) {
-            this.selectedEventIds.delete(eventId);
-          }
-        });
-      }
-      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
-      this.showStatistics = false;
-    },
     // ดึงชื่ออีเวนต์มาแสดงผล
     getEventTitlesText() {
       if (this.selectedEventIds.size === 0) return 'N/A';
@@ -1175,10 +1153,6 @@ export default {
       } catch (_) {
         this.$router.push({ path: `/events/${id}` });
       }
-    },
-    onEventSelect(event) {
-      const eventId = event.id || event.evn_id;
-      if(eventId) this.toggleEventSelection(event);
     },
     async loadEventStatistics(eventId) {
       this.isLoading = true;
