@@ -2,7 +2,7 @@
   <div class="flex h-[516px] w-[604px] flex-col bg-white p-8 rounded-[20px] shadow-[0_10px_25px_-12px_rgba(0,0,0,0.25)]">
     <!-- Title -->
     <h3
-      class="mb-4 text-left font-semibold text-neutral-700 font-semibold text-2xl"
+      class="mb-4 text-left font-semibold text-neutral-700  text-2xl"
     >
       Actual Attendance
     </h3>
@@ -37,7 +37,7 @@
             stroke-width="36"
              filter="url(#softDonutShadow)"
           />
-          
+
 
           <!-- Progress -->
           <circle
@@ -50,7 +50,7 @@
             stroke-linecap="round"
             :stroke-dasharray="circumference"
             :stroke-dashoffset="strokeDashoffset"
-            class="transition-[stroke-dashoffset] duration-1000 ease-in-out"
+            class="transition-[stroke-dashoffset] duration-1000 ease-in-out "
           />
 
           <!-- Gradient -->
@@ -110,11 +110,11 @@
         <span
           class="text-base leading-snug text-neutral-500"
         >
-          Attended 
+          Attended
           <span class ="text-base font-semibold text-neutral-700 ">{{ attendancePercentage.toFixed(2) }}%</span>
            Actual attendance
           <span class ="text-base font-semibold text-neutral-700 ">{{ displayAttendance }}</span>
-           Person from 
+           Person from
            <span class ="text-base font-semibold text-neutral-700 ">{{ displayTotal }}</span>
         </span>
       </div>
