@@ -406,6 +406,16 @@ export default {
     await Promise.all([this.fetchEvent(), this.fetchCategories(), this.fetchEmployees()]);
   },
 
+  mounted() {
+    // เพิ่ม event listener สำหรับ auto-refresh เมื่อกลับมาที่หน้านี้
+    window.addEventListener('focus', this.handleWindowFocus);
+  },
+
+  beforeUnmount() {
+    // ลบ event listener เมื่อ component ถูกทำลาย
+    window.removeEventListener('focus', this.handleWindowFocus);
+  },
+
   watch: {
     search() {
       this.page = 1;
@@ -989,7 +999,7 @@ export default {
       console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
 
       if (this.selectedEventIds.size === 0) {
-        console.log('No events selected, resetting data');
+        console.log('❌ No events selected, resetting data');
         // รีเซ็ตเป็นค่าว่าง
         this.chartData = {
           total_participation: 0,
@@ -1009,12 +1019,17 @@ export default {
       try {
         const eventIds = Array.from(this.selectedEventIds);
 
-        console.log('Sending POST /event-statistics with event_ids:', eventIds);
+        console.log('📡 Sending POST /event-statistics with event_ids:', eventIds);
 
         // ดึงสถิติจาก API
         const res = await axios.post('/event-statistics', { event_ids: eventIds });
 
-        console.log('API Response:', res.data);
+        console.log('📊 API Response received:', res.data);
+        console.log('📊 Actual Attendance from API:', {
+          attended: res.data.actual_attendance?.attended,
+          total_assigned: res.data.actual_attendance?.total_assigned,
+          calculation: `${res.data.actual_attendance?.attended} / ${res.data.actual_attendance?.total_assigned}`
+        });
 
         if (res.data) {
           // อัพเดตข้อมูลกราฟ
@@ -1026,6 +1041,15 @@ export default {
             departments: res.data.departments || [],
             actual_attendance: res.data.actual_attendance || { attended: 0, total_assigned: 0 }
           };
+
+          console.log('✅ Chart data updated:', this.chartData);
+          console.log('📊 Donut will show:', {
+            attending: this.chartData.actual_attendance.attended,
+            total: this.chartData.actual_attendance.total_assigned,
+            percentage: this.chartData.actual_attendance.total_assigned > 0
+              ? ((this.chartData.actual_attendance.attended / this.chartData.actual_attendance.total_assigned) * 100).toFixed(2) + '%'
+              : '0%'
+          });
 
           // อัพเดตข้อมูลกราฟแท่ง
           this.participationData = {
@@ -1047,14 +1071,13 @@ export default {
           this.eventParticipants = res.data.participants || [];
           this.showEmployeeTable = true;
 
-          console.log('Chart data updated:', this.chartData);
-          console.log('Participation data updated:', this.participationData);
-          console.log('Participants count:', this.eventParticipants.length);
+          console.log('✅ Participation data updated:', this.participationData);
+          console.log('✅ Participants loaded:', this.eventParticipants.length);
         }
       } catch (err) {
-        console.error('Error fetching event statistics:', err);
-        console.error('Error response:', err.response?.data);
-        console.error('Error status:', err.response?.status);
+        console.error('❌ Error fetching event statistics:', err);
+        console.error('❌ Error response:', err.response?.data);
+        console.error('❌ Error status:', err.response?.status);
         // เกิดข้อผิดพลาด - รีเซ็ตเป็นค่าว่าง
         this.chartData = {
           total_participation: 0,
@@ -1232,35 +1255,34 @@ export default {
         return;
       }
 
-      console.log('showEmployeesByStatus called with status:', status);
       this.employeeTableType = status;
       this.showEmployeeTable = true;
+      
       try {
-        //  ตรวจสอบว่ามีข้อมูล participants หรือไม่
         if (!this.eventParticipants || this.eventParticipants.length === 0) {
-          console.warn('No participants data available');
+          console.warn('⚠️ No participants data available');
           this.filteredEmployeesForTable = [];
           return;
         }
 
         // กรองผู้เข้าร่วมตามสถานะ
         let filteredParticipants = [];
+        
         if (status === 'attending') {
-          // สำหรับผู้เข้าร่วม ใช้ con_answer = 'accepted' (ตอบรับ)
           filteredParticipants = this.eventParticipants.filter(participant => {
             return participant.status === 'accepted';
           });
         } else if (status === 'not-attending') {
-          // สำหรับไม่เข้าร่วม ใช้ con_answer = 'denied'
           filteredParticipants = this.eventParticipants.filter(participant => {
             return participant.status === 'denied';
           });
         } else if (status === 'pending') {
-          // สำหรับรอตอบกลับ: คนที่ยังไม่ตอบรับหรือปฏิเสธ
           filteredParticipants = this.eventParticipants.filter(participant => {
             return participant.status !== 'accepted' && participant.status !== 'denied';
           });
         }
+        
+        console.log(`📊 Filter: ${status} | Total: ${this.eventParticipants.length} → Filtered: ${filteredParticipants.length}`);
 
         // กรองข้อมูลซ้ำโดยใช้ Map กับ unique key (emp_id + event_id + status)
         const uniqueParticipants = new Map();
@@ -1310,13 +1332,7 @@ export default {
         // Reset pagination เมื่อโหลดข้อมูลใหม่
         this.currentPage = 1;
 
-        console.log(`Filtered ${filteredParticipants.length} raw participants`);
-        console.log(`After deduplication: ${this.filteredEmployeesForTable.length} unique participations for status: ${status}`);
-
-        // แสดงตัวอย่างข้อมูล 3 รายการแรกเพื่อ debug
-        if (this.filteredEmployeesForTable.length > 0) {
-          console.log('Sample data (first 3):', this.filteredEmployeesForTable.slice(0, 3));
-        }
+        console.log(`✅ Table rows: ${this.filteredEmployeesForTable.length}`);
 
       } catch (error) {
         console.error('Error loading employees:', error);
@@ -1362,6 +1378,30 @@ export default {
           summaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
+    },
+
+    // Handle window focus - auto refresh เมื่อกลับมาที่หน้านี้
+    handleWindowFocus() {
+      // ถ้ามีการแสดงสถิติอยู่ และมี event ที่เลือก ให้ refresh อัตโนมัติ
+      if (this.showStatistics && this.selectedEventIds.size > 0) {
+        console.log('🔄 Auto-refreshing data on window focus...');
+        this.fetchEventStatistics();
+      }
+    },
+
+    // Refresh data - อัพเดตข้อมูลล่าสุดหลังเช็คชื่อ
+    async refreshData() {
+      if (this.selectedEventIds.size === 0) {
+        return;
+      }
+
+      console.log('🔄 Refreshing data...');
+      
+      // เรียก fetch statistics อีกครั้งเพื่อดึงข้อมูลล่าสุด
+      await this.fetchEventStatistics();
+      
+      // แสดง notification (optional)
+      console.log('✅ Data refreshed successfully!');
     },
     // Export handlers
     handleExportStart() {
