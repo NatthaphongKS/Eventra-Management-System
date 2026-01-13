@@ -14,7 +14,7 @@
       />
     </div>
 
-    <!-- ✅ DatePicker -->
+    <!-- DatePicker -->
     <div class="flex gap-2 flex-shrink-20 mt-[30px] items-stretch">
       <!-- DatePicker -->
       <div class="h-[44px]">
@@ -367,7 +367,7 @@ export default {
         eventName: ''
       }
     };
-  }, // <--- แก้ไขจุดที่ผิด: เอา } ที่เกินมาออก และให้ created() อยู่ต่อจากนี้ภายใน object เดียวกัน
+  },
 
   async created() {
     await Promise.all([this.fetchEvent(), this.fetchCategories(), this.fetchEmployees()]);
@@ -653,7 +653,10 @@ export default {
           label: "Name",
           class: "w-32 text-left",
           cellClass: "text-left",
-          format: (v, row) => v || row.name || 'N/A',
+          format: (v, row) => {
+            const fullName = `${row.emp_prefix ?? ''} ${row.emp_firstname ?? ''} ${row.emp_lastname ?? ''}`.trim();
+            return fullName || 'N/A';
+          },
         },
         {
           key: "emp_nickname",
@@ -828,33 +831,33 @@ handleCheckAllEvents({ pageKeys, action }) {
     handleSort(sortData) {
       this.handleClientSort(sortData);
     },
-    // เมธอดคำนวณข้อมูลสำหรับแสดงกราฟ (ย้ายมาจาก computed)
-    getAttendingProgress() {
-      if (this.chartData.total_participation === 0) return 0;
-      return Math.round((this.chartData.attending / this.chartData.total_participation) * 251);
-    },
-    getNotAttendingProgress() {
-      if (this.chartData.total_participation === 0) return 0;
-      return Math.round((this.chartData.not_attending / this.chartData.total_participation) * 251);
-    },
-    getPendingProgress() {
-      if (this.chartData.total_participation === 0) return 0;
-      return Math.round((this.chartData.pending / this.chartData.total_participation) * 251);
-    },
-    getAttendingPercentage() {
-      return Math.round((this.chartData.attending / 100) * 251);
-    },
-    getNotAttendingPercentage() {
-      return Math.round((this.chartData.not_attending / 100) * 251);
-    },
-    getPendingPercentage() {
-      return Math.round((this.chartData.pending / 100) * 251);
-    },
-    getAttendancePercentage() {
-      const total = this.chartData.attending + this.chartData.not_attending + this.chartData.pending;
-      if (total === 0) return 0;
-      return Math.round((this.chartData.attending / total) * 100);
-    },
+    // UNUSED - เมธอดคำนวณข้อมูลสำหรับแสดงกราฟ (ไม่ได้ใช้ใน template)
+    // getAttendingProgress() {
+    //   if (this.chartData.total_participation === 0) return 0;
+    //   return Math.round((this.chartData.attending / this.chartData.total_participation) * 251);
+    // },
+    // getNotAttendingProgress() {
+    //   if (this.chartData.total_participation === 0) return 0;
+    //   return Math.round((this.chartData.not_attending / this.chartData.total_participation) * 251);
+    // },
+    // getPendingProgress() {
+    //   if (this.chartData.total_participation === 0) return 0;
+    //   return Math.round((this.chartData.pending / this.chartData.total_participation) * 251);
+    // },
+    // getAttendingPercentage() {
+    //   return Math.round((this.chartData.attending / 100) * 251);
+    // },
+    // getNotAttendingPercentage() {
+    //   return Math.round((this.chartData.not_attending / 100) * 251);
+    // },
+    // getPendingPercentage() {
+    //   return Math.round((this.chartData.pending / 100) * 251);
+    // },
+    // getAttendancePercentage() {
+    //   const total = this.chartData.attending + this.chartData.not_attending + this.chartData.pending;
+    //   if (total === 0) return 0;
+    //   return Math.round((this.chartData.attending / total) * 100);
+    // },
     async fetchEmployees() {
       try {
         const res = await axios.get("/get-employees", {
@@ -935,20 +938,22 @@ handleCheckAllEvents({ pageKeys, action }) {
         this.catMap = {};
       }
     },
-    goToPage(p) {
-      if (p < 1) p = 1;
-      if (p > this.totalPages) p = this.totalPages || 1;
-      this.page = p;
-    },
-    editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
-      this.$router.push(`/edit-event/${id}`)
-    },
-    async deleteEvent(id) {
-      if (confirm("Delete?")) {
-        try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
-        catch (err) { console.error("Error deleting event", err); }
-      }
-    },
+    // UNUSED - ใช้ DataTable component pagination แทน
+    // goToPage(p) {
+    //   if (p < 1) p = 1;
+    //   if (p > this.totalPages) p = this.totalPages || 1;
+    //   this.page = p;
+    // },
+    // UNUSED - ไม่มีปุ่ม Edit/Delete ใน template
+    // editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
+    //   this.$router.push(`/edit-event/${id}`)
+    // },
+    // async deleteEvent(id) {
+    //   if (confirm("Delete?")) {
+    //     try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
+    //     catch (err) { console.error("Error deleting event", err); }
+    //   }
+    // },
     formatDate(val) {
       if (!val) return 'N/A';
       const d = new Date(val); if (isNaN(d)) return val;
@@ -957,40 +962,42 @@ handleCheckAllEvents({ pageKeys, action }) {
       const yyyy = d.getFullYear();
       return `${dd}/${mm}/${yyyy}`;
     },
-    goToEmpPage(p) {
-      if (p < 1) p = 1;
-      if (p > this.empTotalPages) p = this.empTotalPages || 1;
-      this.empPage = p;
-    },
-    setEmpSort(value) {
-      const order = value.startsWith('-') ? 'desc' : 'asc';
-      const key = value.replace(/^-/, '');
-      this.empSort = { value: key, order };
-      this.empPage = 1;
-    },
-    onViewReport() {
-      // ฟังก์ชันสำหรับดูรายงาน
-    },
-    onExport() {
-      // ฟังก์ชันสำหรับ export ข้อมูล
-    },
-    onAddEvent() {
-      // ฟังก์ชันสำหรับเพิ่ม event ใหม่
-      console.log('Add Event clicked!');
-      this.$router.push('/create-event');
-    },
-    // Date filter method
-    filterByDate() {
-      // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
-      // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
-      this.page = 1;
-    },
+    // UNUSED - Employee pagination เก่า (ใช้ DataTable component แทน)
+    // goToEmpPage(p) {
+    //   if (p < 1) p = 1;
+    //   if (p > this.empTotalPages) p = this.empTotalPages || 1;
+    //   this.empPage = p;
+    // },
+    // setEmpSort(value) {
+    //   const order = value.startsWith('-') ? 'desc' : 'asc';
+    //   const key = value.replace(/^-/, '');
+    //   this.empSort = { value: key, order };
+    //   this.empPage = 1;
+    // },
+    // UNUSED - ไม่มีปุ่มนี้ใน template
+    // onViewReport() {
+    //   // ฟังก์ชันสำหรับดูรายงาน
+    // },
+    // onExport() {
+    //   // ฟังก์ชันสำหรับ export ข้อมูล - ใช้ ExportDropdown component แทน
+    // },
+    // onAddEvent() {
+    //   // ฟังก์ชันสำหรับเพิ่ม event ใหม่
+    //   console.log('Add Event clicked!');
+    //   this.$router.push('/create-event');
+    // },
+    // UNUSED - Date filter ทำโดย computed property filtered อัตโนมัติ
+    // filterByDate() {
+    //   // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
+    //   // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
+    //   this.page = 1;
+    // },
     // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
     async fetchEventStatistics() {
       console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
 
       if (this.selectedEventIds.size === 0) {
-        console.log('❌ No events selected, resetting data');
+        console.log('No events selected, resetting data');
         // รีเซ็ตเป็นค่าว่าง
         this.chartData = {
           total_participation: 0,
@@ -1126,7 +1133,6 @@ handleCheckAllEvents({ pageKeys, action }) {
           (opt) => opt.key === key && opt.order === order
         ) || this.selectedSort;
     },
-    // เมธอดสำหรับจัดรูปแบบข้อมูล
     timeText(startTime, endTime) {
       const format = (t) => (t ? String(t).slice(0, 5) : "??:??");
       return `${format(startTime)}-${format(endTime)}`;
@@ -1291,26 +1297,27 @@ handleCheckAllEvents({ pageKeys, action }) {
         alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
       }
     },
-    mapStatusForAPI(status) {
-      const statusMap = {
-        'attending': 'accepted',
-        'not-attending': 'denied',
-        'pending': 'pending'
-      };
-      return statusMap[status] || 'pending';
-    },
-    // Button testing methods
-    testClick(buttonType) {
-      console.log(`Button clicked: ${buttonType}`);
-      alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
-    },
-    testLoading() {
-      this.loadingTest = true;
-      setTimeout(() => {
-        this.loadingTest = false;
-        alert('Loading test completed!');
-      }, 2000);
-    },
+    // UNUSED - ไม่ได้ใช้ mapping status
+    // mapStatusForAPI(status) {
+    //   const statusMap = {
+    //     'attending': 'accepted',
+    //     'not-attending': 'denied',
+    //     'pending': 'pending'
+    //   };
+    //   return statusMap[status] || 'pending';
+    // },
+    // UNUSED - Testing functions
+    // testClick(buttonType) {
+    //   console.log(`Button clicked: ${buttonType}`);
+    //   alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
+    // },
+    // testLoading() {
+    //   this.loadingTest = true;
+    //   setTimeout(() => {
+    //     this.loadingTest = false;
+    //     alert('Loading test completed!');
+    //   }, 2000);
+    // },
     // Show data handler - scroll to charts and fetch statistics
     showDataHandler() {
       if (this.selectedEventIds.size === 0) {

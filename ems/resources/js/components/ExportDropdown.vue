@@ -877,14 +877,15 @@ export default {
       }
     },
 
-    getStatusLabel(status) {
-      const statusMap = {
-        'accepted': 'ยืนยันเข้าร่วม',
-        'denied': 'ปฏิเสธ',
-        'pending': 'รอตอบรับ'
-      };
-      return statusMap[status] || 'ไม่ระบุ';
-    },
+    // ❌ UNUSED - ไม่ได้ใช้งาน (ใช้ inline mapping แทน)
+    // getStatusLabel(status) {
+    //   const statusMap = {
+    //     'accepted': 'ยืนยันเข้าร่วม',
+    //     'denied': 'ปฏิเสธ',
+    //     'pending': 'รอตอบรับ'
+    //   };
+    //   return statusMap[status] || 'ไม่ระบุ';
+    // },
 
     formatTime(timeString) {
       if (!timeString) return '-';
