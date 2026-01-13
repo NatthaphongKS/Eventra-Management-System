@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-[516px] w-[604px] flex-col bg-white p-8 rounded-[20px] shadow-[0_10px_25px_-12px_rgba(0,0,0,0.25)]">
+  <div class="flex h-[516px] w-full flex-col bg-white p-8 rounded-[20px] shadow-[0_10px_25px_-12px_rgba(0,0,0,0.25)]">
     <!-- Title -->
     <h3
       class="mb-4 text-left font-semibold text-neutral-700  text-2xl"
@@ -60,21 +60,21 @@
               <stop offset="100%" stop-color="#00A73D" />
             </linearGradient>
             <defs>
-  <filter
-    id="softDonutShadow"
-    x="-15%"
-    y="-15%"
-    width="130%"
-    height="130%"
-  >
-    <feDropShadow
-      dx="0"
-      dy="4"
-      stdDeviation="2"
-      flood-color="rgba(0,0,0,0.25)"
-    />
-  </filter>
-</defs>
+          <filter
+            id="softDonutShadow"
+            x="-15%"
+            y="-15%"
+            width="130%"
+            height="130%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="4"
+              stdDeviation="2"
+              flood-color="rgba(0,0,0,0.25)"
+            />
+          </filter>
+        </defs>
 
           </defs>
         </svg>
@@ -174,4 +174,3 @@ export default {
   methods: {}
 };
 </script>
-
