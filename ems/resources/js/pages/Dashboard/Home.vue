@@ -602,7 +602,7 @@ export default {
           label: "Category",
           class: "text-left w-32",
           headerClass: "pl-2",
-          cellClass: "pl-3",
+          cellClass: "pl-2",
           sortable: true,
         },
         {
@@ -616,19 +616,19 @@ export default {
           key: "evn_timestart",
           label: "Time",
           class: "w-24 whitespace-nowrap ",
-          cellClass: "justify-center",
+          cellClass: "text-center",
           format: (v, r) => this.timeText(v, r.evn_timeend),
         },
         {
           key: "evn_num_guest",
           label: "Invited",
-          class: "w-24 items-center",
+          class: "w-24 text-center",
           sortable: true,
         },
         {
           key: "evn_sum_accept",
           label: "Accepted",
-          class: "w-24 text-center items-center",
+          class: "w-24 text-center",
           sortable: true,
         },
         {
