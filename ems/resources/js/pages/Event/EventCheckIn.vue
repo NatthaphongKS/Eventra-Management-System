@@ -357,17 +357,10 @@ function buildFilterOptions() {
 
 function mapInvite(ans) {
     const a = String(ans || "").toLowerCase();
-    if (a.includes("accept")) return "accepted";
+    if (a.includes("accepted")) return "accepted";
     if (a.includes("denied")) return "denied";
-    if (a.includes("invalid")) return "pending";
-    return "notInvited";
-}
-
-function mapCheckIn(ans) {
-    const a = String(ans || "").toLowerCase();
-    if (a.includes("accept")) return "accepted";
-    if (a.includes("denied")) return "denied";
-    if (a.includes("invalid")) return "pending";
+    if (a.includes("pending")) return "pending";
+    if (a.includes("not_invite")) return "notInvited";
     return "notInvited";
 }
 

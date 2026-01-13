@@ -10,21 +10,19 @@ use Illuminate\Database\Eloquent\Model;
 class File extends Model
 {
     protected $table = 'ems_event_files';
-
     public $timestamps = false;
 
     protected $fillable = [
         'file_event_id',
         'file_name',
         'file_path',
-        'file_size',
         'file_type',
-        'file_upload_at',
-        'file_upload_by',
-        'file_delete_status',
-        'file_delete_by',
+        'file_size',
+        'uploaded_at', // ใช้ชื่อตามภาพ DB จริง
     ];
+
     protected $casts = [
-        'file_upload_at' => 'datetime',
+        'uploaded_at' => 'datetime',
+        'file_path' => 'string', // บังคับให้เป็น string เพื่อป้องกันการบันทึกเป็น 0
     ];
 }
