@@ -869,22 +869,27 @@ class EventController extends Controller
                 ->first();
 
             // Get actual attendance statistics (for Actual Attendance donut chart)
-            // ✅ แก้ไข: นับจาก con_checkin_status = 1 (คนที่เช็คชื่อจริง)
-            // Total includes ALL assigned employees (accepted, denied, pending, invalid, not_invite)
-            $actualAttendance = DB::table('ems_connect')
+            // Total company employees (active only)
+            $totalEmployees = DB::table('ems_employees')
+                ->where('emp_delete_status', 'active')
+                ->count();
+
+            // Attended count: SUM(con_checkin_status=1) across selected events
+            $attendedCount = DB::table('ems_connect')
                 ->whereIn('con_event_id', $eventIds)
                 ->where('con_delete_status', 'active')
-                ->selectRaw('
-                    COUNT(*) as total_assigned,
-                    SUM(CASE WHEN con_checkin_status = 1 THEN 1 ELSE 0 END) as attended
-                ')
-                ->first();
+                ->where('con_checkin_status', 1)
+                ->count();
 
-            \Log::info('📊 Actual Attendance Data:', [
-                'event_ids' => $eventIds,
-                'total_assigned' => $actualAttendance->total_assigned,
-                'attended' => $actualAttendance->attended,
-                'query' => 'Using con_checkin_status = 1 for attended count'
+            // Total assigned = total employees × number of selected events
+            $selectedEventsCount = count($eventIds);
+            $totalAssigned = $totalEmployees * $selectedEventsCount;
+
+            \Log::info('📊 Actual Attendance Calculation:', [
+                'totalEmployees' => $totalEmployees,
+                'selectedEventsCount' => $selectedEventsCount,
+                'attended' => $attendedCount,
+                'total_assigned' => $totalAssigned
             ]);
 
             // Get department breakdown (กรองเฉพาะคนที่ถูกเชิญ)
@@ -950,13 +955,13 @@ class EventController extends Controller
                 ->get();
 
             return response()->json([
-                'total_participation' => $stats->total_participation ?? 0,
-                'attending' => $stats->attending ?? 0,
-                'not_attending' => $stats->not_attending ?? 0,
-                'pending' => $stats->pending ?? 0,
+                'total_participation' => (int)($stats->total_participation ?? 0),
+                'attending' => (int)($stats->attending ?? 0),
+                'not_attending' => (int)($stats->not_attending ?? 0),
+                'pending' => (int)($stats->pending ?? 0),
                 'actual_attendance' => [
-                    'attended' => $actualAttendance->attended ?? 0,
-                    'total_assigned' => $actualAttendance->total_assigned ?? 0
+                    'attended' => (int)$attendedCount,
+                    'total_assigned' => (int)$totalAssigned
                 ],
                 'departments' => $departments,
                 'teams' => $teams,
