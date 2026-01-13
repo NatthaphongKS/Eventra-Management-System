@@ -54,7 +54,7 @@
     <!-- Show Data Button -->
     <button
       @click="showDataHandler"
-      class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-6 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6 transition-colors"
+      class="h-[58px] w-[170px] items-center rounded-[20px] bg-red-700 px-6 font-medium text-[20px] text-white hover:bg-red-800 flex-shrink-0 mt-6 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       :disabled="selectedEventIds.size === 0"
       :class="{'opacity-50 cursor-not-allowed': selectedEventIds.size === 0}"
     >
@@ -65,49 +65,25 @@
   <!-- DataTable -->
   <DataTable
     :rows="paged"
-    :columns="eventTableColumns"
-    :loading="false"
-    :total-items="sorted.length"
-    :page-size-options="[10, 20, 50, 100]"
-    :page="page"
-    :pageSize="pageSize"
-    :sortKey="sortBy"
-    :sortOrder="sortOrder"
-    @update:page="page = $event"
-    @update:pageSize="pageSize = $event; page = 1;"
-    @sort="handleClientSort"
-    row-key="id"
-    :show-row-number="false"
-    :row-class="getRowClass"
-    class="mt-4">
+  :columns="eventTableColumns"
+  rowKey="id"
+  selectable
+  v-model="selectedEventIdsArray"
+  :totalItems="sorted.length"
+  v-model:page="page"
+  v-model:pageSize="pageSize"
+  v-model:sortKey="sortBy"
+  v-model:sortOrder="sortOrder"
+  class="mt-4"
+  @sort="handleClientSort"
+  @checkbox-checkin="handleEventCheck"
+  @check-all-page="handleCheckAllEvents" >
 
-    <!-- Header checkbox for select all -->
-    <template #header-checkbox>
-      <input
-        type="checkbox"
-        :checked="selectAll"
-        @change="selectAllEvents"
-      />
-    </template>
-
-    <!-- Checkbox column for multi-select -->
-    <template #cell-checkbox="{ row }">
-      <input
-        type="checkbox"
-        :checked="selectedEventIds.has(row.id || row.evn_id)"
-        @change="toggleEventSelection(row)"
-      />
-    </template>
-
-    <!-- Row number column -->
-    <template #cell-row_number="{ value }">
-      {{ value }}
-    </template>
 
     <!-- Title cell (clickable) -->
     <template #cell-evn_title="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)"
@@ -119,7 +95,7 @@
     <!-- Category cell (clickable) -->
     <template #cell-cat_name="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -130,7 +106,7 @@
     <!-- Invited cell (clickable) -->
     <template #cell-evn_num_guest="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -141,7 +117,7 @@
     <!-- Accepted cell (clickable) -->
     <template #cell-evn_sum_accept="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -152,7 +128,7 @@
     <!-- Status cell (with badge) -->
     <template #cell-evn_status="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -178,31 +154,37 @@
 </div>
 
 <!-- Summary/Graph Section - แสดงเมื่อเลือก event และกดปุ่ม Show Data แล้ว -->
-<div v-if="selectedEventIds.size > 0 && showStatistics" class="card summary-card">
-    <div class="summary-grid">
-      <!-- Actual Attendance -->
-      <div class="summary-item chart-container actual-attendance-card">
-        <DonutActualAttendance
-          :eventId="Array.from(selectedEventIds)[0]"
-          :attendanceData="{
-            attending: chartData.actual_attendance?.attended || 0,
-            total: chartData.actual_attendance?.total_assigned || 0
-          }"
-          :loading="loadingParticipants"
-        />
-      </div>
+  <div
+  v-if="selectedEventIds.size > 0 && showStatistics"
+  class="summary-card mt-6 w-full scroll-mt-24"
+>
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
 
-      <!-- Event Participation Graph -->
-      <div class="summary-item chart-container event-participation-card">
-        <GraphEventParticipation
-          :eventId="Array.from(selectedEventIds)[0]"
-          :data="participationData"
-          :loading="loadingParticipants"
-        />
-      </div>
+    <!-- Actual Attendance -->
+    <div class="lg:col-span-5">
+      <DonutActualAttendance
+        :eventId="Array.from(selectedEventIds)[0]"
+        :attendanceData="{
+          attending: chartData.actual_attendance?.attended || 0,
+          total: chartData.actual_attendance?.total_assigned || 0
+        }"
+        :loading="loadingParticipants"
+      />
+    </div>
 
-      <!-- Status Cards Row -->
-      <div class="status-cards-row">
+    <!-- Event Participation Graph -->
+    <div class="lg:col-span-7">
+      <GraphEventParticipation
+        :eventId="Array.from(selectedEventIds)[0]"
+        :data="participationData"
+        :loading="loadingParticipants"
+      />
+    </div>
+
+    <!-- Bottom cards -->
+    <div class="lg:col-span-12">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+
         <AttendingCard
           :attending="chartData.attending || 0"
           :total="chartData.total_participation || 0"
@@ -210,6 +192,7 @@
           :isClickable="true"
           @showAttendingEmployees="showEmployeesByStatus('attending')"
         />
+
         <NotAttendingCard
           :notAttending="chartData.not_attending || 0"
           :total="chartData.total_participation || 0"
@@ -217,6 +200,7 @@
           :isClickable="true"
           @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
         />
+
         <PendingCard
           :pending="chartData.pending || 0"
           :total="chartData.total_participation || 0"
@@ -224,12 +208,14 @@
           :isClickable="true"
           @showPendingEmployees="showEmployeesByStatus('pending')"
         />
-      </div> <!-- Close status-cards-row -->
-    </div>
-  </div>
 
-  <!-- Employee Table Section - แสดงเมื่อกดการ์ดและกดปุ่ม Show Data แล้ว -->
-  <DataTable
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<DataTable
     v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics"
     :rows="paginatedEmployees"
     :columns="employeeColumns"
@@ -237,10 +223,9 @@
     v-model:page="currentPage"
     v-model:pageSize="itemsPerPage"
     :totalItems="totalEmployees"
-    :pageSizeOptions="[10, 25, 50, 100]"
+    :pageSizeOptions="[10, 20, 50, 100]"
     rowKey="unique_key"
     :showRowNumber="true"
-    class="mt-6"
   >
     <template #empty>
       <div class="py-6 text-center text-neutral-700">
@@ -429,6 +414,15 @@ export default {
   },
 
   computed: {
+       selectedEventIdsArray: {
+    get() {
+      return Array.from(this.selectedEventIds);
+    },
+    set(val) {
+      this.selectedEventIds = new Set(val);
+      this.showStatistics = false;
+    }
+  },
     normalized() {
       return this.event.map(e => {
         // ดึง category ID ที่ถูกต้อง
@@ -443,6 +437,7 @@ export default {
 
         return {
           ...e,
+          id: e.id ?? e.evn_id,
           evn_title: e.evn_title ?? e.evn_name ?? "",
           evn_cat_id: catId,
           cat_name: catName || "ไม่มีหมวดหมู่",
@@ -592,71 +587,54 @@ export default {
         row_number: start + index + 1
       }));
     },
-    // Check if all visible rows on current page are selected
-    selectAll() {
-      if (this.paged.length === 0) return false;
-      return this.paged.every(row => this.selectedEventIds.has(row.id || row.evn_id));
-    },
     eventTableColumns() {
       return [
         {
-          key: "checkbox",
-          label: "",
-          class: "w-12 text-center",
-          headerClass: "w-12",
-        },
-        {
-          key: "row_number",
-          label: "#",
-          class: "w-12 text-center",
-          headerClass: "w-12",
-        },
-        {
           key: "evn_title",
           label: "Event",
-          class: "text-left",
+          class: "text-left h-[60px]",
           headerClass: "w-[450px]",
-          cellClass: "pl-3 text-slate-800 font-medium truncate",
+          cellClass: "pl-3",
           sortable: true,
         },
         {
           key: "cat_name",
           label: "Category",
-          class: "text-left",
+          class: "text-left w-32",
           headerClass: "pl-2",
-          cellClass: "pl-3",
+          cellClass: "pl-2",
           sortable: true,
         },
         {
           key: "evn_date",
           label: "Date (D/M/Y)",
-          class: "w-[120px] text-center whitespace-nowrap",
+          class: "w-24 text-center whitespace-nowrap",
           format: this.formatDate,
           sortable: true,
         },
         {
           key: "evn_timestart",
           label: "Time",
-          class: "w-[110px] text-center whitespace-nowrap justify-center",
-          cellClass: "justify-center",
+          class: "w-24 whitespace-nowrap ",
+          cellClass: "text-center",
           format: (v, r) => this.timeText(v, r.evn_timeend),
         },
         {
           key: "evn_num_guest",
           label: "Invited",
-          class: "w-20 text-center",
+          class: "w-24 text-center",
           sortable: true,
         },
         {
           key: "evn_sum_accept",
           label: "Accepted",
-          class: "w-20 text-center",
+          class: "w-24 text-center",
           sortable: true,
         },
         {
           key: "evn_status",
           label: "Status",
-          class: "text-center",
+          class: "text-center items-center w-32",
           sortable: true,
         },
       ];
@@ -666,7 +644,7 @@ export default {
         {
           key: "emp_id",
           label: "ID",
-          class: "w-20 text-center",
+          class: "w-20 h-[60px] text-center",
           cellClass: "text-center",
           format: (v) => v || 'N/A',
         },
@@ -809,6 +787,37 @@ export default {
   },
 
   methods: {
+    showEmployees(status) {
+    this.selectedStatus = status; // attending / not-attending / pending
+    this.showEmployeeTable = true;
+  },
+
+  closeEmployeeTable() {
+    this.showEmployeeTable = false;
+    this.selectedStatus = null;
+  },
+    handleEventCheck({ keys, checked }) {
+  keys.forEach(id => {
+    if (checked) {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+},
+
+handleCheckAllEvents({ pageKeys, action }) {
+  pageKeys.forEach(id => {
+    if (action === 'check') {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+},
+
     // Search handling
     handleSearch(searchValue) {
       this.search = searchValue;
@@ -1087,56 +1096,19 @@ export default {
       const eventId = row.id || row.evn_id;
       return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
     },
-    toggleEventSelection(event) {
-      const eventId = event.id || event.evn_id;
-      if (!eventId) {
-        console.error('No event ID found in:', event);
-        return;
+    // ดึงชื่ออีเวนต์มาแสดงผล
+    getEventTitlesText() {
+      if (this.selectedEventIds.size === 0) return 'N/A';
+      const selectedEvents = this.normalized.filter(event =>
+        this.selectedEventIds.has(event.id || event.evn_id)
+      );
+      if (selectedEvents.length === 1) {
+        return selectedEvents[0].evn_title || 'N/A';
+      } else if (selectedEvents.length > 1) {
+        return `${selectedEvents.length} events selected`;
       }
-      if (this.selectedEventIds.has(eventId)) {
-        this.selectedEventIds.delete(eventId);
-      } else {
-        this.selectedEventIds.add(eventId);
-      }
-      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
-      this.showStatistics = false;
+      return 'N/A';
     },
-    selectAllEvents(event) {
-      const isChecked = event.target.checked;
-
-      if (isChecked) {
-         // เลือกทุกอีเวนต์ในหน้าปัจจุบัน (Visible Page)
-        this.paged.forEach(row => {
-          const eventId = row.id || row.evn_id;
-          if (eventId) {
-            this.selectedEventIds.add(eventId);
-          }
-        });
-      } else {
-        // ยกเลิกการเลือกเฉพาะแถวที่แสดงในหน้าปัจจุบัน
-        this.paged.forEach(row => {
-          const eventId = row.id || row.evn_id;
-          if (eventId) {
-            this.selectedEventIds.delete(eventId);
-          }
-        });
-      }
-      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
-      this.showStatistics = false;
-    },
-    // UNUSED - ไม่ได้แสดงชื่ออีเวนต์ใน template
-    // getEventTitlesText() {
-    //   if (this.selectedEventIds.size === 0) return 'N/A';
-    //   const selectedEvents = this.normalized.filter(event =>
-    //     this.selectedEventIds.has(event.id || event.evn_id)
-    //   );
-    //   if (selectedEvents.length === 1) {
-    //     return selectedEvents[0].evn_title || 'N/A';
-    //   } else if (selectedEvents.length > 1) {
-    //     return `${selectedEvents.length} events selected`;
-    //   }
-    //   return 'N/A';
-    // },
     // Filter & Sort handlers
     applySearch() {
       this.search = this.searchInput;
@@ -1190,55 +1162,49 @@ export default {
         this.$router.push({ path: `/events/${id}` });
       }
     },
-    // UNUSED - ไม่ใช้ใน template
-    // onEventSelect(event) {
-    //   const eventId = event.id || event.evn_id;
-    //   if(eventId) this.toggleEventSelection(event);
-    // },
-    // UNUSED - ใช้ fetchEventStatistics() แทน
-    // async loadEventStatistics(eventId) {
-    //   this.isLoading = true;
-    //   try {
-    //     // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
-    //     const response = await axios.get(`/api/event/${eventId}/participants`);
-    //     console.log('Event statistics response:', response.data);
-    //
-    //     if (response.data.success) {
-    //       const statistics = response.data.data.statistics;
-    //       // อัปเดตข้อมูลกราฟด้วยสถิติจริง
-    //       this.chartData = {
-    //         attending: statistics.attending || 0,
-    //         notAttending: statistics.not_attending || 0,
-    //         pending: statistics.pending || 0
-    //       };
-    //       // อัพเดตกราฟ
-    //       this.participationData = {
-    //         labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
-    //         datasets: [{
-    //           data: [
-    //             this.chartData.attending,
-    //             this.chartData.notAttending,
-    //             this.chartData.pending
-    //           ],
-    //           backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
-    //         }]
-    //       };
-    //       console.log('Updated chart data:', this.chartData);
-    //     } else {
-    //       console.error('Failed to load event statistics:', response.data.message);
-    //     }
-    //   } catch (error) {
-    //     console.error('Error loading event statistics:', error);
-    //     // Reset to default values on error
-    //     this.chartData = { attending: 0, notAttending: 0, pending: 0 };
-    //     this.participationData = {
-    //       labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
-    //       datasets: [{ data: [0, 0, 0], backgroundColor: ['#4CAF50', '#F44336', '#FF9800'] }]
-    //     };
-    //   } finally {
-    //     this.isLoading = false;
-    //   }
-    // },
+    async loadEventStatistics(eventId) {
+      this.isLoading = true;
+      try {
+        // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
+        const response = await axios.get(`/api/event/${eventId}/participants`);
+        console.log('Event statistics response:', response.data);
+
+        if (response.data.success) {
+          const statistics = response.data.data.statistics;
+          // อัปเดตข้อมูลกราฟด้วยสถิติจริง
+          this.chartData = {
+            attending: statistics.attending || 0,
+            notAttending: statistics.not_attending || 0,
+            pending: statistics.pending || 0
+          };
+          // อัพเดตกราฟ
+          this.participationData = {
+            labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
+            datasets: [{
+              data: [
+                this.chartData.attending,
+                this.chartData.notAttending,
+                this.chartData.pending
+              ],
+              backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
+            }]
+          };
+          console.log('Updated chart data:', this.chartData);
+        } else {
+          console.error('Failed to load event statistics:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error loading event statistics:', error);
+        // Reset to default values on error
+        this.chartData = { attending: 0, notAttending: 0, pending: 0 };
+        this.participationData = {
+          labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
+          datasets: [{ data: [0, 0, 0], backgroundColor: ['#4CAF50', '#F44336', '#FF9800'] }]
+        };
+      } finally {
+        this.isLoading = false;
+      }
+    },
     async showEmployeesByStatus(status) {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมก่อน');
@@ -1415,304 +1381,3 @@ export default {
   } // End methods
 } // End export default
 </script>
-
-<style scoped>
-/* Card สำหรับ Summary/Graph */
-.summary-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-  padding: 2rem 2rem 1.5rem 2rem;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  grid-template-rows: auto auto;
-  gap: 24px;
-  margin-bottom: 2rem;
-}
-
-/* Top row layout */
-.actual-attendance-card {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.event-participation-card {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-/* Bottom row: Status cards spanning full width */
-.status-cards-row {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 24px;
-}
-
-/* Responsive design */
-@media (max-width: 1024px) {
-  .summary-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 20px;
-  }
-
-  .actual-attendance-card,
-  .event-participation-card {
-    grid-column: 1;
-  }
-
-  .actual-attendance-card {
-    grid-row: 1;
-  }
-
-  .event-participation-card {
-    grid-row: 2;
-  }
-
-  .status-cards-row {
-    grid-row: 3;
-    margin-top: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .status-cards-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
-
-.summary-item {
-  background: #fff;
-  border-radius: 20px;
-  padding: 1.2rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column;
-}
-
-.summary-item.wide {
-  grid-column: 2;
-  grid-row: 1 / 3;
-}
-
-.chart-container {
-  position: relative;
-}
-
-.summary-title {
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  color: #374151;
-  text-align: left;
-}
-
-.chart-wrapper {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bar-chart {
-  height: 220px;
-}
-
-.chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: block;
-}
-
-.legend-text {
-  color: #4b5563;
-  font-weight: 500;
-}
-
-.department-filter {
-  margin-bottom: 1rem;
-  text-align: right;
-}
-
-.filter-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 0.875rem;
-  color: #374151;
-  outline: none;
-}
-
-.filter-select:focus {
-  border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
-}
-
-/* Clickable Cards */
-.clickable {
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-}
-
-.text-muted {
-  color: #adb5bd !important;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-/* Override checkbox style to match DataTable component */
-:deep(input[type="checkbox"]) {
-  accent-color: #dc2626 !important;
-}
-
-/* Highlight selected rows - match DataTable component style */
-:deep(tr.selected-row) {
-  background-color: #fee2e2 !important;
-}
-
-:deep(tr.selected-row:hover) {
-  background-color: #ffffff !important;
-}
-
-/* Status Cards - Used by AttendingCard, NotAttendingCard, PendingCard */
-.status-card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.status-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* Export Progress Overlay */
-.export-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.export-modal {
-  background: white;
-  border-radius: 20px;
-  padding: 40px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.export-spinner {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
-  border: 4px solid #fecaca;
-  border-top-color: #b91c1c;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.export-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 10px;
-}
-
-.export-text {
-  font-size: 16px;
-  color: #6b7280;
-  margin-bottom: 20px;
-  white-space: pre-line;
-  line-height: 1.6;
-}
-
-.export-progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 15px;
-}
-
-.export-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #b91c1c, #dc2626);
-  transition: width 0.3s ease-out;
-  border-radius: 4px;
-}
-
-.export-hint {
-  font-size: 14px;
-  color: #9ca3af;
-  margin-top: 10px;
-  font-style: italic;
-}
-
-</style>

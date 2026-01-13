@@ -2,28 +2,23 @@
   <div class="relative" ref="dropdownContainer">
     <button 
       @click="showMenu = !showMenu"
-      class="inline-flex h-11 items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+      class="flex h-[58px] w-[170px] items-center gap-5 rounded-[20px] text-[20px] bg-white px-4 font-medium text-neutral-700 hover:bg-neutral-50 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       :disabled="disabled"
       :class="{'opacity-50 cursor-not-allowed': disabled}"
       :title="disabled ? 'กรุณาเลือกกิจกรรมก่อน Export' : 'Export ข้อมูลกิจกรรม'"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
+      <Icon :icon="'ci:share-ios-export'" class="h-[30px] w-[30px] text-neutral-700" />
       Export
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" :class="{'rotate-180': showMenu}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
     </button>
     
     <!-- Dropdown Menu -->
     <div 
       v-if="showMenu"
-      class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+      class="absolute right-0 mt-2 w-48 bg-white rounded-[20px] shadow-lg border border-neutral-200 z-50"
     >
       <button
         @click="exportToPDF"
-        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 rounded-t-lg transition-colors"
+        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-red-100 flex items-center gap-3 rounded-[20px] transition-colors"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -32,7 +27,7 @@
       </button>
       <button
         @click="exportToExcel"
-        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 rounded-b-lg transition-colors"
+        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-red-100 flex items-center gap-3 rounded-[20px] transition-colors"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -46,11 +41,15 @@
 <script>
 import axios from 'axios';
 import ExcelJS from 'exceljs';
+import { Icon } from '@iconify/vue';
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
 
 export default {
+  components: {
+    Icon
+  },
   name: 'ExportDropdown',
   props: {
     selectedEvents: {
