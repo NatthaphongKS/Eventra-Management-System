@@ -35,19 +35,21 @@
                     :aria-selected="isSelected(opt.value)" class="px-3 py-2 text-sm cursor-pointer" :class="[
                         i === activeIndex ? 'bg-red-100 rounded-lg' : 'bg-transparent',
                         'text-neutral-800'
-                    ]" @mouseenter="activeIndex = i" @mouseleave="activeIndex = selectedIndex" @click="select(opt.value)">
+                    ]" @mouseenter="activeIndex = i" @mouseleave="activeIndex = selectedIndex"
+                    @click="select(opt.value)">
                     {{ opt.label }}
                 </div>
 
             </div>
         </transition>
-
-        <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
+        <p class="text-xs text-red-500 min-h-[16px]">
+            {{ error || '\u00A0' }}
+        </p>
     </div>
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted, onBeforeUnmount} from 'vue'
+import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
     modelValue: { type: [String, Number, Object], default: '' },
