@@ -54,7 +54,7 @@
     <!-- Show Data Button -->
     <button
       @click="showDataHandler"
-      class="ml-auto inline-flex h-11 items-center rounded-full bg-[#b91c1c] px-6 font-semibold text-white hover:bg-[#991b1b] focus:outline-none focus:ring-2 focus:ring-red-300 mt-6 transition-colors"
+      class="h-[58px] w-[170px] items-center rounded-[20px] bg-red-700 px-6 font-medium text-[20px] text-white hover:bg-red-800 flex-shrink-0 mt-6 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       :disabled="selectedEventIds.size === 0"
       :class="{'opacity-50 cursor-not-allowed': selectedEventIds.size === 0}"
     >
@@ -65,49 +65,25 @@
   <!-- DataTable -->
   <DataTable
     :rows="paged"
-    :columns="eventTableColumns"
-    :loading="false"
-    :total-items="sorted.length"
-    :page-size-options="[10, 20, 50, 100]"
-    :page="page"
-    :pageSize="pageSize"
-    :sortKey="sortBy"
-    :sortOrder="sortOrder"
-    @update:page="page = $event"
-    @update:pageSize="pageSize = $event; page = 1;"
-    @sort="handleClientSort"
-    row-key="id"
-    :show-row-number="false"
-    :row-class="getRowClass"
-    class="mt-4">
+  :columns="eventTableColumns"
+  rowKey="id"
+  selectable
+  v-model="selectedEventIdsArray"
+  :totalItems="sorted.length"
+  v-model:page="page"
+  v-model:pageSize="pageSize"
+  v-model:sortKey="sortBy"
+  v-model:sortOrder="sortOrder"
+  class="mt-4"
+  @sort="handleClientSort"
+  @checkbox-checkin="handleEventCheck"
+  @check-all-page="handleCheckAllEvents" >
 
-    <!-- Header checkbox for select all -->
-    <template #header-checkbox>
-      <input
-        type="checkbox"
-        :checked="selectAll"
-        @change="selectAllEvents"
-      />
-    </template>
-
-    <!-- Checkbox column for multi-select -->
-    <template #cell-checkbox="{ row }">
-      <input
-        type="checkbox"
-        :checked="selectedEventIds.has(row.id || row.evn_id)"
-        @change="toggleEventSelection(row)"
-      />
-    </template>
-
-    <!-- Row number column -->
-    <template #cell-row_number="{ value }">
-      {{ value }}
-    </template>
 
     <!-- Title cell (clickable) -->
     <template #cell-evn_title="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full pl-3 py-2 text-slate-800 font-medium truncate hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)"
@@ -119,7 +95,7 @@
     <!-- Category cell (clickable) -->
     <template #cell-cat_name="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full pl-3 py-2 hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -130,7 +106,7 @@
     <!-- Invited cell (clickable) -->
     <template #cell-evn_num_guest="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -141,7 +117,7 @@
     <!-- Accepted cell (clickable) -->
     <template #cell-evn_sum_accept="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-2 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -152,7 +128,7 @@
     <!-- Status cell (with badge) -->
     <template #cell-evn_status="{ row, value }">
       <span role="button" tabindex="0"
-        class="block w-full h-full py-1 text-center hover:bg-slate-50 focus:bg-slate-100 cursor-pointer"
+        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -180,73 +156,65 @@
 <!-- Summary/Graph Section - แสดงเมื่อเลือก event และกดปุ่ม Show Data แล้ว -->
   <div
   v-if="selectedEventIds.size > 0 && showStatistics"
-  class="summary-card mt-6 w-full scroll-mt-24">
+  class="summary-card mt-6 w-full scroll-mt-24"
+>
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-    <!-- Actual Attendance (Left) -->
+
+    <!-- Actual Attendance -->
     <div class="lg:col-span-5">
-      <div
-        class=""
-      >
-        <DonutActualAttendance
-          :eventId="Array.from(selectedEventIds)[0]"
-          :attendanceData="{
-            attending: chartData.actual_attendance?.attended || 0,
-            total: chartData.actual_attendance?.total_assigned || 0
-          }"
-          :loading="loadingParticipants"
-        />
-      </div>
+      <DonutActualAttendance
+        :eventId="Array.from(selectedEventIds)[0]"
+        :attendanceData="{
+          attending: chartData.actual_attendance?.attended || 0,
+          total: chartData.actual_attendance?.total_assigned || 0
+        }"
+        :loading="loadingParticipants"
+      />
     </div>
 
-    <!-- Event Participation Graph (Right) -->
+    <!-- Event Participation Graph -->
     <div class="lg:col-span-7">
-      <div
-        class="h-full min-h-[320px] rounded-2xl p-5 "
-      >
-        <GraphEventParticipation
-          :eventId="Array.from(selectedEventIds)[0]"
-          :data="participationData"
-          :loading="loadingParticipants"
-        />
-      </div>
+      <GraphEventParticipation
+        :eventId="Array.from(selectedEventIds)[0]"
+        :data="participationData"
+        :loading="loadingParticipants"
+      />
     </div>
 
-    <!-- Status Cards Row (Bottom) -->
+    <!-- Bottom cards -->
     <div class="lg:col-span-12">
       <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div class="h-full">
-          <AttendingCard
-            :attending="chartData.attending || 0"
-            :total="chartData.total_participation || 0"
-            :loading="loadingParticipants"
-            :isClickable="true"
-            @showAttendingEmployees="showEmployeesByStatus('attending')"
-          />
-        </div>
 
-        <div class="h-full">
-          <NotAttendingCard
-            :notAttending="chartData.not_attending || 0"
-            :total="chartData.total_participation || 0"
-            :loading="loadingParticipants"
-            :isClickable="true"
-            @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
-          />
-        </div>
+        <AttendingCard
+          :attending="chartData.attending || 0"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
+          :isClickable="true"
+          @showAttendingEmployees="showEmployeesByStatus('attending')"
+        />
 
-        <div class="h-full">
-          <PendingCard
-            :pending="chartData.pending || 0"
-            :total="chartData.total_participation || 0"
-            :loading="loadingParticipants"
-            :isClickable="true"
-            @showPendingEmployees="showEmployeesByStatus('pending')"
-          />
-        </div>
+        <NotAttendingCard
+          :notAttending="chartData.not_attending || 0"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
+          :isClickable="true"
+          @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
+        />
+
+        <PendingCard
+          :pending="chartData.pending || 0"
+          :total="chartData.total_participation || 0"
+          :loading="loadingParticipants"
+          :isClickable="true"
+          @showPendingEmployees="showEmployeesByStatus('pending')"
+        />
+
       </div>
     </div>
+
   </div>
 </div>
+
 <DataTable
     v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics"
     :rows="paginatedEmployees"
@@ -255,10 +223,9 @@
     v-model:page="currentPage"
     v-model:pageSize="itemsPerPage"
     :totalItems="totalEmployees"
-    :pageSizeOptions="[10, 25, 50, 100]"
+    :pageSizeOptions="[10, 20, 50, 100]"
     rowKey="unique_key"
     :showRowNumber="true"
-    class="mt-6"
   >
     <template #empty>
       <div class="py-6 text-center text-neutral-700">
@@ -447,6 +414,15 @@ export default {
   },
 
   computed: {
+       selectedEventIdsArray: {
+    get() {
+      return Array.from(this.selectedEventIds);
+    },
+    set(val) {
+      this.selectedEventIds = new Set(val);
+      this.showStatistics = false;
+    }
+  },
     normalized() {
       return this.event.map(e => {
         // ดึง category ID ที่ถูกต้อง
@@ -461,6 +437,7 @@ export default {
 
         return {
           ...e,
+          id: e.id ?? e.evn_id,
           evn_title: e.evn_title ?? e.evn_name ?? "",
           evn_cat_id: catId,
           cat_name: catName || "ไม่มีหมวดหมู่",
@@ -610,71 +587,54 @@ export default {
         row_number: start + index + 1
       }));
     },
-    // Check if all visible rows on current page are selected
-    selectAll() {
-      if (this.paged.length === 0) return false;
-      return this.paged.every(row => this.selectedEventIds.has(row.id || row.evn_id));
-    },
     eventTableColumns() {
       return [
         {
-          key: "checkbox",
-          label: "",
-          class: "w-12 text-center",
-          headerClass: "w-12",
-        },
-        {
-          key: "row_number",
-          label: "#",
-          class: "w-12 text-center",
-          headerClass: "w-12",
-        },
-        {
           key: "evn_title",
           label: "Event",
-          class: "text-left",
+          class: "text-left h-[60px]",
           headerClass: "w-[450px]",
-          cellClass: "pl-3 text-slate-800 font-medium truncate",
+          cellClass: "pl-3",
           sortable: true,
         },
         {
           key: "cat_name",
           label: "Category",
-          class: "text-left",
+          class: "text-left w-32",
           headerClass: "pl-2",
-          cellClass: "pl-3",
+          cellClass: "pl-2",
           sortable: true,
         },
         {
           key: "evn_date",
           label: "Date (D/M/Y)",
-          class: "w-[120px] text-center whitespace-nowrap",
+          class: "w-24 text-center whitespace-nowrap",
           format: this.formatDate,
           sortable: true,
         },
         {
           key: "evn_timestart",
           label: "Time",
-          class: "w-[110px] text-center whitespace-nowrap justify-center",
-          cellClass: "justify-center",
+          class: "w-24 whitespace-nowrap ",
+          cellClass: "text-center",
           format: (v, r) => this.timeText(v, r.evn_timeend),
         },
         {
           key: "evn_num_guest",
           label: "Invited",
-          class: "w-20 text-center",
+          class: "w-24 text-center",
           sortable: true,
         },
         {
           key: "evn_sum_accept",
           label: "Accepted",
-          class: "w-20 text-center",
+          class: "w-24 text-center",
           sortable: true,
         },
         {
           key: "evn_status",
           label: "Status",
-          class: "text-center",
+          class: "text-center items-center w-32",
           sortable: true,
         },
       ];
@@ -684,7 +644,7 @@ export default {
         {
           key: "emp_id",
           label: "ID",
-          class: "w-20 text-center",
+          class: "w-20 h-[60px] text-center",
           cellClass: "text-center",
           format: (v) => v || 'N/A',
         },
@@ -824,6 +784,37 @@ export default {
   },
 
   methods: {
+    showEmployees(status) {
+    this.selectedStatus = status; // attending / not-attending / pending
+    this.showEmployeeTable = true;
+  },
+
+  closeEmployeeTable() {
+    this.showEmployeeTable = false;
+    this.selectedStatus = null;
+  },
+    handleEventCheck({ keys, checked }) {
+  keys.forEach(id => {
+    if (checked) {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+},
+
+handleCheckAllEvents({ pageKeys, action }) {
+  pageKeys.forEach(id => {
+    if (action === 'check') {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+},
+
     // Search handling
     handleSearch(searchValue) {
       this.search = searchValue;
@@ -1098,43 +1089,6 @@ export default {
       const eventId = row.id || row.evn_id;
       return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
     },
-    toggleEventSelection(event) {
-      const eventId = event.id || event.evn_id;
-      if (!eventId) {
-        console.error('No event ID found in:', event);
-        return;
-      }
-      if (this.selectedEventIds.has(eventId)) {
-        this.selectedEventIds.delete(eventId);
-      } else {
-        this.selectedEventIds.add(eventId);
-      }
-      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
-      this.showStatistics = false;
-    },
-    selectAllEvents(event) {
-      const isChecked = event.target.checked;
-
-      if (isChecked) {
-         // เลือกทุกอีเวนต์ในหน้าปัจจุบัน (Visible Page)
-        this.paged.forEach(row => {
-          const eventId = row.id || row.evn_id;
-          if (eventId) {
-            this.selectedEventIds.add(eventId);
-          }
-        });
-      } else {
-        // ยกเลิกการเลือกเฉพาะแถวที่แสดงในหน้าปัจจุบัน
-        this.paged.forEach(row => {
-          const eventId = row.id || row.evn_id;
-          if (eventId) {
-            this.selectedEventIds.delete(eventId);
-          }
-        });
-      }
-      // รีเซ็ตการแสดงผลเมื่อมีการเปลี่ยนแปลงการเลือก
-      this.showStatistics = false;
-    },
     // ดึงชื่ออีเวนต์มาแสดงผล
     getEventTitlesText() {
       if (this.selectedEventIds.size === 0) return 'N/A';
@@ -1201,10 +1155,6 @@ export default {
       } catch (_) {
         this.$router.push({ path: `/events/${id}` });
       }
-    },
-    onEventSelect(event) {
-      const eventId = event.id || event.evn_id;
-      if(eventId) this.toggleEventSelection(event);
     },
     async loadEventStatistics(eventId) {
       this.isLoading = true;
