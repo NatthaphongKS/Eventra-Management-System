@@ -178,10 +178,15 @@
 </div>
 
 <!-- Summary/Graph Section - แสดงเมื่อเลือก event และกดปุ่ม Show Data แล้ว -->
-<div v-if="selectedEventIds.size > 0 && showStatistics" class="card summary-card">
-    <div class="summary-grid">
-      <!-- Actual Attendance -->
-      <div class="summary-item chart-container actual-attendance-card">
+  <div
+  v-if="selectedEventIds.size > 0 && showStatistics"
+  class="summary-card mt-6 w-full scroll-mt-24">
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+    <!-- Actual Attendance (Left) -->
+    <div class="lg:col-span-5">
+      <div
+        class=""
+      >
         <DonutActualAttendance
           :eventId="Array.from(selectedEventIds)[0]"
           :attendanceData="{
@@ -191,45 +196,58 @@
           :loading="loadingParticipants"
         />
       </div>
+    </div>
 
-      <!-- Event Participation Graph -->
-      <div class="summary-item chart-container event-participation-card">
+    <!-- Event Participation Graph (Right) -->
+    <div class="lg:col-span-7">
+      <div
+        class="h-full min-h-[320px] rounded-2xl p-5 "
+      >
         <GraphEventParticipation
           :eventId="Array.from(selectedEventIds)[0]"
           :data="participationData"
           :loading="loadingParticipants"
         />
       </div>
+    </div>
 
-      <!-- Status Cards Row -->
-      <div class="status-cards-row">
-        <AttendingCard
-          :attending="chartData.attending || 0"
-          :total="chartData.total_participation || 0"
-          :loading="loadingParticipants"
-          :isClickable="true"
-          @showAttendingEmployees="showEmployeesByStatus('attending')"
-        />
-        <NotAttendingCard
-          :notAttending="chartData.not_attending || 0"
-          :total="chartData.total_participation || 0"
-          :loading="loadingParticipants"
-          :isClickable="true"
-          @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
-        />
-        <PendingCard
-          :pending="chartData.pending || 0"
-          :total="chartData.total_participation || 0"
-          :loading="loadingParticipants"
-          :isClickable="true"
-          @showPendingEmployees="showEmployeesByStatus('pending')"
-        />
-      </div> <!-- Close status-cards-row -->
+    <!-- Status Cards Row (Bottom) -->
+    <div class="lg:col-span-12">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="h-full">
+          <AttendingCard
+            :attending="chartData.attending || 0"
+            :total="chartData.total_participation || 0"
+            :loading="loadingParticipants"
+            :isClickable="true"
+            @showAttendingEmployees="showEmployeesByStatus('attending')"
+          />
+        </div>
+
+        <div class="h-full">
+          <NotAttendingCard
+            :notAttending="chartData.not_attending || 0"
+            :total="chartData.total_participation || 0"
+            :loading="loadingParticipants"
+            :isClickable="true"
+            @showNotAttendingEmployees="showEmployeesByStatus('not-attending')"
+          />
+        </div>
+
+        <div class="h-full">
+          <PendingCard
+            :pending="chartData.pending || 0"
+            :total="chartData.total_participation || 0"
+            :loading="loadingParticipants"
+            :isClickable="true"
+            @showPendingEmployees="showEmployeesByStatus('pending')"
+          />
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- Employee Table Section - แสดงเมื่อกดการ์ดและกดปุ่ม Show Data แล้ว -->
-  <DataTable
+</div>
+<DataTable
     v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics"
     :rows="paginatedEmployees"
     :columns="employeeColumns"
@@ -1406,304 +1424,3 @@ export default {
   } // End methods
 } // End export default
 </script>
-
-<style scoped>
-/* Card สำหรับ Summary/Graph */
-.summary-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-  padding: 2rem 2rem 1.5rem 2rem;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  grid-template-rows: auto auto;
-  gap: 24px;
-  margin-bottom: 2rem;
-}
-
-/* Top row layout */
-.actual-attendance-card {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.event-participation-card {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-/* Bottom row: Status cards spanning full width */
-.status-cards-row {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 24px;
-}
-
-/* Responsive design */
-@media (max-width: 1024px) {
-  .summary-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 20px;
-  }
-
-  .actual-attendance-card,
-  .event-participation-card {
-    grid-column: 1;
-  }
-
-  .actual-attendance-card {
-    grid-row: 1;
-  }
-
-  .event-participation-card {
-    grid-row: 2;
-  }
-
-  .status-cards-row {
-    grid-row: 3;
-    margin-top: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .status-cards-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
-
-.summary-item {
-  background: #fff;
-  border-radius: 20px;
-  padding: 1.2rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column;
-}
-
-.summary-item.wide {
-  grid-column: 2;
-  grid-row: 1 / 3;
-}
-
-.chart-container {
-  position: relative;
-}
-
-.summary-title {
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  color: #374151;
-  text-align: left;
-}
-
-.chart-wrapper {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bar-chart {
-  height: 220px;
-}
-
-.chart-legend {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: block;
-}
-
-.legend-text {
-  color: #4b5563;
-  font-weight: 500;
-}
-
-.department-filter {
-  margin-bottom: 1rem;
-  text-align: right;
-}
-
-.filter-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 0.875rem;
-  color: #374151;
-  outline: none;
-}
-
-.filter-select:focus {
-  border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
-}
-
-/* Clickable Cards */
-.clickable {
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-}
-
-.text-muted {
-  color: #adb5bd !important;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-/* Override checkbox style to match DataTable component */
-:deep(input[type="checkbox"]) {
-  accent-color: #dc2626 !important;
-}
-
-/* Highlight selected rows - match DataTable component style */
-:deep(tr.selected-row) {
-  background-color: #fee2e2 !important;
-}
-
-:deep(tr.selected-row:hover) {
-  background-color: #ffffff !important;
-}
-
-/* Status Cards - Used by AttendingCard, NotAttendingCard, PendingCard */
-.status-card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.status-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* Export Progress Overlay */
-.export-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.export-modal {
-  background: white;
-  border-radius: 20px;
-  padding: 40px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.export-spinner {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
-  border: 4px solid #fecaca;
-  border-top-color: #b91c1c;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.export-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 10px;
-}
-
-.export-text {
-  font-size: 16px;
-  color: #6b7280;
-  margin-bottom: 20px;
-  white-space: pre-line;
-  line-height: 1.6;
-}
-
-.export-progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 15px;
-}
-
-.export-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #b91c1c, #dc2626);
-  transition: width 0.3s ease-out;
-  border-radius: 4px;
-}
-
-.export-hint {
-  font-size: 14px;
-  color: #9ca3af;
-  margin-top: 10px;
-  font-style: italic;
-}
-
-</style>
