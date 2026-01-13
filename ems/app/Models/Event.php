@@ -44,7 +44,7 @@ class Event extends Model
     {
         // pivot: ems_connect (con_event_id, con_employee_id)
         return $this->belongsToMany(Employee::class, 'ems_connect', 'con_event_id', 'con_employee_id')
-                    ->withPivot(['con_answer','con_reason','con_delete_status']);
+            ->withPivot(['con_answer', 'con_reason', 'con_delete_status']);
     }
     //เชื่อมกับตาราง category
     public function category(): BelongsTo
@@ -68,7 +68,9 @@ class Event extends Model
     }
     public function files()
     {
-        // แก้ไข 'File' เป็นชื่อ Model ของไฟล์ที่คุณใช้งานจริง
-        return $this->hasMany(File::class, 'file_event_id');
+        // เชื่อมไปยัง Model File โดยใช้คอลัมน์ file_event_id ในตาราง ems_event_files
+        return $this->hasMany(File::class, 'file_event_id', 'id');
     }
+
+   
 }

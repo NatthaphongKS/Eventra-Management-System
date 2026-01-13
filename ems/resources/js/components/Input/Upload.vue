@@ -13,7 +13,7 @@
                     <template v-if="model">
                         <div class="px-2">
                             <div
-                                class="flex items-center justify-between rounded-xl bg-white border border-gray-200 px-4 py-3 shadow-sm">
+                                class="flex items-center justify-between rounded-xl bg-white border border-nutral-200 px-4 py-3 shadow-sm">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <!-- ไอคอนไฟล์ -->
                                     <div class="flex items-center gap-3 min-w-0">

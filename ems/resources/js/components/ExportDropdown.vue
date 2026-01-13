@@ -2,28 +2,23 @@
   <div class="relative" ref="dropdownContainer">
     <button 
       @click="showMenu = !showMenu"
-      class="inline-flex h-11 items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+      class="flex h-[58px] w-[170px] items-center gap-5 rounded-[20px] text-[20px] bg-white px-4 font-medium text-neutral-700 hover:bg-neutral-50 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       :disabled="disabled"
       :class="{'opacity-50 cursor-not-allowed': disabled}"
       :title="disabled ? 'กรุณาเลือกกิจกรรมก่อน Export' : 'Export ข้อมูลกิจกรรม'"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
+      <Icon :icon="'ci:share-ios-export'" class="h-[30px] w-[30px] text-neutral-700" />
       Export
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" :class="{'rotate-180': showMenu}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
     </button>
     
     <!-- Dropdown Menu -->
     <div 
       v-if="showMenu"
-      class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+      class="absolute right-0 mt-2 w-48 bg-white rounded-[20px] shadow-lg border border-neutral-200 z-50"
     >
       <button
         @click="exportToPDF"
-        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 rounded-t-lg transition-colors"
+        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-red-100 flex items-center gap-3 rounded-[20px] transition-colors"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -32,7 +27,7 @@
       </button>
       <button
         @click="exportToExcel"
-        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 rounded-b-lg transition-colors"
+        class="w-full px-4 py-3 text-left text-gray-700 hover:bg-red-100 flex items-center gap-3 rounded-[20px] transition-colors"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -46,11 +41,15 @@
 <script>
 import axios from 'axios';
 import ExcelJS from 'exceljs';
+import { Icon } from '@iconify/vue';
 
 axios.defaults.baseURL = "/api";
 axios.defaults.headers.common["Accept"] = "application/json";
 
 export default {
+  components: {
+    Icon
+  },
   name: 'ExportDropdown',
   props: {
     selectedEvents: {
@@ -193,74 +192,75 @@ export default {
             <style>
               @page { 
                 size: A4; 
-                margin: 15mm; 
+                margin: 12mm 10mm; 
               }
               body {
                 font-family: 'Sarabun', 'TH Sarabun New', 'Cordia New', 'Angsana New', Arial, sans-serif;
                 margin: 0;
-                padding: 20px;
-                font-size: 11pt;
+                padding: 10px;
+                font-size: 10pt;
                 color: #374151;
               }
               
               /* Header Section */
               .header {
                 text-align: center;
-                margin-bottom: 30px;
-                border-bottom: 3px solid #b91c1c;
-                padding-bottom: 15px;
+                margin-bottom: 8px;
+                border-bottom: 2px solid #b91c1c;
+                padding-bottom: 8px;
               }
               .header h1 {
-                margin: 0 0 10px 0;
+                margin: 0 0 4px 0;
                 color: #b91c1c;
-                font-size: 28pt;
+                font-size: 20pt;
                 font-weight: bold;
               }
               .header .subtitle {
-                margin: 5px 0;
+                margin: 2px 0;
                 color: #6b7280;
-                font-size: 11pt;
+                font-size: 9pt;
               }
               
               /* Event Details Section */
               .section {
-                margin-bottom: 30px;
-                page-break-inside: avoid;
+                margin-bottom: 12px;
               }
               .section-title {
-                font-size: 18pt;
+                font-size: 14pt;
                 font-weight: bold;
                 color: #b91c1c;
-                margin-bottom: 15px;
-                padding-bottom: 8px;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
                 border-bottom: 2px solid #fecaca;
+                page-break-after: avoid;
+                break-after: avoid;
               }
               
               .details-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 15px 30px;
-                margin-bottom: 15px;
+                gap: 8px 15px;
+                margin-bottom: 10px;
               }
               .details-grid.full {
                 grid-template-columns: 1fr;
               }
               
               .detail-item {
-                padding: 10px;
+                padding: 8px;
                 background: #f9fafb;
-                border-radius: 8px;
+                border-radius: 6px;
                 border-left: 3px solid #b91c1c;
               }
               .detail-label {
                 font-weight: 600;
                 color: #4b5563;
-                font-size: 10pt;
-                margin-bottom: 5px;
+                font-size: 9pt;
+                margin-bottom: 3px;
               }
               .detail-value {
                 color: #1f2937;
-                font-size: 11pt;
+                font-size: 10pt;
                 word-wrap: break-word;
               }
               
@@ -268,25 +268,32 @@ export default {
               table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-top: 15px;
-                page-break-inside: auto;
+                margin-top: 10px;
               }
               thead {
                 background-color: #b91c1c;
                 color: white;
+                display: table-header-group;
               }
               th {
-                padding: 12px 8px;
+                padding: 8px 6px;
                 text-align: center;
                 font-weight: 600;
                 border: 1px solid #991b1b;
-                font-size: 10pt;
+                font-size: 9pt;
+              }
+              tbody {
+                display: table-row-group;
+              }
+              tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
               }
               td {
-                padding: 10px 8px;
+                padding: 6px 5px;
                 text-align: center;
                 border: 1px solid #e5e7eb;
-                font-size: 10pt;
+                font-size: 9pt;
               }
               td.left {
                 text-align: left;
@@ -298,12 +305,14 @@ export default {
                 background-color: #ffffff;
               }
               
+              /* Page break styles - removed fixed pagination */
+              
               /* Status badges */
               .status-badge {
                 display: inline-block;
-                padding: 4px 12px;
-                border-radius: 12px;
-                font-size: 9pt;
+                padding: 3px 8px;
+                border-radius: 10px;
+                font-size: 8pt;
                 font-weight: 600;
                 text-transform: capitalize;
               }
@@ -323,25 +332,27 @@ export default {
               /* Summary Stats */
               .stats-row {
                 display: flex;
-                gap: 20px;
-                margin: 20px 0;
+                gap: 10px;
+                margin: 12px 0;
                 justify-content: center;
+                flex-wrap: wrap;
               }
               .stat-box {
                 flex: 1;
-                padding: 15px;
+                min-width: 80px;
+                padding: 8px;
                 background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
-                border-radius: 12px;
+                border-radius: 8px;
                 border: 2px solid #fecaca;
                 text-align: center;
               }
               .stat-label {
-                font-size: 10pt;
+                font-size: 8pt;
                 color: #6b7280;
-                margin-bottom: 5px;
+                margin-bottom: 3px;
               }
               .stat-value {
-                font-size: 24pt;
+                font-size: 16pt;
                 font-weight: bold;
                 color: #b91c1c;
               }
@@ -394,7 +405,7 @@ export default {
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">เวลา (Time)</div>
-                  <div class="detail-value">${event.evn_timestart || '-'} - ${event.evn_timeend || '-'}</div>
+                  <div class="detail-value">${this.formatTime(event.evn_timestart)} - ${this.formatTime(event.evn_timeend)}</div>
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">ระยะเวลา (Duration)</div>
@@ -420,8 +431,12 @@ export default {
                   <div class="stat-value">${participants.length}</div>
                 </div>
                 <div class="stat-box">
+                  <div class="stat-label">ตอบรับเข้าร่วม</div>
+                  <div class="stat-value">${participants.filter(p => p.status === 'accepted').length}</div>
+                </div>
+                <div class="stat-box">
                   <div class="stat-label">เข้าร่วมจริง (เช็คอิน)</div>
-                  <div class="stat-value">${participants.filter(p => p.con_checkin_status === 1).length}</div>
+                  <div class="stat-value">${participants.filter(p => p.__isCheckedIn).length}</div>
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">ปฏิเสธ</div>
@@ -429,27 +444,29 @@ export default {
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">รอตอบรับ</div>
-                  <div class="stat-value">${participants.filter(p => p.con_checkin_status !== 1 && p.status !== 'denied').length}</div>
-                </div>
+                  <div class="stat-value">${participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length}</div>
+                
               </div>
             </div>
             
             <!-- Guest List Section -->
-            <div class="section">
-              <div class="section-title">รายชื่อผู้เข้าร่วม (Guest List)</div>
-              
-              ${participants.length > 0 ? `
+            ${participants.length > 0 ? `
+              <div class="section">
+                <div class="section-title">รายชื่อผู้เข้าร่วม (Guest List)</div>
+                
                 <table>
                   <thead>
                     <tr>
                       <th style="width: 5%;">#</th>
                       <th style="width: 10%;">รหัส (ID)</th>
-                      <th style="width: 20%;">ชื่อ-นามสกุล (Name)</th>
+                      <th style="width: 18%;">ชื่อ-นามสกุล (Name)</th>
                       <th style="width: 10%;">ชื่อเล่น (Nickname)</th>
                       <th style="width: 12%;">เบอร์โทร (Phone)</th>
-                      <th style="width: 15%;">แผนก (Department)</th>
-                      <th style="width: 13%;">ทีม (Team)</th>
-                      <th style="width: 15%;">สถานะ (Status)</th>
+                      <th style="width: 12%;">แผนก (Department)</th>
+                      <th style="width: 11%;">ทีม (Team)</th>
+                      <th style="width: 10%;">สถานะ (Status)</th>
+                      <th style="width: 10%;">เข้าร่วมจริง</th>
+                      <th style="width: 9%;">เหตุผล (Reason)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -463,16 +480,23 @@ export default {
                         <td class="left">${guest.department || '-'}</td>
                         <td class="left">${guest.team || '-'}</td>
                         <td>
-                          <span class="status-badge status-${guest.con_checkin_status === 1 ? 'accepted' : (guest.status === 'denied' ? 'rejected' : 'pending')}">
-                            ${guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
+                          <span class="status-badge status-${guest.status === 'accepted' ? 'accepted' : (guest.status === 'denied' ? 'rejected' : 'pending')}">
+                            ${guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
                           </span>
                         </td>
+                        <td>${guest.__isCheckedIn ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม'}</td>
+                        <td class="left">${guest.con_reason || '-'}</td>
                       </tr>
                     `).join('')}
                   </tbody>
                 </table>
-              ` : '<div class="no-data">ไม่มีรายชื่อผู้เข้าร่วม</div>'}
-            </div>
+              </div>
+            ` : `
+              <div class="section">
+                <div class="section-title">รายชื่อผู้เข้าร่วม (Guest List)</div>
+                <div class="no-data">ไม่มีรายชื่อผู้เข้าร่วม</div>
+              </div>
+            `}
           </body>
           </html>
         `;
@@ -578,7 +602,7 @@ export default {
         
         // ตั้งค่าความกว้างคอลัมน์ทั้งหมด
         worksheet.columns = [
-          { width: 8 },   // # (A)
+          { width: 35 },  // # (A)
           { width: 15 },  // รหัส (B)
           { width: 12 },  // คำนำหน้า (C)
           { width: 18 },  // ชื่อ (D)
@@ -588,13 +612,15 @@ export default {
           { width: 25 },  // แผนก (H)
           { width: 20 },  // ทีม (I)
           { width: 25 },  // ตำแหน่ง (J)
-          { width: 15 }   // สถานะ (K)
+          { width: 15 },  // สถานะ (K)
+          { width: 35 },  // เข้าร่วมจริง (L)
+          { width: 30 }   // ความคิดเห็น (M)
         ];
         
         let currentRow = 1;
         
         // ส่วนที่ 1: รายละเอียดกิจกรรม
-        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
         const titleCell = worksheet.getCell(`A${currentRow}`);
         titleCell.value = 'รายละเอียดกิจกรรม (Event Details)';
         titleCell.font = { bold: true, size: 14 };
@@ -606,7 +632,7 @@ export default {
           ['ชื่อกิจกรรม (Event Title)', event.evn_title || '-'],
           ['ประเภท (Category)', event.cat_name || '-'],
           ['วันที่ (Date)', this.formatDateThai(event.evn_date)],
-          ['เวลา (Time)', `${event.evn_timestart || '-'} - ${event.evn_timeend || '-'}`],
+          ['เวลา (Time)', `${this.formatTime(event.evn_timestart)} - ${this.formatTime(event.evn_timeend)}`],
           ['ระยะเวลา (Duration)', duration],
           ['สถานที่ (Location)', event.evn_location || '-'],
           ['รายละเอียด (Details)', event.evn_details || '-']
@@ -617,14 +643,14 @@ export default {
           row.getCell(1).value = label;
           row.getCell(1).font = { bold: true };
           row.getCell(2).value = value;
-          worksheet.mergeCells(`B${currentRow}:K${currentRow}`);
+          worksheet.mergeCells(`B${currentRow}:M${currentRow}`);
           currentRow++;
         });
         
         currentRow += 1;
         
         // ส่วนที่ 2: สถิติ
-        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
         const statsCell = worksheet.getCell(`A${currentRow}`);
         statsCell.value = 'สถิติ (Statistics)';
         statsCell.font = { bold: true, size: 14 };
@@ -632,9 +658,10 @@ export default {
         
         const stats = [
           ['ผู้ได้รับเชิญทั้งหมด', participants.length],
-          ['ยืนยันเข้าร่วม', participants.filter(p => p.con_checkin_status === 1).length],
+          ['ตอบรับเข้าร่วม', participants.filter(p => p.status === 'accepted').length],
+          ['เข้าร่วมจริง (เช็คอิน)', participants.filter(p => p.__isCheckedIn).length],
           ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length],
-          ['รอตอบรับ', participants.filter(p => p.con_checkin_status !== 1 && p.status !== 'denied').length]
+          ['รอตอบรับ', participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length]
         ];
         
         stats.forEach(([label, value]) => {
@@ -648,7 +675,7 @@ export default {
         currentRow += 2;
         
         // ส่วนที่ 3: รายชื่อผู้เข้าร่วม
-        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
         const guestListCell = worksheet.getCell(`A${currentRow}`);
         guestListCell.value = 'รายชื่อผู้เข้าร่วม (Guest List)';
         guestListCell.font = { bold: true, size: 14 };
@@ -666,7 +693,9 @@ export default {
           'แผนก (Department)',
           'ทีม (Team)',
           'ตำแหน่ง (Position)',
-          'สถานะ (Status)'
+          'สถานะ (Status)',
+          'เข้าร่วมจริง',
+          'ความคิดเห็น/เหตุผล (Reason)'
         ];
         
         const headerRow = worksheet.getRow(currentRow);
@@ -691,7 +720,7 @@ export default {
         
         // Guest rows
         participants.forEach((guest, index) => {
-          const statusLabel = guest.con_checkin_status === 1 ? 'เข้าร่วมจริง' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ');
+          const statusLabel = guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ');
           const row = worksheet.getRow(currentRow);
           
           const rowData = [
@@ -705,7 +734,9 @@ export default {
             guest.department || '-',
             guest.team || '-',
             guest.position || '-',
-            statusLabel
+            statusLabel,
+            guest.__isCheckedIn ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม',
+            guest.con_reason || '-'
           ];
           
           rowData.forEach((value, colIndex) => {
@@ -750,6 +781,7 @@ export default {
 
     async fetchEventParticipants(eventId) {
       try {
+        console.log(`📥 Fetching participants for event ${eventId}`);
         const response = await axios.get(`/events/${eventId}/connects`);
         
         // จัดการ response ที่อาจมีโครงสร้างต่างกัน
@@ -767,7 +799,30 @@ export default {
           participants = [response.data];
         }
         
-        return participants;
+        // Normalize participant data to handle backend variations
+        const normalized = participants.map(p => {
+          // Normalize status field (backend may use 'status' or 'con_answer')
+          const rawStatus = p.status ?? p.con_answer ?? 'invalid';
+          const normalizedStatus = String(rawStatus).toLowerCase();
+          
+          // Normalize check-in status (can be number 1/0 or string "checked_in"/"not_checked_in")
+          const isCheckedIn = Number(p.con_checkin_status) === 1 || 
+                             String(p.con_checkin_status).toLowerCase() === 'checked_in';
+          
+          return {
+            ...p,
+            status: normalizedStatus,
+            __isCheckedIn: isCheckedIn
+          };
+        });
+        
+        const acceptedCount = normalized.filter(p => p.status === 'accepted').length;
+        const deniedCount = normalized.filter(p => p.status === 'denied').length;
+        const pendingCount = normalized.filter(p => p.status !== 'accepted' && p.status !== 'denied').length;
+        
+        console.log(`✅ Loaded ${normalized.length} participants: ${acceptedCount} accepted, ${deniedCount} denied, ${pendingCount} pending`);
+        
+        return normalized;
       } catch (error) {
         console.error('Error fetching participants:', error);
         return [];
@@ -822,13 +877,20 @@ export default {
       }
     },
 
-    getStatusLabel(status) {
-      const statusMap = {
-        'accepted': 'ยืนยันเข้าร่วม',
-        'rejected': 'ปฏิเสธ',
-        'pending': 'รอตอบรับ'
-      };
-      return statusMap[status] || 'ไม่ระบุ';
+    // ❌ UNUSED - ไม่ได้ใช้งาน (ใช้ inline mapping แทน)
+    // getStatusLabel(status) {
+    //   const statusMap = {
+    //     'accepted': 'ยืนยันเข้าร่วม',
+    //     'denied': 'ปฏิเสธ',
+    //     'pending': 'รอตอบรับ'
+    //   };
+    //   return statusMap[status] || 'ไม่ระบุ';
+    // },
+
+    formatTime(timeString) {
+      if (!timeString) return '-';
+      // ตัดวินาทีออก แสดงแค่ชั่วโมง:นาที (HH:MM)
+      return timeString.substring(0, 5);
     }
   }
 };

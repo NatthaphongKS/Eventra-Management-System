@@ -64,7 +64,7 @@ class CheckInController extends Controller
         return $employeesData;
     }
 
-    function getEmployeeInviteStatus($eveId, $empId)
+    function getEmployeeInviteStatus($empId, $eveId)
     {
         $connect = Connect::Where('con_employee_id', $empId)
             ->Where('con_event_id', $eveId)
@@ -72,7 +72,7 @@ class CheckInController extends Controller
         if ($connect) {
             return $connect->con_answer; // 'accepted', 'denied', 'invalid','not_invited'
         } else {
-            return 'not_invited'; // กรณีพนักงานไม่ได้รับเชิญ
+           dd("can not find connect");
         }
     }
 
