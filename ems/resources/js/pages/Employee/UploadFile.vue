@@ -286,6 +286,9 @@ async function upload() {
         );
         const dataAoA = rowsAoA.slice(headerRowIdx + 1);
 
+        if (!dataAoA.length) {
+            throw new Error("Please fill in all required information.");
+        }
         // AoA → Object (raw data)
         const json = arraysToObjects(headers, dataAoA);
 
@@ -756,9 +759,9 @@ async function downloadTemplate() {
             "สมชาย",
             "เขียวสะอาด",
             "หมกมุ่น",
-            "SMS",
-            "Interactive Media",
-            "3D Modeler",
+            "Artificial Intelligence",
+            "Artificial Intelligence",
+            "AI Engineer",
             "0912345678",
             "employee@example.com",
         ]);

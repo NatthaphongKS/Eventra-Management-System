@@ -9,7 +9,7 @@
         </label>
 
         <div class="w-full">
-            <slot :id="id" />
+            <slot :id="id" :error="error" />
         </div>
 
         <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
