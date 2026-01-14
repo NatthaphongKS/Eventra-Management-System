@@ -146,13 +146,19 @@ export default {
 
     async exportSingleEventToPDF(event) {
       try {
+        // ดึงข้อมูลพนักงานทั้งหมดในบริษัท
+        const allEmployees = await this.fetchAllEmployees();
+        
         // ดึงข้อมูล participants ของ event นี้
-        const participants = await this.fetchEventParticipants(event.id || event.evn_id);
+        const eventParticipants = await this.fetchEventParticipants(event.id || event.evn_id);
+        
+        // รวมข้อมูลพนักงานทั้งหมดกับข้อมูลการเข้าร่วมกิจกรรม (LEFT JOIN)
+        const participants = this.mergeEmployeesWithEventData(allEmployees, eventParticipants);
         
         // ตรวจสอบว่า participants เป็น array
         if (!Array.isArray(participants)) {
           console.error('Participants is not an array:', participants);
-          throw new Error('ไม่สามารถดึงข้อมูลผู้เข้าร่วมได้');
+          throw new Error('ไม่สามารถดึงข้อมูลพนักงานได้');
         }
         
         // สร้าง iframe แทนการใช้ window.open เพื่อหลีกเลี่ยง popup blocker
@@ -427,8 +433,12 @@ export default {
               <!-- Statistics -->
               <div class="stats-row">
                 <div class="stat-box">
-                  <div class="stat-label">ผู้ได้รับเชิญทั้งหมด</div>
+                  <div class="stat-label">พนักงานทั้งหมด</div>
                   <div class="stat-value">${participants.length}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">ผู้ได้รับเชิญ</div>
+                  <div class="stat-value">${participants.filter(p => p.__isInvited).length}</div>
                 </div>
                 <div class="stat-box">
                   <div class="stat-label">ตอบรับเข้าร่วม</div>
@@ -442,10 +452,6 @@ export default {
                   <div class="stat-label">ปฏิเสธ</div>
                   <div class="stat-value">${participants.filter(p => p.status === 'denied').length}</div>
                 </div>
-                <div class="stat-box">
-                  <div class="stat-label">รอตอบรับ</div>
-                  <div class="stat-value">${participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length}</div>
-                
               </div>
             </div>
             
@@ -480,8 +486,16 @@ export default {
                         <td class="left">${guest.department || '-'}</td>
                         <td class="left">${guest.team || '-'}</td>
                         <td>
-                          <span class="status-badge status-${guest.status === 'accepted' ? 'accepted' : (guest.status === 'denied' ? 'rejected' : 'pending')}">
-                            ${guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
+                          <span class="status-badge status-${
+                            guest.status === 'accepted' ? 'accepted' : 
+                            (guest.status === 'denied' ? 'rejected' : 
+                            (guest.status === 'not_invited' ? 'pending' : 'pending'))
+                          }">
+                            ${
+                              guest.status === 'accepted' ? 'เข้าร่วม' : 
+                              (guest.status === 'denied' ? 'ปฏิเสธ' : 
+                              (guest.status === 'not_invited' ? 'ไม่ได้รับเชิญ' : 'รอตอบรับ'))
+                            }
                           </span>
                         </td>
                         <td>${guest.__isCheckedIn ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม'}</td>
@@ -585,13 +599,19 @@ export default {
 
     async exportSingleEventToExcel(event) {
       try {
+        // ดึงข้อมูลพนักงานทั้งหมดในบริษัท
+        const allEmployees = await this.fetchAllEmployees();
+        
         // ดึงข้อมูล participants ของ event นี้
-        const participants = await this.fetchEventParticipants(event.id || event.evn_id);
+        const eventParticipants = await this.fetchEventParticipants(event.id || event.evn_id);
+        
+        // รวมข้อมูลพนักงานทั้งหมดกับข้อมูลการเข้าร่วมกิจกรรม (LEFT JOIN)
+        const participants = this.mergeEmployeesWithEventData(allEmployees, eventParticipants);
         
         // ตรวจสอบว่า participants เป็น array
         if (!Array.isArray(participants)) {
           console.error('Participants is not an array:', participants);
-          throw new Error('ไม่สามารถดึงข้อมูลผู้เข้าร่วมได้');
+          throw new Error('ไม่สามารถดึงข้อมูลพนักงานได้');
         }
         
         const duration = this.calculateDuration(event.evn_timestart, event.evn_timeend);
@@ -657,11 +677,11 @@ export default {
         currentRow += 1;
         
         const stats = [
-          ['ผู้ได้รับเชิญทั้งหมด', participants.length],
+          ['พนักงานทั้งหมด', participants.length],
+          ['ผู้ได้รับเชิญ', participants.filter(p => p.__isInvited).length],
           ['ตอบรับเข้าร่วม', participants.filter(p => p.status === 'accepted').length],
           ['เข้าร่วมจริง (เช็คอิน)', participants.filter(p => p.__isCheckedIn).length],
-          ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length],
-          ['รอตอบรับ', participants.filter(p => p.status !== 'accepted' && p.status !== 'denied').length]
+          ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length]
         ];
         
         stats.forEach(([label, value]) => {
@@ -720,7 +740,10 @@ export default {
         
         // Guest rows
         participants.forEach((guest, index) => {
-          const statusLabel = guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ');
+          const statusLabel = 
+            guest.status === 'accepted' ? 'เข้าร่วม' : 
+            (guest.status === 'denied' ? 'ปฏิเสธ' : 
+            (guest.status === 'not_invited' ? 'ไม่ได้รับเชิญ' : 'รอตอบรับ'));
           const row = worksheet.getRow(currentRow);
           
           const rowData = [
@@ -779,9 +802,128 @@ export default {
       }
     },
 
+    async fetchAllEmployees() {
+      try {
+        console.log('📥 Fetching all employees in company');
+        const response = await axios.get('/employees');
+        
+        let employees = [];
+        
+        if (Array.isArray(response.data)) {
+          employees = response.data;
+        } else if (response.data && Array.isArray(response.data.data)) {
+          employees = response.data.data;
+        } else if (response.data && Array.isArray(response.data.employees)) {
+          employees = response.data.employees;
+        }
+        
+        // Normalize department, team, position data จาก employee table
+        const normalized = employees.map(emp => {
+          // จัดการ department (รองรับทั้ง object และ string)
+          let department = '';
+          if (emp.department && typeof emp.department === 'object') {
+            department = emp.department.dept_name || emp.department.name || emp.department.department_name || '';
+          } else if (emp.department_name) {
+            department = emp.department_name;
+          } else if (emp.dept_name) {
+            department = emp.dept_name;
+          } else if (typeof emp.department === 'string') {
+            department = emp.department;
+          }
+          
+          // จัดการ team (รองรับทั้ง object และ string)
+          let team = '';
+          if (emp.team && typeof emp.team === 'object') {
+            team = emp.team.team_name || emp.team.name || '';
+          } else if (emp.team_name) {
+            team = emp.team_name;
+          } else if (typeof emp.team === 'string') {
+            team = emp.team;
+          }
+          
+          // จัดการ position (รองรับทั้ง object และ string)
+          let position = '';
+          if (emp.position && typeof emp.position === 'object') {
+            position = emp.position.pos_name || emp.position.name || emp.position.position_name || '';
+          } else if (emp.position_name) {
+            position = emp.position_name;
+          } else if (emp.pos_name) {
+            position = emp.pos_name;
+          } else if (typeof emp.position === 'string') {
+            position = emp.position;
+          }
+          
+          return {
+            ...emp,
+            department,
+            team,
+            position
+          };
+        });
+        
+        console.log(`Loaded ${normalized.length} employees from company`);
+        console.log(`Sample employee data:`, normalized[0]); // Debug: แสดงตัวอย่างข้อมูล
+        return normalized;
+      } catch (error) {
+        console.error('Error fetching all employees:', error);
+        return [];
+      }
+    },
+
+    mergeEmployeesWithEventData(allEmployees, eventParticipants) {
+      // สร้าง Map ของผู้เข้าร่วมกิจกรรมเพื่อให้ค้นหาได้เร็ว (LEFT JOIN logic)
+      const participantMap = new Map();
+      eventParticipants.forEach(participant => {
+        const empId = participant.emp_id || participant.id;
+        if (empId) {
+          participantMap.set(empId, participant);
+        }
+      });
+      
+      // รวมข้อมูลพนักงานทั้งหมดกับข้อมูลการเข้าร่วม
+      return allEmployees.map(employee => {
+        const empId = employee.emp_id || employee.id;
+        const participantData = participantMap.get(empId);
+        
+        // CRITICAL: เก็บข้อมูล department, team, position จาก employee เสมอ
+        // ไม่ให้ถูก overwrite โดยข้อมูลจาก participant/con_answer
+        const employeeInfo = {
+          department: employee.department || '',
+          team: employee.team || '',
+          position: employee.position || ''
+        };
+        
+        if (participantData) {
+          // พนักงานคนนี้ได้รับเชิญและมีข้อมูลการตอบรับ
+          return {
+            ...employee,
+            ...employeeInfo, // ใช้ข้อมูล dept/team/position จาก employee
+            status: participantData.status || 'pending',
+            con_answer: participantData.con_answer || participantData.status,
+            con_reason: participantData.con_reason || '',
+            con_checkin_status: participantData.con_checkin_status || 0,
+            __isCheckedIn: participantData.__isCheckedIn || false,
+            __isInvited: true
+          };
+        } else {
+          // พนักงานคนนี้ไม่ได้รับเชิญในกิจกรรมนี้
+          return {
+            ...employee,
+            ...employeeInfo, // ใช้ข้อมูล dept/team/position จาก employee
+            status: 'not_invited',
+            con_answer: 'not_invited',
+            con_reason: '',
+            con_checkin_status: 0,
+            __isCheckedIn: false,
+            __isInvited: false
+          };
+        }
+      });
+    },
+
     async fetchEventParticipants(eventId) {
       try {
-        console.log(`📥 Fetching participants for event ${eventId}`);
+        console.log(`Fetching participants for event ${eventId}`);
         const response = await axios.get(`/events/${eventId}/connects`);
         
         // จัดการ response ที่อาจมีโครงสร้างต่างกัน
@@ -820,7 +962,7 @@ export default {
         const deniedCount = normalized.filter(p => p.status === 'denied').length;
         const pendingCount = normalized.filter(p => p.status !== 'accepted' && p.status !== 'denied').length;
         
-        console.log(`✅ Loaded ${normalized.length} participants: ${acceptedCount} accepted, ${deniedCount} denied, ${pendingCount} pending`);
+        console.log(`Loaded ${normalized.length} participants: ${acceptedCount} accepted, ${deniedCount} denied, ${pendingCount} pending`);
         
         return normalized;
       } catch (error) {
@@ -877,7 +1019,7 @@ export default {
       }
     },
 
-    // ❌ UNUSED - ไม่ได้ใช้งาน (ใช้ inline mapping แทน)
+    // UNUSED - ไม่ได้ใช้งาน (ใช้ inline mapping แทน)
     // getStatusLabel(status) {
     //   const statusMap = {
     //     'accepted': 'ยืนยันเข้าร่วม',
