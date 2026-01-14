@@ -2,25 +2,28 @@
     <div class="mt-4">
 
         <!-- ▼ Drop zone: ลดขนาดกรอบเมื่อมีไฟล์ -->
-        <div class="mt-2 rounded-2xl border-2 border-rose-300 border-dashed bg-rose-50 relative transition-all">
+        <div class="mt-2 rounded-2xl border-2 border-dashed border-rose-400 bg-rose-50 relative transition-all">
             <label :for="inputId" class="block">
                 <div class="relative cursor-pointer rounded-2xl transition-all" :class="[
-                    dragOver ? 'ring-2 ring-rose-300' : '',
+                    dragOver ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-rose-50' : '',
                     model ? 'min-h-[60px] p-2' : 'min-h-[300px] pt-20 pb-6 px-4'
-                ]" @dragover.stop.prevent="onDragOver" @dragleave.prevent="dragOver = false" @drop.stop.prevent="onDrop">
+                ]" @dragover.stop.prevent="onDragOver" @dragleave.prevent="dragOver = false"
+                    @drop.stop.prevent="onDrop">
                     <!-- แสดงชื่อไฟล์ -->
                     <template v-if="model">
                         <div class="px-2">
                             <div
                                 class="flex items-center justify-between rounded-xl bg-white border border-nutral-200 px-4 py-3 shadow-sm">
                                 <div class="flex items-center gap-3 min-w-0">
-                                        <svg class="w-10 h-10 text-red-600" viewBox="0 0 24 24" fill="currentColor"
-                                            aria-hidden="true">
-                                            <path
-                                                d="M14 2.25a.25.25 0 0 1 .25.25v5.647c0 .414.336.75.75.75h4.5a.25.25 0 0 1 .25.25V19A2.75 2.75 0 0 1 17 21.75H7A2.75 2.75 0 0 1 4.25 19V5A2.75 2.75 0 0 1 7 2.25z" />
-                                            <path d="M16.086 2.638c-.143-.115-.336.002-.336.186v4.323c0 .138.112.25.25.25h3.298c.118 0 .192-.124.124-.22L16.408 2.98a1.8 1.8 0 0 0-.322-.342" />
-                                        </svg>
-                                    <span class="text-md font-medium text-neutral-700 truncate">{{ model.name }}</span>
+                                    <!-- ไอคอนไฟล์ -->
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="flex items-center justify-center
+                                         h-8 w-8 rounded-[8px]
+                                         bg-white">
+                                            <Icon icon="basil:file-solid" class="h-10 w-10 text-red-700" />
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-700 truncate">{{ model.name }}</span>
                                 </div>
                                 <button type="button"
                                     class="inline-flex items-center justify-center w-7 h-7 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
@@ -42,15 +45,16 @@
                                     d="M6 19h12a5 5 0 0 0 1.02-9.9A7 7 0 0 0 6.06 9.6 4 4 0 0 0 6 19Z" />
                                 <path fill="#ffffff" d="M12 8l-3.5 3.5h2.5V17h2v-5.5H15.5L12 8Z" />
                             </svg>
-                            <p class="text-gray-600">Choose a file or drag &amp; drop it here</p>
-                            <p class="text-xs text-gray-400 mt-1">
+                            <p class="text-gray-700 font-medium">Choose a file or drag &amp; drop it here</p>
+                            <p class="text-xs text-gray-500 mt-1">
                                 Excel/CSV (.xls, .xlsx, .csv) · Up to {{ maxSizeMB }}MB
                             </p>
-                            <button type="button"
-                                class="mt-4 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
-                                @click="openPicker">
+                            <button type="button" class="mt-5 rounded-[10px] border border-rose-400 bg-white px-4 py-1.5
+                            text-xs font-medium text-neutral-600
+                            hover:bg-neutral-100 transition" @click="openPicker">
                                 Browse files
                             </button>
+
 
                             <!-- error -->
                             <p v-if="error" class="mt-2 text-xs text-red-600">{{ error }}</p>
@@ -68,6 +72,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { Icon } from '@iconify/vue'
+
 
 /**
  * v-model:file

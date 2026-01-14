@@ -27,10 +27,15 @@ return new class extends Migration {
 
         Schema::create('ems_position', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pst_team_id')->constrained('ems_team')->onDelete('cascade');
-            $table->string('pst_name')->unique();
-            $table->enum('pst_delete_status', ['active', 'inactive'])->default('active');
+            $table->foreignId('pst_team_id')
+                ->constrained('ems_team')
+                ->onDelete('cascade');
+            $table->string('pst_name');
+            $table->unique(['pst_name', 'pst_team_id'], 'ems_position_name_team_unique');
+            $table->enum('pst_delete_status', ['active', 'inactive'])
+                ->default('active');
         });
+
 
         Schema::create('ems_company', function (Blueprint $table) {
             $table->id();
