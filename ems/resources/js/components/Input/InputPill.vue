@@ -12,11 +12,10 @@
                     : 'bg-white text-neutral-800',
                 error
                     ? 'border-red-700 focus:ring-red-300 focus:border-red-700'
-                    : 'border-neutral-200 focus:ring-red-300 focus:border-neutral-200'
+                    : 'border-neutral-200 focus:ring-red-300 focus:border-red-200'
             ]" :value="modelValue" @input="$emit('update:modelValue', $event.target?.value)" />
-
-        <p v-if="error" class="text-xs text-red-500">
-            {{ error }}
+        <p class="text-xs text-red-500 min-h-[16px]">
+            {{ error || '\u00A0' }}
         </p>
     </div>
 </template>

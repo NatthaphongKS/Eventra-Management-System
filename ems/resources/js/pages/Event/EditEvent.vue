@@ -651,12 +651,12 @@ export default {
 
             // [Earth (Suphanut) 2025-12-06] Logic Check: Time
             // ถ้ามีการกรอกเวลาครบทั้งคู่ แต่ Logic ไม่ผ่าน (End <= Start)
-            if (this.eventTimeStart && this.eventTimeEnd && !this.isValidTimeLogic) {
-                // ให้ขึ้นตัวแดงทั้งคู่ หรือแค่ตัวจบก็ได้ (ในที่นี้ให้แดงที่กรอบใหญ่ตาม Template)
-                errors.eventTimeEnd = true;
-                // เพิ่ม message พิเศษสำหรับเคสนี้ (Template จะดึงไปแสดง)
-                errors.timeMsg = 'End time must be after Start time';
-            }
+            // if (this.eventTimeStart && this.eventTimeEnd && !this.isValidTimeLogic) {
+            //     // ให้ขึ้นตัวแดงทั้งคู่ หรือแค่ตัวจบก็ได้ (ในที่นี้ให้แดงที่กรอบใหญ่ตาม Template)
+            //     errors.eventTimeEnd = true;
+            //     // เพิ่ม message พิเศษสำหรับเคสนี้ (Template จะดึงไปแสดง)
+            //     errors.timeMsg = 'End time must be after Start time';
+            // }
 
             this.formErrors = errors;
             return Object.keys(errors).length === 0;

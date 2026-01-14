@@ -17,12 +17,12 @@
       <div class="mini-donut">
         <svg class="mini-donut-svg" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="30" stroke="#dbeafe" stroke-width="8" fill="none"/>
-          <circle 
-            cx="40" 
-            cy="40" 
-            r="30" 
-            stroke="url(#blueGradient)" 
-            stroke-width="8" 
+          <circle
+            cx="40"
+            cy="40"
+            r="30"
+            stroke="url(#blueGradient)"
+            stroke-width="8"
             fill="none"
             stroke-linecap="round"
             :stroke-dasharray="miniCircumference"
@@ -234,11 +234,11 @@ export default {
   .card-stat {
     padding: 20px;
   }
-  
+
   .percentage {
     font-size: 36px;
   }
-  
+
   .mini-donut-svg {
     width: 55px;
     height: 55px;
