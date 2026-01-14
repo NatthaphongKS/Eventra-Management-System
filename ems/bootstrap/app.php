@@ -18,9 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            // 'api/*',      //  ให้ /api ทั้งหมดไม่ต้องใช้ CSRF (เหมาะกับ Postman + API Doc)
+            'api/*',      //  ให้ /api ทั้งหมดไม่ต้องใช้ CSRF (Postman)
             'logined',    //  เผื่อ login route เป็น web form
-            'logout',     //  เผื่อ logout เป็น POST
+            'logout',     // เผื่อ logout เป็น POST
         ]);
 
         // Global middleware

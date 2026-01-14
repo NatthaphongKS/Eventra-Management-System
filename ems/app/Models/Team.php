@@ -3,6 +3,7 @@
 Model : Team
 Edit by : Chitdanai
 */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -12,12 +13,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Team extends Model
 {
     use HasFactory;
-    protected $guarded = [];
-    protected $table = 'ems_team';
 
+    protected $table = 'ems_team';
     public $timestamps = false;
 
-    protected $fillable = ['tm_name', 'tm_delete_status'];
+    // ลบ guarded ออก
+    // protected $guarded = [];
+
+    protected $fillable = [
+        'tm_name',
+        'tm_department_id',
+        'tm_delete_status',
+    ];
 
     public function employees(): HasMany
     {
