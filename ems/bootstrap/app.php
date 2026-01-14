@@ -7,9 +7,9 @@ use Illuminate\Foundation\Configuration\Middleware;
 // bootstrap/app.php
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
@@ -18,8 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            '/logined',
-            '/logout', // might be needed if logout is also failing
+            // 'api/*',      //  ให้ /api ทั้งหมดไม่ต้องใช้ CSRF (เหมาะกับ Postman + API Doc)
+            'logined',    //  เผื่อ login route เป็น web form
+            'logout',     //  เผื่อ logout เป็น POST
         ]);
 
         // Global middleware

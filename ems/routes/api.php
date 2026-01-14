@@ -21,7 +21,6 @@ use App\Http\Controllers\{
 Route::get('/reply/{encryptURL}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
 
-
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes (web, auth)
@@ -39,11 +38,11 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);
     Route::get('/meta', [EmployeeController::class, 'meta']);
     Route::get('/employees-meta', [EmployeeController::class, 'meta']);
-    
+
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/check-employee-duplicate', [EmployeeController::class, 'checkDuplicate']);
     Route::post('/import-employees', [EmployeeController::class, 'importBulk']);
-    
+
     Route::put('/employees/{id}', [EmployeeController::class, 'update']);
     Route::put('/employees/soft-delete/{id}', [EmployeeController::class, 'softDelete']);
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
@@ -60,17 +59,13 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/event-info', [EventController::class, 'eventInfo']);
     Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']);
     Route::post('/event-statistics', [EventController::class, 'eventStatistics']);
-    Route::get('/get-event', [EventController::class, 'Eventtable']);   // << ใช้กับหน้า List
-    // Route::delete('/event/{id}', [EventController::class, 'destroy']);  // << ปุ่มลบในหน้า Vue
-    // Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
-    // Route::patch('/event/{id}/soft-delete', [EventController::class, 'deleted'])->whereNumber('id');
-    // Route::get('/me', [EventController::class, 'me']);
+    Route::get('/get-event', [EventController::class, 'Eventtable']);
     Route::get('/permission', [EventController::class, 'permission']);
     Route::get('/event/{id}', [EventController::class, 'show']);
     Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']);
     Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
-    
+
     Route::post('/event-save', [EventController::class, 'store']);
     Route::post('/edit-event', [EventController::class, 'Update']);
     Route::patch('/event/{id}/deleted', [EventController::class, 'deleted'])->whereNumber('id');
