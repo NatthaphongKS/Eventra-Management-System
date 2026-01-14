@@ -5,7 +5,7 @@
         <div class="flex items-center gap-3">
             <SearchBar
                 v-model="searchInput"
-                placeholder="Search Employee / Department / Team / Position"
+                placeholder="Search Employee ID / Name / Nickname"
                 @search="onSearch"
             />
 
@@ -167,19 +167,26 @@ export default {
 
     computed: {
         filtered() {
-            const q = (this.search || '').trim().toLowerCase();
-            if (!q) return this.rows;
-            return this.rows.filter(
-                (r) =>
-                    (r.emp_id || '').toLowerCase().includes(q) ||
-                    (r.emp_firstname || '').toLowerCase().includes(q) ||
-                    (r.emp_lastname || '').toLowerCase().includes(q) ||
-                    (r.emp_nickname || '').toLowerCase().includes(q) ||
-                    (r.department_name || '').toLowerCase().includes(q) ||
-                    (r.team_name || '').toLowerCase().includes(q) ||
-                    (r.position_name || '').toLowerCase().includes(q)
-            );
-        },
+  const q = (this.search || '').trim().toLowerCase();
+  if (!q) return this.rows;
+
+  return this.rows.filter((r) => {
+    const id = (r.emp_id || '').toLowerCase();
+    const firstname = (r.emp_firstname || '').toLowerCase();
+    const lastname = (r.emp_lastname || '').toLowerCase();
+    const nickname = (r.emp_nickname || '').toLowerCase();
+
+    const fullName = `${firstname} ${lastname}`.trim();
+
+    return (
+      id.includes(q) ||
+      firstname.includes(q) ||
+      lastname.includes(q) ||
+      fullName.includes(q) ||
+      nickname.includes(q)
+    );
+  });
+},
 
         sorted() {
             const { key, order } = this.sortBy;

@@ -8,9 +8,10 @@
     <div class="flex-1 w-full">
         <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6">
             <div>
-                <h2 class="text-2xl md:text-2xl font-semibold text-gray-900">
+                <h2 class="text-3xl font-semibold text-neutral-800 -ml-8">
                     Upload file information
                 </h2>
+
 
                 <div class="mt-2 flex justify-center">
                     <button type="button" @click="downloadTemplate"
@@ -21,7 +22,7 @@
             </div>
 
             <div class="mt-6">
-                <p class="text-xl font-medium text-gray-800">
+                <p class="text-sm font-semibold text-gray-600">
                     Upload file Excel
                 </p>
                 <p class="text-sm text-gray-400 mt-1">
@@ -274,6 +275,9 @@ async function upload() {
         );
         const dataAoA = rowsAoA.slice(headerRowIdx + 1);
 
+        if (!dataAoA.length) {
+            throw new Error("Please fill in all required information.");
+        }
         // AoA → Object (raw data)
         const json = arraysToObjects(headers, dataAoA);
 
@@ -306,7 +310,6 @@ async function upload() {
             "position",
             "phone",
             "email",
-            "dateadd",
         ];
 
         const invalidRowIndex = normalizedRows.findIndex(row =>
@@ -356,7 +359,6 @@ function detectHeaderRow(rowsAoA) {
         "position",
         "phone",
         "email",
-        "dateadd",
     ];
 
     const maxScan = Math.min(rowsAoA.length, 30);
@@ -421,12 +423,14 @@ function normalizePhone(p) {
     return String(p).replace(/[^\d]/g, "");
 }
 
-function toDMY(d) {
+function todayDMY() {
+    const d = new Date();
     const dd = String(d.getDate()).padStart(2, "0");
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const yy = d.getFullYear();
     return `${dd}/${mm}/${yy}`;
 }
+
 
 // ======================================================
 // Map & Normalize Excel Rows
@@ -460,9 +464,6 @@ function mapRows(rows) {
         เบอร์: "phone",
         email: "email",
         อีเมล: "email",
-        "date add": "dateAdd",
-        date: "dateAdd",
-        วันที่: "dateAdd",
     };
 
     return rows.map(r => {
@@ -478,44 +479,6 @@ function mapRows(rows) {
             .filter(Boolean)
             .join(" ")
             .trim();
-
-        let dateAdd = "";
-
-        if (norm.dateAdd) {
-
-            // 1) Excel Date object
-            if (norm.dateAdd instanceof Date) {
-                const y = norm.dateAdd.getUTCFullYear();
-                const m = norm.dateAdd.getUTCMonth();
-                const d = norm.dateAdd.getUTCDate();
-
-                dateAdd = toDMY(new Date(y, m, d));
-            }
-
-            // 2) String date เช่น 20/08/2025 หรือ 2025-08-20
-            else if (typeof norm.dateAdd === "string") {
-                const str = norm.dateAdd.trim();
-
-                const dmy = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                if (dmy) {
-                    const [, d, m, y] = dmy;
-                    dateAdd = toDMY(new Date(Number(y), Number(m) - 1, Number(d)));
-                }
-                else {
-                    const ymd = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-                    if (ymd) {
-                        const [, y, m, d] = ymd;
-                        dateAdd = toDMY(new Date(Number(y), Number(m) - 1, Number(d)));
-                    }
-                }
-            }
-            else if (!isNaN(Number(norm.dateAdd))) {
-                const d = XLSX.SSF.parse_date_code(Number(norm.dateAdd));
-                if (d) {
-                    dateAdd = toDMY(new Date(d.y, d.m - 1, d.d));
-                }
-            }
-        }
 
         return {
             company: (norm.company || "").toString().trim(),
@@ -536,7 +499,7 @@ function mapRows(rows) {
             team: (norm.team || "").toString().trim(),
             position: (norm.position || "").toString().trim(),
             email: (norm.email || "").toString().trim(),
-            dateAdd: (dateAdd || norm.dateAdd || "").toString().trim(),
+            dateAdd: todayDMY(),
         };
 
     });
@@ -781,7 +744,6 @@ async function downloadTemplate() {
             "Position",
             "Phone",
             "Email",
-            "Date Add",
         ]);
 
         sheet.addRow([
@@ -791,12 +753,11 @@ async function downloadTemplate() {
             "สมชาย",
             "เขียวสะอาด",
             "หมกมุ่น",
-            "SMS",
-            "Interactive Media",
-            "3D Modeler",
+            "Artificial Intelligence",
+            "Artificial Intelligence",
+            "AI Engineer",
             "0912345678",
             "employee@example.com",
-            "20/08/2025",
         ]);
 
         /* ============================
