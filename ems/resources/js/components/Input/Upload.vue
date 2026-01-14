@@ -2,25 +2,26 @@
     <div class="mt-4">
 
         <!-- ▼ Drop zone: ลดขนาดกรอบเมื่อมีไฟล์ -->
-        <div class="mt-2 rounded-2xl border-2 border-rose-300 border-dashed bg-rose-50 relative transition-all">
+        <div class="mt-2 rounded-2xl border-2 border-dashed border-rose-400 bg-rose-50 relative transition-all">
             <label :for="inputId" class="block">
                 <div class="relative cursor-pointer rounded-2xl transition-all" :class="[
-                    dragOver ? 'ring-2 ring-rose-300' : '',
+                    dragOver ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-rose-50' : '',
                     model ? 'min-h-[60px] p-2' : 'min-h-[300px] pt-20 pb-6 px-4'
-                ]" @dragover.stop.prevent="onDragOver" @dragleave.prevent="dragOver = false" @drop.stop.prevent="onDrop">
+                ]" @dragover.stop.prevent="onDragOver" @dragleave.prevent="dragOver = false"
+                    @drop.stop.prevent="onDrop">
                     <!-- แสดงชื่อไฟล์ -->
                     <template v-if="model">
                         <div class="px-2">
                             <div
-                                class="flex items-center justify-between rounded-xl bg-white border border-gray-200 px-4 py-3 shadow-sm">
+                                class="flex items-center justify-between rounded-xl bg-white border border-nutral-200 px-4 py-3 shadow-sm">
                                 <div class="flex items-center gap-3 min-w-0">
-                                    <div class="flex items-center justify-center h-8 w-8 rounded-md bg-red-600">
-                                        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"
-                                            aria-hidden="true">
-                                            <path
-                                                d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9.5L13.5 2H6Z" />
-                                            <path d="M14 2v6h6" fill="#fff" />
-                                        </svg>
+                                    <!-- ไอคอนไฟล์ -->
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="flex items-center justify-center
+                                         h-8 w-8 rounded-[8px]
+                                         bg-white">
+                                            <Icon icon="basil:file-solid" class="h-10 w-10 text-red-700" />
+                                        </div>
                                     </div>
                                     <span class="text-sm text-gray-700 truncate">{{ model.name }}</span>
                                 </div>
@@ -44,15 +45,16 @@
                                     d="M6 19h12a5 5 0 0 0 1.02-9.9A7 7 0 0 0 6.06 9.6 4 4 0 0 0 6 19Z" />
                                 <path fill="#ffffff" d="M12 8l-3.5 3.5h2.5V17h2v-5.5H15.5L12 8Z" />
                             </svg>
-                            <p class="text-gray-600">Choose a file or drag &amp; drop it here</p>
-                            <p class="text-xs text-gray-400 mt-1">
+                            <p class="text-gray-700 font-medium">Choose a file or drag &amp; drop it here</p>
+                            <p class="text-xs text-gray-500 mt-1">
                                 Excel/CSV (.xls, .xlsx, .csv) · Up to {{ maxSizeMB }}MB
                             </p>
-                            <button type="button"
-                                class="mt-4 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
-                                @click="openPicker">
+                            <button type="button" class="mt-5 rounded-[10px] border border-rose-400 bg-white px-4 py-1.5
+                            text-xs font-medium text-neutral-600
+                            hover:bg-neutral-100 transition" @click="openPicker">
                                 Browse files
                             </button>
+
 
                             <!-- error -->
                             <p v-if="error" class="mt-2 text-xs text-red-600">{{ error }}</p>
@@ -70,6 +72,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { Icon } from '@iconify/vue'
+
 
 /**
  * v-model:file

@@ -346,6 +346,7 @@ class EmployeeController extends Controller
                     'emp_delete_status' => 'active',
                     'emp_delete_at' => null,
                     'emp_delete_by' => null,
+                    'emp_create_at' => Carbon::now(),
                 ]);
 
                 return response()->json([
@@ -436,7 +437,6 @@ class EmployeeController extends Controller
                 'message' => $userMessage
             ], 422);
         }
-
     }
 
     public function update(Request $request, $id)

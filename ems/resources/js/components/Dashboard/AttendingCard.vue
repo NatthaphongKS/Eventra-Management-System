@@ -1,87 +1,135 @@
 <template>
-  <div class="card-stat" :class="{ clickable: isClickable }" @click="handleClick">
-    <!-- Icon and Title -->
-    <div class="card-header">
-      <div class="card-icon">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="m22 2-5 5 3 3z"/>
+  <div
+    class="relative w-full rounded-2xl p-5 font-sans transition-all duration-200 shadow-sm mb-4 border-l-[4px] border-l-green-600 hover:-translate-y-0.5 hover:shadow-md"
+    :class="[
+      'bg-green-100',
+    ]"
+  >
+    <div class="mb-2 flex items-center gap-2 text-gray-700">
+      <div class="flex items-center justify-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-7 h-7 sm:w-9 sm:h-9"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="m21.1 12.5l1.4 1.41l-6.53 6.59L12.5 17l1.4-1.41l2.07 2.08zM10 17l3 3H3v-2c0-2.21 3.58-4 8-4l1.89.11zm1-13a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4"
+          />
         </svg>
       </div>
-      <span class="card-title">Attending</span>
+      <span class="text-xl sm:text-2xl font-semibold font-[poppins] text-neutral-700"
+        >Accepted</span
+      >
     </div>
 
-    <!-- Main content -->
-    <div class="card-content">
-      <!-- Large percentage -->
-      <div class="percentage">{{ getPercentage() }}%</div>
-      
-      <!-- Mini donut chart -->
-      <div class="mini-donut">
-        <svg class="mini-donut-svg" viewBox="0 0 60 60" width="60" height="60">
-          <circle 
-            cx="30" 
-            cy="30" 
-            r="25" 
-            fill="transparent" 
-            stroke="#e5e7eb" 
-            stroke-width="6"
-          />
-          <circle 
-            cx="30" 
-            cy="30" 
-            r="25" 
-            fill="transparent" 
-            stroke="#22c55e" 
-            stroke-width="6"
-            stroke-linecap="round"
-            :stroke-dasharray="miniCircumference"
-            :stroke-dashoffset="miniStrokeDashoffset"
-            transform="rotate(0 30 30)"
-            class="mini-progress"
-          />
-          
-          <!-- Center number -->
-          <text x="30" y="36" text-anchor="middle" class="mini-donut-number">
-            {{ attending }}
-          </text>
-        </svg>
+    <div class="mb-2 flex items-center justify-between w-full ml-10">
+      <div class="flex items-baseline text-green-600 leading-none">
+        <span class="text-4xl sm:text-5xl font-extrabold font-[poppins]">{{ getPercentage() }}</span>
+        <span class="ml-1 text-xl sm:text-2xl font-bold">%</span>
+      </div>
+
+      <div class="flex items-center justify-center mr-20">
+        <div class="relative">
+          <svg
+            class="w-20 h-20 sm:w-[100px] sm:h-[105px] -rotate-90 transition-all duration-300"
+            viewBox="0 0 60 60"
+          >
+            <circle
+              cx="30"
+              cy="30"
+              r="25"
+              fill="transparent"
+              class="stroke-slate-200"
+              stroke-width="7"
+            />
+            <circle
+              cx="30"
+              cy="30"
+              r="25"
+              fill="transparent"
+              class="stroke-green-600 transition-all duration-700 ease-out"
+              stroke-width="5"
+              stroke-linecap="round"
+              :stroke-dasharray="miniCircumference"
+              :stroke-dashoffset="miniStrokeDashoffset"
+            />
+            <text
+              x="30"
+              y="35"
+              text-anchor="middle"
+              class="fill-gray-700 text-[12px] sm:text-[14px] font-bold"
+              transform="rotate(90 30 30)"
+            >
+              {{ attending }}
+            </text>
+          </svg>
+        </div>
       </div>
     </div>
 
-    <!-- Footer info -->
-    <div class="card-footer">
-      <div class="count">{{ attending }} person{{ attending > 1 ? 's' : '' }}</div>
-      <div class="view-link">View Attendance →</div>
+    <div
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between sm:gap-0 pt-2 border-t border-green-200/50 sm:border-none"
+    >
+      <div class="flex items-center gap-2 text-xs text-gray-600 order-2 sm:order-1">
+        <span class="h-2.5 w-2.5 rounded-full bg-green-600 flex-shrink-0"></span>
+        <span class="whitespace-nowrap text-base font-[poppins]">
+          <b class="text-gray-800 ">{{ attending }}</b>
+          Person from
+          <b class="text-gray-800 ">{{ total }}</b>
+        </span>
+      </div>
+
+      <button
+        class="order-1 sm:order-2 w-full sm:w-auto text-center rounded-full px-4 py-2 text-sm sm:text-base font-basic font-[poppins] shadow-sm transition-all border mr-3.5"
+        :class="[
+          isSelected
+            ? 'bg-green-600 border-green-800 text-white'
+            : 'bg-white border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:shadow-md',
+            isClickable ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : '',
+        ]"
+        @click="handleClick"
+      >
+        View Accepted
+      </button>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div
+      v-if="loading"
+      class="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70 font-semibold text-green-600"
+    >
+      Loading...
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'AttendingCard',
+  name: "AttendingCard",
   props: {
     attending: {
       type: Number,
-      default: 0
+      default: 0,
     },
     total: {
       type: Number,
-      default: 0
+      default: 0,
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isClickable: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    // เพิ่ม prop นี้
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['showAttendingEmployees'],
+  emits: ["showAttendingEmployees"],
   computed: {
     miniCircumference() {
       return 2 * Math.PI * 25;
@@ -90,7 +138,7 @@ export default {
       if (this.total === 0) return this.miniCircumference;
       const percentage = (this.attending / this.total) * 100;
       return this.miniCircumference - (percentage / 100) * this.miniCircumference;
-    }
+    },
   },
   methods: {
     getPercentage() {
@@ -99,157 +147,9 @@ export default {
     },
     handleClick() {
       if (this.isClickable) {
-        console.log('AttendingCard clicked, emitting showAttendingEmployees');
-        this.$emit('showAttendingEmployees');
+        this.$emit("showAttendingEmployees");
       }
-    }
-  }
+    },
+  },
 };
 </script>
-
-<style scoped>
-.card-stat {
-  background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
-  border-radius: 20px;
-  padding: 24px;
-  text-align: left;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-left: 4px solid #22c55e;
-  font-family: 'Inter', 'Poppins', sans-serif;
-}
-
-.clickable {
-  cursor: pointer;
-}
-
-.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.1), 0 4px 6px -2px rgba(34, 197, 94, 0.05);
-}
-
-/* Header */
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.card-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #16a34a;
-}
-
-.icon {
-  width: 24px;
-  height: 24px;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #16a34a;
-}
-
-/* Content */
-.card-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.percentage {
-  font-size: 48px;
-  font-weight: 800;
-  color: #15803d;
-  line-height: 1;
-}
-
-/* Mini donut chart */
-.mini-donut {
-  position: relative;
-}
-
-.mini-donut-svg {
-  width: 65px;
-  height: 65px;
-}
-
-.mini-progress {
-  transition: stroke-dasharray 0.8s ease-in-out, stroke-dashoffset 0.8s ease-in-out;
-}
-
-.mini-donut-number {
-  font-size: 14px;
-  font-weight: 700;
-  fill: #16a34a;
-  font-family: 'Inter', 'Poppins', sans-serif;
-}
-
-/* Footer */
-.card-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.count {
-  font-size: 14px;
-  color: #16a34a;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.count::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  background: #22c55e;
-  border-radius: 50%;
-}
-
-.view-link {
-  color: #2563eb;
-  font-weight: 500;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-
-.view-link:hover {
-  color: #1d4ed8;
-}
-
-.loading {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 8px;
-  text-align: center;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .card-stat {
-    padding: 20px;
-  }
-  
-  .percentage {
-    font-size: 36px;
-  }
-  
-  .mini-donut-svg {
-    width: 55px;
-    height: 55px;
-  }
-}
-</style>
-
-

@@ -5,38 +5,35 @@
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     </head>
 
-    <!-- MAIN CONTENT -->
     <div class="flex-1 w-full">
-        <!-- โซนหัวข้อ + upload (จัดกึ่งกลาง, responsive) -->
-        <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 pt-6">
-            <!-- Header -->
+        <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6">
             <div>
-                <h2 class="text-lg md:text-xl font-semibold text-gray-900">
+                <h2 class="text-3xl font-semibold text-neutral-800 -ml-8">
                     Upload file information
                 </h2>
 
+
                 <div class="mt-2 flex justify-center">
                     <button type="button" @click="downloadTemplate"
-                        class="rounded-full border border-[neutral-200] px-4 py-2 text-xs font-medium italic text-[#1d9bf0] bg-white hover:bg-blue-50 transition">
+                        class="rounded-full border border-[neutral-200] px-4 py-2 text-sm font-regular text-[#1d9bf0] bg-white hover:bg-blue-50 transition">
                         *Click to download template excel file*
                     </button>
                 </div>
             </div>
 
-            <!-- Body: Upload block -->
             <div class="mt-6">
-                <p class="text-sm font-semibold text-gray-800">
+                <p class="text-sm font-semibold text-gray-600">
                     Upload file Excel
                 </p>
-                <p class="text-xs text-gray-400 mt-1">
+                <p class="text-sm text-gray-400 mt-1">
                     Drag and drop document to your support task
                 </p>
 
                 <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="(msg) => (error = msg)"
-                    @picked="() => (error = '')" @cleared="() => (error = '')" />
+                    @picked="() => { error = ''; isTableVisible = false; }" 
+                    @cleared="() => { error = ''; isTableVisible = false; displayRows = []; }" />
 
-                <!-- ปุ่ม Generate -->
-                <div class="mt-3 flex justify-end">
+                <div class="mt-4 flex justify-end">
                     <div :class="[
                         !file || !!error || uploading
                             ? 'opacity-50 cursor-not-allowed'
@@ -52,75 +49,63 @@
                     </div>
                 </div>
 
-                <!-- Error ตอนอ่านไฟล์ -->
                 <p v-if="error" class="text-sm text-red-500 mt-2">
                     {{ error }}
                 </p>
             </div>
         </div>
 
-        <!-- Divider -->
-        <div class="mt-10">
-            <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                <div class="border-t"></div>
-            </div>
-        </div>
+        <div v-if="isTableVisible">
 
-        <!-- Table -->
-        <div class="mt-6 mx-auto w-full max-w-[1700px] px-4 sm:px-6 lg:px-8">
-            <!-- จอเล็กยังเลื่อนได้, จอใหญ่โชว์เต็มไม่ต้อง scroll -->
-            <div class="overflow-x-auto lg:overflow-x-visible">
-                <DataTable :loading="uploading || creating" :rows="paged" :columns="tableColumns" :page="page"
-                    :page-size="pageSize" :total-items="totalItems" :page-size-options="[10, 25, 50, 100]"
-                    :show-row-number="false" row-key="__rowKey" @update:page="(val) => (page = val)"
-                    @update:pageSize="(val) => (pageSize = val)">
-                    <!-- header "#" -->
-                    <template #header-index> # </template>
+            <div class="mt-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="overflow-x-auto lg:overflow-x-visible">
+                    <DataTable :loading="uploading || creating" :rows="paged" :columns="tableColumns" :page="page"
+                        :page-size="pageSize" :total-items="totalItems" :page-size-options="[10, 25, 50, 100]"
+                        :show-row-number="false" row-key="__rowKey" @update:page="(val) => (page = val)"
+                        @update:pageSize="(val) => (pageSize = val)">
+                        <template #header-index> # </template>
 
-                    <!-- cell "#" -->
-                    <template #cell-index="{ row }">
-                        {{ row.__displayIndex }}
-                    </template>
+                        <template #cell-index="{ row }">
+                            {{ row.__displayIndex }}
+                        </template>
 
-                    <!-- empty state -->
-                    <template #empty> No Data Found </template>
+                        <template #empty> No Data Found </template>
 
-                    <!-- footer-info -->
-                    <template #footer-info="{ from, to, total }">
-                        <span>แสดง</span>
+                        <template #footer-info="{ from, to, total }">
+                            <span>แสดง</span>
 
-                        <div class="relative inline-block mx-2">
-                            <select
-                                class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
-                                :value="pageSize" @change="
+                            <div class="relative inline-block mx-2">
+                                <select
+                                    class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
+                                    :value="pageSize" @change="
                                     (e) => {
                                         pageSize = Number(e.target.value);
                                         page = 1;
                                     }
                                 ">
-                                <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
-                                    {{ opt }}
-                                </option>
-                            </select>
-                            <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M6 9l6 6 6-6" />
-                            </svg>
-                        </div>
+                                    <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
+                                        {{ opt }}
+                                    </option>
+                                </select>
+                                <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 9l6 6 6-6" />
+                                </svg>
+                            </div>
 
-                        <span class="text-sm">
-                            {{ from }}-{{ to }} จาก {{ total }} รายการ
-                        </span>
-                    </template>
-                </DataTable>
+                            <span class="text-sm">
+                                {{ from }}-{{ to }} จาก {{ total }} รายการ
+                            </span>
+                        </template>
+                    </DataTable>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer (ปุ่ม) -->
-    <div class="pb-8">
+    <div class="pb-8" v-if="isTableVisible">
         <div
-            class="mx-auto w-full max-w-9xl px-4 sm:px-6 lg:px-8 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex justify-start">
                 <CancelButton @click="onCancel" />
             </div>
@@ -137,7 +122,6 @@
         </div>
     </div>
 
-    <!-- Alerts / Modals -->
     <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success" type="success"
         @confirm="handleSuccessClose" />
     <EmployeeCannotCreate :open="showCannotCreate" :message="errorMessage" @close="showCannotCreate = false" />
@@ -188,6 +172,9 @@ const creating = ref(false);       // loading ตอนสร้าง employee
 const displayRows = ref([]);       // ข้อมูลทั้งหมดจากไฟล์ (ยังไม่ยิง create)
 const page = ref(1);               // หน้าปัจจุบัน
 const pageSize = ref(10);          // จำนวนแถวต่อหน้า
+
+// แก้ไข: เพิ่ม State ควบคุมการแสดงตาราง
+const isTableVisible = ref(false);
 
 // ======================================================
 // Master Data Cache
@@ -251,6 +238,9 @@ async function upload() {
     // guard: ต้องมีไฟล์ และไม่มี error
     if (!file.value || error.value) return;
     uploading.value = true;
+    
+    // แก้ไข: Reset การแสดงผลก่อนเริ่ม
+    isTableVisible.value = false;
 
     try {
         const ext = file.value.name.split(".").pop()?.toLowerCase();
@@ -285,6 +275,9 @@ async function upload() {
         );
         const dataAoA = rowsAoA.slice(headerRowIdx + 1);
 
+        if (!dataAoA.length) {
+            throw new Error("Please fill in all required information.");
+        }
         // AoA → Object (raw data)
         const json = arraysToObjects(headers, dataAoA);
 
@@ -317,7 +310,6 @@ async function upload() {
             "position",
             "phone",
             "email",
-            "dateadd",
         ];
 
         const invalidRowIndex = normalizedRows.findIndex(row =>
@@ -336,11 +328,16 @@ async function upload() {
         displayRows.value = mapped;
         page.value = 1;
         error.value = "";
+        
+        // แก้ไข: โหลดเสร็จแล้วค่อยโชว์ตาราง
+        isTableVisible.value = true;
 
     } catch (e) {
         console.error(e);
         error.value =
             e?.message || "Unable to read file. Please check the information.";
+        // ถ้า error ไม่ต้องโชว์ตาราง
+        isTableVisible.value = false;
     } finally {
         uploading.value = false;
     }
@@ -362,7 +359,6 @@ function detectHeaderRow(rowsAoA) {
         "position",
         "phone",
         "email",
-        "dateadd",
     ];
 
     const maxScan = Math.min(rowsAoA.length, 30);
@@ -427,12 +423,14 @@ function normalizePhone(p) {
     return String(p).replace(/[^\d]/g, "");
 }
 
-function toDMY(d) {
+function todayDMY() {
+    const d = new Date();
     const dd = String(d.getDate()).padStart(2, "0");
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const yy = d.getFullYear();
     return `${dd}/${mm}/${yy}`;
 }
+
 
 // ======================================================
 // Map & Normalize Excel Rows
@@ -466,9 +464,6 @@ function mapRows(rows) {
         เบอร์: "phone",
         email: "email",
         อีเมล: "email",
-        "date add": "dateAdd",
-        date: "dateAdd",
-        วันที่: "dateAdd",
     };
 
     return rows.map(r => {
@@ -484,44 +479,6 @@ function mapRows(rows) {
             .filter(Boolean)
             .join(" ")
             .trim();
-
-        let dateAdd = "";
-
-        if (norm.dateAdd) {
-
-            // 1) Excel Date object
-            if (norm.dateAdd instanceof Date) {
-                const y = norm.dateAdd.getUTCFullYear();
-                const m = norm.dateAdd.getUTCMonth();
-                const d = norm.dateAdd.getUTCDate();
-
-                dateAdd = toDMY(new Date(y, m, d));
-            }
-
-            // 2) String date เช่น 20/08/2025 หรือ 2025-08-20
-            else if (typeof norm.dateAdd === "string") {
-                const str = norm.dateAdd.trim();
-
-                const dmy = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                if (dmy) {
-                    const [, d, m, y] = dmy;
-                    dateAdd = toDMY(new Date(Number(y), Number(m) - 1, Number(d)));
-                }
-                else {
-                    const ymd = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-                    if (ymd) {
-                        const [, y, m, d] = ymd;
-                        dateAdd = toDMY(new Date(Number(y), Number(m) - 1, Number(d)));
-                    }
-                }
-            }
-            else if (!isNaN(Number(norm.dateAdd))) {
-                const d = XLSX.SSF.parse_date_code(Number(norm.dateAdd));
-                if (d) {
-                    dateAdd = toDMY(new Date(d.y, d.m - 1, d.d));
-                }
-            }
-        }
 
         return {
             company: (norm.company || "").toString().trim(),
@@ -542,7 +499,7 @@ function mapRows(rows) {
             team: (norm.team || "").toString().trim(),
             position: (norm.position || "").toString().trim(),
             email: (norm.email || "").toString().trim(),
-            dateAdd: (dateAdd || norm.dateAdd || "").toString().trim(),
+            dateAdd: todayDMY(),
         };
 
     });
@@ -787,7 +744,6 @@ async function downloadTemplate() {
             "Position",
             "Phone",
             "Email",
-            "Date Add",
         ]);
 
         sheet.addRow([
@@ -797,12 +753,11 @@ async function downloadTemplate() {
             "สมชาย",
             "เขียวสะอาด",
             "หมกมุ่น",
-            "SMS",
-            "Interactive Media",
-            "3D Modeler",
+            "Artificial Intelligence",
+            "Artificial Intelligence",
+            "AI Engineer",
             "0912345678",
             "employee@example.com",
-            "20/08/2025",
         ]);
 
         /* ============================
@@ -1040,6 +995,7 @@ function onCancel() {
     file.value = null;
     error.value = "";
     page.value = 1;
+    isTableVisible.value = false; // แก้ไข: ซ่อนตารางเมื่อกด Cancel
     router.push("/add-employee");
 }
 
@@ -1048,7 +1004,7 @@ function onCancel() {
 // ======================================================
 const tableColumns = [
     { key: "index", label: "#", class: "text-left w-[72px] whitespace-nowrap" },
-    { key: "displayEmployeeId", label: "Employee ID", class: "text-left w-[140px]" },
+    { key: "displayEmployeeId", label: "Employee ID", class: "text-left w-[180px]" },
     { key: "name", label: "Name", class: "text-left w-[240px]" },
     { key: "nickname", label: "Nickname", class: "text-left w-[120px]" },
     { key: "phone", label: "Phone", class: "text-left w-[140px]" },
