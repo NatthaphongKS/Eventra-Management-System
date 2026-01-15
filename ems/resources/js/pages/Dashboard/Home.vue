@@ -3,24 +3,23 @@
 
 <!-- Event Table Section - Refactored to match EventPage -->
 <section class="p-0">
-  <div class="mt-3 mb-1 flex items-center gap-3">
+  <div class="mb-1 flex items-center gap-3">
     <!-- SearchBar -->
     <div class="flex flex-1">
       <SearchBar
         v-model="searchInput"
-        placeholder="Search event..."
+        placeholder="Search Event"
         @search="applySearch"
         class=""
       />
     </div>
 
-    <!-- DatePicker -->
-    <div class="flex gap-2 flex-shrink-20 mt-[30px] items-stretch">
+   
       <!-- DatePicker -->
-      <div class="h-[44px]">
+      <div class="mt-6">
         <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />
       </div>
-    </div>
+    
 
     <!-- Filter -->
     <EventFilter
@@ -83,7 +82,7 @@
     <!-- Title cell (clickable) -->
     <template #cell-evn_title="{ row, value }">
       <span role="button" tabindex="0"
-        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
+        class=""
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)"
@@ -95,7 +94,7 @@
     <!-- Category cell (clickable) -->
     <template #cell-cat_name="{ row, value }">
       <span role="button" tabindex="0"
-        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
+        class=""
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -106,7 +105,7 @@
     <!-- Invited cell (clickable) -->
     <template #cell-evn_num_guest="{ row, value }">
       <span role="button" tabindex="0"
-        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
+        class=""
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -117,7 +116,7 @@
     <!-- Accepted cell (clickable) -->
     <template #cell-evn_sum_accept="{ row, value }">
       <span role="button" tabindex="0"
-        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
+        class=""
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
@@ -128,7 +127,7 @@
     <!-- Status cell (with badge) -->
     <template #cell-evn_status="{ row, value }">
       <span role="button" tabindex="0"
-        class="block flex items-center w-full h-full pl-3 text-neutral-800 font-base truncate hover:bg-slate-50 cursor-pointer"
+        class=""
         @click="goDetails(row.id)"
         @keydown.enter.prevent="goDetails(row.id)"
         @keydown.space.prevent="goDetails(row.id)">
