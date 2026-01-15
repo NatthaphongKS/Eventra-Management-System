@@ -2,12 +2,12 @@
     <div class="font-[Poppins] pb-20" @pointerdown.capture="onRootPointer">
         <div class="mb-8 flex items-center gap-3">
             <h2 class="text-2xl font-semibold text-neutral-800">
-                Create Event
+                Add New Event
             </h2>
         </div>
 
         <div
-            class="grid grid-cols-12 gap-8 border-b border-neutral-100 pb-10 mb-10"
+            class="grid grid-cols-12 gap-8 border-neutral-100 mb-6"
         >
             <div class="col-span-12 lg:col-span-8">
                 <div
