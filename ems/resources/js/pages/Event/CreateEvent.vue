@@ -366,7 +366,7 @@
                             Choose a file or drag &amp; drop it here
                         </p>
                         <p class="mt-1 text-sm text-neutral-800">
-                            pdf, txt, docx, jpeg, xlsx
+                            pdf, txt, docx, jpeg, xlsx, png
                         </p>
                     </div>
 
