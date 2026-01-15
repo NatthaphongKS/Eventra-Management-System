@@ -201,6 +201,7 @@
                         <input
                             type="checkbox"
                             class="accent-rose-600 opacity-60 size-5 cursor-not-allowed"
+                            disabled
                             @click.prevent
                         />
                     </div>
@@ -210,6 +211,7 @@
                         <input
                             type="checkbox"
                             class="accent-slate-700 size-5 cursor-not-allowed"
+                            disabled
                             :checked="selectedIds.has(row.id)"
                             @click.prevent
                         />
