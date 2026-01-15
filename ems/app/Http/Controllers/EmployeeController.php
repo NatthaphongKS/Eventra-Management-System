@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -156,9 +157,9 @@ class EmployeeController extends Controller
                 $prefixes = collect(
                     str_getcsv($matches[1], ',', "'")
                 )->values()->map(fn($p, $i) => [
-                        'value' => $i + 1,
-                        'label' => $p,
-                    ]);
+                    'value' => $i + 1,
+                    'label' => $p,
+                ]);
             }
         }
 
@@ -353,7 +354,6 @@ class EmployeeController extends Controller
                     'message' => 'Employee reactivated successfully',
                     'data' => $existingInactiveEmp,
                 ], 201);
-
             } catch (QueryException $e) {
                 Log::error('EMP_REACTIVATE_FAIL', ['msg' => $e->getMessage()]);
                 return response()->json([
@@ -406,7 +406,6 @@ class EmployeeController extends Controller
                 'message' => 'Employee created',
                 'data' => $employee,
             ], 201);
-
         } catch (QueryException $e) {
 
             $sqlState = $e->errorInfo[0] ?? null;
@@ -487,6 +486,7 @@ class EmployeeController extends Controller
                 'required',
                 Rule::unique('ems_employees', 'emp_id')->ignore($emp->id)
             ],
+            'emp_company_id' => ['sometimes', 'nullable'],
             'emp_prefix' => ['sometimes', 'required'],
             'emp_firstname' => ['sometimes', 'required'],
             'emp_lastname' => ['sometimes', 'required'],
@@ -513,8 +513,9 @@ class EmployeeController extends Controller
         ]);
 
         // =========================
-// 5) Update
-// =========================
+        // 5) Update
+        // =========================
+        // dd($validated);
         $update = $validated;
 
         // CASE 1: เปลี่ยนเป็น employee → ล้าง password
@@ -762,7 +763,6 @@ class EmployeeController extends Controller
                 ]);
 
                 $created[] = ['id' => $emp->id, 'emp_id' => $emp->emp_id];
-
             } catch (\Throwable $ex) {
                 Log::error('EMP_BULK_IMPORT_FAIL', ['error' => $ex->getMessage()]);
                 $failed[] = ['emp_id' => $emp_id, 'reason' => 'DB error: ' . $ex->getMessage()];
