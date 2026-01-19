@@ -1,5 +1,5 @@
 {
     "deploy": {
-        "startCommand": "php artisan migrate --force --seed"
+        "startCommand": "composer install && php artisan migrate --force --seed"
     }
 }
