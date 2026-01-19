@@ -15,7 +15,7 @@ COPY . .
 
 # 3. รัน Build โดยระบุว่าโปรเจกต์หลักอยู่ที่โฟลเดอร์ ems
 # วิธีนี้จะทำให้ Vite หา vite.config.js และโฟลเดอร์ resources เจอ
-RUN npx vite build --config ems/vite.config.js --root ems
+RUN npx vite build ems --config ems/vite.config.js
 
 #-----------------------------------------------
 # Stage 2: Production Environment (PHP + Apache)
