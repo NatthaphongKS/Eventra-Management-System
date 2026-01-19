@@ -29,7 +29,7 @@ class ReplyController extends Controller
             ]);
             return view('reply', ['message' => $message]);
         }
-        return view('reply', ['evnID' => $ids[0], 'empID' => $ids[1], 'message' => $message]);
+        return view('reply', ['message' => $message]);
     }
 
     public function show($encryptURL)
