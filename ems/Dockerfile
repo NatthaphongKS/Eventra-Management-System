@@ -34,11 +34,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. ตั้งค่า Apache ให้ชี้ไปที่ ems/public (ตามโครงสร้างจริงของคุณ)
+# 2. ตั้งค่า Apache และแก้ปัญหา More than one MPM loaded
 ENV APACHE_DOCUMENT_ROOT /var/www/html/ems/public
 RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf \
     && sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
     && a2enmod rewrite headers \
-    && a2dismod mpm_event || true \
+    # สั่งปิด mpm ทุกตัวก่อน แล้วค่อยเปิดเฉพาะ prefork
+    && a2dismod mpm_event mpm_worker || true \
     && a2enmod mpm_prefork || true
 
 # 3. ติดตั้ง Composer
