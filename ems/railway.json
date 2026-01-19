@@ -1,0 +1,5 @@
+{
+    "deploy": {
+        "startCommand": "php artisan migrate --force --seed"
+    }
+}
