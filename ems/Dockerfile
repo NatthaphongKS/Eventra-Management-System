@@ -4,7 +4,7 @@
 FROM node:20-alpine AS asset-builder
 
 WORKDIR /ems
-COPY package*.json ./
+COPY ems/package*.json ./
 # ลงทั้ง devDependencies เพื่อใช้ build (เช่น vite, tailwind)
 RUN npm install
 COPY . .
