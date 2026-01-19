@@ -1,3 +1,4 @@
+# Stage 1: Build php:8.2-apache
 FROM php:8.2-apache
 
 # PHP Extensions + Apache rewrite
@@ -35,3 +36,6 @@ RUN apt-get update \
 
 # ติดตั้งส่วนขยาย pdo_mysql อย่างเป็นทางการ
 RUN docker-php-ext-install pdo_mysql
+
+# Stage 2: Build node
+FROM node
