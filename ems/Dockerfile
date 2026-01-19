@@ -20,54 +20,30 @@ WORKDIR /app/ems
 RUN npm run build
 
 #-----------------------------------------------
-# Stage 2: Production Environment (PHP + Apache)
+# Stage 2: Production Environment (PHP-FPM)
 #-----------------------------------------------
-FROM php:8.2-apache
+FROM php:8.2-fpm-alpine
 
-# 1. ติดตั้ง System Dependencies (เหมือนเดิมของคุณ)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl unzip libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libonig-dev libicu-dev \
+# 1. ติดตั้ง System Dependencies (Alpine version จะใช้ apk)
+RUN apk add --no-cache \
+    git curl unzip libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev icu-dev oniguruma-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip intl \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install gd pdo pdo_mysql zip intl
 
-# 2. ตั้งค่า Apache ให้ชี้ไปที่ ems/public (ตามโครงสร้างจริงของคุณ)
-# 2. ตั้งค่า Apache และแก้ปัญหา More than one MPM loaded
-ENV APACHE_DOCUMENT_ROOT /var/www/html/ems/public
-RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf \
-    && sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
-    && a2enmod rewrite headers \
-    # สั่งปิด mpm ทุกตัวก่อน แล้วค่อยเปิดเฉพาะ prefork
-    && a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork || true
-
-# 3. ติดตั้ง Composer
+# 2. ติดตั้ง Composer
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
 
-# 4. คัดลอก Source Code ทั้งหมด
+# 3. คัดลอกไฟล์ทั้งหมด
 COPY . .
-
-# 5. คัดลอก Assets ที่ Build เสร็จแล้วมาจาก Stage 1
-# ต้นทางคือ /app/ems/public/build (เพราะเราสั่ง build --root ems ใน Stage 1)
-# ปลายทางคือ ./ems/public/build
 COPY --from=asset-builder /app/ems/public/build ./ems/public/build
 
-ENV APACHE_DOCUMENT_ROOT /var/www/html/ems/public
+# 4. ติดตั้ง PHP Dependencies และปรับ Permission
+RUN cd ems && composer install --no-dev --optimize-autoloader --no-interaction \
+    && chown -R www-data:www-data ems/storage ems/bootstrap/cache
 
-# 6. ติดตั้ง PHP Dependencies (ต้องรันภายในโฟลเดอร์ ems)
-RUN cd ems && composer install --no-dev --optimize-autoloader --no-interaction
-
-# 7. ปรับ Permission ให้ถูกต้องภายในโฟลเดอร์ ems
-RUN chown -R www-data:www-data ems/storage ems/bootstrap/cache
-
-# เพิ่มส่วนนี้เพื่อบังคับลบไฟล์ที่ทำให้เกิด Error "More than one MPM loaded"
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_worker.load \
-    && ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load || true
-
+# 5. ใช้ PHP Built-in Server แทน Apache เพื่อแก้ปัญหา MPM
+# วิธีนี้จะทำให้ Laravel คุยกับพอร์ต $PORT ของ Railway ได้โดยตรง
 EXPOSE 80
-CMD ["apache2-foreground"]
+CMD php ems/artisan serve --host=0.0.0.0 --port=${PORT:-80}
