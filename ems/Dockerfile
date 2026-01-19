@@ -3,14 +3,14 @@
 #-----------------------------------------------
 FROM node:20-alpine AS asset-builder
 
-WORKDIR /app/ems
+WORKDIR /app
 COPY package*.json ./
 # ลงทั้ง devDependencies เพื่อใช้ build (เช่น vite, tailwind)
 RUN npm install
 COPY . .
 # รันคำสั่ง build เพื่อสร้างไฟล์ใน public/build
 RUN ls -la
-RUN npm run build
+RUN npx vite build --config ems/vite.config.js
 
 #-----------------------------------------------
 # Stage 2: Production Environment (PHP + Apache)
