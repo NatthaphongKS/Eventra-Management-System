@@ -40,10 +40,11 @@ COPY . .
 COPY --from=asset-builder /app/ems/public/build ./ems/public/build
 
 # 4. ติดตั้ง PHP Dependencies และปรับ Permission
-RUN cd ems && composer install --no-dev --optimize-autoloader --no-interaction \
-    && chown -R www-data:www-data ems/storage ems/bootstrap/cache
+RUN cd ems && \
+    composer install --no-dev --optimize-autoloader --no-interaction && \
+    chown -R www-data:www-data storage bootstrap/cache
 
 # 5. ใช้ PHP Built-in Server แทน Apache เพื่อแก้ปัญหา MPM
 # วิธีนี้จะทำให้ Laravel คุยกับพอร์ต $PORT ของ Railway ได้โดยตรง
 EXPOSE 80
-CMD php ems/artisan serve --host=0.0.0.0 --port=${PORT:-80}
+CMD ["php", "ems/artisan", "serve", "--host=0.0.0.0", "--port=80"]
