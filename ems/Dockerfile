@@ -64,5 +64,6 @@ RUN cd ems && composer install --no-dev --optimize-autoloader --no-interaction
 # 7. ปรับ Permission ให้ถูกต้องภายในโฟลเดอร์ ems
 RUN chown -R www-data:www-data ems/storage ems/bootstrap/cache
 
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_worker.load || true
 EXPOSE 80
 CMD ["apache2-foreground"]
