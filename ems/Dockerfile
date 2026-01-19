@@ -4,18 +4,20 @@
 FROM node:20-alpine AS asset-builder
 
 # เปลี่ยน WORKDIR ให้เป็นมาตรฐาน (หรือใช้ /ems ตามที่คุณสะดวก แต่ต้องระบุให้ตรงกัน)
-WORKDIR /app
+WORKDIR /app/ems
 
 # 1. คัดลอก package จากโฟลเดอร์ ems มาวางที่ root ของ builder
 COPY ems/package*.json ./
 RUN npm install
 
 # 2. คัดลอกไฟล์ทั้งหมด (รวมโฟลเดอร์ ems) เข้ามา
+WORKDIR /app
 COPY . .
 
 # 3. รัน Build โดยระบุว่าโปรเจกต์หลักอยู่ที่โฟลเดอร์ ems
 # วิธีนี้จะทำให้ Vite หา vite.config.js และโฟลเดอร์ resources เจอ
-RUN npx vite build ems --config ems/vite.config.js
+WORKDIR /app/ems
+RUN npm run build
 
 #-----------------------------------------------
 # Stage 2: Production Environment (PHP + Apache)
@@ -49,6 +51,8 @@ COPY . .
 # ต้นทางคือ /app/ems/public/build (เพราะเราสั่ง build --root ems ใน Stage 1)
 # ปลายทางคือ ./ems/public/build
 COPY --from=asset-builder /app/ems/public/build ./ems/public/build
+
+ENV APACHE_DOCUMENT_ROOT /var/www/html/ems/public
 
 # 6. ติดตั้ง PHP Dependencies (ต้องรันภายในโฟลเดอร์ ems)
 RUN cd ems && composer install --no-dev --optimize-autoloader --no-interaction
