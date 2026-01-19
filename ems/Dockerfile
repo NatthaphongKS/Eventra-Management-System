@@ -10,7 +10,7 @@ RUN npm install
 COPY . .
 # รันคำสั่ง build เพื่อสร้างไฟล์ใน public/build
 RUN ls -la
-RUN npx vite build --config ems/vite.config.js
+RUN npm run build
 
 #-----------------------------------------------
 # Stage 2: Production Environment (PHP + Apache)
