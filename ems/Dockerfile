@@ -9,6 +9,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 # รันคำสั่ง build เพื่อสร้างไฟล์ใน public/build
+RUN ls -la
 RUN npm run build
 
 #-----------------------------------------------
