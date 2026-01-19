@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf \
     && sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && a2dismod mpm_event || true \
+    && a2enmod mpm_prefork \
     && a2enmod rewrite headers
 
 # 3. ติดตั้ง Composer
