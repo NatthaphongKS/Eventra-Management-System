@@ -2,21 +2,14 @@
 # Stage 1: Build Assets (Node.js)
 #-----------------------------------------------
 FROM node:20-alpine AS asset-builder
+WORKDIR /app
 
-# เปลี่ยน WORKDIR ให้เป็นมาตรฐาน (หรือใช้ /ems ตามที่คุณสะดวก แต่ต้องระบุให้ตรงกัน)
-WORKDIR /app/ems
-
-# 1. คัดลอก package จากโฟลเดอร์ ems มาวางที่ root ของ builder
-COPY ems/package*.json ./
+# คัดลอก package.json (ตอนนี้จะมองเห็นอยู่ที่ root เพราะตั้ง ems เป็น root แล้ว)
+COPY package*.json ./
 RUN npm install
 
-# 2. คัดลอกไฟล์ทั้งหมด (รวมโฟลเดอร์ ems) เข้ามา
-WORKDIR /app
+# คัดลอกไฟล์ทั้งหมดและ Build
 COPY . .
-
-# 3. รัน Build โดยระบุว่าโปรเจกต์หลักอยู่ที่โฟลเดอร์ ems
-# วิธีนี้จะทำให้ Vite หา vite.config.js และโฟลเดอร์ resources เจอ
-WORKDIR /app/ems
 RUN npm run build
 
 #-----------------------------------------------
@@ -24,27 +17,27 @@ RUN npm run build
 #-----------------------------------------------
 FROM php:8.2-fpm-alpine
 
-# 1. ติดตั้ง System Dependencies (Alpine version จะใช้ apk)
+# ติดตั้ง System Dependencies
 RUN apk add --no-cache \
     git curl unzip libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev icu-dev oniguruma-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql zip intl
 
-# 2. ติดตั้ง Composer
+# ติดตั้ง Composer
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
 
-# 3. คัดลอกไฟล์ทั้งหมด
+# คัดลอกไฟล์ทั้งหมดจาก Root Directory (ems) เข้ามา
 COPY . .
-COPY --from=asset-builder /app/ems/public/build ./ems/public/build
 
-# 4. ติดตั้ง PHP Dependencies และปรับ Permission
-RUN cd ems && \
-    composer install --no-dev --optimize-autoloader --no-interaction && \
+# คัดลอกไฟล์ที่ Build แล้วจาก Stage แรก (Vite assets)
+COPY --from=asset-builder /app/public/build ./public/build
+
+# ติดตั้ง PHP Dependencies และปรับ Permission
+RUN composer install --no-dev --optimize-autoloader --no-interaction && \
     chown -R www-data:www-data storage bootstrap/cache
 
-# 5. ใช้ PHP Built-in Server แทน Apache เพื่อแก้ปัญหา MPM
-# วิธีนี้จะทำให้ Laravel คุยกับพอร์ต $PORT ของ Railway ได้โดยตรง
-EXPOSE 80
-CMD ["php", "ems/artisan", "serve", "--host=0.0.0.0", "--port=80"]
+# ตั้งค่า Port ให้รับจาก Railway ($PORT)
+# และรัน Migration ก่อนเริ่มแอป
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
