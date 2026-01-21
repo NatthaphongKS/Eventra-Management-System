@@ -490,7 +490,7 @@ export default {
                 const res = await axios.get("/event-info");
                 const cats = res.data?.categories || [];
 
-                // ✅ ใช้ id / cat_name ตามที่ EventFilter ต้องการ
+                //  ใช้ id / cat_name ตามที่ EventFilter ต้องการ
                 this.categories = cats.map((c) => ({
                     id: String(c.id),
                     cat_name: c.cat_name,

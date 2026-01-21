@@ -3,6 +3,7 @@
 Model : Position
 Edit by : Chitdanai
 */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -12,12 +13,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Position extends Model
 {
     use HasFactory;
-    protected $guarded = [];
-    protected $table = 'ems_position';
 
+    protected $table = 'ems_position';
     public $timestamps = false;
 
-    protected $fillable = ['pst_name', 'pst_delete_status'];
+    protected $fillable = [
+        'pst_name',
+        'pst_team_id',
+        'pst_delete_status',
+    ];
 
     public function employees(): HasMany
     {

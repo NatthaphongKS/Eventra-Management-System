@@ -829,18 +829,22 @@ class EmployeeController extends Controller
     {
         $request->validate([
             'pst_name' => ['required', 'string', 'max:255'],
+            'pst_team_id' => ['required', 'integer'], // ถ้ามีตาราง teams แนะนำใช้ exists:teams,id
+            // 'pst_team_id' => ['required','integer','exists:teams,id'],
         ]);
 
-        $rawName = $request->input('pst_name', '');
-        $name = trim($rawName);
+        $name = trim((string) $request->input('pst_name', ''));
 
         if ($name === '') {
-            return response()->json([
-                'message' => 'Position name is empty.',
-            ], 422);
+            return response()->json(['message' => 'Position name is empty.'], 422);
         }
 
-        $existing = Position::whereRaw('LOWER(TRIM(pst_name)) = ?', [mb_strtolower($name)])->first();
+        $teamId = (int) $request->input('pst_team_id');
+
+        $existing = Position::whereRaw(
+            'LOWER(TRIM(pst_name)) = ? AND pst_team_id = ?',
+            [mb_strtolower($name), $teamId]
+        )->first();
 
         if ($existing) {
             if ($existing->pst_delete_status !== 'active') {
@@ -853,6 +857,7 @@ class EmployeeController extends Controller
                     'status' => 'reactivated',
                 ], 200);
             }
+
             return response()->json([
                 'id' => $existing->id,
                 'pst_name' => $existing->pst_name,
@@ -860,11 +865,16 @@ class EmployeeController extends Controller
             ], 200);
         }
 
+        // ถ้า pst_create_by ห้ามเป็น null ต้องแน่ใจว่า login แล้ว
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
         $pos = Position::create([
             'pst_name' => $name,
+            'pst_team_id' => $teamId,
             'pst_delete_status' => 'active',
-            'pst_create_at' => Carbon::now(),
-            'pst_create_by' => Auth::id(),
         ]);
 
         return response()->json([
@@ -878,18 +888,21 @@ class EmployeeController extends Controller
     {
         $request->validate([
             'tm_name' => ['required', 'string', 'max:255'],
+            'tm_department_id' => ['required', 'integer', 'exists:ems_department,id'],
         ]);
 
-        $rawName = $request->input('tm_name', '');
-        $name = trim($rawName);
-
+        $name = trim((string) $request->input('tm_name', ''));
         if ($name === '') {
-            return response()->json([
-                'message' => 'Team name is empty.',
-            ], 422);
+            return response()->json(['message' => 'Team name is empty.'], 422);
         }
 
-        $existing = Team::whereRaw('LOWER(TRIM(tm_name)) = ?', [mb_strtolower($name)])->first();
+        $departmentId = (int) $request->input('tm_department_id');
+
+        // กันชื่อซ้ำภายใน department เดียวกัน (แนะนำ)
+        $existing = Team::whereRaw(
+            'LOWER(TRIM(tm_name)) = ? AND tm_department_id = ?',
+            [mb_strtolower($name), $departmentId]
+        )->first();
 
         if ($existing) {
             if ($existing->tm_delete_status !== 'active') {
@@ -912,9 +925,8 @@ class EmployeeController extends Controller
 
         $team = Team::create([
             'tm_name' => $name,
+            'tm_department_id' => $departmentId, // ✅ สำคัญมาก
             'tm_delete_status' => 'active',
-            'tm_create_at' => Carbon::now(),
-            'tm_create_by' => Auth::id(),
         ]);
 
         return response()->json([
