@@ -2,40 +2,43 @@
     <div class="font-[Poppins] pb-20" @pointerdown.capture="onRootPointer">
         <div class="mb-8 flex items-center gap-3">
             <h2 class="text-2xl font-semibold text-neutral-800">
-                Create Event
+                Add New Event
             </h2>
         </div>
 
         <div
-            class="grid grid-cols-12 gap-8 border-b border-neutral-100 pb-10 mb-10"
+            class="grid grid-cols-12 gap-8 border-neutral-100 mb-6"
         >
             <div class="col-span-12 lg:col-span-8">
-
-                <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start">
+                <div
+                    class="grid md:grid-cols-[1fr_240px] gap-6 items-start mb-8"
+                >
                     <div>
                         <label
                             class="block text-neutral-800 font-semibold text-[15px] mb-2"
                         >
                             Event Title <span class="text-red-600">*</span>
                         </label>
-                        <InputPill
-                            v-model="eventTitle"
-                            placeholder="Enter event title"
-                            :class="[
-                                'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
-                                'placeholder:text-red-300',
-                                errors.eventTitle
-                                    ? 'border-red-500 bg-red-50'
-                                    : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
-                            ]"
-                            @input="errors.eventTitle = false"
-                        />
-                        <p
-                            v-if="errors.eventTitle"
-                            class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                        >
-                            Required field
-                        </p>
+                        <div class="relative">
+                            <InputPill
+                                v-model="eventTitle"
+                                placeholder="Name this event"
+                                :class="[
+                                    'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
+                                    'placeholder:text-red-300',
+                                    errors.eventTitle
+                                        ? 'border-red-500 bg-red-50'
+                                        : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
+                                ]"
+                                @input="errors.eventTitle = false"
+                            />
+                            <p
+                                v-if="errors.eventTitle"
+                                class="absolute top-[56px] left-1 text-red-500 text-xs font-medium"
+                            >
+                                Required Field
+                            </p>
+                        </div>
                     </div>
 
                     <div>
@@ -59,7 +62,7 @@
                                 @change="errors.eventCategoryId = false"
                             >
                                 <option value="" disabled selected>
-                                    Select
+                                    Choose Category
                                 </option>
                                 <option
                                     v-for="cat in selectCategory"
@@ -78,44 +81,45 @@
                                     class="h-6 w-6 text-red-300"
                                 />
                             </div>
+                            <p
+                                v-if="errors.eventCategoryId"
+                                class="absolute top-[56px] left-1 text-red-500 text-xs font-medium"
+                            >
+                                Required Select
+                            </p>
                         </div>
-                        <p
-                            v-if="errors.eventCategoryId"
-                            class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                        >
-                            Required field
-                        </p>
                     </div>
                 </div>
-
-                <div class="mt-6">
+                <div class="mt-6 mb-6">
                     <label
                         class="block text-neutral-800 font-semibold text-[15px] mb-2"
                     >
                         Event Description <span class="text-red-600">*</span>
                     </label>
-                    <textarea
-                        v-model.trim="eventDescription"
-                        placeholder="Write some description... (255 words)"
-                        :class="[
-                            'w-full h-[160px] rounded-2xl p-5 font-medium text-neutral-800 focus:outline-none transition resize-none border',
-                            'placeholder:text-red-300',
-                            errors.eventDescription
-                                ? 'border-red-500 bg-red-50'
-                                : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
-                        ]"
-                        @input="errors.eventDescription = false"
-                    ></textarea>
-                    <p
-                        v-if="errors.eventDescription"
-                        class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                    >
-                        Required field
-                    </p>
+                    <div class="relative">
+                        <textarea
+                            v-model.trim="eventDescription"
+                            placeholder="Write some description... (255 words)"
+                            :class="[
+                                'w-full h-[160px] rounded-2xl p-5 font-medium text-neutral-800 focus:outline-none transition resize-none border',
+                                'placeholder:text-red-300',
+                                errors.eventDescription
+                                    ? 'border-red-500 '
+                                    : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
+                            ]"
+                            @input="errors.eventDescription = false"
+                        ></textarea>
+                        <p
+                            v-if="errors.eventDescription"
+                            class="absolute top-[164px] left-1 text-red-500 text-xs font-medium"
+                        >
+                            Required Field
+                        </p>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pb-2">
+                    <div class="relative">
                         <label
                             class="block text-neutral-800 font-semibold text-[15px] mb-2"
                             >Date <span class="text-red-600">*</span></label
@@ -163,13 +167,13 @@
                         </div>
                         <p
                             v-if="errors.eventDate"
-                            class="text-red-500 text-xs mt-1 ml-1 font-medium"
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium"
                         >
-                            Required field
+                            Required Date
                         </p>
                     </div>
 
-                    <div>
+                    <div class="relative">
                         <label
                             class="block text-neutral-800 font-semibold text-[15px] mb-2"
                             >Time <span class="text-red-600">*</span></label
@@ -239,9 +243,9 @@
                         </div>
                         <p
                             v-if="errors.eventTime"
-                            class="text-red-500 text-xs mt-1 ml-1 font-medium"
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium"
                         >
-                            Required field
+                            Required Time
                         </p>
                     </div>
 
@@ -254,9 +258,10 @@
                             class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]"
                         >
                             <input
-                                class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none border-0"
+                                class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none border-0 placeholder:text-neutral-400"
                                 disabled
                                 v-model="eventDurationDisplay"
+                                placeholder="Auto fill   Hour"
                             />
                             <Icon
                                 icon="lucide:clock-fading"
@@ -269,26 +274,30 @@
                 <div class="mt-6">
                     <label
                         class="block text-neutral-800 font-semibold text-[15px] mb-2"
-                        >Location <span class="text-red-600">*</span></label
                     >
-                    <InputPill
-                        v-model="eventLocation"
-                        placeholder="Location/Building/Room Name"
-                        :class="[
-                            'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
-                            'placeholder:text-red-300',
-                            errors.eventLocation
-                                ? 'border-red-500 bg-red-50'
-                                : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
-                        ]"
-                        @input="errors.eventLocation = false"
-                    />
-                    <p
-                        v-if="errors.eventLocation"
-                        class="text-red-500 text-xs mt-1 ml-1 font-medium"
-                    >
-                        Required field
-                    </p>
+                        Location <span class="text-red-600">*</span>
+                    </label>
+
+                    <div class="relative">
+                        <InputPill
+                            v-model="eventLocation"
+                            placeholder="Location/Building/Room Name"
+                            :class="[
+                                'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
+                                'placeholder:text-red-300',
+                                errors.eventLocation
+                                    ? 'border-red-500 bg-red-50'
+                                    : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
+                            ]"
+                            @input="errors.eventLocation = false"
+                        />
+                        <p
+                            v-if="errors.eventLocation"
+                            class="absolute top-[56px] left-1 text-red-500 text-xs font-medium"
+                        >
+                            Required Field
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -357,7 +366,7 @@
                             Choose a file or drag &amp; drop it here
                         </p>
                         <p class="mt-1 text-sm text-neutral-800">
-                            pdf, txt, docx, jpeg, xlsx
+                            pdf, txt, docx, jpeg, xlsx, png
                         </p>
                     </div>
 

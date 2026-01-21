@@ -1,91 +1,153 @@
 <template>
-  <div class="card-stat" :class="{ clickable: isClickable }" @click="handleClick">
-    <!-- Header -->
-    <div class="card-header">
-      <div class="card-icon">
-        <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm0 2a8 8 0 100 16 8 8 0 000-16zm0 2a6 6 0 110 12 6 6 0 010-12zm0 2a4 4 0 100 8 4 4 0 000-8z"/>
-          <path d="M14.5 8L16 9.5 13.5 12 16 14.5 14.5 16 12 13.5 9.5 16 8 14.5 10.5 12 8 9.5 9.5 8 12 10.5z"/>
-        </svg>
-      </div>
-      <span class="card-title">NOT ATTENDING</span>
-    </div>
+  <div
+    class="relative w-full rounded-2xl p-5 font-sans transition-all duration-200 shadow-sm mb-4 border-l-[4px] border-l-red-700 hover:-translate-y-0.5 hover:shadow-md"
+    :class="[
+      'bg-[#FFE2E3]',
+    ]"
 
-    <!-- Content -->
-    <div class="card-content">
-      <div class="percentage">{{ getPercentage() }}%</div>
-      <div class="mini-donut">
-        <svg class="mini-donut-svg" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="30" stroke="#fee2e2" stroke-width="8" fill="none"/>
-          <circle
-            cx="40"
-            cy="40"
-            r="30"
-            stroke="url(#redGradient)"
-            stroke-width="8"
-            fill="none"
-            stroke-linecap="round"
-            :stroke-dasharray="miniCircumference"
-            :stroke-dashoffset="miniStrokeDashoffset"
-            class="mini-progress"
-            transform="rotate(0 40 40)"
+  >
+    <div class="mb-2 flex items-center gap-2 text-gray-700">
+      <div class="flex items-center justify-center">
+        <svg
+          class="w-7 h-7 sm:w-9 sm:h-9"
+          xmlns="http://www.w3.org/2000/svg"
+          width="30"
+          height="30"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="M12 4a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93L8.07 7.25A4.004 4.004 0 0 1 12 4m.28 10l6 6L20 21.72L18.73 23l-3-3H4v-2c0-1.84 2.5-3.39 5.87-3.86L2.78 7.05l1.27-1.27zM20 18v1.18l-4.86-4.86C18 14.93 20 16.35 20 18"
           />
-          <defs>
-            <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#ef4444"/>
-              <stop offset="100%" style="stop-color:#dc2626"/>
-            </linearGradient>
-          </defs>
-          <text x="40" y="45" text-anchor="middle" class="mini-donut-number">{{ notAttending }}</text>
         </svg>
+      </div>
+      <span class="text-xl sm:text-2xl font-semibold font-[poppins] text-neutral-700"
+        >Declined</span
+      >
+    </div>
+
+    <div class="mb-2 flex items-center justify-between w-full ml-10">
+      <div class="flex items-baseline text-red-700 leading-none">
+        <span class="text-4xl sm:text-5xl font-extrabold font-[poppins]">{{
+          getPercentage()
+        }}</span>
+        <span class="ml-1 text-xl sm:text-2xl font-bold">%</span>
+      </div>
+
+      <div class="flex items-center justify-center mr-20">
+        <div class="relative">
+          <svg
+            class="w-20 h-20 sm:w-[100px] sm:h-[105px] -rotate-90 transition-all duration-300"
+            viewBox="0 0 60 60"
+          >
+            <circle
+              cx="30"
+              cy="30"
+              r="25"
+              fill="transparent"
+              class="stroke-white/50"
+              stroke-width="7"
+            />
+            <circle
+              cx="30"
+              cy="30"
+              r="25"
+              fill="transparent"
+              class="stroke-red-700 transition-all duration-700 ease-out"
+              stroke-width="5"
+              stroke-linecap="round"
+              :stroke-dasharray="miniCircumference"
+              :stroke-dashoffset="miniStrokeDashoffset"
+            />
+            <text
+              x="30"
+              y="35"
+              text-anchor="middle"
+              class="fill-gray-700 text-[12px] sm:text-[14px] font-bold"
+              transform="rotate(90 30 30)"
+            >
+              {{ notAttending }}
+            </text>
+          </svg>
+        </div>
       </div>
     </div>
 
-    <!-- Footer -->
-    <div class="card-footer">
-      <div class="count">{{ notAttending }} person{{ notAttending > 1 ? 's' : '' }}</div>
-      <div class="view-link">View Attendance →</div>
+    <div
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between sm:gap-0 pt-2 border-t border-red-200/50 sm:border-none"
+    >
+      <div class="flex items-center gap-2 text-xs text-gray-600 order-2 sm:order-1">
+        <span class="h-2.5 w-2.5 rounded-full bg-red-700 flex-shrink-0"></span>
+        <span class="whitespace-nowrap  text-base font-[poppins]">
+          <b class="text-gray-800 ">{{
+            notAttending
+          }}</b>
+          Person from
+          <b class="text-gray-800 ">{{
+            total
+          }}</b>
+        </span>
+      </div>
+
+      <button
+        class="order-1 sm:order-2 w-full sm:w-auto text-center rounded-full px-4 py-2 text-sm sm:text-base font-basic font-[poppins] shadow-sm transition-all border mr-3.5"
+        :class="[
+          isSelected
+            ? 'bg-red-600 border-red-800 text-white'
+            : 'bg-white border-transparent text-neutral-500 hover:bg-gray-50 hover:text-gray-700 hover:shadow-md',
+            isClickable ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : '',
+        ]"
+        @click="handleClick"
+      >
+        View Declined
+      </button>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div
+      v-if="loading"
+      class="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70 font-semibold text-red-700"
+    >
+      Loading...
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'NotAttendingCard',
+  name: "NotAttendingCard",
   props: {
-    eventId: {
-      type: [Number, String],
-      required: true
-    },
     notAttending: {
-      type: [Number, String],
-      default: 0
+      type: Number,
+      default: 0,
     },
     total: {
-      type: [Number, String],
-      default: 0
+      type: Number,
+      default: 0,
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isClickable: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    // เพิ่ม Prop นี้เพื่อรับค่าสถานะการถูกเลือก
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['showNotAttendingEmployees'],
+  emits: ["showNotAttendingEmployees"],
   computed: {
     miniCircumference() {
-      return 2 * Math.PI * 30;
+      return 2 * Math.PI * 25;
     },
     miniStrokeDashoffset() {
       if (this.total === 0) return this.miniCircumference;
       const percentage = (this.notAttending / this.total) * 100;
       return this.miniCircumference - (percentage / 100) * this.miniCircumference;
-    }
+    },
   },
   methods: {
     getPercentage() {
@@ -94,154 +156,9 @@ export default {
     },
     handleClick() {
       if (this.isClickable) {
-        this.$emit('showNotAttendingEmployees');
+        this.$emit("showNotAttendingEmployees");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
-<style scoped>
-.card-stat {
-  background: linear-gradient(135deg, #fdecea 0%, #fef2f2 100%);
-  border-radius: 20px;
-  padding: 24px;
-  text-align: left;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-left: 4px solid #d32f2f;
-  font-family: 'Inter', 'Poppins', sans-serif;
-}
-
-.clickable {
-  cursor: pointer;
-}
-
-.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(211, 47, 47, 0.1), 0 4px 6px -2px rgba(211, 47, 47, 0.05);
-}
-
-/* Header */
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.card-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #d32f2f;
-}
-
-.icon {
-  width: 24px;
-  height: 24px;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #d32f2f;
-}
-
-/* Content */
-.card-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.percentage {
-  font-size: 48px;
-  font-weight: 800;
-  color: #b71c1c;
-  line-height: 1;
-}
-
-/* Mini donut chart */
-.mini-donut {
-  position: relative;
-}
-
-.mini-donut-svg {
-  width: 65px;
-  height: 65px;
-}
-
-.mini-progress {
-  transition: stroke-dasharray 0.8s ease-in-out, stroke-dashoffset 0.8s ease-in-out;
-}
-
-.mini-donut-number {
-  font-size: 14px;
-  font-weight: 700;
-  fill: #d32f2f;
-  font-family: 'Inter', 'Poppins', sans-serif;
-}
-
-/* Footer */
-.card-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.count {
-  font-size: 14px;
-  color: #d32f2f;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.count::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  background: #d32f2f;
-  border-radius: 50%;
-}
-
-.view-link {
-  color: #2563eb;
-  font-weight: 500;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-
-.view-link:hover {
-  color: #1d4ed8;
-}
-
-.loading {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 8px;
-  text-align: center;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .card-stat {
-    padding: 20px;
-  }
-
-  .percentage {
-    font-size: 36px;
-  }
-
-  .mini-donut-svg {
-    width: 55px;
-    height: 55px;
-  }
-}
-</style>

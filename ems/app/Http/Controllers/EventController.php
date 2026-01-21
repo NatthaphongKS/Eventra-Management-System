@@ -306,7 +306,7 @@ class EventController extends Controller
                     foreach ($employeesToUpdate as $emp) {
                         if ($emp->emp_email) {
                             $formURL = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
-                            Mail::to($emp->emp_email)->send(new EventInvitationMail($emp, $event, $filesToSend, $formURL));
+                            Mail::to($emp->emp_email)->send(new EventUpdateMail($emp, $event, $filesToSend, $formURL));
                         }
                     }
                 }

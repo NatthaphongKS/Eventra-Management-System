@@ -104,8 +104,8 @@
 
                             <FormField label="Employee ID" required>
                                 <div class="grid grid-cols-2 gap-3 mt-1">
-                                    <DropdownPill v-model="form.companyId" :options="companies" placeholder="Company"
-                                        class="h-11 w-full" :error="errors.companyId" />
+                                    <DropdownPill v-model="form.emp_company_id" :options="companies" placeholder="Company"
+                                        class="h-11 w-full" :error="errors.emp_company_id" />
                                     <InputPill v-model="form.employeeNumber" placeholder="Ex.0001" maxlength="4"
                                         class="h-11 w-full" :error="errors.employeeNumber"
                                         @input="onEmployeeNumberInput" />
@@ -199,7 +199,7 @@ const form = reactive({
     emp_lastname: "",
     emp_nickname: "",
     emp_phone: "",
-    companyId: "",
+    emp_company_id: "",
     employeeNumber: "",
     companyCode: "",
     emp_department_id: "",
@@ -340,7 +340,7 @@ onMounted(async () => {
         );
 
         if (matchedCompany) {
-            form.companyId = matchedCompany.value;
+            form.emp_company_id = matchedCompany.value;
             form.companyCode = matchedCompany.code;
             const regex = new RegExp(`^${matchedCompany.code}`, "i");
             form.employeeNumber = fullId.replace(regex, "");
@@ -382,7 +382,7 @@ const fieldRules = {
     emp_nickname: ["requiredText"],
     emp_phone: ["requiredNumber"],
     emp_email: ["requiredEmail"],
-    companyId: ["requiredSelect"],
+    emp_company_id: ["requiredSelect"],
     employeeNumber: ["employeeNumber4"],
     password: ["passwordMin8"],
 };
@@ -472,7 +472,7 @@ watch(
     }
 );
 watch(
-    () => form.companyId,
+    () => form.emp_company_id,
     (newId) => {
         const found = companies.value.find((c) => c.value === newId);
         form.companyCode = found ? found.code : "";
@@ -534,7 +534,7 @@ async function confirmSaveProcess() {
             payload.emp_password = payload.password;
         }
         delete payload.password;
-        delete payload.companyId;
+        //delete payload.emp_company_id;
         delete payload.employeeNumber;
         delete payload.companyCode;
 

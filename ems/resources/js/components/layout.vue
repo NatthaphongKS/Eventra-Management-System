@@ -33,7 +33,7 @@
               >
                 <div
                   v-if="isParentActive(item)"
-                  class="absolute -left-4 top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700"
+                  class="absolute left-0 top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700"
                 ></div>
                 <span class="px-2 inline-flex items-center gap-4">
                   <span
@@ -80,7 +80,7 @@
             >
               <div
                 v-if="isActive(item.to)"
-                class="absolute -left-4 top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700"
+                class="absolute left-0 top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700"
               ></div>
               <span
                 class="grid h-[40px] w-[40px] place-items-center rounded-lg"

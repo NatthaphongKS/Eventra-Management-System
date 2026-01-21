@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -485,6 +486,7 @@ class EmployeeController extends Controller
                 'required',
                 Rule::unique('ems_employees', 'emp_id')->ignore($emp->id)
             ],
+            'emp_company_id' => ['sometimes', 'nullable'],
             'emp_prefix' => ['sometimes', 'required'],
             'emp_firstname' => ['sometimes', 'required'],
             'emp_lastname' => ['sometimes', 'required'],
@@ -513,6 +515,7 @@ class EmployeeController extends Controller
         // =========================
         // 5) Update
         // =========================
+        // dd($validated);
         $update = $validated;
 
         // CASE 1: เปลี่ยนเป็น employee → ล้าง password
