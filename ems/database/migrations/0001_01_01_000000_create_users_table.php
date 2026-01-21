@@ -61,10 +61,10 @@ return new class extends Migration {
             $table->string('emp_password')->nullable();
             $table->enum('emp_permission', ['admin', 'hr', 'employee'])
                 ->default('employee');
-            $table->date('emp_create_at')->useCurrent();
+            $table->date('emp_created_at')->useCurrent();
             $table->unsignedBigInteger('emp_create_by')->nullable();
             $table->enum('emp_delete_status', ['active', 'inactive'])->default('active');
-            $table->date('emp_delete_at')->nullable();
+            $table->date('emp_deleted_at')->nullable();
             $table->unsignedBigInteger('emp_delete_by')->nullable();
             $table->rememberToken()->nullable();
         });
