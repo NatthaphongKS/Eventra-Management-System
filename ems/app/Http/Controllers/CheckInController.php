@@ -72,7 +72,7 @@ class CheckInController extends Controller
         if ($connect) {
             return $connect->con_answer; // 'accepted', 'denied', 'invalid','not_invited'
         } else {
-           dd("can not find connect");
+            dd("can not find connect");
         }
     }
 
@@ -84,7 +84,7 @@ class CheckInController extends Controller
         if ($connect) {
             return $connect->con_checkin_status; // 0 หรือ 1
         } else {
-            return response()->json(['error' => 'Error : getEmployeeCheckinStatus funtion failed', 500 ]);
+            return response()->json(['error' => 'Error : getEmployeeCheckinStatus funtion failed', 500]);
         }
     }
 
@@ -114,7 +114,6 @@ class CheckInController extends Controller
             $record->con_checkin_status = $record->con_checkin_status ? 0 : 1;
             $record->save();
         }
-
 
         return response()->json([
             'message' => 'Record updated',
