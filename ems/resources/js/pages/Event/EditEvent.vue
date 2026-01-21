@@ -218,7 +218,7 @@
                 <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
                     <Icon icon="ep:upload-filled" class="w-40 h-28 mb-3 text-red-300" />
                     <p class="text-[16px]  font-medium text-neutral-800">Choose a file or drag &amp; drop it here</p>
-                    <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx</p>
+                    <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx, png</p>
                 </div>
 
                 <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
@@ -240,7 +240,7 @@
         </div>
     </div>
 
-    <div class="mt-10">
+    <div class="mt-6">
         <h3 class="text-3xl font-semibold">Add Guest</h3>
 
         <div class="mt-4 flex flex-col gap-3">

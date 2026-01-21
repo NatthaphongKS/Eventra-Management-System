@@ -1,91 +1,156 @@
 <template>
-  <div class="card-stat" :class="{ clickable: isClickable }" @click="handleClick">
-    <!-- Header -->
-    <div class="card-header">
-      <div class="card-icon">
-        <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 110-16 8 8 0 010 16z"/>
-          <path d="M13 8h-2v5l4 2.5 1-1.5-3-2V8z"/>
-        </svg>
-      </div>
-      <span class="card-title">PENDING</span>
-    </div>
+  <div
+    class="relative w-full rounded-2xl p-5 font-sans transition-all duration-200 shadow-sm mb-4 border-l-[4px] border-l-sky-600  hover:-translate-y-0.5 hover:shadow-md"
+    :class="[
+      'bg-sky-100',
 
-    <!-- Content -->
-    <div class="card-content">
-      <div class="percentage">{{ getPercentage() }}%</div>
-      <div class="mini-donut">
-        <svg class="mini-donut-svg" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="30" stroke="#dbeafe" stroke-width="8" fill="none"/>
-          <circle
-            cx="40"
-            cy="40"
-            r="30"
-            stroke="url(#blueGradient)"
-            stroke-width="8"
-            fill="none"
-            stroke-linecap="round"
-            :stroke-dasharray="miniCircumference"
-            :stroke-dashoffset="miniStrokeDashoffset"
-            class="mini-progress"
-            transform="rotate(0 40 40)"
+    ]"
+  >
+    <div class="mb-2 flex items-center gap-2 text-gray-700">
+      <div class="flex items-center justify-center ">
+        <svg
+          class="w-7 h-7 sm:w-9 sm:h-9"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="M12 4a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4"
           />
-          <defs>
-            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#3b82f6"/>
-              <stop offset="100%" style="stop-color:#1d4ed8"/>
-            </linearGradient>
-          </defs>
-          <text x="40" y="45" text-anchor="middle" class="mini-donut-number">{{ pending }}</text>
         </svg>
+      </div>
+      <span class="text-xl sm:text-2xl font-semibold font-[poppins] text-neutral-700"
+        >Pending</span
+      >
+    </div>
+
+    <div class="mb-2 flex items-center justify-between w-full ml-10">
+      <div class="flex items-baseline text-sky-600 leading-none">
+        <span class="text-4xl sm:text-5xl font-extrabold">{{ getPercentage() }}</span>
+        <span class="ml-1 text-xl sm:text-2xl font-bold">%</span>
+      </div>
+
+      <div class="flex items-center justify-center mr-20">
+        <div class="relative">
+          <svg
+            class="w-20 h-20 sm:w-[100px] sm:h-[105px] -rotate-90 transition-all duration-300"
+            viewBox="0 0 60 60"
+          >
+            <circle
+              cx="30"
+              cy="30"
+              r="25"
+              fill="transparent"
+              class="stroke-white/50"
+              stroke-width="7"
+            />
+            <circle
+              cx="30"
+              cy="30"
+              r="25"
+              fill="transparent"
+              class="stroke-sky-600 transition-all duration-700 ease-out"
+              stroke-width="5"
+              stroke-linecap="round"
+              :stroke-dasharray="miniCircumference"
+              :stroke-dashoffset="miniStrokeDashoffset"
+            />
+            <text
+              x="30"
+              y="35"
+              text-anchor="middle"
+              class="fill-gray-700 text-[12px] sm:text-[14px] font-bold"
+              transform="rotate(90 30 30)"
+            >
+              {{ pending }}
+            </text>
+          </svg>
+        </div>
       </div>
     </div>
 
-    <!-- Footer -->
-    <div class="card-footer">
-      <div class="count">{{ pending }} person{{ pending > 1 ? 's' : '' }}</div>
-      <div class="view-link">View Attendance →</div>
+    <div
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between sm:gap-0 pt-2 border-t border-blue-200/50 sm:border-none"
+    >
+      <div class="flex items-center gap-2 text-xs text-gray-600 order-2 sm:order-1">
+        <span class="h-2.5 w-2.5 rounded-full bg-sky-600 flex-shrink-0"></span>
+        <span class="whitespace-nowrap  text-base font-[poppins]">
+          <b class="text-gray-800 ">{{
+            pending
+          }}</b>
+          Person from
+          <b class="text-gray-800 ">{{
+            total
+          }}</b>
+        </span>
+      </div>
+
+      <button
+        class="order-1 sm:order-2 w-full sm:w-auto text-center rounded-full px-4 py-2 text-sm sm:text-base font-basic font-[poppins] shadow-sm transition-all border mr-3.5"
+        :class="[
+          isSelected
+            ? 'bg-sky-600 border-sky-800 text-white'
+            : 'bg-white border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700 hover:shadow-md',
+            isClickable ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : '',
+        ]"
+        @click="handleClick"
+      >
+        View Pending
+      </button>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div
+      v-if="loading"
+      class="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70 font-semibold text-sky-600"
+    >
+      Loading...
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'PendingCard',
+  name: "PendingCard",
   props: {
     eventId: {
       type: [Number, String],
-      required: true
+      required: true,
     },
     pending: {
       type: [Number, String],
-      default: 0
+      default: 0,
     },
     total: {
       type: [Number, String],
-      default: 0
+      default: 0,
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isClickable: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    // เพิ่ม Prop นี้เพื่อรับค่าสถานะการถูกเลือก
+    isSelected: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['showPendingEmployees'],
+  emits: ["showPendingEmployees"],
   computed: {
     miniCircumference() {
-      return 2 * Math.PI * 30;
+      // ปรับรัศมีให้ตรงกับ SVG ใหม่ (r=25)
+      return 2 * Math.PI * 25;
     },
     miniStrokeDashoffset() {
       if (this.total === 0) return this.miniCircumference;
       const percentage = (this.pending / this.total) * 100;
       return this.miniCircumference - (percentage / 100) * this.miniCircumference;
-    }
+    },
   },
   methods: {
     getPercentage() {
@@ -94,154 +159,9 @@ export default {
     },
     handleClick() {
       if (this.isClickable) {
-        this.$emit('showPendingEmployees');
+        this.$emit("showPendingEmployees");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
-
-<style scoped>
-.card-stat {
-  background: linear-gradient(135deg, #e8f4fd 0%, #f0f9ff 100%);
-  border-radius: 20px;
-  padding: 24px;
-  text-align: left;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-left: 4px solid #1976d2;
-  font-family: 'Inter', 'Poppins', sans-serif;
-}
-
-.clickable {
-  cursor: pointer;
-}
-
-.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(25, 118, 210, 0.1), 0 4px 6px -2px rgba(25, 118, 210, 0.05);
-}
-
-/* Header */
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.card-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1976d2;
-}
-
-.icon {
-  width: 24px;
-  height: 24px;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1976d2;
-}
-
-/* Content */
-.card-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.percentage {
-  font-size: 48px;
-  font-weight: 800;
-  color: #0d47a1;
-  line-height: 1;
-}
-
-/* Mini donut chart */
-.mini-donut {
-  position: relative;
-}
-
-.mini-donut-svg {
-  width: 65px;
-  height: 65px;
-}
-
-.mini-progress {
-  transition: stroke-dasharray 0.8s ease-in-out, stroke-dashoffset 0.8s ease-in-out;
-}
-
-.mini-donut-number {
-  font-size: 14px;
-  font-weight: 700;
-  fill: #1976d2;
-  font-family: 'Inter', 'Poppins', sans-serif;
-}
-
-/* Footer */
-.card-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.count {
-  font-size: 14px;
-  color: #1976d2;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.count::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  background: #1976d2;
-  border-radius: 50%;
-}
-
-.view-link {
-  color: #2563eb;
-  font-weight: 500;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-
-.view-link:hover {
-  color: #1d4ed8;
-}
-
-.loading {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 8px;
-  text-align: center;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .card-stat {
-    padding: 20px;
-  }
-
-  .percentage {
-    font-size: 36px;
-  }
-
-  .mini-donut-svg {
-    width: 55px;
-    height: 55px;
-  }
-}
-</style>
