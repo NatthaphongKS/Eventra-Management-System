@@ -30,7 +30,7 @@
                 </p>
 
                 <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="(msg) => (error = msg)"
-                    @picked="() => { error = ''; isTableVisible = false; }" 
+                    @picked="() => { error = ''; isTableVisible = false; }"
                     @cleared="() => { error = ''; isTableVisible = false; displayRows = []; }" />
 
                 <div class="mt-4 flex justify-end">
@@ -78,11 +78,11 @@
                                 <select
                                     class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
                                     :value="pageSize" @change="
-                                    (e) => {
-                                        pageSize = Number(e.target.value);
-                                        page = 1;
-                                    }
-                                ">
+                                        (e) => {
+                                            pageSize = Number(e.target.value);
+                                            page = 1;
+                                        }
+                                    ">
                                     <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
                                         {{ opt }}
                                     </option>
@@ -139,7 +139,7 @@ import { useRouter } from "vue-router";
 // Excel libraries
 // - XLSX : ใช้สำหรับอ่านไฟล์ Excel / CSV
 // - ExcelJS : ใช้สำหรับสร้างไฟล์ Excel template
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 
 // HTTP client
@@ -234,62 +234,60 @@ watch([pageSize, totalItems], () => {
 // ======================================================
 // Upload & Parse Excel
 // ======================================================
+// ใช้ ExcelJS อ่านไฟล์ .xlsx (และยังใช้ readFile เดิมได้)
 async function upload() {
     // guard: ต้องมีไฟล์ และไม่มี error
     if (!file.value || error.value) return;
     uploading.value = true;
-    
+
     // แก้ไข: Reset การแสดงผลก่อนเริ่ม
     isTableVisible.value = false;
 
     try {
         const ext = file.value.name.split(".").pop()?.toLowerCase();
+        if (ext !== "xlsx") {
+            throw new Error("รองรับเฉพาะไฟล์ .xlsx เท่านั้น");
+        }
 
-        const data = await readFile(
-            file.value,
-            ext === "csv" ? "text" : "array"
-        );
+        const data = await readFile(file.value, "array"); // ArrayBuffer
 
-        const wb = XLSX.read(data, {
-            type: ext === "csv" ? "string" : "array",
-            cellDates: true,
-        });
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(data);
 
-        const ws = wb.Sheets[wb.SheetNames[0]];
+        const ws = workbook.worksheets[0];
+        if (!ws) throw new Error("Worksheet not found");
 
-        const rowsAoA = XLSX.utils.sheet_to_json(ws, {
-            header: 1,
-            defval: "",
-            blankrows: false,
+        // --- ExcelJS -> rowsAoA (เหมือนเดิม: header:1)
+        // values ของ ExcelJS เป็น array ที่ index เริ่มที่ 1
+        const rowsAoA = [];
+        ws.eachRow({ includeEmpty: false }, (row) => {
+            const arr = (row.values || []).slice(1).map((v) => (v ?? "")); // defval ""
+            // กันแถวว่างล้วน
+            if (arr.every((x) => x === "" || x == null || String(x).trim() === "")) return;
+            rowsAoA.push(arr);
         });
 
         const headerRowIdx = detectHeaderRow(rowsAoA);
         if (headerRowIdx === -1) {
-            throw new Error(
-                "Header row not found or does not match the required template."
-            );
+            throw new Error("Header row not found or does not match the required template.");
         }
 
-        const headers = rowsAoA[headerRowIdx].map(h =>
-            String(h).trim()
-        );
+        const headers = rowsAoA[headerRowIdx].map((h) => String(h).trim());
         const dataAoA = rowsAoA.slice(headerRowIdx + 1);
 
         if (!dataAoA.length) {
             throw new Error("Please fill in all required information.");
         }
+
         // AoA → Object (raw data)
         const json = arraysToObjects(headers, dataAoA);
 
         // ================================
         // normalize key → lowercase + no space
-        // ================================
-        const normalizedRows = json.map(row => {
+        const normalizedRows = json.map((row) => {
             const out = {};
             for (const [k, v] of Object.entries(row)) {
-                const nk = String(k)
-                    .toLowerCase()
-                    .replace(/\s+/g, "");
+                const nk = String(k).toLowerCase().replace(/\s+/g, "");
                 out[nk] = v;
             }
             return out;
@@ -312,10 +310,8 @@ async function upload() {
             "email",
         ];
 
-        const invalidRowIndex = normalizedRows.findIndex(row =>
-            requiredFields.some(
-                key => !row[key] || String(row[key]).trim() === ""
-            )
+        const invalidRowIndex = normalizedRows.findIndex((row) =>
+            requiredFields.some((key) => !row[key] || String(row[key]).trim() === "")
         );
 
         if (invalidRowIndex !== -1) {
@@ -328,15 +324,13 @@ async function upload() {
         displayRows.value = mapped;
         page.value = 1;
         error.value = "";
-        
+
         // แก้ไข: โหลดเสร็จแล้วค่อยโชว์ตาราง
         isTableVisible.value = true;
 
     } catch (e) {
         console.error(e);
-        error.value =
-            e?.message || "Unable to read file. Please check the information.";
-        // ถ้า error ไม่ต้องโชว์ตาราง
+        error.value = e?.message || "Unable to read file. Please check the information.";
         isTableVisible.value = false;
     } finally {
         uploading.value = false;
