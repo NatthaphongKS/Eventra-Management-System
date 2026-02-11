@@ -9,18 +9,21 @@ class EventsSeeder extends Seeder
 {
     public function run(): void
     {
-        // ลบของเก่า
-        DB::table('ems_event')->delete();
+        // ลบของเก่า + รีเซ็ต auto increment
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('ems_event')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         DB::table('ems_event')->insert([
             // ==================================================
-            // DONE (กิจกรรมจบไปแล้ว)
+            // DONE
             // ==================================================
             [
+                'id' => 1,
                 'evn_title' => 'ประชุมสรุปผลโครงการ',
-                'evn_category_id' => 1, // ประชุม
+                'evn_category_id' => 1,
                 'evn_description' => 'สรุปผลการดำเนินงานและปัญหาที่พบ',
-                'evn_date' => now()->subDays(7)->toDateString(),
+                'evn_date' => '2026-02-07',
                 'evn_timestart' => '09:00:00',
                 'evn_timeend' => '10:30:00',
                 'evn_duration' => 90,
@@ -33,10 +36,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'done',
             ],
             [
+                'id' => 2,
                 'evn_title' => 'สัมนาความปลอดภัยไซเบอร์',
-                'evn_category_id' => 2, // สัมนา
+                'evn_category_id' => 2,
                 'evn_description' => 'ให้ความรู้เรื่องภัยคุกคามไซเบอร์และการป้องกันข้อมูล',
-                'evn_date' => now()->subDays(5)->toDateString(),
+                'evn_date' => '2026-02-09',
                 'evn_timestart' => '13:00:00',
                 'evn_timeend' => '15:30:00',
                 'evn_duration' => 150,
@@ -49,10 +53,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'done',
             ],
             [
+                'id' => 3,
                 'evn_title' => 'อบรมการใช้งานระบบ EMS',
-                'evn_category_id' => 3, // อบรม
+                'evn_category_id' => 3,
                 'evn_description' => 'อบรมพนักงานใหม่เกี่ยวกับระบบ Eventra Management System',
-                'evn_date' => now()->subDays(3)->toDateString(),
+                'evn_date' => '2026-02-11',
                 'evn_timestart' => '09:00:00',
                 'evn_timeend' => '12:00:00',
                 'evn_duration' => 180,
@@ -65,10 +70,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'done',
             ],
             [
+                'id' => 4,
                 'evn_title' => 'กิจกรรมเดิน-วิ่งการกุศล',
-                'evn_category_id' => 4, // กิจกรรมพิเศษ
+                'evn_category_id' => 4,
                 'evn_description' => 'กิจกรรมเพื่อสุขภาพและระดมทุนช่วยเหลือผู้ด้อยโอกาส',
-                'evn_date' => now()->subDays(2)->toDateString(),
+                'evn_date' => '2026-02-12',
                 'evn_timestart' => '06:00:00',
                 'evn_timeend' => '09:00:00',
                 'evn_duration' => 180,
@@ -82,16 +88,17 @@ class EventsSeeder extends Seeder
             ],
 
             // ==================================================
-            // ONGOING (กำลังดำเนินการ) -> วันนี้
+            // ONGOING
             // ==================================================
             [
+                'id' => 5,
                 'evn_title' => 'นำเสนอ Demo',
-                'evn_category_id' => 4, // กิจกรรมพิเศษ
+                'evn_category_id' => 4,
                 'evn_description' => 'นำเสนอ Demo Cycle 3',
-                'evn_date' => now()->toDateString(),
-                'evn_timestart' => now()->subMinutes(20)->format('H:i:s'),
-                'evn_timeend' => now()->addMinutes(90)->format('H:i:s'),
-                'evn_duration' => 110,
+                'evn_date' => '2026-02-14',
+                'evn_timestart' => '10:00:00',
+                'evn_timeend' => '12:00:00',
+                'evn_duration' => 120,
                 'evn_location' => 'ตึก IF-6T05',
                 'evn_file' => 'have',
                 'evn_create_by' => 2,
@@ -101,12 +108,13 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'ongoing',
             ],
             [
+                'id' => 6,
                 'evn_title' => 'ประชุมติดตามความคืบหน้าโปรเจค',
-                'evn_category_id' => 1, // ประชุม
+                'evn_category_id' => 1,
                 'evn_description' => 'ติดตาม progress งานและแก้ปัญหาที่เจอระหว่างพัฒนา',
-                'evn_date' => now()->toDateString(),
-                'evn_timestart' => now()->subMinutes(10)->format('H:i:s'),
-                'evn_timeend' => now()->addMinutes(50)->format('H:i:s'),
+                'evn_date' => '2026-02-14',
+                'evn_timestart' => '13:00:00',
+                'evn_timeend' => '14:00:00',
                 'evn_duration' => 60,
                 'evn_location' => 'ห้องประชุม B',
                 'evn_file' => 'not_have',
@@ -118,13 +126,14 @@ class EventsSeeder extends Seeder
             ],
 
             // ==================================================
-            // UPCOMING (กำลังจะเกิดขึ้น) -> อนาคต
+            // UPCOMING
             // ==================================================
             [
+                'id' => 7,
                 'evn_title' => 'ประชุมทีม',
-                'evn_category_id' => 1, // ประชุม
+                'evn_category_id' => 1,
                 'evn_description' => 'ประชุมทีมครั้งที่ 25',
-                'evn_date' => now()->addDays(1)->toDateString(),
+                'evn_date' => '2026-02-15',
                 'evn_timestart' => '10:00:00',
                 'evn_timeend' => '12:00:00',
                 'evn_duration' => 120,
@@ -137,10 +146,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'upcoming',
             ],
             [
+                'id' => 8,
                 'evn_title' => 'อบรมการทดสอบซอฟต์แวร์ (QA)',
-                'evn_category_id' => 3, // อบรม
+                'evn_category_id' => 3,
                 'evn_description' => 'อบรมพื้นฐานการทำ Test case, Bug report และการใช้งานเครื่องมือ QA',
-                'evn_date' => now()->addDays(2)->toDateString(),
+                'evn_date' => '2026-02-16',
                 'evn_timestart' => '09:00:00',
                 'evn_timeend' => '12:00:00',
                 'evn_duration' => 180,
@@ -153,10 +163,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'upcoming',
             ],
             [
+                'id' => 9,
                 'evn_title' => 'สัมนาแนวโน้มเทคโนโลยีปี 2026',
-                'evn_category_id' => 2, // สัมนา
+                'evn_category_id' => 2,
                 'evn_description' => 'อัปเดตเทคโนโลยีและนวัตกรรมที่กำลังมาแรงในปี 2026',
-                'evn_date' => now()->addDays(3)->toDateString(),
+                'evn_date' => '2026-02-17',
                 'evn_timestart' => '13:30:00',
                 'evn_timeend' => '16:00:00',
                 'evn_duration' => 150,
@@ -169,10 +180,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'upcoming',
             ],
             [
+                'id' => 10,
                 'evn_title' => 'กิจกรรมปลูกต้นไม้วันสิ่งแวดล้อม',
-                'evn_category_id' => 4, // กิจกรรมพิเศษ
+                'evn_category_id' => 4,
                 'evn_description' => 'ร่วมกันปลูกต้นไม้เพิ่มพื้นที่สีเขียวและสร้างจิตสำนึกด้านสิ่งแวดล้อม',
-                'evn_date' => now()->addDays(5)->toDateString(),
+                'evn_date' => '2026-02-19',
                 'evn_timestart' => '07:30:00',
                 'evn_timeend' => '10:30:00',
                 'evn_duration' => 180,
@@ -185,10 +197,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'upcoming',
             ],
             [
+                'id' => 11,
                 'evn_title' => 'Workshop การออกแบบ UI/UX',
-                'evn_category_id' => 3, // อบรม
+                'evn_category_id' => 3,
                 'evn_description' => 'เวิร์กช็อปออกแบบ UI/UX เบื้องต้น พร้อมทำ prototype',
-                'evn_date' => now()->addDays(6)->toDateString(),
+                'evn_date' => '2026-02-20',
                 'evn_timestart' => '10:00:00',
                 'evn_timeend' => '15:00:00',
                 'evn_duration' => 300,
@@ -201,10 +214,11 @@ class EventsSeeder extends Seeder
                 'evn_status' => 'upcoming',
             ],
             [
+                'id' => 12,
                 'evn_title' => 'ประชุมคณะกรรมการบริหาร',
-                'evn_category_id' => 1, // ประชุม
+                'evn_category_id' => 1,
                 'evn_description' => 'ประชุมสรุปผลการดำเนินงานและแผนงานไตรมาสถัดไป',
-                'evn_date' => now()->addDays(7)->toDateString(),
+                'evn_date' => '2026-02-21',
                 'evn_timestart' => '14:00:00',
                 'evn_timeend' => '16:00:00',
                 'evn_duration' => 120,
