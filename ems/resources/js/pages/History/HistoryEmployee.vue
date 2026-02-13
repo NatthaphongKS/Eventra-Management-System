@@ -68,7 +68,7 @@ export default {
             pageSize: 10,
 
             sortMenuOpen: false,
-            sortBy: { key: 'emp_deleted_at', order: 'desc' },
+            sortBy: { key: 'emp_delete_at', order: 'desc' },
             sortOptions: [
                 {
                     key: 'emp_firstname',
@@ -95,13 +95,13 @@ export default {
                     value: 'created_oldest',
                 },
                 {
-                    key: 'emp_deleted_at',
+                    key: 'emp_delete_at',
                     order: 'desc',
                     label: 'วันที่ลบล่าสุด',
                     value: 'deleted_newest',
                 },
                 {
-                    key: 'emp_deleted_at',
+                    key: 'emp_delete_at',
                     order: 'asc',
                     label: 'วันที่ลบเก่าสุด',
                     value: 'deleted_oldest',
@@ -156,7 +156,7 @@ export default {
                     class: 'text-center w-[120px]',
                 },
                 {
-                    key: 'emp_deleted_at',
+                    key: 'emp_delete_at',
                     label: 'Deleted Date',
                     class: 'text-center w-[130px]',
                     format: (v) => v ? new Date(v).toLocaleDateString('th-TH') : '-',
@@ -201,7 +201,7 @@ export default {
                         dir
                     );
                 }
-                if (key === 'created_at' || key === 'emp_deleted_at') {
+                if (key === 'created_at' || key === 'emp_delete_at') {
                     const ta = new Date(a[key]).getTime() || 0;
                     const tb = new Date(b[key]).getTime() || 0;
                     return (ta - tb) * dir;
@@ -252,7 +252,7 @@ export default {
                     created_by_name: x.created_by_name ?? '-',
                     created_at: x.created_at ?? null,
                     deleted_by_name: x.deleted_by_name ?? '-',
-                    emp_deleted_at: x.emp_deleted_at ?? null,
+                    emp_delete_at: x.emp_deleted_at ?? null,
                 }));
             } catch (e) {
                 console.error('Error loading history employees:', e);
