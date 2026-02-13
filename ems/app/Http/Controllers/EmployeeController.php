@@ -345,7 +345,7 @@ class EmployeeController extends Controller
                     'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
                     'emp_permission' => $role,
                     'emp_delete_status' => 'active',
-                    'emp_delete_at' => null,
+                    'emp_deleted_at' => null,
                     'emp_delete_by' => null,
                     'emp_created_at' => Carbon::now(),
                 ]);
@@ -594,7 +594,7 @@ class EmployeeController extends Controller
 
         // 🗑️ soft delete
         $emp->emp_delete_status = 'inactive';
-        $emp->emp_delete_at = now();
+        $emp->emp_deleted_at = now();
         $emp->emp_delete_by = $loginEmployee->id;
         $emp->save();
 
