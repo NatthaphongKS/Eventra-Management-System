@@ -1,10 +1,10 @@
 <!-- /**
- * ชื่อไฟล์: HistoryEvent.vue
- * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
- * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
- * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
- * ชื่อผู้เขียน/แก้ไข:
- * วันที่จัดทำ/แก้ไข:
+ * ชื่อไฟล์: EditEvent.vue
+ * คำอธิบาย: หน้าแก้ไขข้อมูลกิจกรรม (Edit Event)
+ * Input: ข้อมูลกิจกรรมจาก API /edit-event/{id}
+ * Output: แบบฟอร์มแก้ไขกิจกรรม พร้อมอัปโหลดไฟล์และเลือก Guest
+ * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+ * วันที่จัดทำ/แก้ไข: 2026-02-15
  */ -->
 <!-- pages/edit_event.vue -->
 <template>
@@ -17,7 +17,7 @@
             <!-- ช่องกรอกชื่ออีเวนต์ -->
             <div class="grid ">
                 <div class="mt-6 md:grid md:grid-cols-[3fr_200px] md:gap-8 items-stretch">
-                    <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
+                    <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน DATA() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
                      trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
                     <div>
                         <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px] mb-4 ml-1">
@@ -94,10 +94,10 @@
                         [&::-webkit-inner-spin-button]:hidden
                         [&::-webkit-clear-button]:hidden" type="date" v-model="eventDate" :min="minDate"
                             :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }"
-                            onclick="this.showPicker()">
+                            @click="$event.target.showPicker()">
 
 
-                        <Icon icon="stash:data-date-solid"
+                        <Icon icon="stash:DATA-date-solid"
                             class="ml-20 w-7 h-[30px] text-red-700 shrink-0 absolute right-5 top-1/2 -translate-y-1/2  pointer-events-none" />
                     </div>
                     <p v-if="submitted && formErrors.eventDate" class="mt-1 text-xs text-red-600 font-medium">
@@ -190,7 +190,7 @@
                             </div>
 
                             <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
-                            <template v-if="item.kind === 'existing'">
+                            <template v-if="item.kind === 'EXISTING'">
                                 <a :href="item.url" target="_blank" rel="noopener"
                                     class="truncate text-[16px]  text-red-700 hover:underline">
                                     {{ item.name }}
@@ -207,7 +207,7 @@
 
                         <button type="button"
                             class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100"
-                            @click="item.kind === 'existing' ? removeExisting(item.id) : removeFile(item.index)"
+                            @click="item.kind === 'EXISTING' ? removeExisting(item.id) : removeFile(item.index)"
                             aria-label="Remove file" title="Remove">
                             ✕
                         </button>
@@ -260,8 +260,8 @@
         </div>
 
         <div class="mt-6">
-            <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
-                :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
+            <DATATable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
+                :totalItems="FILTEREDEmployees.length" v-model:page="page" v-model:pageSize="perPage"
                 :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id"
                 :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected" :rowClass="rowClass"
                 :isRowDisabled="(row) => lockedIds.has(row.id)">
@@ -277,7 +277,7 @@
                         ไม่พบข้อมูลพนักงาน
                     </div>
                 </template>
-            </DataTable>
+            </DATATable>
         </div>
     </div>
 
@@ -313,16 +313,15 @@ import InputPill from '@/components/Input/InputPill.vue';
 import SearchBar from "@/components/SearchBar.vue";
 import { Icon } from '@iconify/vue'
 import DropdownPill from '@/components/Input/DropdownPill.vue'
-import DataTable from '@/components/DataTable.vue'
-import CancelButton from '@/components/Button/CancelButton.vue'
+import DATATable from '@/components/DATATable.vue'
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 
 export default {
-    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert, EmployeeDropdown },
-    data() {
+    components: { InputPill, Icon, SearchBar, DropdownPill, DATATable, CancelButton, ModalAlert, EmployeeDropdown },
+    DATA() {
         return {
-            // --- Form Data ---
+            // --- Form DATA ---
             eventTitle: '',
             eventCategoryName: '',
             eventCategoryId: '',
@@ -346,7 +345,7 @@ export default {
             filesDeleted: [],
             dragging: false,
 
-            // --- Table & Filter Data ---
+            // --- Table & Filter DATA ---
             employees: [],
             loadingEmployees: false,
             search: '',
@@ -388,34 +387,34 @@ export default {
     },
     methods: {
         // ฟังก์ชันดึงข้อมูลจาก backend มาแสดงในฟอร์ม
-        async fetchData() {
+        async fetchDATA() {
             try {
                 // เรียก API GET /edit-event/{id} โดย {id} เอามาจาก route param
-                const evn_response = await axios.get(`/edit-event/${this.$route.params.id}`) //evn_response รับค่าข้อมูล json เรียก fuction edit-event บน route
-                // console.log(evn_response) //ข้อมูล json
+                const EVENT_RESPONSE = await axios.get(`/edit-event/${this.$route.params.id}`) //EVENT_RESPONSE รับค่าข้อมูล json เรียก fuction edit-event บน route
+                // console.log(EVENT_RESPONSE) //ข้อมูล json
 
-                const payload = evn_response.data      // สร้างตัวแปร Payload อีก 1 ตัวมาเพื่อมาเก็บข้อมูลเฉพาะ data
-                const data = payload?.event ?? {}      // data เป็นตัวที่เก็บจาก payload อีกทีแล้วเพิ่มเงื่อนไขกัน null
+                const PAYLOAD = EVENT_RESPONSE.DATA      // สร้างตัวแปร PAYLOAD อีก 1 ตัวมาเพื่อมาเก็บข้อมูลเฉพาะ DATA
+                const DATA = PAYLOAD?.event ?? {}      // DATA เป็นตัวที่เก็บจาก PAYLOAD อีกทีแล้วเพิ่มเงื่อนไขกัน null
 
-                const response = await axios.get('/categories')
-                const categories = response.data?.data ?? []
+                const RESPONSE = await axios.get('/CATEGORIES')
+                const CATEGORIES = RESPONSE.DATA?.DATA ?? []
 
-                this.eventCategoryId = data?.evn_category_id ?? ''   //เก็บ
-                //เอาข้อมูลจาก controller ที่ส่งมา มาเก็บในตัวแปรแต่ละตัวใน data()
+                this.eventCategoryId = DATA?.evn_category_id ?? ''   //เก็บ
+                //เอาข้อมูลจาก controller ที่ส่งมา มาเก็บในตัวแปรแต่ละตัวใน DATA()
                 // เอาข้อมูลที่ได้มา map ลงในตัวแปรที่ bind กับ input/textarea
-                this.eventTitle = data?.evn_title ?? '' // ถ้า data หรือ data.evn_title เป็น undefined ให้ใช้ '' แทน
-                this.eventDescription = data?.evn_description ?? ''
-                this.eventCategoryName = data?.cat_name ?? ''
-                this.eventDate = data.evn_date.split("T")[0]; //เอาข้อมูลวันมาที่ได้มาแปลง format เป็น "yyyy-MM-dd".ก่อนส่งไปแสดงในช่องกรอก
+                this.eventTitle = DATA?.evn_title ?? '' // ถ้า DATA หรือ DATA.evn_title เป็น undefined ให้ใช้ '' แทน
+                this.eventDescription = DATA?.evn_description ?? ''
+                this.eventCategoryName = DATA?.cat_name ?? ''
+                this.eventDate = DATA.evn_date.split("T")[0]; //เอาข้อมูลวันมาที่ได้มาแปลง format เป็น "yyyy-MM-dd".ก่อนส่งไปแสดงในช่องกรอก
                 //spit(T) คือแยกข้อมูลเป็น array 2 ช่อง จะได้ ["2023-08-01", "00:00:00.000000Z"] จากแบบ "2023-08-01T00:00:00.000000Z".split("T")
 
-                this.eventTimeStart = data?.evn_timestart ?? ''
-                this.eventTimeEnd = data?.evn_timeend ?? ''
-                this.eventLocation = data?.evn_location ?? ''
-                this.selectCategory = categories
+                this.eventTimeStart = DATA?.evn_timestart ?? ''
+                this.eventTimeEnd = DATA?.evn_timeend ?? ''
+                this.eventLocation = DATA?.evn_location ?? ''
+                this.selectCategory = CATEGORIES
 
                 // ⬇️ ไฟล์เดิม
-                this.filesExisting = payload?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
+                this.filesExisting = PAYLOAD?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
                 // files": [
                 // {
                 //   "id": 1,
@@ -427,29 +426,29 @@ export default {
                 // ============================================================
                 // ✅ [จุดที่เติม] เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
                 // ============================================================
-                const existingGuests = payload?.guest_ids ?? []
-                const guestsMapped = existingGuests.map(id => parseInt(id))
+                const EXISTINGGUESTS = PAYLOAD?.guest_ids ?? []
+                const GUESTSMAPPED = EXISTINGGUESTS.map(id => parseInt(id))
 
-                this.selectedIds = new Set(guestsMapped) // ติ๊กถูก
-                this.lockedIds = new Set(guestsMapped) // 🔒 ล็อกห้ามแก้
+                this.selectedIds = new Set(GUESTSMAPPED) // ติ๊กถูก
+                this.lockedIds = new Set(GUESTSMAPPED) // 🔒 ล็อกห้ามแก้
 
 
-                // 1) โหลด metadata สำหรับพนักงาน/ฟิลเตอร์
+                // 1) โหลด metaDATA สำหรับพนักงาน/ฟิลเตอร์
                 this.loadingEmployees = true
-                const info = await axios.get('/event-info')
-                const employeeData = info.data || {}
+                const INFO = await axios.get('/event-INFO')
+                const EMPLOYEE_DATA = INFO.DATA || {}
 
                 // [แก้ไข 1] Map ข้อมูลให้เหมือนหน้า Create (เพิ่ม Logic Company ID)
-                this.employees = (employeeData.employees || []).map(employee => {
+                this.employees = (EMPLOYEE_DATA.employees || []).map(employee => {
                     // Logic หา Company จาก ID (เหมือนหน้า Create)
-                    const rawId = String(employee.emp_id || employee.code || "");
-                    const rawPrefixFromId = (rawId.match(/^[A-Za-z]+/) || [""])[0];
-                    const companyAbbr = (rawPrefixFromId || "").toUpperCase();
+                    const RAW_ID = String(employee.emp_id || employee.code || "");
+                    const RAW_PREFIX_FROM_ID = (RAW_ID.match(/^[A-Za-z]+/) || [""])[0];
+                    const COMPANY_FILTER = (RAW_PREFIX_FROM_ID || "").toUpperCase();
 
                     return {
                         id: employee.id,
                         // ใช้ emp_id หรือ code แล้วแต่ Backend ส่งมา
-                        emp_id: rawId,
+                        emp_id: RAW_ID,
                         emp_firstname: employee.emp_firstname || employee.first_name || '',
                         emp_lastname: employee.emp_lastname || employee.last_name || '',
                         fullname: `${employee.emp_firstname || ''} ${employee.emp_lastname || ''}`, // เพิ่มเผื่อไว้แสดงผล
@@ -458,8 +457,8 @@ export default {
                         team: employee.team_name || '',
                         position: employee.position_name || '',
                         // เพิ่ม Company Field เพื่อใช้ Filter
-                        companyAbbr: companyAbbr,
-                        companyId: employee.company_id || companyAbbr || "",
+                        COMPANY_FILTER: COMPANY_FILTER,
+                        companyId: employee.company_id || COMPANY_FILTER || "",
                     }
                 })
                 this.buildFilterOptions()
@@ -472,8 +471,8 @@ export default {
             }
         },
         toOptions(arr) {
-            const uniq = [...new Set(arr.filter(Boolean))].sort();
-            return uniq.map((v) => ({ label: v, value: v }));
+            const UNIQ = [...new Set(arr.filter(Boolean))].sort();
+            return UNIQ.map((v) => ({ label: v, value: v }));
         },
 
         // สร้างตัวเลือก Filter จากข้อมูล Employees ที่มีอยู่
@@ -505,10 +504,10 @@ export default {
             return ''
         },
 
-        // รับค่าจาก DataTable เวลาเช็ค/ยกเลิกเช็ค
+        // รับค่าจาก DATATable เวลาเช็ค/ยกเลิกเช็ค
         onUpdateSelected(nextArr) {
-            const filtered = nextArr.filter(id => !this.lockedIds.has(id))
-            this.selectedIds = new Set(filtered)
+            const FILTERED = nextArr.filter(id => !this.lockedIds.has(id))
+            this.selectedIds = new Set(FILTERED)
         },
         pickFiles() { this.$refs.fileInput?.click?.() },
         //<input ref="fileInput" ... style="display:none" /> → ช่อง input hidden ถูกซ่อนตลอด ในส่วน input ใต้ browsefile
@@ -525,12 +524,12 @@ export default {
         onPick(file) { this.addFiles([...file.target.files]); file.target.value = '' },
         // พอรับไฟล์แล้ว ([...file.target.files]) จะแปลงไฟล์จากที่เป็น filelist เป็น array ก่อนส่งให้ add files เพราะ arary ใช้คำสั่งได้เยอะกว่า
 
-        onDrop(event) { this.dragging = false; this.addFiles([...event.dataTransfer.files]) },
+        onDrop(event) { this.dragging = false; this.addFiles([...event.DATATransfer.files]) },
         //ใช้เปลี่ยนสถานะ dragging (ที่ถูก set true ตอน @dragover) เอาไว้ใช้กับ css ตอนตกแต่ง
 
-        //this.addFiles([...event.dataTransfer.files])
+        //this.addFiles([...event.DATATransfer.files])
         // ส่ง array ไฟล์ไปให้ method addFiles()
-        // [...event.dataTransfer.files] ใช้ spread operator ... แปลง FileList → array ของไฟล์จริง (File[])
+        // [...event.DATATransfer.files] ใช้ spread operator ... แปลง FileList → array ของไฟล์จริง (File[])
 
         //flow
         //ผู้ใช้ลากไฟล์มาวาง → trigger @drop="onDrop"
@@ -538,7 +537,8 @@ export default {
         // ถ้าไฟล์ผ่านเงื่อนไข → ถูกเพิ่มใน filesNew → แสดงใน < ul v -for= "newFile in filesNew" >
 
         addFiles(list) {  //รับไฟล์เข้ามาในชื่อ list
-            const MAX_MB = 50
+            const MAX_FILE_SIZE_MB = 50;
+
             const ALLOW = [
                 "application/pdf", "text/plain", "application/msword",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -546,13 +546,20 @@ export default {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "application/vnd.ms-excel",
             ]
-            const errs = []
+            const ERRORS = []
             list.forEach(file => { //เอาไฟล์ที่รับมาเข้าเงื่อนไขเช็คว่ขนาดกิน หรือ ไฟล์ตรงประเภทไหม
-                if (file.size > MAX_MB * 1024 * 1024) errs.push(`${file.name}: ไฟล์เกิน ${MAX_MB}MB`)
-                else if (!ALLOW.includes(file.type)) errs.push(`${file.name}: ประเภทไฟล์ไม่รองรับ`)
+                if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) ERRORS.push(`${file.name}: ไฟล์เกิน ${MAX_FILE_SIZE_MB}MB`)
+                else if (!ALLOW.includes(file.type)) ERRORS.push(`${file.name}: ประเภทไฟล์ไม่รองรับ`)
                 else this.filesNew.push(file) //ถ้าไม่ก็เพิ่มไฟล์เข้าตัวแปร filesNew ที่เป็น array
             })
-            if (errs.length) alert(errs.join('\n')) //ถ้าไม่ผ่าน แสดง alert
+            if (ERRORS.length) {
+    this.openAlert({
+        type: 'error',
+        title: 'UPLOAD ERROR',
+        message: ERRORS.join('\n')
+    })
+}
+ //ถ้าไม่ผ่าน แสดง alert
         },
 
         removeFile(index) { this.filesNew.splice(index, 1) },
@@ -563,7 +570,7 @@ export default {
 
         },
         //ส่วนแปลง ขนาดไฟล์
-        prettySize(byte) { const mb = byte / (1024 * 1024); return mb >= 1 ? `${mb.toFixed(2)} MB` : `${(byte / 1024).toFixed(0)} KB` },
+        prettySize(byte) { const MB = byte / (1024 * 1024); return MB >= 1 ? `${MB.toFixed(2)} MB` : `${(byte / 1024).toFixed(0)} KB` },
         //byte / (1024 * 1024); return mb >= 1 ? ถ้าไฟล์มีขนาด ≥ 1 MB → แสดงเป็น MB ถ้าไฟล์มีขนาด < 1 MB → แสดงเป็น KB
         //mb.toFixed(2) = ปัดทศนิยม 2 ตำแหน่ง
         //${(byte / 1024).toFixed(0)} KB ถ้าไฟล์เล็กกว่า 1 MB → จะแปลงเป็น KB แทน
@@ -594,19 +601,19 @@ export default {
 
             // 1. ถ้า id นี้อยู่ใน lockedIds (แขกที่ล็อกไว้แก้ไม่ได้)
             if (this.lockedIds.has(id)) { event?.preventDefault?.(); return }// ยกเลิก event checkbox ไม่ให้ติ๊กได้
-            const selected = new Set(this.selectedIds) // 2. สร้าง Set ใหม่จาก selectedIds (รายชื่อที่ถูกเลือกอยู่)
+            const SELECTED = new Set(this.selectedIds) // 2. สร้าง Set ใหม่จาก selectedIds (รายชื่อที่ถูกเลือกอยู่)
 
             // 3. ถ้า checkbox ติ๊กอยู่ → เพิ่ม id เข้าไป
             //    ถ้าเอาติ๊กออก → ลบ id ออก
-            if (event.target.checked) selected.add(id);
-            else selected.delete(id)
+            if (event.target.checked) SELECTED.add(id);
+            else SELECTED.delete(id)
             // 4. อัปเดตตัวแปร selectedIds ด้วย Set ที่เก็บข้อมูลคนที่โดนเลือกใหม่
-            this.selectedIds = selected
+            this.selectedIds = SELECTED
         },
 
         toggleAllOnPage(event) {
-            const tick = event.target.checked // true = ติ๊กทั้งหมด, false = เอาติ๊กออกทั้งหมด
-            const select = new Set(this.selectedIds) // สร้าง Set ใหม่จาก selectedIds (รายชื่อที่ถูกเลือกอยู่)
+            const TICK = event.target.checked // true = ติ๊กทั้งหมด, false = เอาติ๊กออกทั้งหมด
+            const SELECTED = new Set(this.selectedIds) // สร้าง Set ใหม่จาก selectedIds (รายชื่อที่ถูกเลือกอยู่)
             // วนจนครบจำนวนพนักงานที่โชว์อยู่ในหน้าปัจจุบัน
             this.pagedEmployees.forEach(employee => {
 
@@ -615,21 +622,21 @@ export default {
 
                 // ถ้า tick = true → add id
                 // ถ้า tick = false → remove id
-                if (tick) select.add(employee.id); else select.delete(employee.id)
+                if (TICK) SELECTED.add(employee.id); else SELECTED.delete(employee.id)
             })
 
             // 4. อัปเดตตัวแปร selectedIds ด้วย Set ที่เก็บข้อมูลคนที่โดนเลือกใหม่
-            this.selectedIds = select
+            this.selectedIds = SELECTED
         },
 
         // [Earth (Suphanut) 2025-12-06] Validate form
         validateForm() {
-            const errors = {};
+            const ERRORS = {};
 
-            if (!this.eventTitle?.trim()) errors.eventTitle = true;
-            if (!this.eventCategoryId) errors.eventCategoryId = true;
-            if (!this.eventDescription?.trim()) errors.eventDescription = true;
-            if (!this.eventDate) errors.eventDate = true;
+            if (!this.eventTitle?.trim()) ERRORS.eventTitle = true;
+            if (!this.eventCategoryId) ERRORS.eventCategoryId = true;
+            if (!this.eventDescription?.trim()) ERRORS.eventDescription = true;
+            if (!this.eventDate) ERRORS.eventDate = true;
 
             // // 2. [เพิ่มใหม่] ตรวจสอบวันที่ (Date Logic)
             // if (!this.eventDate) {
@@ -645,9 +652,9 @@ export default {
             // }
 
             // Check Required
-            if (!this.eventTimeStart) errors.eventTimeStart = true;
-            if (!this.eventTimeEnd) errors.eventTimeEnd = true;
-            if (!this.eventLocation?.trim()) errors.eventLocation = true;
+            if (!this.eventTimeStart) ERRORS.eventTimeStart = true;
+            if (!this.eventTimeEnd) ERRORS.eventTimeEnd = true;
+            if (!this.eventLocation?.trim()) ERRORS.eventLocation = true;
 
             // [Earth (Suphanut) 2025-12-06] Logic Check: Time
             // ถ้ามีการกรอกเวลาครบทั้งคู่ แต่ Logic ไม่ผ่าน (End <= Start)
@@ -658,8 +665,8 @@ export default {
             //     errors.timeMsg = 'End time must be after Start time';
             // }
 
-            this.formErrors = errors;
-            return Object.keys(errors).length === 0;
+            this.formErrors = ERRORS;
+            return Object.keys(ERRORS).length === 0;
         },
 
         async saveEvent() {
@@ -681,50 +688,50 @@ export default {
                     try {
                         this.saving = true
 
-                        const id = this.$route.params.id
-                        const formData = new FormData()
-                        formData.append('id', id)
-                        formData.append('evn_title', this.eventTitle?.trim() || '')
+                        const ID = this.$route.params.id
+                        const FORM_DATA = new FORM_DATA()
+                        FORM_DATA.append('id', ID)
+                        FORM_DATA.append('evn_title', this.eventTitle?.trim() || '')
 
                         if (this.eventCategoryId)
-                            formData.append('evn_category_id', String(this.eventCategoryId))
+                            FORM_DATA.append('evn_category_id', String(this.eventCategoryId))
 
-                        formData.append('evn_description', this.eventDescription ?? '')
-                        formData.append('evn_date', this.eventDate)
-                        formData.append('evn_timestart', this.eventTimeStart)
-                        formData.append('evn_timeend', this.eventTimeEnd)
-                        formData.append('evn_location', this.eventLocation)
-                        formData.append('evn_duration', String(this.eventDurationMinutes || 0))
+                        FORM_DATA.append('evn_description', this.eventDescription ?? '')
+                        FORM_DATA.append('evn_date', this.eventDate)
+                        FORM_DATA.append('evn_timestart', this.eventTimeStart)
+                        FORM_DATA.append('evn_timeend', this.eventTimeEnd)
+                        FORM_DATA.append('evn_location', this.eventLocation)
+                        FORM_DATA.append('evn_duration', String(this.eventDurationMinutes || 0))
 
                         // ✅ ไฟล์ใหม่ (ที่ลาก/เลือกมา)
                         if (this.filesNew.length > 0) {
                             this.filesNew.forEach((file) => {
-                                formData.append('attachments[]', file)
+                                FORM_DATA.append('attachments[]', file)
                             })
                         }
 
                         // ✅ ไฟล์เดิมที่ถูกลบ
                         if (this.filesDeleted.length > 0) {
                             this.filesDeleted.forEach((id) => {
-                                formData.append('delete_file_ids[]', id)
+                                FORM_DATA.append('delete_file_ids[]', id)
                             })
                         }
 
                         // ✅ Guest ที่เลือก (optional)
                         // แขก (รวมแขกเดิมที่ล็อก)
                         this.selectedIdsForSubmit.forEach(empId =>
-                            formData.append('employee_ids[]', empId)
+                            FORM_DATA.append('employee_ids[]', empId)
                         );
 
-                        const res = await axios.post('/edit-event', formData, {
+                        const res = await axios.post('/edit-event', FORM_DATA, {
                             headers: { 'Accept': 'application/json' },
                         })
                         // เช็คว่ามี Warning เรื่องเมลไหม?
-                        if (res.data.mail_warning) {
+                        if (res.DATA.mail_warning) {
                             this.openAlert({
                                 type: 'warning', // เปลี่ยนเป็นสีเหลือง
                                 title: 'บันทึกสำเร็จ (แต่ส่งเมลไม่ได้)',
-                                message: 'ข้อมูลถูกบันทึกแล้ว แต่ระบบส่งอีเมลขัดข้อง: ' + res.data.mail_warning,
+                                message: 'ข้อมูลถูกบันทึกแล้ว แต่ระบบส่งอีเมลขัดข้อง: ' + res.DATA.mail_warning,
                                 okText: 'OK',
                                 onConfirm: () => this.$router.back(),
                             })
@@ -750,7 +757,7 @@ export default {
                         this.openAlert({
                             type: 'error',
                             title: 'EDIT FAILED!',
-                            message: err.response?.data?.message || 'An error occurred.',
+                            message: err.RESPONSE?.DATA?.message || 'An error occurred.',
                         })
                     } finally {
                         this.saving = false
@@ -759,34 +766,40 @@ export default {
             })
         },
 
-        calDuration() {
-            const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
-            // startHour เก็บ ชั่วโมง startMinute เก็บนาที
+        calculateDuration() {
+            const [START_HOUR, START_MINUTE] = (this.eventTimeStart || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
+            // START_HOUR เก็บ ชั่วโมง START_MINUTE เก็บนาที
             //เอาแต่ละ element ใน array ไปผ่านฟังก์ชัน Number() เพื่อแปลงจาก string → number :  ["09", "30"].map(Number) → [9, 30]
-            const [endHour, endMinute] = (this.eventTimeEnd || '0:0').split(':').map(Number);
+            const [END_HOUR, END_MINUTE] = (this.eventTimeEnd || '0:0').split(':').map(Number);
 
-            let sumStartMin = startHour * 60 + startMinute; //แปลงแล้วรวมเวลาเป็นนาที
-            let sumEndMin = endHour * 60 + endMinute;
-            let diff = sumEndMin - sumStartMin;// เอานาทีที่รวมกับชั่วโมงแล้วทั้ง 2 ช่วงมาลบกัน
+            let SUM_START_MIN = START_HOUR * 60 + START_MINUTE; //แปลงแล้วรวมเวลาเป็นนาที
+            let SUM_END_MIN = END_HOUR * 60 + END_MINUTE;
+            let diff = SUM_END_MIN - SUM_START_MIN;// เอานาทีที่รวมกับชั่วโมงแล้วทั้ง 2 ช่วงมาลบกัน
             if (diff < 0) diff += 24 * 60; // รองรับข้ามเที่ยงคืน ถ้าลบ แล้วได้ค่า ติดลบให้ diff เพิ่มไป 24 ชม แบบนาที
 
 
             this.eventDurationMinutes = Math.max(0, diff); //กัน bug เพื่อ diff ที่เข้ามาตรงนี้ติดลบ จะได้ค่า 0 แทน
 
             // ส่วนโชว์ ใน input :
-            const hour = Math.floor(diff / 60), //hour เก็บชม ที่แปลง นาที จากdiff เศษปัดลง
+            const HOUR = Math.floor(diff / 60), //hour เก็บชม ที่แปลง นาที จากdiff เศษปัดลง
                 min = diff % 60;  //min เก็บนาที เอาเศษ
-            this.eventDuration = `${hour} Hour ${min} Min`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
+            this.eventDuration = `${HOUR} Hour ${min} Min`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
             // เช็คว่า ถ้าไม่มีนาที หรือ ชั่วโมง ให้แสดงแค่ค่าเดียว
             if (min === 0) {
-                this.eventDuration = `${hour} Hour`;
-            } else if (hour === 0) {
+                this.eventDuration = `${HOUR} Hour`;
+            } else if (HOUR === 0) {
                 this.eventDuration = `${min} Min`;
             }
         },
         onCancel() {
             if (this.saving || this.filesNew.length) {
-                if (!confirm('ยกเลิกและละทิ้งการแก้ไขทั้งหมด?')) return
+                this.openAlert({
+    type: 'confirm',
+    title: 'ARE YOU SURE?',
+    message: 'Discard all changes?',
+    showCancel: true,
+    onConfirm: () => this.$router.back()
+})
             }
             this.$router?.back?.()  // หรือ this.$router.push('/events')
         },
@@ -810,52 +823,52 @@ export default {
 
     computed: {
         // --- Filtering Logic (Adapted from EventCheckIn) ---
-        filteredEmployees() {
-            const q = (this.search || "").toLowerCase().trim();
+        FILTEREDEmployees() {
+            const SEARCH = (this.search || "").toLowerCase().trim();
             let list = this.employees;
 
             // Search Filter
-            if (q) {
+            if (SEARCH) {
                 list = list.filter((e) =>
                     [
                         String(e.emp_id),
                         e.emp_firstname,
                         e.emp_lastname,
                         e.nickname,
-                    ].some((f) => f?.toLowerCase().includes(q))
+                    ].some((f) => f?.toLowerCase().includes(SEARCH))
                 );
             }
 
             // Company Filter
             if (this.selectedCompanyIds?.length) {
-                const needles = this.selectedCompanyIds
+                const NEEDLES = this.selectedCompanyIds
                     .map((x) => String(x).trim())
                     .filter(Boolean);
                 list = list.filter((r) => {
-                    // เช็คทั้ง companyId และ companyAbbr ถ้ามี
+                    // เช็คทั้ง companyId และ COMPANY_FILTER ถ้ามี
                     const idStr = String(
-                        r.companyId || r.companyAbbr || ""
+                        r.companyId || r.COMPANY_FILTER || ""
                     ).trim();
-                    return needles.some((n) => idStr.includes(n));
+                    return NEEDLES.some((n) => idStr.includes(n));
                 });
             }
 
             // Department Filter
             if (this.selectedDepartmentIds?.length) {
-                const set = new Set(this.selectedDepartmentIds);
-                list = list.filter((r) => set.has(r.department));
+                const SET = new Set(this.selectedDepartmentIds);
+                list = list.filter((r) => SET.has(r.department));
             }
 
             // Team Filter
             if (this.selectedTeamIds?.length) {
-                const set = new Set(this.selectedTeamIds);
-                list = list.filter((r) => set.has(r.team));
+                const SET = new Set(this.selectedTeamIds);
+                list = list.filter((r) => SET.has(r.team));
             }
 
             // Position Filter
             if (this.selectedPositionIds?.length) {
-                const set = new Set(this.selectedPositionIds);
-                list = list.filter((r) => set.has(r.position));
+                const SET = new Set(this.selectedPositionIds);
+                list = list.filter((r) => SET.has(r.position));
             }
 
             return list;
@@ -864,21 +877,21 @@ export default {
         // ใน computed: { ... }
         isValidTimeLogic() {
             // แปลงเวลาเป็นตัวเลข (ชั่วโมง * 60 + นาที)
-            const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number);
-            const [endHour, endMinute] = (this.eventTimeEnd || '0:0').split(':').map(Number);
+            const [START_HOUR, START_MINUTE] = (this.eventTimeStart || '0:0').split(':').map(Number);
+            const [END_HOUR, END_MINUTE] = (this.eventTimeEnd || '0:0').split(':').map(Number);
 
-            const sumStartMin = startHour * 60 + startMinute;
-            const sumEndMin = endHour * 60 + endMinute;
+            const SUM_START_MIN = START_HOUR * 60 + START_MINUTE;
+            const SUM_END_MIN = END_HOUR * 60 + END_MINUTE;
 
             // ถ้ายังไม่ได้กรอกเวลา (หรือเป็น 00:00 ทั้งคู่ตอนโหลด) ให้ถือว่า true ไปก่อน (เดี๋ยวไปติด validate required แทน)
             if (!this.eventTimeStart || !this.eventTimeEnd) return true;
 
             // [Earth (Suphanut) 2025-12-06] แก้ไข Logic: ตัดการบวก 24 ชม. ออก เพื่อบังคับว่าเวลาจบต้องมากกว่าเวลาเริ่ม
             // เช็คว่า เวลาจบ ต้องมากกว่า เวลาเริ่ม ( > ) หรือ มากกว่าเท่ากับ ( >= ) แล้วแต่ requirement (ปกติ Event ควร >)
-            return sumEndMin > sumStartMin;
+            return SUM_END_MIN > SUM_START_MIN;
         },
 
-        // โครงคอลัมน์ของ DataTable
+        // โครงคอลัมน์ของ DATATable
         columns() {
             return [
                 { key: 'emp_id', label: 'Employee ID', sortable: false, class: 'min-w-[120px] text-left' },
@@ -900,15 +913,15 @@ export default {
         },
 
         uploadItems() {
-            const existing = (this.filesExisting || []).map(f => ({
+            const EXISTING = (this.filesExisting || []).map(f => ({
                 key: `old-${f.id}`,
-                kind: 'existing',
+                kind: 'EXISTING',
                 id: f.id,
                 name: f.file_name,
                 url: f.url,
                 size: f.file_size ?? 0,
             }))
-            const news = (this.filesNew || []).map((f, i) => ({
+            const NEWS = (this.filesNew || []).map((f, i) => ({
                 key: `new-${i}`,
                 kind: 'new',
                 index: i,
@@ -916,7 +929,7 @@ export default {
                 size: f.size ?? 0,
             }))
             // ให้ไฟล์เดิมขึ้นก่อน แล้วต่อด้วยไฟล์ใหม่
-            return [...existing, ...news]
+            return [...EXISTING, ...NEWS]
         },
 
         // ใช้ตัวนี้ตอนส่งจริง: รวมแขกเดิมที่ล็อก + แขกใหม่ที่เลือก
@@ -924,10 +937,10 @@ export default {
             return Array.from(new Set([...this.lockedIds, ...this.selectedIds]));
         },
 
-        // v-model ที่ bind กับ DataTable ต้อง “คง” แขกที่ล็อกไว้เสมอ
+        // v-model ที่ bind กับ DATATable ต้อง “คง” แขกที่ล็อกไว้เสมอ
         selectedIdsArr: {
             get() {
-                // ให้ DataTable เห็นว่าเช็ค (รวมล็อกด้วย) เพื่อแสดง checkbox เป็นติ๊ก
+                // ให้ DATATable เห็นว่าเช็ค (รวมล็อกด้วย) เพื่อแสดง checkbox เป็นติ๊ก
                 return Array.from(new Set([...this.lockedIds, ...this.selectedIds]));
             },
             set(arr) {
@@ -938,8 +951,8 @@ export default {
         },
 
         totalPages() {
-            return Math.ceil(this.filteredEmployees.length / this.perPage)
-            // this.filteredEmployees.length = จำนวนพนักงานที่เหลือหลังกรอง search/filter แล้ว
+            return Math.ceil(this.FILTEREDEmployees.length / this.perPage)
+            // this.FILTEREDEmployees.length = จำนวนพนักงานที่เหลือหลังกรอง search/filter แล้ว
 
             // this.perPage = จำนวนแถวต่อหน้า (เช่น 10, 25, 50)
 
@@ -949,7 +962,7 @@ export default {
 
         pagedEmployees() {
             const start = (this.page - 1) * this.perPage
-            return this.filteredEmployees.slice(start, start + this.perPage)
+            return this.FILTEREDEmployees.slice(start, start + this.perPage)
 
             //คำนวณ index เริ่มต้นของพนักงานในหน้านี้ → (this.page - 1) * this.perPage
 
@@ -961,15 +974,15 @@ export default {
 
         allCheckedOnPage() {
             if (this.pagedEmployees.length === 0) return false
-            const unlocked = this.pagedEmployees.filter(employee => !this.lockedIds.has(employee.id))
-            return unlocked.length > 0 && unlocked.every(employee => this.selectedIds.has(employee.id))
+            const UNLOCKED = this.pagedEmployees.filter(employee => !this.lockedIds.has(employee.id))
+            return UNLOCKED.length > 0 && UNLOCKED.every(employee => this.selectedIds.has(employee.id))
 
             //ใช้เช็คว่า checkbox “ติ๊กทั้งหมด” บนหน้านี้ ควรถูกติ๊กหรือไม่
             // ถ้าไม่มีพนักงาน (length === 0) → return false
-            // unlocked = พนักงานที่ ไม่ได้ถูกล็อก (lockedIds)
+            // UNLOCKED = พนักงานที่ ไม่ได้ถูกล็อก (lockedIds)
             // เงื่อนไขสุดท้าย:
-            // unlocked.length > 0 → ต้องมีพนักงานให้เลือก
-            // unlocked.every(...) → ทุกคนในหน้านี้ต้องอยู่ใน selectedIds (คือถูกเลือกแล้ว)
+            // UNLOCKED.length > 0 → ต้องมีพนักงานให้เลือก
+            // UNLOCKED.every(...) → ทุกคนในหน้านี้ต้องอยู่ใน selectedIds (คือถูกเลือกแล้ว)
 
             // ตัวอย่าง หน้านี้มี 10 คน แต่เลือกไว้ครบ 10 → return true
 
@@ -985,17 +998,17 @@ export default {
         * วันที่แก้ไข: 2025-12-21
          */
         minDate() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            const TODAY = new Date();
+            const YEAR = TODAY.getFullYear();
+            const MONTH = String(TODAY.getMonth() + 1).padStart(2, '0');
+            const DAY = String(TODAY.getDate()).padStart(2, '0');
+            return `${YEAR}-${MONTH}-${DAY}`;
         },
     },
 
     watch: {
-        eventTimeStart: 'calDuration',//เรียก calDuration ไม่ว่าค่าจะเปลี่ยนจากการส่งมาผ่าน controller หรือ คนใช้เลือกเปลี่ยนเองตอนเลือก Input
-        eventTimeEnd: 'calDuration',// ใช้เพราะว่าต้องการคำนวณ duration ทุกครั้งที่มีการส่งข้อมูลมาจาก controller เวลาโหลดข้อมูลเก่าด้วย
+        eventTimeStart: 'calculateDuration',//เรียก calculateDuration ไม่ว่าค่าจะเปลี่ยนจากการส่งมาผ่าน controller หรือ คนใช้เลือกเปลี่ยนเองตอนเลือก Input
+        eventTimeEnd: 'calculateDuration',// ใช้เพราะว่าต้องการคำนวณ duration ทุกครั้งที่มีการส่งข้อมูลมาจาก controller เวลาโหลดข้อมูลเก่าด้วย
         // เมื่อเปลี่ยนคำค้นหา -> รีเซ็ตหน้า
         search() { this.page = 1 },
 
@@ -1009,7 +1022,7 @@ export default {
     },
     // ใช้เพื่อโหลดข้อมูลทันทีที่เปิดหน้า edit_event.vue
     mounted() {
-        this.fetchData(); // เรียกฟังก์ชัน fetchData() เมื่อ component(layout.vue) ถูก mount
+        this.fetchDATA(); // เรียกฟังก์ชัน fetchDATA() เมื่อ component(layout.vue) ถูก mount
     },
 
 }
