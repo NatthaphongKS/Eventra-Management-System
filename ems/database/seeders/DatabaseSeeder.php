@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
                 'emp_password' => Hash::make('Pass1234'),
                 'emp_permission' => 'admin',
                 'emp_delete_status' => 'active',
-                'emp_create_at' => now(),
+                'emp_created_at' => now(),
             ]
         );
 
@@ -72,7 +72,7 @@ class DatabaseSeeder extends Seeder
                 'emp_permission' => 'disabled',
                 'emp_delete_status' => 'active',
                 'emp_create_by' => 1,
-                'emp_create_at' => now(),
+                'emp_created_at' => now(),
             ]
         );
 
@@ -93,7 +93,7 @@ class DatabaseSeeder extends Seeder
                 'emp_permission' => 'disabled',
                 'emp_delete_status' => 'active',
                 'emp_create_by' => 1,
-                'emp_create_at' => now(),
+                'emp_created_at' => now(),
             ]
         );
 
