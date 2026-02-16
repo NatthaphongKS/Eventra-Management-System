@@ -351,7 +351,7 @@ export default {
             search: '',
             searchDraft: '',
 
-            // ✅ เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
+            // เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
             selectedCompanyIds: [],
             selectedDepartmentIds: [],
             selectedTeamIds: [],
@@ -413,19 +413,11 @@ export default {
                 this.eventLocation = DATA?.evn_location ?? ''
                 this.selectCategory = CATEGORIES
 
-                // ⬇️ ไฟล์เดิม
+                //  ไฟล์เดิม
                 this.filesExisting = PAYLOAD?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
-                // files": [
-                // {
-                //   "id": 1,
-                //   "file_name": "example.pdf",
-                //   "file_path": "events/1.pdf",
-                //   "file_size": 158047,
-                //   "url": "http:....pdf"
-                // },
-                // ============================================================
-                // ✅ [จุดที่เติม] เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
-                // ============================================================
+
+
+                //  เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
                 const EXISTINGGUESTS = PAYLOAD?.guest_ids ?? []
                 const GUESTSMAPPED = EXISTINGGUESTS.map(id => parseInt(id))
 
@@ -575,20 +567,12 @@ export default {
         //mb.toFixed(2) = ปัดทศนิยม 2 ตำแหน่ง
         //${(byte / 1024).toFixed(0)} KB ถ้าไฟล์เล็กกว่า 1 MB → จะแปลงเป็น KB แทน
 
-        // applySearch() {
-        //     this.search = this.searchDraft
-        //     this.filters = { ...this.filtersDraft }
-        //     this.page = 1
-        // },
-        // this.search = this.searchDraft;           เอาค่าที่พิมพ์ไว้ใน input (searchDraft) → ไปใส่ตัวแปร search
-        // this.filters = { ...this.filtersDraft }; เอาค่า department/team/position ที่เลือกชั่วคราว → ไปใส่ filters
-        //  this.page = 1;                          รีเซ็ต pagination กลับไปหน้าแรก
 
         resetSearch() { //reset ค่าที่ search มา
             this.search = '';
             this.searchDraft = '';
 
-            // ✅ รีเซ็ต Array เป็นค่าว่าง
+            // รีเซ็ต Array เป็นค่าว่าง
             this.selectedCompanyIds = [];
             this.selectedDepartmentIds = [];
             this.selectedTeamIds = [];
@@ -629,7 +613,7 @@ export default {
             this.selectedIds = SELECTED
         },
 
-        // [Earth (Suphanut) 2025-12-06] Validate form
+
         validateForm() {
             const ERRORS = {};
 
@@ -638,32 +622,14 @@ export default {
             if (!this.eventDescription?.trim()) ERRORS.eventDescription = true;
             if (!this.eventDate) ERRORS.eventDate = true;
 
-            // // 2. [เพิ่มใหม่] ตรวจสอบวันที่ (Date Logic)
-            // if (!this.eventDate) {
-            //     errors.eventDate = true;
-            // } else {
-            //     // Debug: ดูค่าใน Console (กด F12) ว่าค่าที่เลือก vs ค่าต่ำสุด เป็นเท่าไหร่
-            //     console.log('Selected:', this.eventDate, 'MinDate:', this.minDate);
 
-            //     // เช็คว่า วันที่เลือก (eventDate) น้อยกว่า วันปัจจุบัน (minDate) หรือไม่
-            //     if (this.eventDate < this.minDate) {
-            //         errors.eventDate = true;
-            //     }
-            // }
 
             // Check Required
             if (!this.eventTimeStart) ERRORS.eventTimeStart = true;
             if (!this.eventTimeEnd) ERRORS.eventTimeEnd = true;
             if (!this.eventLocation?.trim()) ERRORS.eventLocation = true;
 
-            // [Earth (Suphanut) 2025-12-06] Logic Check: Time
-            // ถ้ามีการกรอกเวลาครบทั้งคู่ แต่ Logic ไม่ผ่าน (End <= Start)
-            // if (this.eventTimeStart && this.eventTimeEnd && !this.isValidTimeLogic) {
-            //     // ให้ขึ้นตัวแดงทั้งคู่ หรือแค่ตัวจบก็ได้ (ในที่นี้ให้แดงที่กรอบใหญ่ตาม Template)
-            //     errors.eventTimeEnd = true;
-            //     // เพิ่ม message พิเศษสำหรับเคสนี้ (Template จะดึงไปแสดง)
-            //     errors.timeMsg = 'End time must be after Start time';
-            // }
+
 
             this.formErrors = ERRORS;
             return Object.keys(ERRORS).length === 0;
@@ -671,7 +637,7 @@ export default {
 
         async saveEvent() {
             this.submitted = true;
-            // [Earth (Suphanut) 2025-12-06] Check validate without alert
+
             if (!this.validateForm()) {
                 // ไม่ต้องทำอะไร ปล่อยให้หน้าจอโชว์สีแดงตาม state
                 return;
@@ -703,21 +669,21 @@ export default {
                         FORM_DATA.append('evn_location', this.eventLocation)
                         FORM_DATA.append('evn_duration', String(this.eventDurationMinutes || 0))
 
-                        // ✅ ไฟล์ใหม่ (ที่ลาก/เลือกมา)
+                        //  ไฟล์ใหม่ (ที่ลาก/เลือกมา)
                         if (this.filesNew.length > 0) {
                             this.filesNew.forEach((file) => {
                                 FORM_DATA.append('attachments[]', file)
                             })
                         }
 
-                        // ✅ ไฟล์เดิมที่ถูกลบ
+                        //  ไฟล์เดิมที่ถูกลบ
                         if (this.filesDeleted.length > 0) {
                             this.filesDeleted.forEach((id) => {
                                 FORM_DATA.append('delete_file_ids[]', id)
                             })
                         }
 
-                        // ✅ Guest ที่เลือก (optional)
+                        // Guest ที่เลือก (optional)
                         // แขก (รวมแขกเดิมที่ล็อก)
                         this.selectedIdsForSubmit.forEach(empId =>
                             FORM_DATA.append('employee_ids[]', empId)
@@ -990,13 +956,6 @@ export default {
             //เพื่อถ้าติ๊กหมด เป็น true จะเอาค่าไปบอกให้ checkboxall จะติ๊กด้วย
         },
 
-        /**
-         * ชื่อฟังก์ชัน: minDate
-        * คำอธิบาย: คำนวณวันที่ปัจจุบันในรูปแบบ YYYY-MM-DD เพื่อใช้กำหนดค่าต่ำสุด (min) ของ input type date
-        * Output: String (Date Format)
-        * ชื่อผู้เขียน/แก้ไข: Suphanut
-        * วันที่แก้ไข: 2025-12-21
-         */
         minDate() {
             const TODAY = new Date();
             const YEAR = TODAY.getFullYear();
