@@ -85,11 +85,11 @@ export default {
     methods: {
         validateInputs() {
             const errs = {};
-            const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+            const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
             if (!this.email?.trim()) {
                 errs.email = ["Email is required"];
-            } else if (!EMAIL_REGEX.test(this.email.trim())) {
+            } else if (!emailRegex.test(this.email.trim())) {
                 errs.email = ["Invalid email"];
             }
             if (!this.password?.trim()) {

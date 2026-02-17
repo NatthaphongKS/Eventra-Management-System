@@ -391,10 +391,10 @@ export default {
         async fetchData() {
             try {
                 // เรียก API GET /edit-event/{id} โดย {id} เอามาจาก route param
-                const evn_response = await axios.get(`/edit-event/${this.$route.params.id}`) //evn_response รับค่าข้อมูล json เรียก fuction edit-event บน route
-                // console.log(evn_response) //ข้อมูล json
+                const eventResponse = await axios.get(`/edit-event/${this.$route.params.id}`) //eventResponse รับค่าข้อมูล json เรียก fuction edit-event บน route
+                // console.log(eventResponse) //ข้อมูล json
 
-                const payload = evn_response.data      // สร้างตัวแปร Payload อีก 1 ตัวมาเพื่อมาเก็บข้อมูลเฉพาะ data
+                const payload = eventResponse.data      // สร้างตัวแปร Payload อีก 1 ตัวมาเพื่อมาเก็บข้อมูลเฉพาะ data
                 const data = payload?.event ?? {}      // data เป็นตัวที่เก็บจาก payload อีกทีแล้วเพิ่มเงื่อนไขกัน null
 
                 const response = await axios.get('/categories')
