@@ -181,6 +181,14 @@
 </template>
 
 <script setup>
+/**
+ * ชื่อไฟล์: DataTable.vue
+ * คำอธิบาย: คอมโพเนนต์ตารางอเนกประสงค์ รองรับการแสดงผลข้อมูล, การแบ่งหน้า (Pagination), การเลือกแถว (Checkbox), และการเรียงลำดับ (Sorting)
+ * Input: ข้อมูลแถว (rows), นิยามคอลัมน์ (columns), สถานะการโหลด (loading), ข้อมูลการแบ่งหน้า (page, pageSize, totalItems)
+ * Output: ตารางแสดงข้อมูลพร้อมปุ่มควบคุม และส่งอีเวนต์ (emits) กลับไปยังคอมโพเนนต์แม่เมื่อมีการเปลี่ยนแปลงสถานะ
+ * ชื่อผู้เขียน/แก้ไข: [ชื่อของคุณ]
+ * วันที่จัดทำ/แก้ไข: 17 กุมภาพันธ์ 2569
+ */
 import { Icon } from "@iconify/vue";
 import { computed, ref, watch, useSlots } from "vue";
 
