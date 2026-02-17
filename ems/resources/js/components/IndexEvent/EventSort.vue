@@ -1,3 +1,12 @@
+<!-- /**
+ * ชื่อไฟล์: EditEvent.vue
+ * คำอธิบาย: component ปุ่ม sort ของ event
+ * Input: defineProps จากหน้าแม่
+ * Output: ข้อมูล Sort ตามประเภทที่หน้าแม่ใหมาใน defineprops
+ * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+ * วันที่จัดทำ/แก้ไข: 2026-02-17
+ */ -->
+
 <!-- resources/js/components/IndexEvent/EventSort.vue -->
 <template>
   <div ref="root" class="relative inline-block">
