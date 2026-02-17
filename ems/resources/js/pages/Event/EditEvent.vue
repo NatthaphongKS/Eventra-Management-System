@@ -176,7 +176,7 @@
             <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
             <p class="text-sm text-neutral-800 mb-2">Drag and drop document to your support task</p>
 
-            <!-- ▼ Drop zone -->
+            <!-- Drop zone -->
             <div class="group relative rounded-2xl border-2 border-dashed border-red-700 bg-red-100 p-6 transition-all"
                 :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
                 @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
@@ -352,7 +352,7 @@ export default {
             search: '',
             searchDraft: '',
 
-            // ✅ เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
+            // เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
             selectedCompanyIds: [],
             selectedDepartmentIds: [],
             selectedTeamIds: [],
@@ -416,17 +416,10 @@ export default {
 
                 // ไฟล์เดิม
                 this.filesExisting = payload?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
-                // files": [
-                // {
-                //   "id": 1,
-                //   "file_name": "example.pdf",
-                //   "file_path": "events/1.pdf",
-                //   "file_size": 158047,
-                //   "url": "http:....pdf"
-                // },
-                // ============================================================
+
+
                 // เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
-                // ============================================================
+
                 const existingGuests = payload?.guest_ids ?? []
                 const guestsMapped = existingGuests.map(id => parseInt(id))
 
