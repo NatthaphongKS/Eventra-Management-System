@@ -414,7 +414,7 @@ export default {
                 this.eventLocation = data?.evn_location ?? ''
                 this.selectCategory = categories
 
-                // ⬇️ ไฟล์เดิม
+                // ไฟล์เดิม
                 this.filesExisting = payload?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
                 // files": [
                 // {
@@ -425,13 +425,13 @@ export default {
                 //   "url": "http:....pdf"
                 // },
                 // ============================================================
-                // ✅ [จุดที่เติม] เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
+                // เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
                 // ============================================================
                 const existingGuests = payload?.guest_ids ?? []
                 const guestsMapped = existingGuests.map(id => parseInt(id))
 
                 this.selectedIds = new Set(guestsMapped) // ติ๊กถูก
-                this.lockedIds = new Set(guestsMapped) // 🔒 ล็อกห้ามแก้
+                this.lockedIds = new Set(guestsMapped) // ล็อกห้ามแก้
 
 
                 // 1) โหลด metadata สำหรับพนักงาน/ฟิลเตอร์
@@ -581,7 +581,7 @@ export default {
             this.search = '';
             this.searchDraft = '';
 
-            // ✅ รีเซ็ต Array เป็นค่าว่าง
+            // รีเซ็ต Array เป็นค่าว่าง
             this.selectedCompanyIds = [];
             this.selectedDepartmentIds = [];
             this.selectedTeamIds = [];
@@ -696,21 +696,21 @@ export default {
                         formData.append('evn_location', this.eventLocation)
                         formData.append('evn_duration', String(this.eventDurationMinutes || 0))
 
-                        // ✅ ไฟล์ใหม่ (ที่ลาก/เลือกมา)
+                        // ไฟล์ใหม่ (ที่ลาก/เลือกมา)
                         if (this.filesNew.length > 0) {
                             this.filesNew.forEach((file) => {
                                 formData.append('attachments[]', file)
                             })
                         }
 
-                        // ✅ ไฟล์เดิมที่ถูกลบ
+                        // ไฟล์เดิมที่ถูกลบ
                         if (this.filesDeleted.length > 0) {
                             this.filesDeleted.forEach((id) => {
                                 formData.append('delete_file_ids[]', id)
                             })
                         }
 
-                        // ✅ Guest ที่เลือก (optional)
+                        // Guest ที่เลือก (optional)
                         // แขก (รวมแขกเดิมที่ล็อก)
                         this.selectedIdsForSubmit.forEach(empId =>
                             formData.append('employee_ids[]', empId)
