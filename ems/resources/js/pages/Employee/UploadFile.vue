@@ -245,27 +245,36 @@ async function upload() {
 
     try {
         const ext = file.value.name.split(".").pop()?.toLowerCase();
-        if (ext !== "xlsx") {
-            throw new Error("รองรับเฉพาะไฟล์ .xlsx เท่านั้น");
+        const supported = ["xlsx", "csv"];
+        if (!ext || !supported.includes(ext)) {
+            throw new Error("รองรับเฉพาะไฟล์ .xlsx และ .csv เท่านั้น");
         }
 
-        const data = await readFile(file.value, "array"); // ArrayBuffer
+        // Build rowsAoA from different file types
+        let rowsAoA = [];
+        if (ext === "xlsx") {
+            const data = await readFile(file.value, "array"); // ArrayBuffer
 
-        const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.load(data);
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(data);
 
-        const ws = workbook.worksheets[0];
-        if (!ws) throw new Error("Worksheet not found");
+            const ws = workbook.worksheets[0];
+            if (!ws) throw new Error("Worksheet not found");
 
-        // --- ExcelJS -> rowsAoA (เหมือนเดิม: header:1)
-        // values ของ ExcelJS เป็น array ที่ index เริ่มที่ 1
-        const rowsAoA = [];
-        ws.eachRow({ includeEmpty: false }, (row) => {
-            const arr = (row.values || []).slice(1).map((v) => (v ?? "")); // defval ""
-            // กันแถวว่างล้วน
-            if (arr.every((x) => x === "" || x == null || String(x).trim() === "")) return;
-            rowsAoA.push(arr);
-        });
+            // --- ExcelJS -> rowsAoA (เหมือนเดิม: header:1)
+            // values ของ ExcelJS เป็น array ที่ index เริ่มที่ 1
+            rowsAoA = [];
+            ws.eachRow({ includeEmpty: false }, (row) => {
+                const arr = (row.values || []).slice(1).map((v) => (v ?? "")); // defval ""
+                // กันแถวว่างล้วน
+                if (arr.every((x) => x === "" || x == null || String(x).trim() === "")) return;
+                rowsAoA.push(arr);
+            });
+
+        } else if (ext === "csv") {
+            const text = await readFile(file.value, "text");
+            rowsAoA = parseCsvToAoA(String(text || ""));
+        }
 
         const headerRowIdx = detectHeaderRow(rowsAoA);
         if (headerRowIdx === -1) {
@@ -400,6 +409,52 @@ function readFile(f, mode = "array") {
         r.onerror = reject;
         mode === "text" ? r.readAsText(f) : r.readAsArrayBuffer(f);
     });
+}
+
+// Lightweight CSV parser → returns Array-of-Arrays
+function parseCsvToAoA(text) {
+    const rows = [];
+    if (!text) return rows;
+
+    const lines = text.split(/\r\n|\n|\r/);
+
+    for (const line of lines) {
+        // Skip empty lines
+        if (!line || String(line).trim() === "") continue;
+
+        const fields = [];
+        let cur = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+                // handle escaped quotes ""
+                if (inQuotes && line[i + 1] === '"') {
+                    cur += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch === ',' && !inQuotes) {
+                fields.push(cur);
+                cur = "";
+            } else {
+                cur += ch;
+            }
+        }
+        fields.push(cur);
+
+        // Normalize: convert undefined → "" and trim
+        const normalized = fields.map(f => (f == null ? "" : String(f)) );
+
+        // Skip fully-empty rows
+        if (normalized.every(v => v === "" || v == null || String(v).trim() === "")) continue;
+
+        rows.push(normalized);
+    }
+
+    return rows;
 }
 
 function normalizeKey(k) {
