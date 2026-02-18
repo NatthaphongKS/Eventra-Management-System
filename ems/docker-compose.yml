@@ -6,6 +6,8 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      - /var/www/html/public/build 
+      - /var/www/html/node_modules
     environment:
       DB_CONNECTION: ${DB_CONNECTION}
       DB_HOST: ${DB_HOST}
@@ -45,3 +47,4 @@ networks:
 
 volumes:
   dbdata:
+  

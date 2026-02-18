@@ -1,3 +1,4 @@
+
 <template>
     <div class="font-[Poppins] pb-20" @pointerdown.capture="onRootPointer">
         <div class="mb-8 flex items-center gap-3">
@@ -527,6 +528,14 @@
 </template>
 
 <script>
+/**
+ * ชื่อไฟล์: CreateEvent.vue
+ * คำอธิบาย: หน้าจอสำหรับสร้างกิจกรรมใหม่ (Add New Event) รวมถึงการอัปโหลดไฟล์แนบและจัดการรายชื่อแขกรับเชิญ
+ * Input: ข้อมูลกิจกรรมจากฟอร์ม, ไฟล์แนบ, รายชื่อพนักงานที่เลือก
+ * Output: บันทึกข้อมูลกิจกรรมลงฐานข้อมูลผ่าน API /event-save
+ * ชื่อผู้เขียน/แก้ไข: ชิตดนัย รัตนเทียนทอง
+ * วันที่จัดทำ/แก้ไข: 17 กุมภาพันธ์ 2569
+ */
 import axios from "axios";
 import InputPill from "@/components/Input/InputPill.vue";
 import { Icon } from "@iconify/vue";
@@ -545,6 +554,7 @@ export default {
         ModalAlert,
     },
     data() {
+        // ตัวแปรเก็บข้อมูลพื้นฐานของกิจกรรม
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -686,10 +696,12 @@ export default {
         this.fetchInfo();
     },
     methods: {
+        // ฟังก์ชันสำหรับค้นหาข้อมูลพนักงาน
         performSearch() {
             this.search = this.searchRaw;
             this.page = 1;
         },
+        // ฟังก์ชันสำหรับคำนวณระยะเวลาของกิจกรรม (Duration)
         calDuration() {
             if (!this.eventTimeStart || !this.eventTimeEnd) {
                 this.eventDurationDisplay = "";
@@ -705,6 +717,7 @@ export default {
             this.eventDurationDisplay =
                 h > 0 ? `${h} Hour ${m} Min` : `${m} Min`;
         },
+        // ฟังก์ชันตรวจสอบความถูกต้องของข้อมูล (Validation) ก่อนแสดง Modal ยืนยัน
         saveEvent() {
             this.errors.eventTitle = !this.eventTitle;
             this.errors.eventCategoryId = !this.eventCategoryId;
@@ -715,11 +728,13 @@ export default {
             if (Object.values(this.errors).some((v) => v)) return;
             this.showConfirmCreate = true;
         },
+        // ฟังก์ชันสำหรับส่งข้อมูลกิจกรรมและไฟล์แนบไปยัง Server
         async executeCreateEvent() {
             this.showConfirmCreate = false;
             this.saving = true;
             try {
                 const formData = new FormData();
+                // จัดเตรียมข้อมูลในรูปแบบ Multipart Form Data
                 formData.append("event_title", this.eventTitle.trim());
                 formData.append("event_category_id", this.eventCategoryId);
                 formData.append("event_description", this.eventDescription);
@@ -749,6 +764,7 @@ export default {
             this.showSuccessAlert = false;
             this.$router.push("/event");
         },
+        // ฟังก์ชันดึงข้อมูลเบื้องต้น (หมวดหมู่และรายชื่อพนักงาน) จาก Server
         async fetchInfo() {
             try {
                 this.loadingEmployees = true;
@@ -804,6 +820,7 @@ export default {
             this.dragging = false;
             this.addFiles([...e.dataTransfer.files]);
         },
+        // ฟังก์ชันจัดการการอัปโหลดไฟล์
         addFiles(files) {
             files.forEach((f) => {
                 if (f.size <= 50 * 1024 * 1024) this.filesNew.push(f);

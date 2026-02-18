@@ -281,7 +281,7 @@ export default {
                         company_id: extractedId || "-",
                         emp_fullname: `${e.emp_firstname ?? ""} ${e.emp_lastname ?? ""}`.trim(),
                         emp_phone: e.emp_phone ?? e.phone ?? "-",
-                        created_at: e.emp_create_at ?? e.created_at ?? e.createdAt ?? null,
+                        created_at: e.emp_created_at ?? e.created_at ?? e.createdAt ?? null,
                     };
                 });
             } catch (err) {

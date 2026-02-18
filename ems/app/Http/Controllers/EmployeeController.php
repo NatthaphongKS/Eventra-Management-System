@@ -53,7 +53,7 @@ class EmployeeController extends Controller
                 'emp_team_id',
                 'emp_permission',
                 'emp_delete_status',
-                'emp_create_at',
+                'emp_created_at',
             ]);
 
         $rows = $employees->map(function (Employee $e) {
@@ -72,7 +72,7 @@ class EmployeeController extends Controller
                 'emp_team_id' => $e->emp_team_id,
                 'emp_permission' => $e->emp_permission,
                 'emp_delete_status' => $e->emp_delete_status,
-                'emp_create_at' => $e->emp_create_at,
+                'emp_created_at' => $e->emp_created_at,
                 'position_name' => optional($e->position)->pst_name,
                 'department_name' => optional($e->department)->dpm_name,
                 'team_name' => optional($e->team)->tm_name,
@@ -345,9 +345,9 @@ class EmployeeController extends Controller
                     'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
                     'emp_permission' => $role,
                     'emp_delete_status' => 'active',
-                    'emp_delete_at' => null,
+                    'emp_deleted_at' => null,
                     'emp_delete_by' => null,
-                    'emp_create_at' => Carbon::now(),
+                    'emp_created_at' => Carbon::now(),
                 ]);
 
                 return response()->json([
@@ -398,7 +398,7 @@ class EmployeeController extends Controller
                 'emp_password' => $isEmployee ? null : Hash::make($request->emp_password),
                 'emp_permission' => $role,
                 'emp_delete_status' => 'active',
-                'emp_create_at' => Carbon::now(),
+                'emp_created_at' => Carbon::now(),
                 'emp_create_by' => Auth::id(),
             ]);
 
@@ -594,7 +594,7 @@ class EmployeeController extends Controller
 
         // 🗑️ soft delete
         $emp->emp_delete_status = 'inactive';
-        $emp->emp_delete_at = now();
+        $emp->emp_deleted_at = now();
         $emp->emp_delete_by = $loginEmployee->id;
         $emp->save();
 
@@ -758,7 +758,7 @@ class EmployeeController extends Controller
                     'emp_password' => Hash::make('Password123'),
                     'emp_permission' => 2,
                     'emp_delete_status' => 'active',
-                    'emp_create_at' => Carbon::now(),
+                    'emp_created_at' => Carbon::now(),
                     'emp_create_by' => Auth::id(),
                 ]);
 
