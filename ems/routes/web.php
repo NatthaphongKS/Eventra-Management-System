@@ -28,7 +28,7 @@ Route::get('/reply/{encryptURL}', [ReplyController::class, 'openForm']);
 // Test Route
 Route::get('/test-session', function () {
     request()->session()->put('test_key', 'test_value');
-    request()->session()->save(); 
+    request()->session()->save();
     $response = response()->json([
         'session_id' => request()->session()->getId(),
         'value' => request()->session()->get('test_key'),
@@ -41,7 +41,8 @@ Route::get('/test-session', function () {
 Route::get('/login', fn() => view('spa'))->name('login');
 
 // ทำ login (ไม่ครอบ auth)
-Route::post('/logined', [LoginController::class, 'login'])->name('logined');
+Route::post('/login', [LoginController::class, 'login'])->name('login');
+
 
 // ทำ logout (ต้องกำลังล็อกอินอยู่)
 Route::post('/logout', [LoginController::class, 'logout'])

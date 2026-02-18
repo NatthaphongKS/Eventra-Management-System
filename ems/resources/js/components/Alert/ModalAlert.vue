@@ -1,3 +1,12 @@
+<!-- /**
+ * ชื่อไฟล์: ModalAlert.vue
+ * คำอธิบาย: หน้า Alert แสดงหน้าต่างยืนยัน
+ * Input: defineProps จากหน้าแม่
+ * Output: หน้าAlert ตามประเภทที่หน้าแม่บอกมาใน defineprops
+ * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+ * วันที่จัดทำ/แก้ไข: 2026-02-17
+ */ -->
+
 <!-- components/Alert/ModalAlert.vue -->
 <template>
   <teleport to="body">
@@ -57,7 +66,7 @@
               </button>
             </div>
 
-            <!-- close by outside click (optional) -->
+            <!-- ปิดโดยการกดนอกกรอบ (optional) -->
             <button
               class="absolute inset-0 -z-10 cursor-default"
               aria-hidden="true"
@@ -151,7 +160,7 @@ const okBtnClass = computed(() => {
 // ช่องว่างปุ่ม
 const actionGapClass = computed(() => (props.type === 'success' ? 'mt-0 gap-0' : 'mt-10 gap-12 sm:gap-20'))
 
-// success ไม่ให้มี Cancel (แม้ parent จะส่งมา)
+// success ไม่ให้มี Cancel (แม้ตัวแม่จะส่งมา)
 const showCancelFinal = computed(() => props.type === 'success' ? false : props.showCancel)
 
 const okBtn = ref(null)
