@@ -150,7 +150,7 @@ import axios from "axios";
 // ======================================================
 import Upload from "@/components/Input/Upload.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
-import EmployeeCannotCreate from "../../components/Alert/Employee/EmployeeCannotCreate.vue";
+import EmployeeCannotCreate from "@/components/Alert/Employee/EmployeeCannotCreate.vue";
 import CancelButton from "@/components/Button/CancelButton.vue";
 import CreateButton from "@/components/Button/CreateButton.vue";
 import GenerateDataButton from "@/components/Button/GenerateDataButton.vue";
