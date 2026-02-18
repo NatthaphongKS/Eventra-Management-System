@@ -132,8 +132,9 @@ class LoginService
     {
         // ตรวจสอบว่าปัจจุบันมีผู้ใช้ล็อกอินอยู่หรือไม่
         if (Auth::check()) {
-            // คืนค่า user ที่อยู่ใน session ปัจจุบัน
-            return Auth::user();
+            // คืนค่า user ที่อยู่ใน session ปัจจุบัน และแปลงเป็น Employee
+            // return Auth::user();
+            return Auth::user() instanceof Employee ? Auth::user() : null;
         }
 
         // ไม่มีผู้ใช้ล็อกอิน
