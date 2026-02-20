@@ -529,6 +529,7 @@ export default {
                 await axios.patch(`/event/${id}/deleted`);
                 await Swal.fire("Deleted!", "", "success");
                 this.fetchEvent();
+
             } catch (err) {
                 console.error("Error deleting event", err);
                 await Swal.fire("Error", "ไม่สามารถลบได้", "error");
