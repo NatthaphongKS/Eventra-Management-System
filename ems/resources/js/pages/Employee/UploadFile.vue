@@ -30,7 +30,7 @@
                 </p>
 
                 <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="(msg) => (error = msg)"
-                    @picked="() => { error = ''; isTableVisible = false; }" 
+                    @picked="() => { error = ''; isTableVisible = false; }"
                     @cleared="() => { error = ''; isTableVisible = false; displayRows = []; }" />
 
                 <div class="mt-4 flex justify-end">
@@ -150,7 +150,7 @@ import axios from "axios";
 // ======================================================
 import Upload from "@/components/Input/Upload.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
-import EmployeeCannotCreate from "../../components/Alert/Employee/EmployeeCannotCreate.vue";
+// import EmployeeCannotCreate from "../../components/Alert/Employee/EmployeeCannotCreate.vue";
 import CancelButton from "@/components/Button/CancelButton.vue";
 import CreateButton from "@/components/Button/CreateButton.vue";
 import GenerateDataButton from "@/components/Button/GenerateDataButton.vue";
@@ -238,7 +238,7 @@ async function upload() {
     // guard: ต้องมีไฟล์ และไม่มี error
     if (!file.value || error.value) return;
     uploading.value = true;
-    
+
     // แก้ไข: Reset การแสดงผลก่อนเริ่ม
     isTableVisible.value = false;
 
@@ -328,7 +328,7 @@ async function upload() {
         displayRows.value = mapped;
         page.value = 1;
         error.value = "";
-        
+
         // แก้ไข: โหลดเสร็จแล้วค่อยโชว์ตาราง
         isTableVisible.value = true;
 
