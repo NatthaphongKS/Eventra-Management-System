@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * ชื่อไฟล์: LoginController.php
+ * คำอธิบาย: Controller สำหรับจัดการการเข้าสู่ระบบ ออกจากระบบ และแสดงโปรไฟล์ของผู้ใช้
+ * ผู้เขียน: Yothin S.
+ * วันที่แก้ไข: 20/02/2026
+ */
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
