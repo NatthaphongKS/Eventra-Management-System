@@ -1,10 +1,10 @@
 <!-- /**
- * ชื่อไฟล์: HistoryEvent.vue
- * คำอธิบาย: หน้าแสดงประวัติกิจกรรมที่ถูกลบทั้งหมด (Event Deletion History)
- * Input: ข้อมูลกิจกรรมที่ถูกลบจาก API /history/events
- * Output: ตารางแสดงรายการกิจกรรมที่ถูกลบ พร้อมฟังก์ชันค้นหาและเรียงลำดับ
- * ชื่อผู้เขียน/แก้ไข:
- * วันที่จัดทำ/แก้ไข:
+ * ชื่อไฟล์: EditEvent.vue
+ * คำอธิบาย: หน้าแก้ไขข้อมูลกิจกรรม (Edit Event)
+ * Input: ข้อมูลกิจกรรมจาก API /edit-event/{id}
+ * Output: แบบฟอร์มแก้ไขกิจกรรม พร้อมอัปโหลดไฟล์และเลือก Guest
+ * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+ * วันที่จัดทำ/แก้ไข: 2026-02-15
  */ -->
 <!-- pages/edit_event.vue -->
 <template>
@@ -176,7 +176,7 @@
             <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
             <p class="text-sm text-neutral-800 mb-2">Drag and drop document to your support task</p>
 
-            <!-- ▼ Drop zone -->
+            <!-- Drop zone -->
             <div class="group relative rounded-2xl border-2 border-dashed border-red-700 bg-red-100 p-6 transition-all"
                 :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
                 @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
@@ -352,7 +352,7 @@ export default {
             search: '',
             searchDraft: '',
 
-            // ✅ เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
+            // เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
             selectedCompanyIds: [],
             selectedDepartmentIds: [],
             selectedTeamIds: [],
@@ -391,10 +391,10 @@ export default {
         async fetchData() {
             try {
                 // เรียก API GET /edit-event/{id} โดย {id} เอามาจาก route param
-                const evn_response = await axios.get(`/edit-event/${this.$route.params.id}`) //evn_response รับค่าข้อมูล json เรียก fuction edit-event บน route
-                // console.log(evn_response) //ข้อมูล json
+                const eventResponse = await axios.get(`/edit-event/${this.$route.params.id}`) //eventResponse รับค่าข้อมูล json เรียก fuction edit-event บน route
+                // console.log(eventResponse) //ข้อมูล json
 
-                const payload = evn_response.data      // สร้างตัวแปร Payload อีก 1 ตัวมาเพื่อมาเก็บข้อมูลเฉพาะ data
+                const payload = eventResponse.data      // สร้างตัวแปร Payload อีก 1 ตัวมาเพื่อมาเก็บข้อมูลเฉพาะ data
                 const data = payload?.event ?? {}      // data เป็นตัวที่เก็บจาก payload อีกทีแล้วเพิ่มเงื่อนไขกัน null
 
                 const response = await axios.get('/categories')
@@ -414,24 +414,17 @@ export default {
                 this.eventLocation = data?.evn_location ?? ''
                 this.selectCategory = categories
 
-                // ⬇️ ไฟล์เดิม
+                // ไฟล์เดิม
                 this.filesExisting = payload?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
-                // files": [
-                // {
-                //   "id": 1,
-                //   "file_name": "example.pdf",
-                //   "file_path": "events/1.pdf",
-                //   "file_size": 158047,
-                //   "url": "http:....pdf"
-                // },
-                // ============================================================
-                // ✅ [จุดที่เติม] เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
-                // ============================================================
+
+
+                // เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
+
                 const existingGuests = payload?.guest_ids ?? []
                 const guestsMapped = existingGuests.map(id => parseInt(id))
 
                 this.selectedIds = new Set(guestsMapped) // ติ๊กถูก
-                this.lockedIds = new Set(guestsMapped) // 🔒 ล็อกห้ามแก้
+                this.lockedIds = new Set(guestsMapped) // ล็อกห้ามแก้
 
 
                 // 1) โหลด metadata สำหรับพนักงาน/ฟิลเตอร์
@@ -581,7 +574,7 @@ export default {
             this.search = '';
             this.searchDraft = '';
 
-            // ✅ รีเซ็ต Array เป็นค่าว่าง
+            // รีเซ็ต Array เป็นค่าว่าง
             this.selectedCompanyIds = [];
             this.selectedDepartmentIds = [];
             this.selectedTeamIds = [];
@@ -696,21 +689,21 @@ export default {
                         formData.append('evn_location', this.eventLocation)
                         formData.append('evn_duration', String(this.eventDurationMinutes || 0))
 
-                        // ✅ ไฟล์ใหม่ (ที่ลาก/เลือกมา)
+                        // ไฟล์ใหม่ (ที่ลาก/เลือกมา)
                         if (this.filesNew.length > 0) {
                             this.filesNew.forEach((file) => {
                                 formData.append('attachments[]', file)
                             })
                         }
 
-                        // ✅ ไฟล์เดิมที่ถูกลบ
+                        // ไฟล์เดิมที่ถูกลบ
                         if (this.filesDeleted.length > 0) {
                             this.filesDeleted.forEach((id) => {
                                 formData.append('delete_file_ids[]', id)
                             })
                         }
 
-                        // ✅ Guest ที่เลือก (optional)
+                        // Guest ที่เลือก (optional)
                         // แขก (รวมแขกเดิมที่ล็อก)
                         this.selectedIdsForSubmit.forEach(empId =>
                             formData.append('employee_ids[]', empId)
