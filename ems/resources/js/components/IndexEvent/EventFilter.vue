@@ -1,3 +1,12 @@
+<!-- /**
+ * ชื่อไฟล์: EventFilter.vue
+ * คำอธิบาย: components filter ของ event
+ * Input: defineProps จากหน้าแม่
+ * Output: แสดงข้อมูล filter ตามประเภทที่หน้าแม่ให้มาใน defineprops
+ * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+ * วันที่จัดทำ/แก้ไข: 2026-02-17
+ */ -->
+
 <template>
     <div class="relative z-50 inline-block" ref="root">
         <button type="button" @click="isOpen = !isOpen"

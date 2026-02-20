@@ -1,3 +1,12 @@
+<!-- /**
+ * ชื่อไฟล์: Login.vue
+ * คำอธิบาย: หน้าเข้าสู่ระบบ (Sign In)
+ * Input: email, password
+ * Output: redirect ไปหน้าหลักหลัง login สำเร็จ
+ * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+ * วันที่จัดทำ/แก้ไข: 2026-02-16
+ */ -->
+
 <template>
     <div
         class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/Background.jpg')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
@@ -76,9 +85,11 @@ export default {
     methods: {
         validateInputs() {
             const errs = {};
+            const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
             if (!this.email?.trim()) {
                 errs.email = ["Email is required"];
-            } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.email.trim())) {
+            } else if (!emailRegex.test(this.email.trim())) {
                 errs.email = ["Invalid email"];
             }
             if (!this.password?.trim()) {
@@ -99,7 +110,7 @@ export default {
             this.loading = true;
 
             try {
-                const res = await axios.post('/logined', {
+                const res = await axios.post('/login', {
                     email: this.email,
                     password: this.password
                 }, { baseURL: '' });
