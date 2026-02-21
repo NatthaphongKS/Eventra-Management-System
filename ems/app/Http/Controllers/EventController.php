@@ -4,8 +4,8 @@
  * ชื่อไฟล์: EventController.php
  * คำอธิบาย: Controller สำหรับจัดการข้อมูล Event ทั้งหมด
  *          เป็นตัวกลางในการรับ Request และส่งต่อให้ EventService
- * ผู้เขียน/แก้ไข: ChatGPT (ตามคำขอผู้ใช้)
- * วันที่แก้ไขล่าสุด: 19 กุมภาพันธ์ 2026
+ * ผู้เขียน/แก้ไข: Raveroj sonthi
+ * วันที่แก้ไขล่าสุด: 20 กุมภาพันธ์ 2026
  */
 
 namespace App\Http\Controllers;
@@ -32,12 +32,14 @@ class EventController extends Controller
     }
 
     /**
+     *
+     * 
      * ชื่อฟังก์ชัน: index
      * Http request: GET
      * คำอธิบาย: ดึงรายการ Events ทั้งหมด
      * Input: ไม่มี
      * Output: JSON รายการ Events
-     * ผู้เขียน/แก้ไข: ChatGPT
+     * ผู้เขียน/แก้ไข: Raveroj sonthi
      * วันที่แก้ไข: 19 กุมภาพันธ์ 2026
      */
     public function index()
