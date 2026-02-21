@@ -13,59 +13,44 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Service\EventServices\EventService;
 use App\Service\EventServices\ReplyFormService;
-use App\Service\EventServices\CheckInService;
+
 
 class EventController extends Controller
 {
-    protected EventService $eventService;
-    protected ReplyFormService $replyFormService;
-    protected CheckInService $checkInService;
+    private EventService $eventService;
+    private ReplyFormService $replyFormService;
+
 
     public function __construct(
         EventService $eventService,
         ReplyFormService $replyFormService,
-        CheckInService $checkInService
+
     ) {
         $this->eventService = $eventService;
         $this->replyFormService = $replyFormService;
-        $this->checkInService = $checkInService;
+
     }
 
-    /**
-     *
-     * 
-     * ชื่อฟังก์ชัน: index
-     * Http request: GET
-     * คำอธิบาย: ดึงรายการ Events ทั้งหมด
-     * Input: ไม่มี
-     * Output: JSON รายการ Events
-     * ผู้เขียน/แก้ไข: Raveroj sonthi
-     * วันที่แก้ไข: 19 กุมภาพันธ์ 2026
-     */
+    /* ============================================================
+       1) index (รายการ Event ทั้งหมด)
+    ============================================================ */
     public function index()
     {
         return response()->json($this->eventService->index());
     }
 
-    /**
-     * ชื่อฟังก์ชัน: connectList
-     * Http request: GET
-     * คำอธิบาย: ดึงรายชื่อพนักงานที่เชื่อมกับ Event ตาม ID
-     * Input: event_id
-     * Output: รายชื่อพนักงาน + ข้อมูลเชื่อมต่อ
-     */
+    /* ============================================================
+       2) connectList ดึงรายชื่อพนักงานที่เชื่อมกับ Event ตาม ID
+    ============================================================ */
     public function connectList($id)
     {
         return response()->json($this->eventService->connectList($id));
     }
 
-    /**
-     * ชื่อฟังก์ชัน: show
-     * Http request: GET
-     * คำอธิบาย: แสดงรายละเอียด Event พร้อมไฟล์แนบ
-     * Input: event_id
-     * Output: JSON รายละเอียด Event
-     */
+    /* ============================================================
+       3) show แสดงรายละเอียด Event พร้อมไฟล์แนบ
+    ============================================================ */
+
     public function show($id)
     {
         $event = $this->eventService->show($id);
@@ -75,75 +60,52 @@ class EventController extends Controller
         return response()->json($event);
     }
 
-    /**
-     * ชื่อฟังก์ชัน: edit_pages
-     * Http request: GET
-     * คำอธิบาย: ดึงข้อมูลสำหรับหน้าแก้ไข Event
-     * Input: event_id
-     * Output: Event + Files + Guest IDs
-     */
-    public function edit_pages($id)
+     /* ============================================================
+       4) editPages ดึงข้อมูลสำหรับหน้าแก้ไข Event
+    ============================================================ */
+    public function editPages($id) // ผิดต้องกลับมาแก้ เป็น editPages
     {
         return response()->json($this->eventService->editPages($id));
     }
 
-    /**
-     * ชื่อฟังก์ชัน: store
-     * Http request: POST
-     * คำอธิบาย: สร้าง Event ใหม่
-     * Input: Request (event_title, date, files, employees...)
-     * Output: ผลการสร้าง Event
-     */
+    /* ============================================================
+       5) store สร้าง Event ใหม่
+    ============================================================ */
+
     public function store(Request $request)
     {
         return response()->json($this->eventService->store($request));
     }
 
-    /**
-     * ชื่อฟังก์ชัน: update
-     * Http request: POST / PUT
-     * คำอธิบาย: อัปเดตข้อมูล Event
-     * Input: Request (event fields + file operations)
-     * Output: ข้อมูล Event ที่อัปเดตแล้ว
-     */
+    /* ============================================================
+       6) update (อัปเดต Event)
+    ============================================================ */
     public function update(Request $request)
     {
         return response()->json($this->eventService->update($request));
     }
+    /* ============================================================
+       7) eventTable ดึงข้อมูล Events สำหรับ DataTable พร้อม filter + sorting
+    ============================================================ */
 
-    /**
-     * ชื่อฟังก์ชัน: Eventtable
-     * Http request: GET
-     * คำอธิบาย: ดึงข้อมูล Events สำหรับ DataTable พร้อม filter + sorting
-     * Input: q, sortBy, sortDir
-     * Output: JSON List of Events
-     */
-    public function Eventtable(Request $request)
+    public function eventTable(Request $request)
     {
         return response()->json($this->eventService->eventTable($request));
     }
 
-    /**
-     * ชื่อฟังก์ชัน: permission
-     * Http request: GET
-     * คำอธิบาย: ดึงสิทธิ์การใช้งานของผู้ใช้
-     * Input: ไม่มี
-     * Output: emp_permission
-     */
+    /* ============================================================
+       8) permission ดึงสิทธิ์การใช้งานของผู้ใช้
+    ============================================================ */
     public function permission()
     {
         return response()->json([
             'emp_permission' => $this->eventService->permission()
         ]);
     }
+    /* ============================================================
+       9) deleted (ลบ Event แบบ soft delete)
+    ============================================================ */
 
-    /**
-     * ชื่อฟังก์ชัน: deleted
-     * Http request: DELETE
-     * คำอธิบาย: ลบ Event (soft delete) และแจ้งอีเมล
-     * Input: event_id
-     * Output: message
-     */
     public function deleted($id)
     {
         $result = $this->eventService->deleted($id);
@@ -153,37 +115,26 @@ class EventController extends Controller
         ]);
     }
 
-    /**
-     * ชื่อฟังก์ชัน: getEventParticipants
-     * Http request: GET
-     * คำอธิบาย: ดึงสถิติจำนวนผู้เข้าร่วมของ Event
-     * Input: event_id
-     * Output: total, attending, not_attending, pending
-     */
+    /* ============================================================
+       10) getEventParticipants ดึงสถิติจำนวนผู้เข้าร่วมของ Event
+    ============================================================ */
+
     public function getEventParticipants($eventId)
     {
         return response()->json($this->eventService->getEventParticipants($eventId));
     }
+    /* ============================================================
+       11) eventInfo ดึงข้อมูล
+    ============================================================ */
 
-    /**
-     * ชื่อฟังก์ชัน: eventInfo
-     * Http request: GET
-     * คำอธิบาย: ดึงข้อมูล metadata สำหรับหน้า Create Event
-     * Input: ไม่มี
-     * Output: categories, employees, positions, departments, teams
-     */
     public function eventInfo()
     {
         return response()->json($this->eventService->eventInfo());
     }
 
-    /**
-     * ชื่อฟังก์ชัน: getParticipants
-     * Http request: GET
-     * คำอธิบาย: ดึงรายชื่อผู้เข้าร่วมตามสถานะ (accepted, denied, pending)
-     * Input: event_id, status
-     * Output: participants + statistics
-     */
+    /* ============================================================
+       12) getParticipants ดึงรายชื่อผู้เข้าร่วมตามสถานะ (accepted, denied, pending)
+    ============================================================ */
     public function getParticipants($id, Request $request)
     {
         return response()->json(
@@ -191,25 +142,17 @@ class EventController extends Controller
         );
     }
 
-    /**
-     * ชื่อฟังก์ชัน: getAttendanceData
-     * Http request: GET
-     * คำอธิบาย: ดึงสถิติเช็กอินของ Event
-     * Input: event_id
-     * Output: actual_attendance, pending, declined, percentage
-     */
+   /* ============================================================
+       13) getAttendanceData (ดึงสถิติเช็กอิน)
+    ============================================================ */
     public function getAttendanceData($id)
     {
         return response()->json($this->eventService->getAttendanceData($id));
     }
 
-    /**
-     * ชื่อฟังก์ชัน: eventStatistics
-     * Http request: POST
-     * คำอธิบาย: ดึงสถิติรวมของหลาย Event
-     * Input: event_ids[]
-     * Output: สถิติโดยรวม (department, team, participants)
-     */
+    /* ============================================================
+       14) eventStatistics ดึงสถิติรวมของหลาย Event
+    ============================================================ */
     public function eventStatistics(Request $request)
     {
         return response()->json(
