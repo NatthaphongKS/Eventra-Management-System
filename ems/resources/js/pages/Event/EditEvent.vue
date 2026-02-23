@@ -420,7 +420,7 @@ export default {
 
                 // เอา Guest ID เดิม มาใส่ Set เพื่อให้ Checkbox ติ๊กถูก
 
-                const existingGuests = payload?.guest_ids ?? []
+                const existingGuests = payload?.guestIds ?? []
                 const guestsMapped = existingGuests.map(id => parseInt(id))
 
                 this.selectedIds = new Set(guestsMapped) // ติ๊กถูก
