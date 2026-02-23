@@ -390,7 +390,7 @@ class EventService
     /* ============================================================
      7) ตาราง Event (filter + sorting + query)
   ============================================================ */
-    public function eventTable(\Illuminate\Http\Request $request)
+    public function eventTable(Request $request)
     {
         $this->syncEventStatus();
 
