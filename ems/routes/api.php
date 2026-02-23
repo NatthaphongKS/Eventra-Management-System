@@ -55,14 +55,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     // === Event ===
     Route::get('/event', [EventController::class, 'index']);
     Route::get('/events', [EventController::class, 'index']);
-    Route::get('/get-event', [EventController::class, 'Eventtable']);
+    Route::get('/get-event', [EventController::class, 'eventTable']);
     Route::get('/event-info', [EventController::class, 'eventInfo']);
     Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']);
     Route::post('/event-statistics', [EventController::class, 'eventStatistics']);
-    Route::get('/get-event', [EventController::class, 'Eventtable']);
+    Route::get('/get-event', [EventController::class, 'eventTable']);
     Route::get('/permission', [EventController::class, 'permission']);
     Route::get('/event/{id}', [EventController::class, 'show']);
-    Route::get('/edit-event/{id}', [EventController::class, 'edit_pages']);
+    Route::get('/edit-event/{id}', [EventController::class, 'editPages']);
     Route::get('/events/{id}/connects', [EventController::class, 'connectList']);
     Route::get('/event/{evn_id}/employee/{emp_id}', [EmployeeController::class, 'show']);
 
