@@ -729,99 +729,110 @@ class EventService
                 'attending' => 0,
                 'not_attending' => 0,
                 'pending' => 0,
+                'actual_attendance' => [
+                    'attended' => 0,
+                    'total_assigned' => 0
+                ],
                 'departments' => [],
                 'teams' => [],
                 'participants' => []
             ];
         }
 
-        $stats = DB::table('ems_connect')
+        // 1. ดึงสถิติรวม (ใช้ Model Connect)
+        $overallStats = Connect::query()
             ->whereIn('con_event_id', $eventIds)
             ->where('con_delete_status', 'active')
             ->where('con_answer', '!=', 'not_invite')
             ->selectRaw('
-                COUNT(*) as total_participation,
-                SUM(CASE WHEN con_answer="accepted" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN con_answer="denied" THEN 1 ELSE 0 END) as not_attending,
-                SUM(CASE WHEN con_answer!="accepted" AND con_answer!="denied" THEN 1 ELSE 0 END) as pending
-            ')
+            COUNT(*) as total_participation,
+            SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
+            SUM(CASE WHEN con_answer != "accepted" AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
+        ')
             ->first();
 
-        $employees = DB::table('ems_employees')
-            ->where('emp_delete_status', 'active')
-            ->count();
+        // 2. นับจำนวนพนักงานทั้งหมด (ใช้ Model Employee)
+        $totalEmployees = Employee::where('emp_delete_status', 'active')->count();
 
-        $checkedIn = DB::table('ems_connect')
+        // 3. นับจำนวนคนที่ Check-in แล้ว (ใช้ Model Connect)
+        $totalCheckedIn = Connect::query()
             ->whereIn('con_event_id', $eventIds)
             ->where('con_checkin_status', 1)
             ->count();
 
-        $totalAssigned = $employees * count($eventIds);
+        $totalAssigned = $totalEmployees * count($eventIds);
 
-        $departments = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->join('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
-            ->whereIn('ems_connect.con_event_id', $eventIds)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
-            ->groupBy('ems_department.id', 'ems_department.dpm_name')
+        // 4. สถิติแยกตามแผนก (ใช้ Model Connect + ตั้ง Alias ให้ตาราง)
+        $departmentStats = Connect::query()
+            ->from('ems_connect as connect')
+            ->join('ems_employees as employee', 'connect.con_employee_id', '=', 'employee.id')
+            ->join('ems_department as department', 'employee.emp_department_id', '=', 'department.id')
+            ->whereIn('connect.con_event_id', $eventIds)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
+            ->groupBy('department.id', 'department.dpm_name')
             ->selectRaw('
-                ems_department.dpm_name as name,
-                SUM(CASE WHEN ems_connect.con_answer="accepted" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN ems_connect.con_answer="denied" THEN 1 ELSE 0 END) as notAttending,
-                SUM(CASE WHEN ems_connect.con_answer!="accepted" AND ems_connect.con_answer!="denied" THEN 1 ELSE 0 END) as pending
-            ')
+            department.dpm_name as name,
+            SUM(CASE WHEN connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+            SUM(CASE WHEN connect.con_answer != "accepted" AND connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+        ')
             ->get();
 
-        $teams = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->join('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
-            ->whereIn('ems_connect.con_event_id', $eventIds)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
-            ->groupBy('ems_team.id', 'ems_team.tm_name')
+        // 5. สถิติแยกตามทีม (ใช้ Model Connect + ตั้ง Alias)
+        $teamStats = Connect::query()
+            ->from('ems_connect as connect')
+            ->join('ems_employees as employee', 'connect.con_employee_id', '=', 'employee.id')
+            ->join('ems_team as team', 'employee.emp_team_id', '=', 'team.id')
+            ->whereIn('connect.con_event_id', $eventIds)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
+            ->groupBy('team.id', 'team.tm_name')
             ->selectRaw('
-                ems_team.tm_name as name,
-                SUM(CASE WHEN ems_connect.con_answer="accepted" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN ems_connect.con_answer="denied" THEN 1 ELSE 0 END) as notAttending,
-                SUM(CASE WHEN ems_connect.con_answer!="accepted" AND ems_connect.con_answer!="denied" THEN 1 ELSE 0 END) as pending
-            ')
+            team.tm_name as name,
+            SUM(CASE WHEN connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+            SUM(CASE WHEN connect.con_answer != "accepted" AND connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+        ')
             ->get();
 
-        $participants = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
-            ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
-            ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
-            ->leftJoin('ems_event', 'ems_connect.con_event_id', '=', 'ems_event.id')
-            ->whereIn('ems_connect.con_event_id', $eventIds)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
+        // 6. ดึงรายชื่อผู้เข้าร่วมทั้งหมด (ใช้ Model Connect + ตั้ง Alias)
+        $participantsList = Connect::query()
+            ->from('ems_connect as connect')
+            ->join('ems_employees as employee', 'connect.con_employee_id', '=', 'employee.id')
+            ->leftJoin('ems_department as department', 'employee.emp_department_id', '=', 'department.id')
+            ->leftJoin('ems_team as team', 'employee.emp_team_id', '=', 'team.id')
+            ->leftJoin('ems_position as position', 'employee.emp_position_id', '=', 'position.id')
+            ->leftJoin('ems_event as event', 'connect.con_event_id', '=', 'event.id')
+            ->whereIn('connect.con_event_id', $eventIds)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
             ->select([
-                'ems_employees.*',
-                'ems_department.dpm_name as department',
-                'ems_team.tm_name as team',
-                'ems_position.pst_name as position',
-                'ems_event.evn_title as event_title',
-                'ems_connect.con_answer as status',
-                'ems_connect.con_checkin_status',
-                'ems_connect.con_event_id as event_id'
+                'employee.*',
+                'department.dpm_name as department',
+                'team.tm_name as team',
+                'position.pst_name as position',
+                'event.evn_title as event_title',
+                'connect.con_answer as status',
+                'connect.con_checkin_status',
+                'connect.con_event_id as event_id'
             ])
-            ->orderBy('ems_employees.emp_id')
+            ->orderBy('employee.emp_id')
             ->get();
 
         return [
-            'total_participation' => $stats->total_participation ?? 0,
-            'attending' => $stats->attending ?? 0,
-            'not_attending' => $stats->not_attending ?? 0,
-            'pending' => $stats->pending ?? 0,
+            'total_participation' => $overallStats->total_participation ?? 0,
+            'attending' => $overallStats->attending ?? 0,
+            'not_attending' => $overallStats->not_attending ?? 0,
+            'pending' => $overallStats->pending ?? 0,
             'actual_attendance' => [
-                'attended' => $checkedIn,
+                'attended' => $totalCheckedIn,
                 'total_assigned' => $totalAssigned
             ],
-            'departments' => $departments,
-            'teams' => $teams,
-            'participants' => $participants
+            'departments' => $departmentStats,
+            'teams' => $teamStats,
+            'participants' => $participantsList
         ];
     }
 }
