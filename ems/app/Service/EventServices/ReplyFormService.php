@@ -10,7 +10,6 @@
 namespace App\Service\EventServices;
 
 use App\Models\Connect;
-use Illuminate\Support\Facades\DB;
 
 /* ============================================================
       1) เก็บข้อมูลารตอบกลับลง DB
