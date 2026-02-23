@@ -16,6 +16,7 @@ use App\Models\Position;
 use App\Models\Department;
 use App\Models\Team;
 use App\Models\Connect;
+use App\Models\File;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -42,21 +43,21 @@ class EventService
     ============================================================ */
     public function connectList($id)
     {
-        // 1. ดึงข้อมูลผ่าน Model พร้อม Load ความสัมพันธ์ที่เกี่ยวข้อง
+        // 1. ดึงข้อมูลผ่าน Model พร้อม Load ความสัมพันธ์
         $connections = Connect::with(['employee.department', 'employee.team', 'employee.position'])
             ->where('con_event_id', $id)
             ->where('con_delete_status', 'active')
             ->where('con_answer', '!=', 'not_invite')
             ->get();
 
-        // 2. จัดรูปแบบข้อมูลให้หน้าตาเหมือนเดิม (Mapping) และเรียงลำดับ
+        // 2. จัดรูปแบบข้อมูล + เรียงลำดับ
         $participants = $connections
             ->sortBy(fn($conn) => $conn->employee?->emp_id) // เรียงลำดับตาม emp_id
-            ->values() // รีเซ็ต key ของ array หลังจากการ sort
+            ->values() // รีเซ็ต key ของ array หลัง sort
             ->map(function ($connect) {
                 $emp = $connect->employee;
 
-                // คืนค่าเป็น Object (เพื่อให้เหมือนผลลัพธ์จาก DB::table เดิม)
+                // คืนค่าเป็น Object
                 return (object) [
                     'id' => $emp?->id,
                     'emp_id' => $emp?->emp_id,
@@ -87,19 +88,20 @@ class EventService
     public function show($id)
     {
         $event = Event::with('category')->find($id);
-        if (!$event)
-            return null;
 
-        $files = DB::table('ems_event_files')
-            ->where('file_event_id', $event->id)
+        if (!$event) {
+            return null;
+        }
+
+        // ใช้ Model File แทน DB::table
+        $event->files = File::where('file_event_id', $event->id)
             ->orderBy('id', 'asc')
             ->get()
-            ->map(function ($f) {
-                $f->url = asset('storage/' . $f->file_path);
-                return $f;
+            ->map(function ($file) {
+                $file->url = asset('storage/' . $file->file_path);
+                return $file;
             });
 
-        $event->files = $files;
         return $event;
     }
 
