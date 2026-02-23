@@ -509,27 +509,32 @@ class EventService
     }
 
     /* ============================================================
-       10) ลบ Event + ส่งเมลแจ้งยกเลิก
+    10) ลบ Event + ส่งเมลแจ้งยกเลิก
     ============================================================ */
-    public function deleted($id)
+    public function deleted($eventId)
     {
-        $event = Event::find($id);
-        if (!$event)
-            return false;
+        $event = Event::find($eventId);
 
-        $participants = DB::table('ems_connect')
-            ->where('con_event_id', $event->id)
+        if (!$event) {
+            return false;
+        }
+
+        // ใช้ Model Connect แทน DB::table
+        $participantIds = Connect::where('con_event_id', $event->id)
             ->where('con_delete_status', 'active')
             ->pluck('con_employee_id');
 
-        $employees = Employee::whereIn('id', $participants)->get();
+        // ดึงข้อมูลพนักงานทั้งหมดที่เกี่ยวข้อง
+        $employees = Employee::whereIn('id', $participantIds)->get();
 
-        foreach ($employees as $emp) {
-            if ($emp->emp_email) {
-                Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
+        // เปลี่ยน $emp เป็น $employee เป็นคำเต็ม
+        foreach ($employees as $employee) {
+            if ($employee->emp_email) {
+                Mail::to($employee->emp_email)->send(new EventCancellationMail($employee, $event));
             }
         }
 
+        // อัปเดตสถานะเป็น deleted (Soft Delete)
         $event->update([
             'evn_status' => 'deleted',
             'evn_deleted_at' => now(),
