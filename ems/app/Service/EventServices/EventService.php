@@ -15,6 +15,7 @@ use App\Models\Category;
 use App\Models\Position;
 use App\Models\Department;
 use App\Models\Team;
+use App\Models\Connect;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -41,32 +42,38 @@ class EventService
     ============================================================ */
     public function connectList($id)
     {
-        $participants = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
-            ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
-            ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
-            ->where('ems_connect.con_event_id', $id)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
-            ->select([
-                'ems_employees.id',
-                'ems_employees.emp_id',
-                'ems_employees.emp_prefix',
-                'ems_employees.emp_firstname',
-                'ems_employees.emp_lastname',
-                'ems_employees.emp_nickname',
-                'ems_employees.emp_phone',
-                'ems_employees.emp_email',
-                'ems_department.dpm_name as department',
-                'ems_team.tm_name as team',
-                'ems_position.pst_name as position',
-                'ems_connect.con_answer as status',
-                'ems_connect.con_checkin_status',
-                'ems_connect.con_reason'
-            ])
-            ->orderBy('ems_employees.emp_id')
+        // 1. ดึงข้อมูลผ่าน Model พร้อม Load ความสัมพันธ์ที่เกี่ยวข้อง
+        $connections = Connect::with(['employee.department', 'employee.team', 'employee.position'])
+            ->where('con_event_id', $id)
+            ->where('con_delete_status', 'active')
+            ->where('con_answer', '!=', 'not_invite')
             ->get();
+
+        // 2. จัดรูปแบบข้อมูลให้หน้าตาเหมือนเดิม (Mapping) และเรียงลำดับ
+        $participants = $connections
+            ->sortBy(fn($conn) => $conn->employee?->emp_id) // เรียงลำดับตาม emp_id
+            ->values() // รีเซ็ต key ของ array หลังจากการ sort
+            ->map(function ($connect) {
+                $emp = $connect->employee;
+
+                // คืนค่าเป็น Object (เพื่อให้เหมือนผลลัพธ์จาก DB::table เดิม)
+                return (object) [
+                    'id' => $emp?->id,
+                    'emp_id' => $emp?->emp_id,
+                    'emp_prefix' => $emp?->emp_prefix,
+                    'emp_firstname' => $emp?->emp_firstname,
+                    'emp_lastname' => $emp?->emp_lastname,
+                    'emp_nickname' => $emp?->emp_nickname,
+                    'emp_phone' => $emp?->emp_phone,
+                    'emp_email' => $emp?->emp_email,
+                    'department' => $emp?->department?->dpm_name,
+                    'team' => $emp?->team?->tm_name,
+                    'position' => $emp?->position?->pst_name,
+                    'status' => $connect->con_answer,
+                    'con_checkin_status' => $connect->con_checkin_status,
+                    'con_reason' => $connect->con_reason
+                ];
+            });
 
         return [
             'employee_ids' => $participants->pluck('id')->toArray(),
@@ -208,7 +215,7 @@ class EventService
     public function update($request)
     {
         return DB::transaction(function () use ($request) {
-
+            /** @var \App\Models\Event $event */
             $event = Event::lockForUpdate()->findOrFail($request->id);
 
             // เก็บค่าเก่าไว้เทียบ
