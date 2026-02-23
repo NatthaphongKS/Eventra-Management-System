@@ -684,32 +684,37 @@ class EventService
     public function getAttendanceData($eventId)
     {
         $event = Event::find($eventId);
-        if (!$event)
-            return null;
 
-        $stats = DB::table('ems_connect')
+        if (!$event) {
+            return null;
+        }
+
+        // เปลี่ยน DB::table('ems_connect') เป็น Model Connect
+        // เปลี่ยน $stats เป็น $attendanceStats เพื่อความชัดเจน
+        $attendanceStats = Connect::query()
             ->where('con_event_id', $eventId)
             ->where('con_delete_status', 'active')
             ->where('con_answer', '!=', 'not_invite')
             ->selectRaw('
-                COUNT(CASE WHEN con_answer="accept" THEN 1 END) as actual_attendance,
-                COUNT(CASE WHEN con_answer="decline" THEN 1 END) as declined,
-                COUNT(CASE WHEN con_answer IS NULL OR con_answer="pending" THEN 1 END) as pending,
-                COUNT(*) as total_invited
-            ')
+            COUNT(CASE WHEN con_answer = "accept" THEN 1 END) as actual_attendance,
+            COUNT(CASE WHEN con_answer = "decline" THEN 1 END) as declined,
+            COUNT(CASE WHEN con_answer IS NULL OR con_answer = "pending" THEN 1 END) as pending,
+            COUNT(*) as total_invited
+        ')
             ->first();
 
-        $percent = $stats->total_invited > 0
-            ? round($stats->actual_attendance / $stats->total_invited * 100, 2)
+        // เปลี่ยน $percent เป็น $attendancePercentage
+        $attendancePercentage = $attendanceStats->total_invited > 0
+            ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2)
             : 0;
 
         return [
             'event_title' => $event->evn_title,
-            'actual_attendance' => $stats->actual_attendance ?? 0,
-            'declined' => $stats->declined ?? 0,
-            'pending' => $stats->pending ?? 0,
-            'total_invited' => $stats->total_invited ?? 0,
-            'attendance_percentage' => $percent
+            'actual_attendance' => $attendanceStats->actual_attendance ?? 0,
+            'declined' => $attendanceStats->declined ?? 0,
+            'pending' => $attendanceStats->pending ?? 0,
+            'total_invited' => $attendanceStats->total_invited ?? 0,
+            'attendance_percentage' => $attendancePercentage
         ];
     }
 
