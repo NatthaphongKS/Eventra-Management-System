@@ -565,7 +565,7 @@ class EventService
     }
 
     /* ============================================================
-       12) eventInfo (metadata สำหรับหน้า create)
+       12) eventInfo (metadata)
     ============================================================ */
     public function eventInfo()
     {
@@ -630,35 +630,42 @@ class EventService
     }
 
     /* ============================================================
-       13) รายชื่อผู้เข้าร่วม (Filter)
-    ============================================================ */
+    13) รายชื่อผู้เข้าร่วม (Filter)
+ ============================================================ */
     public function getParticipants($eventId, $statusFilter)
     {
-        $query = DB::table('ems_connect as c')
-            ->join('ems_employees as e', 'c.con_employee_id', '=', 'e.id')
-            ->leftJoin('ems_position as p', 'e.emp_position_id', '=', 'p.id')
-            ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->leftJoin('ems_team as t', 'e.emp_team_id', '=', 't.id')
-            ->where('c.con_event_id', $eventId)
-            ->where('c.con_delete_status', 'active')
-            ->where('c.con_answer', '!=', 'not_invite')
+        // 1. เริ่มที่ Model Employee และตั้ง Alias ให้ชื่อตารางสื่อความหมาย
+        $query = Employee::query()
+            ->from('ems_employees as employee')
+            ->join('ems_connect as connect', 'connect.con_employee_id', '=', 'employee.id')
+            ->leftJoin('ems_position as position', 'employee.emp_position_id', '=', 'position.id')
+            ->leftJoin('ems_department as department', 'employee.emp_department_id', '=', 'department.id')
+            ->leftJoin('ems_team as team', 'employee.emp_team_id', '=', 'team.id')
+            ->where('connect.con_event_id', $eventId)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
             ->select([
-                'e.*',
-                'p.pst_name as position',
-                'd.dpm_name as department',
-                't.tm_name as team',
-                'c.con_answer as status'
+                'employee.*',
+                'position.pst_name as position',
+                'department.dpm_name as department',
+                'team.tm_name as team',
+                'connect.con_answer as status'
             ]);
 
-        if ($statusFilter === 'pending') {
-            $query->where('c.con_answer', 'invalid');
-        } elseif ($statusFilter === 'accepted') {
-            $query->where('c.con_answer', 'accept');
-        } elseif ($statusFilter === 'declined') {
-            $query->where('c.con_answer', 'denied');
+        // 2. ใช้คำสั่ง match (PHP 8+) แปลงค่าสถานะ แทนการใช้ if-elseif ยาวๆ
+        $databaseStatus = match ($statusFilter) {
+            'pending' => 'invalid',
+            'accepted' => 'accept',
+            'declined' => 'denied',
+            default => null, // กรณีที่เป็นค่า 'all' หรือค่าอื่นๆ จะได้ null
+        };
+
+        // 3. ค้นหาตามสถานะ (ถ้ามี)
+        if ($databaseStatus) {
+            $query->where('connect.con_answer', $databaseStatus);
         }
 
-        $participants = $query->orderBy('e.emp_firstname')->get();
+        $participants = $query->orderBy('employee.emp_firstname')->get();
 
         return [
             'participants' => $participants,
