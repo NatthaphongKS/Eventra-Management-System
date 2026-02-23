@@ -544,21 +544,23 @@ class EventService
         return true;
     }
 
+
     /* ============================================================
        11) getEventParticipants
     ============================================================ */
     public function getEventParticipants($eventId)
     {
-        return DB::table('ems_connect')
+        // เปลี่ยน DB::table('ems_connect') เป็น Connect::query()
+        return Connect::query()
             ->where('con_event_id', $eventId)
             ->where('con_delete_status', 'active')
             ->where('con_answer', '!=', 'not_invite')
             ->selectRaw('
-                COUNT(*) as total,
-                SUM(CASE WHEN con_answer="accept" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN con_answer="denied" THEN 1 ELSE 0 END) as not_attending,
-                SUM(CASE WHEN con_answer="invalid" THEN 1 ELSE 0 END) as pending
-            ')
+            COUNT(*) as total,
+            SUM(CASE WHEN con_answer = "accept" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
+            SUM(CASE WHEN con_answer = "invalid" THEN 1 ELSE 0 END) as pending
+        ')
             ->first();
     }
 
