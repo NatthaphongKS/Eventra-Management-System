@@ -247,7 +247,7 @@ async function upload() {
         const ext = file.value.name.split(".").pop()?.toLowerCase();
         const supported = ["xlsx", "csv"];
         if (!ext || !supported.includes(ext)) {
-            throw new Error("รองรับเฉพาะไฟล์ .xlsx และ .csv เท่านั้น");
+            throw new Error("Only .xlsx and .csv files are supported.");
         }
 
         // Build rowsAoA from different file types
