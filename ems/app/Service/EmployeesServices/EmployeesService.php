@@ -4,7 +4,7 @@
  * ชื่อไฟล์: EmployeesService.php
  * คำอธิบาย: Service สำหรับจัดการ Logic ของ Employee
  * ชื่อผู้เขียน/แก้ไข: Thanusin leenarat
- * วันที่จัดทำ/แก้ไข: 20 กุมภาพันธ์ 2569
+ * วันที่จัดทำ/แก้ไข: 23 กุมภาพันธ์ 2569
  */
 
 namespace App\Service\EmployeesServices;
@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class EmployeesService
@@ -40,12 +39,7 @@ class EmployeesService
             'team:id,tm_name',
             'company:id,com_name'
         ])
-            ->where(
-                fn($q) => $q
-                    ->where('emp_delete_status', 'active')
-                    ->orWhereNull('emp_delete_status')
-                    ->orWhere('emp_delete_status', '')
-            )
+            ->active()
             ->orderByDesc('id')
             ->get([
                 'id',
@@ -68,7 +62,7 @@ class EmployeesService
         $rows = $employees->map(function (Employee $e) {
             return [
                 'id' => $e->id,
-                'emp_company_id' => $e->company->com_name,
+                'emp_company_id' => optional($e->company)->com_name,
                 'emp_id' => $e->emp_id,
                 'emp_prefix' => $e->emp_prefix,
                 'emp_firstname' => $e->emp_firstname,
@@ -154,31 +148,14 @@ class EmployeesService
      */
     public function meta()
     {
-        $prefixes = collect();
+        $prefixes = collect(Employee::PREFIXES)
+            ->map(fn($label, $value) => [
+                'value' => $value,
+                'label' => $label,
+            ])
+            ->values();
 
-        $columns = DB::select("
-            SELECT COLUMN_TYPE
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-            AND TABLE_NAME = 'ems_employees'
-            AND COLUMN_NAME = 'emp_prefix'
-        ");
-
-        if (!empty($columns)) {
-            preg_match("/^enum\((.*)\)$/", $columns[0]->COLUMN_TYPE, $matches);
-
-            if (!empty($matches[1])) {
-                $prefixes = collect(
-                    str_getcsv($matches[1], ',', "'")
-                )->values()->map(fn($p, $i) => [
-                        'value' => $i + 1,
-                        'label' => $p,
-                    ]);
-            }
-        }
-
-
-        $companies = DB::table('ems_company')
+        $companies = Company::query()
             ->select('id', 'com_name')
             ->where('com_delete_status', 'active')
             ->orderBy('com_name')
@@ -210,7 +187,6 @@ class EmployeesService
             'teams'
         ));
     }
-
 
     /**
      * ชื่อฟังก์ชัน: store
@@ -758,19 +734,11 @@ class EmployeesService
      */
     public function checkDuplicate(Request $request)
     {
-        $emp_id = $request->input('emp_id');
-        $emp_phone = $request->input('emp_phone');
-        $emp_email = $request->input('emp_email');
-
         $dupFields = [];
 
-        if (!empty($emp_id)) {
-            $exists = Employee::where('emp_id', $emp_id)
-                ->where(function ($q) {
-                    $q->whereNull('emp_delete_status')
-                        ->orWhere('emp_delete_status', '')
-                        ->orWhere('emp_delete_status', 'active');
-                })
+        if ($request->filled('emp_id')) {
+            $exists = Employee::active()
+                ->where('emp_id', $request->emp_id)
                 ->exists();
 
             if ($exists) {
@@ -778,13 +746,9 @@ class EmployeesService
             }
         }
 
-        if (!empty($emp_phone)) {
-            $exists = Employee::where('emp_phone', $emp_phone)
-                ->where(function ($q) {
-                    $q->whereNull('emp_delete_status')
-                        ->orWhere('emp_delete_status', '')
-                        ->orWhere('emp_delete_status', 'active');
-                })
+        if ($request->filled('emp_phone')) {
+            $exists = Employee::active()
+                ->where('emp_phone', $request->emp_phone)
                 ->exists();
 
             if ($exists) {
@@ -792,13 +756,9 @@ class EmployeesService
             }
         }
 
-        if (!empty($emp_email)) {
-            $exists = Employee::where('emp_email', $emp_email)
-                ->where(function ($q) {
-                    $q->whereNull('emp_delete_status')
-                        ->orWhere('emp_delete_status', '')
-                        ->orWhere('emp_delete_status', 'active');
-                })
+        if ($request->filled('emp_email')) {
+            $exists = Employee::active()
+                ->where('emp_email', $request->emp_email)
                 ->exists();
 
             if ($exists) {
@@ -806,16 +766,9 @@ class EmployeesService
             }
         }
 
-        if (count($dupFields) > 0) {
-            return response()->json([
-                'duplicate' => true,
-                'fields' => $dupFields,
-            ], 200);
-        }
-
         return response()->json([
-            'duplicate' => false,
-            'fields' => [],
-        ], 200);
+            'duplicate' => !empty($dupFields),
+            'fields' => $dupFields,
+        ]);
     }
 }
