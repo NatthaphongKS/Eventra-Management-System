@@ -496,13 +496,16 @@ class EventService
     }
 
     /* ============================================================
-       9) Permission
+    9) Permission
     ============================================================ */
     public function permission()
     {
-        $id = Auth::id();
-        $perm = DB::table('ems_employees')->where('id', $id)->value('emp_permission');
-        return $perm ? strtolower($perm) : null;
+        $employeeId = Auth::id();
+
+        // ใช้ Model Employee ดึงค่าฟิลด์ emp_permission
+        $permission = Employee::where('id', $employeeId)->value('emp_permission');
+
+        return $permission ? strtolower($permission) : null;
     }
 
     /* ============================================================
