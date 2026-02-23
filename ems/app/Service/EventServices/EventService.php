@@ -468,26 +468,30 @@ class EventService
         return $events;
     }
     /* ============================================================
-       8) อัปเดตสถานะ Event ตามเวลา
-    ============================================================ */
+   8) อัปเดตสถานะ Event ตามเวลา
+============================================================ */
     private function syncEventStatus()
     {
-        $now = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+        // เปลี่ยนชื่อตัวแปรให้สื่อความหมายแบบ camelCase
+        $currentTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-        DB::table('ems_event')
+        // 1. อัปเดตสถานะเป็น 'done' (เลยเวลาจบแล้ว)
+        Event::query()
             ->whereNotIn('evn_status', ['done', 'deleted'])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timeend) <= ?", [$now])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) <= ?", [$currentTime])
             ->update(['evn_status' => 'done']);
 
-        DB::table('ems_event')
+        // 2. อัปเดตสถานะเป็น 'ongoing' (ถึงเวลาเริ่มแล้ว แต่ยังไม่ถึงเวลาจบ)
+        Event::query()
             ->whereNotIn('evn_status', ['ongoing', 'done', 'deleted'])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timestart) <= ?", [$now])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timeend) > ?", [$now])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) <= ?", [$currentTime])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) > ?", [$currentTime])
             ->update(['evn_status' => 'ongoing']);
 
-        DB::table('ems_event')
+        // 3. อัปเดตสถานะเป็น 'upcoming' (ยังไม่ถึงเวลาเริ่ม)
+        Event::query()
             ->whereNotIn('evn_status', ['upcoming', 'deleted'])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timestart) > ?", [$now])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) > ?", [$currentTime])
             ->update(['evn_status' => 'upcoming']);
     }
 
