@@ -106,28 +106,19 @@ class EventService
     }
 
     /* ============================================================
-       4) ดึงข้อมูลตอนกดปุ่ม Edit page
-    ============================================================ */
+    4) ดึงข้อมูลตอนกดปุ่ม Edit page
+ ============================================================ */
     public function editPages($id)
     {
-        $event = Event::join('ems_categories', 'ems_event.evn_category_id', '=', 'ems_categories.id')
-            ->where('ems_event.id', $id)
-            ->select([
-                'ems_event.id',
-                'ems_event.evn_title',
-                'ems_event.evn_description',
-                'ems_event.evn_date',
-                'ems_event.evn_timestart',
-                'ems_event.evn_timeend',
-                'ems_event.evn_location',
-                'ems_event.evn_duration',
-                'ems_event.evn_category_id',
-                'ems_categories.cat_name'
-            ])
-            ->firstOrFail();
+        // 1. ดึง Event พร้อม Category ด้วย Eager Loading (แทนการใช้ Join)
+        $event = Event::with('category')->findOrFail($id);
 
-        $files = DB::table('ems_event_files')
-            ->where('file_event_id', $event->id)
+        // *ทริค: เนื่องจากโค้ดเดิมตอน Join เราได้ฟิลด์ 'cat_name' มาอยู่ใน Event เลย
+        // ถ้าฝั่ง Frontend (Vue/React/Blade) เรียกใช้ event.cat_name เราสามารถยัดค่ากลับไปแบบนี้ได้ครับ
+        $event->cat_name = $event->category?->cat_name;
+
+        // 2. ดึงข้อมูลไฟล์ด้วย Model File
+        $files = File::where('file_event_id', $event->id)
             ->orderBy('id', 'asc')
             ->get()
             ->map(function ($f) {
@@ -135,8 +126,8 @@ class EventService
                 return $f;
             });
 
-        $guestIds = DB::table('ems_connect')
-            ->where('con_event_id', $event->id)
+        // 3. ดึง Guest IDs ด้วย Model Connect
+        $guestIds = Connect::where('con_event_id', $event->id)
             ->where('con_delete_status', 'active')
             ->pluck('con_employee_id');
 
@@ -144,72 +135,73 @@ class EventService
     }
 
     /* ============================================================
-       5) สร้าง Event ใหม่
-    ============================================================ */
-    public function store($request)
-    {
-        return DB::transaction(function () use ($request) {
+   5) สร้าง Event ใหม่
+============================================================ */
+public function store(\Illuminate\Http\Request $request)
+{
+    return DB::transaction(function () use ($request) {
 
-            // Create Event
-            $event = Event::create([
-                'evn_title' => $request->event_title,
-                'evn_category_id' => $request->event_category_id,
-                'evn_description' => $request->event_description,
-                'evn_date' => $request->event_date,
-                'evn_timestart' => $request->event_timestart,
-                'evn_timeend' => $request->event_timeend,
-                'evn_duration' => $request->event_duration,
-                'evn_location' => $request->event_location,
-                'evn_file' => $request->hasFile('attachments') ? 'have' : 'not_have',
-                'evn_create_by' => Auth::id(),
-                'evn_status' => 'upcoming',
-            ]);
+        // 1. Create Event
+        $event = Event::create([
+            'evn_title'       => $request->event_title,
+            'evn_category_id' => $request->event_category_id,
+            'evn_description' => $request->event_description,
+            'evn_date'        => $request->event_date,
+            'evn_timestart'   => $request->event_timestart,
+            'evn_timeend'     => $request->event_timeend,
+            'evn_duration'    => $request->event_duration,
+            'evn_location'    => $request->event_location,
+            'evn_file'        => $request->hasFile('attachments') ? 'have' : 'not_have',
+            'evn_create_by'   => Auth::id(),
+            'evn_status'      => 'upcoming',
+        ]);
 
-            // Files
-            $saved = [];
-            if ($request->hasFile('attachments')) {
-                foreach ($request->file('attachments') as $file) {
-                    $path = $file->store("events/{$event->id}", 'public');
-                    $saved[] = $event->files()->create([
-                        'file_name' => $file->getClientOriginalName(),
-                        'file_path' => $path,
-                        'file_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
-                        'uploaded_at' => now(),
-                    ]);
+        // 2. Files
+        $saved = [];
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+
+                $path = $file->store("events/{$event->id}", 'public');
+
+                $saved[] = $event->files()->create([
+                    'file_name'   => $file->getClientOriginalName(),
+                    'file_path'   => $path,
+                    'file_type'   => $file->getClientMimeType(),
+                    'file_size'   => $file->getSize(),
+                    'uploaded_at' => now(),
+                ]);
+            }
+        }
+
+        // 3. Employees & Send Email (รวบเงื่อนไขไว้ด้วยกัน)
+        $employees = $request->employee_ids ?? [];
+        if (!empty($employees)) {
+            // 3.1 บันทึกลงฐานข้อมูล
+            $event->connects()->createMany(
+                collect($employees)->map(fn($id) => [
+                    'con_employee_id'   => $id,
+                    'con_answer'        => 'pending',
+                    'con_delete_status' => 'active'
+                ])->toArray()
+            );
+
+            // 3.2 ส่ง Email
+            $empList = Employee::whereIn('id', $employees)->get();
+            foreach ($empList as $emp) {
+                if ($emp->emp_email) {
+                    $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
+                    Mail::to($emp->emp_email)
+                        ->send(new EventInvitationMail($emp, $event, $saved, $url));
                 }
             }
+        }
 
-            // Employees
-            $employees = $request->employee_ids ?? [];
-            if (!empty($employees)) {
-                $event->connects()->createMany(
-                    collect($employees)->map(fn($id) => [
-                        'con_employee_id' => $id,
-                        'con_answer' => 'pending',
-                        'con_delete_status' => 'active'
-                    ])->toArray()
-                );
-            }
-
-            // Send Email
-            if (!empty($employees)) {
-                $empList = Employee::whereIn('id', $employees)->get();
-                foreach ($empList as $emp) {
-                    if ($emp->emp_email) {
-                        $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
-                        Mail::to($emp->emp_email)
-                            ->send(new EventInvitationMail($emp, $event, $saved, $url));
-                    }
-                }
-            }
-
-            return [
-                'success' => true,
-                'event_id' => $event->id
-            ];
-        });
-    }
+        return [
+            'success'  => true,
+            'event_id' => $event->id
+        ];
+    });
+}
 
     /* ============================================================
        6) อัปเดต Event (ส่วนใหญ่ย้ายตรงจาก controller)
