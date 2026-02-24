@@ -3,8 +3,8 @@
 /**
  * ชื่อไฟล์: HistoryEventService.php
  * คำอธิบาย: Service สำหรับจัดการ business logic เกี่ยวกับกิจกรรมที่ถูกลบ
- * ชื่อผู้เขียน: Mr.Suphanut Pangot
- * วันที่จัดทำ: 2025-12-14
+ * ชื่อผู้เขียน: Mr.Kidrakon Rattanahiran 
+ * วันที่จัดทำ: 24/02/2569
  */
 
 namespace App\Service\HistoryServices;
