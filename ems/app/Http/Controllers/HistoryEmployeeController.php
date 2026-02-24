@@ -2,39 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Service\HistoryServices\HistoryEmployeeService;
+use Illuminate\Http\JsonResponse;
 
 class HistoryEmployeeController extends Controller
 {
-    public function index()
+    /**
+     * แสดงรายการพนักงานทั้งหมด (รวมถึงข้อมูลที่ถูกลบแล้ว)
+     * พร้อมข้อมูลประกอบที่เกี่ยวข้อง โดยตรรกะทางธุรกิจทั้งหมดได้ถูกย้ายไปไว้ในชั้น Service แล้ว
+     *
+     * @param HistoryEmployeeService $historyEmployeeService
+     * @return JsonResponse
+     */
+    public function index(HistoryEmployeeService $historyEmployeeService): JsonResponse
     {
-        $rows = DB::table('ems_employees as e')
-            ->join('ems_position as p', 'e.emp_position_id', '=', 'p.id')
-            ->join('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->join('ems_team as t', 'e.emp_team_id', '=', 't.id')
-            ->leftJoin('ems_employees as cb', 'e.emp_create_by', '=', 'cb.id')
-            ->leftJoin('ems_employees as db', 'e.emp_delete_by', '=', 'db.id')
-            ->select(
-                'e.id',
-                'e.emp_id',
-                'e.emp_prefix',
-                'e.emp_firstname',
-                'e.emp_lastname',
-                'e.emp_nickname',
-                'e.emp_delete_status',
-                'e.emp_created_at as created_at',
-                'e.emp_deleted_at',
-                'p.pst_name as position_name',
-                'd.dpm_name as department_name',
-                't.tm_name as team_name',
-                DB::raw("COALESCE(NULLIF(TRIM(cb.emp_firstname),''), cb.emp_nickname, '-') as created_by_name"),
-                DB::raw("COALESCE(NULLIF(TRIM(db.emp_firstname),''), db.emp_nickname, '-') as deleted_by_name")
-            )
-            // แสดงพนักงานทั้งหมด ไม่กรองเฉพาะที่ถูกลบ
-            ->orderByRaw("e.emp_deleted_at IS NULL ASC")
-            ->orderByDesc('e.emp_deleted_at')
-            ->orderBy('e.emp_id')
-            ->get();
+        $rows = $historyEmployeeService->getAllHistoryEmployees();
 
         return response()->json($rows);
     }

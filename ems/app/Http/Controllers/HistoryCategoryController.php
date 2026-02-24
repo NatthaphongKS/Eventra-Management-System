@@ -2,28 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Service\HistoryServices\HistoryCategoryService;
+use Illuminate\Http\JsonResponse;
 
 class HistoryCategoryController extends Controller
 {
-    public function index()
+    /**
+     * @var HistoryCategoryService
+     */
+    private $historyCategoryService;
+
+    public function __construct(HistoryCategoryService $historyCategoryService)
     {
-        $rows = DB::table('ems_categories as c')
-            ->leftJoin('ems_employees as cb', 'c.cat_created_by', '=', 'cb.id')
-            ->leftJoin('ems_employees as db', 'c.cat_deleted_by', '=', 'db.id')
-            ->select(
-                'c.id',
-                'c.cat_name',
-                'c.cat_delete_status',
-                'c.cat_created_at',
-                'c.cat_deleted_at',
-                DB::raw("COALESCE(NULLIF(TRIM(cb.emp_firstname),''), cb.emp_nickname, '-') as created_by_name"),
-                DB::raw("COALESCE(NULLIF(TRIM(db.emp_firstname),''), db.emp_nickname, '-') as deleted_by_name")
-            )
-            ->orderByRaw("c.cat_deleted_at IS NULL ASC")
-            ->orderByDesc('c.cat_deleted_at')
-            ->orderByDesc('c.cat_created_at')
-            ->get();
+        $this->historyCategoryService = $historyCategoryService;
+    }
+
+    public function index(): JsonResponse
+    {
+        $rows = $this->historyCategoryService->getAllHistoryCategories();
 
         return response()->json($rows);
     }

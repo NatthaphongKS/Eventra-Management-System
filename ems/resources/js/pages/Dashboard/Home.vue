@@ -1,4 +1,4 @@
-<!-- pages/event_page.vue -->
+<!-- Dashboard/Home.vue - Event Management Dashboard with Statistics & Export -->
 <template>
 
 <!-- Event Table Section - Refactored to match EventPage -->
@@ -789,15 +789,6 @@ export default {
   },
 
   methods: {
-    showEmployees(status) {
-    this.selectedStatus = status; // attending / not-attending / pending
-    this.showEmployeeTable = true;
-  },
-
-  closeEmployeeTable() {
-    this.showEmployeeTable = false;
-    this.selectedStatus = null;
-  },
     handleEventCheck({ keys, checked }) {
   keys.forEach(id => {
     if (checked) {
@@ -833,33 +824,7 @@ handleCheckAllEvents({ pageKeys, action }) {
     handleSort(sortData) {
       this.handleClientSort(sortData);
     },
-    // UNUSED - เมธอดคำนวณข้อมูลสำหรับแสดงกราฟ (ไม่ได้ใช้ใน template)
-    // getAttendingProgress() {
-    //   if (this.chartData.total_participation === 0) return 0;
-    //   return Math.round((this.chartData.attending / this.chartData.total_participation) * 251);
-    // },
-    // getNotAttendingProgress() {
-    //   if (this.chartData.total_participation === 0) return 0;
-    //   return Math.round((this.chartData.not_attending / this.chartData.total_participation) * 251);
-    // },
-    // getPendingProgress() {
-    //   if (this.chartData.total_participation === 0) return 0;
-    //   return Math.round((this.chartData.pending / this.chartData.total_participation) * 251);
-    // },
-    // getAttendingPercentage() {
-    //   return Math.round((this.chartData.attending / 100) * 251);
-    // },
-    // getNotAttendingPercentage() {
-    //   return Math.round((this.chartData.not_attending / 100) * 251);
-    // },
-    // getPendingPercentage() {
-    //   return Math.round((this.chartData.pending / 100) * 251);
-    // },
-    // getAttendancePercentage() {
-    //   const total = this.chartData.attending + this.chartData.not_attending + this.chartData.pending;
-    //   if (total === 0) return 0;
-    //   return Math.round((this.chartData.attending / total) * 100);
-    // },
+
     async fetchEmployees() {
       try {
         const res = await axios.get("/get-employees", {
@@ -940,22 +905,7 @@ handleCheckAllEvents({ pageKeys, action }) {
         this.catMap = {};
       }
     },
-    // UNUSED - ใช้ DataTable component pagination แทน
-    // goToPage(p) {
-    //   if (p < 1) p = 1;
-    //   if (p > this.totalPages) p = this.totalPages || 1;
-    //   this.page = p;
-    // },
-    // UNUSED - ไม่มีปุ่ม Edit/Delete ใน template
-    // editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
-    //   this.$router.push(`/edit-event/${id}`)
-    // },
-    // async deleteEvent(id) {
-    //   if (confirm("Delete?")) {
-    //     try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
-    //     catch (err) { console.error("Error deleting event", err); }
-    //   }
-    // },
+
     formatDate(val) {
       if (!val) return 'N/A';
       const d = new Date(val); if (isNaN(d)) return val;
@@ -964,36 +914,7 @@ handleCheckAllEvents({ pageKeys, action }) {
       const yyyy = d.getFullYear();
       return `${dd}/${mm}/${yyyy}`;
     },
-    // UNUSED - Employee pagination เก่า (ใช้ DataTable component แทน)
-    // goToEmpPage(p) {
-    //   if (p < 1) p = 1;
-    //   if (p > this.empTotalPages) p = this.empTotalPages || 1;
-    //   this.empPage = p;
-    // },
-    // setEmpSort(value) {
-    //   const order = value.startsWith('-') ? 'desc' : 'asc';
-    //   const key = value.replace(/^-/, '');
-    //   this.empSort = { value: key, order };
-    //   this.empPage = 1;
-    // },
-    // UNUSED - ไม่มีปุ่มนี้ใน template
-    // onViewReport() {
-    //   // ฟังก์ชันสำหรับดูรายงาน
-    // },
-    // onExport() {
-    //   // ฟังก์ชันสำหรับ export ข้อมูล - ใช้ ExportDropdown component แทน
-    // },
-    // onAddEvent() {
-    //   // ฟังก์ชันสำหรับเพิ่ม event ใหม่
-    //   console.log('Add Event clicked!');
-    //   this.$router.push('/create-event');
-    // },
-    // UNUSED - Date filter ทำโดย computed property filtered อัตโนมัติ
-    // filterByDate() {
-    //   // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
-    //   // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
-    //   this.page = 1;
-    // },
+
     // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
     async fetchEventStatistics() {
       console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
@@ -1093,12 +1014,10 @@ handleCheckAllEvents({ pageKeys, action }) {
         this.loadingParticipants = false;
       }
     },
-    // ฟังก์ชันจัดการ checkbox เลือกหลาย event - สำหรับ highlight row
-    getRowClass(row) {
-      const eventId = row.id || row.evn_id;
-      return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
-    },
-    // ดึงชื่ออีเวนต์มาแสดงผล
+    /**
+     * ดึงชื่ออีเวนต์ที่เลือกมาแสดงผล
+     * @returns {string} ชื่อหรือจำนวนอีเวนต์ที่เลือก
+     */
     getEventTitlesText() {
       if (this.selectedEventIds.size === 0) return 'N/A';
       const selectedEvents = this.normalized.filter(event =>
@@ -1164,49 +1083,7 @@ handleCheckAllEvents({ pageKeys, action }) {
         this.$router.push({ path: `/events/${id}` });
       }
     },
-    async loadEventStatistics(eventId) {
-      this.isLoading = true;
-      try {
-        // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
-        const response = await axios.get(`/api/event/${eventId}/participants`);
-        console.log('Event statistics response:', response.data);
 
-        if (response.data.success) {
-          const statistics = response.data.data.statistics;
-          // อัปเดตข้อมูลกราฟด้วยสถิติจริง
-          this.chartData = {
-            attending: statistics.attending || 0,
-            notAttending: statistics.not_attending || 0,
-            pending: statistics.pending || 0
-          };
-          // อัพเดตกราฟ
-          this.participationData = {
-            labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
-            datasets: [{
-              data: [
-                this.chartData.attending,
-                this.chartData.notAttending,
-                this.chartData.pending
-              ],
-              backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
-            }]
-          };
-          console.log('Updated chart data:', this.chartData);
-        } else {
-          console.error('Failed to load event statistics:', response.data.message);
-        }
-      } catch (error) {
-        console.error('Error loading event statistics:', error);
-        // Reset to default values on error
-        this.chartData = { attending: 0, notAttending: 0, pending: 0 };
-        this.participationData = {
-          labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
-          datasets: [{ data: [0, 0, 0], backgroundColor: ['#4CAF50', '#F44336', '#FF9800'] }]
-        };
-      } finally {
-        this.isLoading = false;
-      }
-    },
     async showEmployeesByStatus(status) {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมก่อน');
@@ -1299,27 +1176,7 @@ handleCheckAllEvents({ pageKeys, action }) {
         alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
       }
     },
-    // UNUSED - ไม่ได้ใช้ mapping status
-    // mapStatusForAPI(status) {
-    //   const statusMap = {
-    //     'attending': 'accepted',
-    //     'not-attending': 'denied',
-    //     'pending': 'pending'
-    //   };
-    //   return statusMap[status] || 'pending';
-    // },
-    // UNUSED - Testing functions
-    // testClick(buttonType) {
-    //   console.log(`Button clicked: ${buttonType}`);
-    //   alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
-    // },
-    // testLoading() {
-    //   this.loadingTest = true;
-    //   setTimeout(() => {
-    //     this.loadingTest = false;
-    //     alert('Loading test completed!');
-    //   }, 2000);
-    // },
+
     // Show data handler - scroll to charts and fetch statistics
     showDataHandler() {
       if (this.selectedEventIds.size === 0) {
@@ -1383,3 +1240,4 @@ handleCheckAllEvents({ pageKeys, action }) {
   } // End methods
 } // End export default
 </script>
+
