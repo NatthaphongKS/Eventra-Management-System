@@ -28,7 +28,7 @@
     </span>
 
     <span class="inline-block">
-      <slot>Create</slot>
+      <slot>Save</slot>
     </span>
   </button>
 </template>
