@@ -4,8 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite",
-        "docs:csv": "node scripts/export-doc-index.mjs --out docs/docs-index.csv"
+        "dev": "vite"
     },
     "devDependencies": {
         "@iconify/vue": "^5.0.0",
