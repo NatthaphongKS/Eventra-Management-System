@@ -16,7 +16,6 @@ class LoginController extends Controller
 {
     protected LoginService $loginService;
 
-
     /**
      * สร้าง instance ของ LoginService เพื่อใช้ใน controller
      *
@@ -26,7 +25,6 @@ class LoginController extends Controller
     {
         $this->loginService = $loginService;
     }
-
 
     /**
      * Redirect ไปหน้า login (API route)
@@ -86,7 +84,6 @@ class LoginController extends Controller
         ], $loginResult['status']);
     }
 
-
     /**
      * ออกจากระบบและลบ session ของผู้ใช้
      *
@@ -104,7 +101,6 @@ class LoginController extends Controller
             'csrf_token' => csrf_token(),
         ])->withCookie(cookie()->forget(config('session.cookie')));
     }
-
 
     /**
      * แสดงข้อมูลโปรไฟล์ของผู้ใช้ที่ล็อกอินอยู่
