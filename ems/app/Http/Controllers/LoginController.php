@@ -81,7 +81,7 @@ class LoginController extends Controller
         // ล็อกอินสำเร็จ ส่งข้อมูลกลับไป
         return response()->json([
             'message' => $loginResult['message'],
-            'redirect' => '/dashboard',
+            'redirect' => '/',
             'user' => $authResult['employee'],
         ], $loginResult['status']);
     }
