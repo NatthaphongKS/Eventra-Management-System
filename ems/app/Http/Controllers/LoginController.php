@@ -98,9 +98,11 @@ class LoginController extends Controller
         // เรียก service เพื่อ logout และลบ session
         $this->loginService->logout($request);
 
-        // ลบ cookie session และแจ้ง logout สำเร็จ
-        return response()->json(['message' => 'Logout success'])
-            ->withCookie(cookie()->forget(config('session.cookie')));
+        // ลบ cookie session และแจ้ง logout สำเร็จ พร้อมส่ง CSRF token ใหม่
+        return response()->json([
+            'message' => 'Logout success',
+            'csrf_token' => csrf_token(),
+        ])->withCookie(cookie()->forget(config('session.cookie')));
     }
 
 
