@@ -1,91 +1,123 @@
 <?php
 
+/**
+ * ชื่อไฟล์: LoginController.php
+ * คำอธิบาย: Controller สำหรับจัดการการเข้าสู่ระบบ ออกจากระบบ และแสดงโปรไฟล์ของผู้ใช้
+ * ผู้เขียน: Yothin S.
+ * วันที่แก้ไข: 20/02/2026
+ */
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Employee; // Assuming you have an Employee model
+use App\Service\LoginServices\LoginService;
 
 class LoginController extends Controller
 {
+    protected LoginService $loginService;
 
+    /**
+     * สร้าง instance ของ LoginService เพื่อใช้ใน controller
+     *
+     * @param LoginService $loginService
+     */
+    public function __construct(LoginService $loginService)
+    {
+        $this->loginService = $loginService;
+    }
+
+    /**
+     * Redirect ไปหน้า login (API route)
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index()
     {
         return response()->json(['redirect' => '/login']);
     }
+
+
+    /**
+     * ตรวจสอบข้อมูลเข้าสู่ระบบและสร้าง session ให้ผู้ใช้
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
-        // 1. Validate: Let Laravel handle ValidationException automatically (returns 422)
+        // ตรวจสอบความถูกต้องของข้อมูล email และ password
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        // 2. Find Employee
-        $employee = Employee::where('emp_email', $request->email)->first();
+        // เรียก service เพื่อตรวจสอบสิทธิ์
+        $authResult = $this->loginService->authenticate(
+            $credentials['email'],
+            $credentials['password']
+        );
 
-        // 3. Check Credentials
-        // Combine checks to prevent user enumeration if desired,
-        // though specific messages are helpful for legitimate users in internal apps.
-        if (!$employee || !Hash::check($request->password, $employee->emp_password)) {
-            return response()->json(['message' => 'Incorrect username or password. Please try again'], 401);
+        if (!$authResult['success']) {
+            // กรณีรหัสผ่านหรืออีเมลผิด
+            return response()->json(
+                ['message' => $authResult['message']],
+                $authResult['status']
+            );
         }
 
-        // 4. Check Status
-        if ($employee->emp_status === 'disabled') {
-            return response()->json(['message' => 'Account is disabled'], 403);
+        // สร้าง session ให้ผู้ใช้
+        $loginResult = $this->loginService->loginSession($authResult['employee'], $request);
+
+        if (!$loginResult['success']) {
+            // กรณีเกิด error ระหว่างสร้าง session
+            return response()->json(
+                ['message' => $loginResult['message']],
+                $loginResult['status']
+            );
         }
 
-        if ($employee->emp_delete_status === 'inactive') {
-            return response()->json(['message' => 'Account is inactive'], 403);
-        }
-
-        // 5. Login
-        try {
-            Auth::login($employee);
-            $request->session()->regenerate();
-            
-            $response = response()->json([
-                'redirect' => '/',
-                'user' => $employee, // Optional: return user info if needed
-                
-            ]);
-
-            return $response;
-        } catch (\Exception $e) {
-            // Only catch unexpected system errors during session regeneration or login
-            \Illuminate\Support\Facades\Log::error('Login system error', [
-                'error' => $e->getMessage(),
-                'email' => $request->email
-            ]);
-            return response()->json(['message' => 'Login failed due to system error.'], 500);
-        }
+        // ล็อกอินสำเร็จ ส่งข้อมูลกลับไป
+        return response()->json([
+            'message' => $loginResult['message'],
+            'redirect' => '/',
+            'user' => $authResult['employee'],
+        ], $loginResult['status']);
     }
 
+    /**
+     * ออกจากระบบและลบ session ของผู้ใช้
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return response()->json(['message' => 'Logout success'])
-            ->withCookie(cookie()->forget(config('session.cookie')));
+        // เรียก service เพื่อ logout และลบ session
+        $this->loginService->logout($request);
+
+        // ลบ cookie session และแจ้ง logout สำเร็จ พร้อมส่ง CSRF token ใหม่
+        return response()->json([
+            'message' => 'Logout success',
+            'csrf_token' => csrf_token(),
+        ])->withCookie(cookie()->forget(config('session.cookie')));
     }
+
+    /**
+     * แสดงข้อมูลโปรไฟล์ของผู้ใช้ที่ล็อกอินอยู่
+     *
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
     public function showProfile()
     {
-        // ตรวจสอบก่อนว่ามีการ Login หรือยัง
-        if (Auth::check()) {
-            // ดึง Model Employee ของผู้ใช้ที่ Login อยู่
-            $employee = Auth::user(); 
-            
-            return response()->json( [
-                'employee' => $employee 
-            ]);
+        // ดึงข้อมูล employee ที่ล็อกอินอยู่
+        $employee = $this->loginService->getAuthenticatedEmployee();
+
+        if ($employee) {
+            // ถ้ามีผู้ใช้ล็อกอิน ส่งข้อมูลกลับ
+            return response()->json(['employee' => $employee]);
         }
-        
-        // ถ้ายังไม่ได้ Login ก็ให้ Redirect ไปหน้า Login
+
+        // ถ้าไม่มีผู้ใช้ล็อกอิน redirect ไปหน้า login
         return redirect('/login');
     }
 }

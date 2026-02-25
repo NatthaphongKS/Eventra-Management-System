@@ -28,7 +28,9 @@
         "hero-icon-js": "^1.0.1",
         "sweetalert2": "^11.22.5",
         "vue": "^3.5.18",
-        "vue-router": "^4.5.1",
-        "xlsx": "^0.18.5"
+        "vue-router": "^4.5.1"
+    },
+    "volta": {
+        "node": "24.13.0"
     }
 }
