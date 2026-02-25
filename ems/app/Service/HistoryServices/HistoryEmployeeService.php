@@ -14,9 +14,8 @@ use Illuminate\Support\Facades\DB;
 class HistoryEmployeeService
 {
     /**
-     * Retrieve the list of all employees (including deleted ones) along with
-     * related meta data such as position, department, team and creator/deleter
-     * names.
+     * ดึงรายการพนักงานทั้งหมด (รวมถึงพนักงานที่ถูกลบแล้ว) พร้อมข้อมูลประกอบ
+     * เช่น ตำแหน่ง แผนก ทีม และชื่อผู้สร้าง/ผู้ลบ
      *
      * @return \Illuminate\Support\Collection
      */

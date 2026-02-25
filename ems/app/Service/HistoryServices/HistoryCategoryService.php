@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 class HistoryCategoryService
 {
     /**
-     * Fetch all categories including deleted ones with metadata.
+     * ดึงข้อมูลหมวดหมู่ทั้งหมด รวมถึงรายการที่ถูกลบ พร้อมข้อมูลเมตาอื่นๆ
      *
      * @return \Illuminate\Support\Collection
      */
