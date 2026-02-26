@@ -1,3 +1,10 @@
+<!--
+    File: EventPage.vue
+    Description: หน้าแสดงรายการกิจกรรม (Event list page) — มีการค้นหา, กรอง, เรียงลำดับ, แก้ไข, ลบ และเช็คอิน
+    Date: 26/02/2026
+    Author: Yothin S.
+-->
+
 <template>
     <section class="p-0">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
@@ -552,11 +559,12 @@ export default {
             return `${format(startTime)}-${format(endTime)}`;
         },
 
+        // กำหนดคลาสของสี badge ตามสถานะ
         badgeClass(status) {
             const base = "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
             switch ((status || "").toLowerCase()) {
                 case "done": return `${base} bg-[#DCFCE7] text-[#00A73D]`;
-                case "upcoming": return `${base} bg-[#FFF9C2] text-[#FDC800]`;
+                case "upcoming": return `${base} bg-[#FFF9C2] text-[#FF9D00]`;
                 case "ongoing": return `${base} bg-[#DFF3FE] text-[#0084D1]`;
                 default: return `${base} bg-slate-100 text-slate-700`;
             }
