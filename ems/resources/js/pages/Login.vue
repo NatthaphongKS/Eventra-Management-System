@@ -12,7 +12,7 @@
         class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/Background.jpg')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
         <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
             <div class="flex justify-center items-center gap-4 mb-8">
-                <img src="../../../public/images/email/clicknext.jpeg" alt="Remote"
+                <img :src="'/images/email/clicknext.jpeg'" alt="Eventra Logo"
                     class="w-20 h-20 object-cover rounded-2xl shadow-sm" loading="lazy">
                 <span class="text-5xl font-medium text-red-700 tracking-tight">
                     Eventra
@@ -25,9 +25,9 @@
 
                     <div class="mb-5">
                         <input type="text" v-model="email"
-                            class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
+                            class="w-full h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
                             placeholder="Email" />
-                        <p v-if="errors.email" class="text-red-700 text-m mt-1 text[16px]">
+                        <p v-if="errors.email" class="text-red-700 text-base mt-1">
                             {{ errors.email[0] }}
                         </p>
                     </div>
@@ -35,14 +35,14 @@
                     <div class="mb-2">
                         <input type="password" v-model="password"
                             :class="{ 'border-red-500': errors.password, 'border-red-700': !errors.password }"
-                            class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
+                            class="w-full h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
                             placeholder="Password" />
-                        <p v-if="errors.password" class="text-red-700 text-m mt-1 text[16px]">
+                        <p v-if="errors.password" class="text-red-700 text-base mt-1">
                             {{ errors.password[0] }}
                         </p>
                     </div>
 
-                    <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
+                    <p v-if="message" class="text-red-700 text-base mt-1">{{ message }}</p>
 
                     <div class="flex justify-center mt-4 mb-4">
                         <router-link to="/forgot-password"
@@ -58,10 +58,6 @@
                         </button>
                     </div>
                 </form>
-
-                <p v-if="error" class="text-center text-red-600 mt-4 text-lg font-medium">
-                    {{ error }}
-                </p>
             </div>
         </div>
     </div>
@@ -78,7 +74,6 @@ export default {
             password: "",
             loading: false,
             message: "",
-            error: "",
             errors: {},
         };
     },
@@ -92,7 +87,7 @@ export default {
             } else if (!emailRegex.test(this.email.trim())) {
                 errs.email = ["Invalid email"];
             }
-            if (!this.password?.trim()) {
+            if (!this.password) {
                 errs.password = ["Password is required"];
             }
             this.errors = errs;
@@ -100,7 +95,6 @@ export default {
         },
         async login() {
             this.message = "";
-            this.error = "";
             this.errors = {};
 
             if (!this.validateInputs()) {
@@ -114,8 +108,6 @@ export default {
                     email: this.email,
                     password: this.password
                 }, { baseURL: '' });
-                // JSON.parse(localStorage.getItem("userData")) ตรวจสอบข้อมูลผู้ใช้ใน localStorage ว่าใคร login permission อะไร
-
 
                 this.message = res.data.message;
 
@@ -126,7 +118,7 @@ export default {
                     );
                 }
 
-                if (res.data.redirect) {
+                if (res.data.redirect && res.data.redirect.startsWith('/')) {
                     window.location.href = res.data.redirect;
                 } else {
                     this.$router.push('/');
