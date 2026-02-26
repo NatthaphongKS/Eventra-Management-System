@@ -38,46 +38,37 @@
             " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
-                <span role="button" tabindex="0"
-                    class=""
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)" title="ดูรายละเอียด">
+                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)"
+                    title="ดูรายละเอียด">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-cat_name="{ row, value }">
-                <span role="button" tabindex="0"
-                    class=""
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
-                <span role="button" tabindex="0"
-                    class=""
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
-                <span role="button" tabindex="0"
-                    class=""
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
                     {{ value }}
                 </span>
             </template>
 
             <template #cell-evn_status="{ row, value }">
-                <span role="button" tabindex="0"
-                    class=""
-                    @click="goDetails(row.id)" @keydown.enter.prevent="goDetails(row.id)"
-                    @keydown.space.prevent="goDetails(row.id)">
+                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
+                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
                     <span :class="badgeClass(value)">
                         {{ value || "N/A" }}
                     </span>
@@ -120,8 +111,8 @@
         </DataTable>
 
         <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
-            message="This wil by deleted permanently. Are you sure?" :show-cancel="true" okText="OK" cancelText="Cancel"
-            @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+            message="This will be deleted permanently. Are you sure?" :show-cancel="true" okText="OK"
+            cancelText="Cancel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
         <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
             message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
@@ -133,7 +124,6 @@
 import ModalAlert from "../../components/Alert/ModalAlert.vue";
 import axios from "axios";
 import DataTable from "@/components/DataTable.vue";
-import Filter from "@/components/Button/Filter.vue";
 import EventSort from "@/components/IndexEvent/EventSort.vue";
 import EventFilter from "@/components/IndexEvent/EventFilter.vue";
 import SearchBar from "@/components/SearchBar.vue";
@@ -148,7 +138,6 @@ axios.defaults.withCredentials = true;
 export default {
     components: {
         Icon,
-        Filter,
         EventSort,
         DataTable,
         EventFilter,
@@ -162,12 +151,7 @@ export default {
         return {
             selectedDate: { start: null, end: null },
             empPermission: "employee",
-
-            showModalBlockedDone: false,
-            showModalBlockedOngoing: false,
-            empPermission: "disabled",
-            showModalBlockedPermission: false,
-            blockMessage: "",
+            isDeleting: false,
             deleteId: null,
 
             event: [],
@@ -202,7 +186,12 @@ export default {
             pageSize: 10,
 
             filters: { category: [], status: [] },
-            _appliedFlt: null,
+
+            statusOptions: [
+                { label: "Done", value: "done" },
+                { label: "Ongoing", value: "ongoing" },
+                { label: "Upcoming", value: "upcoming" },
+            ],
 
             eventTableColumns: [
                 { key: "evn_title", label: "Event", class: "text-left", headerClass: "w-[450px]", cellClass: "pl-3 text-slate-800 font-medium truncate", sortable: true },
@@ -218,12 +207,6 @@ export default {
             showModalFail: false,
         };
     },
-    filters: { category: [], status: [] },
-    statusOptions: [
-        { label: "Done", value: "done" },
-        { label: "Ongoing", value: "ongoing" },
-        { label: "Upcoming", value: "upcoming" },
-    ],
 
     async created() {
         await Promise.all([
@@ -234,23 +217,6 @@ export default {
     },
 
     computed: {
-        // (ส่วน Filter Logic เหมือนเดิม)
-        filterFields() {
-            const categoryOptions = this.activeCategories.map((c) => ({
-                label: c.cat_name,
-                value: String(c.id),
-            }));
-            const statusOptions = [
-                { label: "Done", value: "done" },
-                { label: "Ongoing", value: "ongoing" },
-                { label: "Upcoming", value: "upcoming" },
-            ];
-            return [
-                { fieldKey: "category", label: "Category", fieldType: "checkbox", sectionTitle: "Category", fieldOptions: categoryOptions },
-                { fieldKey: "status", label: "Status", fieldType: "checkbox", sectionTitle: "Status", fieldOptions: statusOptions },
-            ];
-        },
-
         normalized() {
             return this.event.map((e) => ({
                 id: e.id,
@@ -391,8 +357,10 @@ export default {
 
     watch: {
         search() { this.page = 1; },
-        pageSize() { this.page = 1; },
-
+        selectedDate: {
+            handler() { this.page = 1; },
+            deep: true,
+        },
         selectedSort: {
             handler(v) {
                 if (!v) return;
@@ -409,6 +377,7 @@ export default {
             else if (newPage > total) this.page = total;
         },
         pageSize() {
+            this.page = 1;
             if (this.page > this.totalPages) {
                 this.page = this.totalPages;
             }
@@ -416,16 +385,11 @@ export default {
     },
 
     methods: {
-        onDateChange(newDateVal) {
-            // รับค่ามาแล้วอัปเดตตัวแปรทันที
-            this.selectedDate = newDateVal;
-            // สั่ง reset page ตรงนี้แทน (ทำงานครั้งเดียว ไม่ loop)
-            this.page = 1;
-        },
-
-        onPickSort(opt) {
-            this.sortBy = opt.key;
-            this.sortOrder = opt.order;
+        onPickSort(sort) {
+            if (!sort) return;
+            this.selectedSort = sort;
+            this.sortBy = sort.key;
+            this.sortOrder = sort.order;
             this.page = 1;
         },
 
@@ -527,22 +491,6 @@ export default {
         applySearch() { this.search = this.searchInput; this.page = 1; },
         editEvent(id) { this.$router.push(`/EditEvent/${id}`); },
 
-        async deleteEvent(id) {
-            const ev = this.normalized.find((e) => e.id === id);
-            const title = ev?.evn_title || "this event";
-            const { isConfirmed } = await Swal.fire({ title: `Delete ${title}?`, showCancelButton: true });
-            if (!isConfirmed) return;
-            try {
-                await axios.patch(`/event/${id}/deleted`);
-                await Swal.fire("Deleted!", "", "success");
-                this.fetchEvent();
-
-            } catch (err) {
-                console.error("Error deleting event", err);
-                await Swal.fire("Error", "ไม่สามารถลบได้", "error");
-            }
-        },
-
         formatDate(val) {
             if (!val) return "N/A";
             try {
@@ -579,18 +527,11 @@ export default {
             this.selectedSort = this.sortOptions.find((opt) => opt.key === key && opt.order === order) || this.selectedSort;
         },
 
-        onPickSort(sort) {
-            if (!sort) return;
-            this.selectedSort = sort;
-            this.sortBy = sort.key;
-            this.sortOrder = sort.order;
-            this.page = 1;
-        },
-
         async onConfirmDelete() {
             const id = this.deleteId;
-            this.showModal = false;
+            this.showModalAsk = false;
             if (!id) return;
+            this.isDeleting = true;
             try {
                 await axios.patch(`/event/${id}/deleted`);
                 this.showModalAsk = false;
