@@ -7,9 +7,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "getbrevo/brevo-php": "^1.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
-        "sendinblue/api-v3-sdk": "^8.4",
         "symfony/brevo-mailer": "^7.4",
         "symfony/http-client": "^7.4",
         "symfony/mailjet-mailer": "^7.4"

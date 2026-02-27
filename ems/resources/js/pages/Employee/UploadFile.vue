@@ -23,10 +23,14 @@
 
             <div class="mt-6">
                 <p class="text-sm font-semibold text-gray-600">
-                    Upload file Excel
+                    Upload file
                 </p>
                 <p class="text-sm text-gray-400 mt-1">
                     Drag and drop document to your support task
+                </p>
+
+                <p class="text-xs text-red-500 mt-1 font-medium">
+                    *Upload is available for Employee permission only.
                 </p>
 
                 <Upload class="mt-2" v-model:file="file" :max-size-mb="50" @invalid="(msg) => (error = msg)"
@@ -78,11 +82,11 @@
                                 <select
                                     class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
                                     :value="pageSize" @change="
-                                    (e) => {
-                                        pageSize = Number(e.target.value);
-                                        page = 1;
-                                    }
-                                ">
+                                        (e) => {
+                                            pageSize = Number(e.target.value);
+                                            page = 1;
+                                        }
+                                    ">
                                     <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
                                         {{ opt }}
                                     </option>
@@ -118,13 +122,38 @@
                     : 'Please upload file and click Generate Data first'
                     ">
                 <CreateButton :disabled="!canCreate" @click="onCreate" />
+
             </div>
         </div>
     </div>
 
     <ModalAlert v-model:open="showCreateSuccess" title="Success" message="Create employee success" type="success"
         @confirm="handleSuccessClose" />
-    <EmployeeCannotCreate :open="showCannotCreate" :message="errorMessage" @close="showCannotCreate = false" />
+    <ModalAlert v-model:open="showCannotCreate" type="error" title="Error" :message="errorMessage" okText="Close"
+        :show-cancel="false" />
+
+    <div v-if="showProgressModal"
+        class="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-white w-[420px] rounded-2xl shadow-2xl p-8 text-center">
+
+            <h3 class="text-xl font-semibold text-neutral-800">
+                Saving Employees...
+            </h3>
+
+            <div class="mt-6 w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                <div class="h-4 bg-red-600 transition-all duration-300" :style="{ width: progress + '%' }"></div>
+            </div>
+
+            <p class="mt-4 text-sm text-gray-600">
+                {{ progress }}% completed
+            </p>
+
+            <p class="text-xs text-gray-400 mt-1">
+                Please wait while we process {{ totalRows }} records
+            </p>
+
+        </div>
+    </div>
 </template>
 
 <script setup>
@@ -139,7 +168,7 @@ import { useRouter } from "vue-router";
 // Excel libraries
 // - XLSX : ใช้สำหรับอ่านไฟล์ Excel / CSV
 // - ExcelJS : ใช้สำหรับสร้างไฟล์ Excel template
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 
 // HTTP client
@@ -150,7 +179,6 @@ import axios from "axios";
 // ======================================================
 import Upload from "@/components/Input/Upload.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
-// import EmployeeCannotCreate from "../../components/Alert/Employee/EmployeeCannotCreate.vue";
 import CancelButton from "@/components/Button/CancelButton.vue";
 import CreateButton from "@/components/Button/CreateButton.vue";
 import GenerateDataButton from "@/components/Button/GenerateDataButton.vue";
@@ -182,6 +210,11 @@ const isTableVisible = ref(false);
 const departments = ref([]);       // แผนก
 const positions = ref([]);         // ตำแหน่ง
 const teams = ref([]);             // ทีม
+
+// Progress state (สำหรับแสดง progress bar)
+const progress = ref(0)
+const showProgressModal = ref(false)
+const totalRows = ref(0)
 
 // ======================================================
 // Load master data จาก backend
@@ -234,6 +267,7 @@ watch([pageSize, totalItems], () => {
 // ======================================================
 // Upload & Parse Excel
 // ======================================================
+// ใช้ ExcelJS อ่านไฟล์ .xlsx (และยังใช้ readFile เดิมได้)
 async function upload() {
     // guard: ต้องมีไฟล์ และไม่มี error
     if (!file.value || error.value) return;
@@ -244,52 +278,58 @@ async function upload() {
 
     try {
         const ext = file.value.name.split(".").pop()?.toLowerCase();
+        const supported = ["xlsx", "csv"];
+        if (!ext || !supported.includes(ext)) {
+            throw new Error("Only .xlsx and .csv files are supported.");
+        }
 
-        const data = await readFile(
-            file.value,
-            ext === "csv" ? "text" : "array"
-        );
+        // Build rowsAoA from different file types
+        let rowsAoA = [];
+        if (ext === "xlsx") {
+            const data = await readFile(file.value, "array"); // ArrayBuffer
 
-        const wb = XLSX.read(data, {
-            type: ext === "csv" ? "string" : "array",
-            cellDates: true,
-        });
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(data);
 
-        const ws = wb.Sheets[wb.SheetNames[0]];
+            const ws = workbook.worksheets[0];
+            if (!ws) throw new Error("Worksheet not found");
 
-        const rowsAoA = XLSX.utils.sheet_to_json(ws, {
-            header: 1,
-            defval: "",
-            blankrows: false,
-        });
+            // --- ExcelJS -> rowsAoA (เหมือนเดิม: header:1)
+            // values ของ ExcelJS เป็น array ที่ index เริ่มที่ 1
+            rowsAoA = [];
+            ws.eachRow({ includeEmpty: false }, (row) => {
+                const arr = (row.values || []).slice(1).map((v) => (v ?? "")); // defval ""
+                // กันแถวว่างล้วน
+                if (arr.every((x) => x === "" || x == null || String(x).trim() === "")) return;
+                rowsAoA.push(arr);
+            });
+
+        } else if (ext === "csv") {
+            const text = await readFile(file.value, "text");
+            rowsAoA = parseCsvToAoA(String(text || ""));
+        }
 
         const headerRowIdx = detectHeaderRow(rowsAoA);
         if (headerRowIdx === -1) {
-            throw new Error(
-                "Header row not found or does not match the required template."
-            );
+            throw new Error("Header row not found or does not match the required template.");
         }
 
-        const headers = rowsAoA[headerRowIdx].map(h =>
-            String(h).trim()
-        );
+        const headers = rowsAoA[headerRowIdx].map((h) => String(h).trim());
         const dataAoA = rowsAoA.slice(headerRowIdx + 1);
 
         if (!dataAoA.length) {
             throw new Error("Please fill in all required information.");
         }
+
         // AoA → Object (raw data)
         const json = arraysToObjects(headers, dataAoA);
 
         // ================================
         // normalize key → lowercase + no space
-        // ================================
-        const normalizedRows = json.map(row => {
+        const normalizedRows = json.map((row) => {
             const out = {};
             for (const [k, v] of Object.entries(row)) {
-                const nk = String(k)
-                    .toLowerCase()
-                    .replace(/\s+/g, "");
+                const nk = String(k).toLowerCase().replace(/\s+/g, "");
                 out[nk] = v;
             }
             return out;
@@ -312,14 +352,14 @@ async function upload() {
             "email",
         ];
 
-        const invalidRowIndex = normalizedRows.findIndex(row =>
-            requiredFields.some(
-                key => !row[key] || String(row[key]).trim() === ""
-            )
+        const invalidRowIndex = normalizedRows.findIndex((row) =>
+            requiredFields.some((key) => !row[key] || String(row[key]).trim() === "")
         );
 
         if (invalidRowIndex !== -1) {
-            throw new Error("Please fill in all required information.");
+            throw new Error(
+                `Row ${invalidRowIndex + 2}: Please fill in all required fields.`
+            );
         }
 
         // ผ่าน validation แล้ว → map
@@ -334,9 +374,7 @@ async function upload() {
 
     } catch (e) {
         console.error(e);
-        error.value =
-            e?.message || "Unable to read file. Please check the information.";
-        // ถ้า error ไม่ต้องโชว์ตาราง
+        error.value = e?.message || "Unable to read file. Please check the information.";
         isTableVisible.value = false;
     } finally {
         uploading.value = false;
@@ -406,6 +444,52 @@ function readFile(f, mode = "array") {
         r.onerror = reject;
         mode === "text" ? r.readAsText(f) : r.readAsArrayBuffer(f);
     });
+}
+
+// Lightweight CSV parser → returns Array-of-Arrays
+function parseCsvToAoA(text) {
+    const rows = [];
+    if (!text) return rows;
+
+    const lines = text.split(/\r\n|\n|\r/);
+
+    for (const line of lines) {
+        // Skip empty lines
+        if (!line || String(line).trim() === "") continue;
+
+        const fields = [];
+        let cur = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+                // handle escaped quotes ""
+                if (inQuotes && line[i + 1] === '"') {
+                    cur += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch === ',' && !inQuotes) {
+                fields.push(cur);
+                cur = "";
+            } else {
+                cur += ch;
+            }
+        }
+        fields.push(cur);
+
+        // Normalize: convert undefined → "" and trim
+        const normalized = fields.map(f => (f == null ? "" : String(f)) );
+
+        // Skip fully-empty rows
+        if (normalized.every(v => v === "" || v == null || String(v).trim() === "")) continue;
+
+        rows.push(normalized);
+    }
+
+    return rows;
 }
 
 function normalizeKey(k) {
@@ -589,7 +673,7 @@ async function onCreate() {
 
             if (!resolved.ok) {
                 errorMessage.value =
-                    "Please make sure the Department, Team, and Position are entered correctly.";
+                    `Row ${index + 2}: Department / Team / Position is invalid.`;
                 showCannotCreate.value = true;
                 return;
             }
@@ -643,32 +727,44 @@ async function onCreate() {
         }
 
         // ======================================
-        // STEP 2: check duplicate
+        // STEP 2 + 3: check duplicate + insert (with progress)
         // ======================================
-        for (const { payload } of preparedRows) {
+
+        totalRows.value = preparedRows.length
+        progress.value = 0
+        showProgressModal.value = true
+
+        for (let i = 0; i < preparedRows.length; i++) {
+
+            const payload = preparedRows[i].payload
+
+            // 1️⃣ check duplicate
             const resp = await axios.post("/check-employee-duplicate", {
                 emp_id: payload.emp_id,
                 emp_phone: payload.emp_phone,
                 emp_email: payload.emp_email,
-            });
+            })
 
             if (resp.data?.duplicate) {
-                errorMessage.value =
-                    "Sorry, there are some data are already in the system.";
-                showCannotCreate.value = true;
-                return;
+                showProgressModal.value = false
+                errorMessage.value = `Row ${i + 2}: Employee ID / Email / Phone already exists.`
+                showCannotCreate.value = true
+                return
             }
+
+            // 2️⃣ insert
+            await axios.post("/save-employee", payload)
+
+            // 3️⃣ update progress
+            progress.value = Math.round(((i + 1) / totalRows.value) * 100)
         }
 
-        // ======================================
-        // STEP 3: insert
-        // ======================================
-        for (const { payload } of preparedRows) {
-            await axios.post("/save-employee", payload);
-        }
+        // delay เล็กน้อยให้เห็น 100%
+        await new Promise(resolve => setTimeout(resolve, 300))
 
-        showCreateSuccess.value = true;
-        displayRows.value = [];
+        showProgressModal.value = false
+        showCreateSuccess.value = true
+        displayRows.value = []
 
     } catch (e) {
         console.error(e);
