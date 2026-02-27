@@ -116,7 +116,7 @@
 
                 <section
                     v-else
-                    class="w-full max-w-[640px] md:px-10 text-gray-600 font-medium"
+                    class="w-full max-w-[640px] md:px-10 text-gray-800 font-medium"
                 >
                     คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
                 </section>
