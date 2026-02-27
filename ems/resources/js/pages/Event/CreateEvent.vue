@@ -160,7 +160,7 @@
                                     :class="(pickerStartHour || pickerStartMin) ? 'text-neutral-800' : 'text-red-300'"
                                     @click.stop="togglePanel('start')"
                                 >
-                                    {{ (pickerStartHour || '--') + ':' + (pickerStartMin || '--') }}
+                                {{ (!pickerStartHour && !pickerStartMin) ? 'Start' : (pickerStartHour || '--') + ':' + (pickerStartMin || '--') }}
                                 </button>
                                 <!-- Start panel -->
                                 <div
@@ -200,7 +200,7 @@
                                     :class="(pickerEndHour || pickerEndMin) ? 'text-neutral-800' : 'text-red-300'"
                                     @click.stop="togglePanel('end')"
                                 >
-                                    {{ (pickerEndHour || '--') + ':' + (pickerEndMin || '--') }}
+                                    {{ (!pickerEndHour && !pickerEndMin) ? 'End' : (pickerEndHour || '--') + ':' + (pickerEndMin || '--') }}
                                 </button>
                                 <!-- End panel -->
                                 <div
