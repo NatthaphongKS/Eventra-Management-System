@@ -125,47 +125,12 @@
                             class="block text-neutral-800 font-semibold text-[15px] mb-2"
                             >Date <span class="text-red-600">*</span></label
                         >
-                        <div class="relative group">
-                            <div
-                                :class="[
-                                    'absolute inset-0 flex items-center justify-between px-[20px] font-medium rounded-2xl pointer-events-none z-10 bg-white border transition',
-                                    eventDate
-                                        ? 'text-neutral-800'
-                                        : 'text-red-300',
-                                    errors.eventDate
-                                        ? 'border-red-500 bg-red-50'
-                                        : 'border-neutral-200 group-focus-within:border-rose-400',
-                                ]"
-                            >
-                                <span>{{
-                                    formattedDateDisplay || "dd/mm/yy"
-                                }}</span>
-                                <svg
-                                    class="w-6 h-6 text-red-700"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        fill="currentColor"
-                                        d="M8.5 14a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m0 3.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0M12 17.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0M12 17.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0"
-                                    />
-                                    <path
-                                        fill="currentColor"
-                                        fill-rule="evenodd"
-                                        d="M8 3.25a.75.75 0 0 1 .75.75v.75h6.5V4a.75.75 0 0 1 1.5 0v.758q.228.006.425.022c.38.03.736.098 1.073.27a2.75 2.75 0 0 1 1.202 1.202c.172.337.24.693.27 1.073c.03.365.03.81.03 1.345v7.66c0 .535 0 .98-.03 1.345c-.03.38-.098.736-.27 1.073a2.75 2.75 0 0 1-1.201 1.202c-.338.172-.694.24-1.074.27c-.365.03-.81.03-1.344.03H8.17c-.535 0-.98 0-1.345-.03c-.38-.03-.736-.098-1.073-.27a2.75 2.75 0 0 1-1.202-1.2c-.172-.338-.24-.694-.27-1.074c-.03-.365-.03-.81-.03-1.344V8.67c0-.535 0-.98.03-1.345c.03-.38.098-.736.27-1.073A2.75 2.75 0 0 1 5.752 5.05c.337-.172.693-.24 1.073-.27q.197-.016.425-.022V4A.75.75 0 0 1 8 3.25m10.25 7H5.75v6.05c0 .572 0 .957.025 1.252c.023.288.065.425.111.515c.12.236.311.427.547.547c.09.046.227.088.514.111c.296.024.68.025 1.253.025h7.6c.572 0 .957 0 1.252-.025c.288-.023.425-.065.515-.111a1.25 1.25 0 0 0 .547-.547c.046-.09.088-.227.111-.515c.024-.295.025-.68.025-1.252zM10.5 7a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
-                            </div>
-                            <input
-                                type="date"
-                                v-model="eventDate"
-                                :min="minDate"
-                                class="relative w-full h-[52px] rounded-2xl px-[20px] opacity-0 z-20 cursor-pointer"
-                                @click="$event.target.showPicker()"
-                                @change="errors.eventDate = false"
-                            />
-                        </div>
+                        <EventSingleDatePicker
+                            v-model="eventDate"
+                            :min="minDate"
+                            :has-error="errors.eventDate"
+                            @update:modelValue="errors.eventDate = false"
+                        />
                         <p
                             v-if="errors.eventDate"
                             class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium"
@@ -420,6 +385,9 @@
                         @change="onPick"
                     />
                 </div>
+                <p v-if="fileTypeError" class="mt-2 text-xs font-medium text-red-500">
+                    * Only accepted file types: pdf, txt, docx, jpeg, xlsx, png
+                </p>
             </div>
         </div>
 
@@ -571,6 +539,7 @@ import DataTable from "@/components/DataTable.vue";
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 import CancelButton from "@/components/Button/CancelButton.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
+import EventSingleDatePicker from "@/components/IndexEvent/EventSingleDatePicker.vue";
 
 export default {
     components: {
@@ -580,6 +549,7 @@ export default {
         EmployeeDropdown,
         CancelButton,
         ModalAlert,
+        EventSingleDatePicker,
     },
     data() {
         // ตัวแปรเก็บข้อมูลพื้นฐานของกิจกรรม
@@ -616,6 +586,7 @@ export default {
             selectCategory: [],
             filesNew: [],
             dragging: false,
+            fileTypeError: false,
             employees: [],
             loadingEmployees: false,
             search: "", // Filter value
@@ -920,9 +891,17 @@ export default {
         },
         // ฟังก์ชันจัดการการอัปโหลดไฟล์
         addFiles(files) {
+            const allowed = ['pdf', 'txt', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'xlsx', 'xls'];
+            let hasInvalid = false;
             files.forEach((f) => {
+                const ext = f.name.split('.').pop().toLowerCase();
+                if (!allowed.includes(ext)) {
+                    hasInvalid = true;
+                    return;
+                }
                 if (f.size <= 50 * 1024 * 1024) this.filesNew.push(f);
             });
+            this.fileTypeError = hasInvalid;
         },
         removeFile(idx) {
             this.filesNew.splice(idx, 1);
