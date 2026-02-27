@@ -1,47 +1,55 @@
+<!--
+/**
+* ชื่อไฟล์: CreateButton.vue
+* คำอธิบาย: Component ปุ่มสำหรับใช้บันทึกข้อมูล (Create/Save)
+* โดยแสดงปุ่มสีเขียวพร้อมไอคอนเครื่องหมาย + และรองรับการกำหนดขนาดปุ่ม
+* Input:
+*    - size (sm | md | lg) : กำหนดขนาดของปุ่ม
+*    - block (boolean) : กำหนดให้ปุ่มแสดงเต็มความกว้าง
+*    - slot : ข้อความที่แสดงบนปุ่ม (ค่า default = Save)
+* Output:
+*    - emit event 'click' กลับไปยัง Component แม่เมื่อมีการกดปุ่ม
+* ชื่อผู้เขียน/แก้ไข: Thanusin Leenarat
+* วันที่จัดทำ/แก้ไข: 26 กุมภาพันธ์ 2569
+*/
+-->
 <!-- src/components/Button/CreateButton.vue -->
 <template>
-  <header class="max-w-6xl mx-auto px-6 pt-6">
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-    />
-  </header>
+    <header class="max-w-6xl mx-auto px-6 pt-6">
+        <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    </header>
 
-  <button
-    type="button"
-    @click="$emit('click')"
-    class="inline-flex items-center justify-center gap-2.5 w-[140px] h-[45px] rounded-[20px] border border-neutral-200 bg-green-600 text-white
+    <button type="button" @click="$emit('click')" class="inline-flex items-center justify-center gap-2.5 w-[140px] h-[45px] rounded-[20px] border border-neutral-200 bg-green-600 text-white
            font-bold leading-none shadow-sm transition
            hover:border-black/20 hover:shadow-md
            active:translate-y-px active:shadow-inner
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35"
-    :class="[
-      size === 'sm' ? 'px-3.5 py-2 text-[13px]' :
-      size === 'lg' ? 'px-5 py-3 text-[15px]' :
-                       'px-7 py-2.5 text-[15px]',       // default md
-      block ? 'w-full justify-center' : ''
-    ]"
-  >
-    <span class="inline-flex" aria-hidden="true">
-      <!-- ใช้ Material Symbols ตามที่ให้มา -->
-      <span class="material-symbols-outlined text-[18px] leading-none">add</span>
-    </span>
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35" :class="[
+            size === 'sm' ? 'px-3.5 py-2 text-[13px]' :
+                size === 'lg' ? 'px-5 py-3 text-[15px]' :
+                    'px-7 py-2.5 text-[15px]',       // default md
+            block ? 'w-full justify-center' : ''
+        ]">
+        <span class="inline-flex" aria-hidden="true">
+            <!-- ใช้ Material Symbols ตามที่ให้มา -->
+            <!-- <span class="material-symbols-outlined text-[18px] leading-none">add</span> -->
+        </span>
 
-    <span class="inline-block">
-      <slot>Save</slot>
-    </span>
-  </button>
+        <span class="inline-block">
+            <slot>Save</slot>
+        </span>
+    </button>
 </template>
 
 <script setup lang="ts">
 defineEmits<{ (e: 'click'): void }>()
 
 withDefaults(defineProps<{
-  size?: 'sm' | 'md' | 'lg'
-  block?: boolean
+    size?: 'sm' | 'md' | 'lg'
+    block?: boolean
 }>(), {
-  size: 'md',
-  block: false
+    size: 'md',
+    block: false
 })
 </script>
 

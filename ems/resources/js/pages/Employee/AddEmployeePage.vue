@@ -1,3 +1,20 @@
+<!--
+/**
+* ชื่อไฟล์: AddEmployeePage.vue
+* คำอธิบาย: หน้า Add Employee สำหรับเพิ่มข้อมูลพนักงานใหม่เข้าสู่ระบบ
+* โดยประกอบด้วยฟอร์มกรอกข้อมูลพนักงาน การ validate ข้อมูล
+* การดึงข้อมูล meta (prefix, department, team, position, company)
+* และการส่งข้อมูลไปยัง backend ผ่าน API เพื่อบันทึกลงฐานข้อมูล
+* Input:
+*    - รับข้อมูล meta จาก API (/meta)
+*    - รับการกรอกข้อมูลจากผู้ใช้งานผ่านฟอร์ม
+* Output:
+*    - ส่งข้อมูลไปยัง API (/save-employee) เพื่อบันทึกข้อมูลพนักงาน
+*    - แสดง ModalAlert กรณี Success / Error / Confirm Leave
+* ชื่อผู้เขียน/แก้ไข: Thanusin Leenarat
+* วันที่จัดทำ/แก้ไข: 26 กุมภาพันธ์ 2569
+*/
+-->
 <template>
     <div>
         <!-- Header + ปุ่ม Import -->
@@ -27,6 +44,10 @@
                     <!-- Load meta error alert -->
                     <ModalAlert v-model:open="showLoadMetaError" type="error" title="Load Failed"
                         :message="loadMetaErrorMessage" okText="Close" @confirm="handleLoadMetaErrorClose" />
+
+                    <!-- Leave confirm alert -->
+                    <ModalAlert v-model:open="showLeaveConfirm" type="confirm" title="DO YOU WANT TO LEAVE THIS CHANGE?"
+                        message="Your changes will be lost." @confirm="confirmLeave" />
                 </div>
             </header>
 
@@ -213,6 +234,8 @@ const createErrorMessage = ref("");
 const showLoadMetaError = ref(false);
 const loadMetaErrorMessage = ref("");
 
+const showLeaveConfirm = ref(false);
+
 /* =========================================================
  * 5. Lifecycle
  * ======================================================= */
@@ -293,6 +316,13 @@ const employeeIdCombined = computed(() => {
  * ตรวจสอบสิทธิ์เป็น Employee หรือไม่
  */
 const isEmployeePermission = computed(() => form.permission === "employee");
+
+/**
+ * ตรวจสอบว่าฟอร์มมีการกรอกข้อมูลหรือไม่ (dirty check)
+ */
+const isFormDirty = computed(() => {
+    return Object.values(form).some(v => v !== "" && v !== null);
+});
 
 /* =========================================================
  * 7. Validation Logic
@@ -531,12 +561,15 @@ async function handleSubmit() {
     }
 }
 
-/**
+/*
  * cancel form
  */
 function onCancel() {
-    Object.keys(form).forEach((k) => (form[k] = ""));
-    Object.keys(errors).forEach((k) => delete errors[k]);
+    if (isFormDirty.value) {
+        showLeaveConfirm.value = true;
+        return;
+    }
+
     router.push("/employee");
 }
 
@@ -568,6 +601,18 @@ function onEmployeeNumberInput(e) {
         delete errors.employeeNumber;
     }
     form.employeeNumber = rawValue.replace(/\D/g, "").slice(0, 3);
+}
+
+/**
+ * ยืนยันการออกจากหน้าที่มีการกรอกข้อมูล
+ */
+function confirmLeave() {
+    showLeaveConfirm.value = false;
+
+    Object.keys(form).forEach((k) => (form[k] = ""));
+    Object.keys(errors).forEach((k) => delete errors[k]);
+
+    router.push("/employee");
 }
 </script>
 

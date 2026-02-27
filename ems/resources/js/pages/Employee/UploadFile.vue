@@ -37,25 +37,12 @@
                     @picked="() => { error = ''; isTableVisible = false; }"
                     @cleared="() => { error = ''; isTableVisible = false; displayRows = []; }" />
 
-                <div class="mt-4 flex justify-end">
-                    <div :class="[
-                        !file || !!error || uploading
-                            ? 'opacity-50 cursor-not-allowed'
-                            : 'cursor-pointer',
-                    ]" :style="!file || !!error || uploading
-                        ? 'pointer-events: none;'
-                        : ''
-                        " :title="!file || !!error || uploading
-                            ? 'Please upload or drop file first'
-                            : ''
-                            ">
-                        <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
-                    </div>
-                </div>
-
                 <p v-if="error" class="text-sm text-red-500 mt-2">
                     {{ error }}
                 </p>
+                <div v-if="isTableVisible" class="mt-4 flex justify-end">
+                    <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
+                </div>
             </div>
         </div>
 
@@ -63,67 +50,171 @@
 
             <div class="mt-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="overflow-x-auto lg:overflow-x-visible">
-                    <DataTable :loading="uploading || creating" :rows="paged" :columns="tableColumns" :page="page"
-                        :page-size="pageSize" :total-items="totalItems" :page-size-options="[10, 25, 50, 100]"
-                        :show-row-number="false" row-key="__rowKey" @update:page="(val) => (page = val)"
-                        @update:pageSize="(val) => (pageSize = val)">
-                        <template #header-index> # </template>
+                    <div v-if="validationErrors.length" class="bg-red-100 text-red-600 rounded-xl p-4 mb-6 text-sm">
+                        <p>‼ There are {{ validationErrors.length }} invalid data.</p>
 
-                        <template #cell-index="{ row }">
-                            {{ row.__displayIndex }}
-                        </template>
+                        <ul class="mt-2 space-y-1">
+                            <li v-for="(err, i) in validationErrors" :key="i">
+                                {{ err }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-2xl overflow-hidden">
+                        <DataTable class="text-sm" :loading="uploading || creating" :rows="paged"
+                            :columns="tableColumns" :page="page" :page-size="pageSize" :total-items="totalItems"
+                            :page-size-options="[10, 25, 50, 100]" :show-row-number="false" row-key="__rowKey"
+                            @update:page="(val) => (page = val)" @update:pageSize="(val) => (pageSize = val)">
 
-                        <template #empty> No Data Found </template>
+                            <!-- Header index -->
+                            <template #header-index>
+                                <span class="font-semibold text-gray-600">#</span>
+                            </template>
 
-                        <template #footer-info="{ from, to, total }">
-                            <span>แสดง</span>
+                            <!-- Row number -->
+                            <template #cell-index="{ row }">
+                                <div class="px-4 py-3 text-gray-500">
+                                    {{ row.__displayIndex }}
+                                </div>
+                            </template>
 
-                            <div class="relative inline-block mx-2">
-                                <select
-                                    class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
-                                    :value="pageSize" @change="
-                                        (e) => {
-                                            pageSize = Number(e.target.value);
-                                            page = 1;
-                                        }
-                                    ">
-                                    <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
-                                        {{ opt }}
-                                    </option>
-                                </select>
-                                <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M6 9l6 6 6-6" />
-                                </svg>
-                            </div>
+                            <!-- EMPLOYEE ID -->
+                            <template #cell-displayEmployeeId="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('displayEmployeeId')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.displayEmployeeId }}
+                                </div>
+                            </template>
 
-                            <span class="text-sm">
-                                {{ from }}-{{ to }} จาก {{ total }} รายการ
-                            </span>
-                        </template>
-                    </DataTable>
+                            <!-- Name -->
+                            <template #cell-name="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    (
+                                        row.__errorFields?.includes('prefix') ||
+                                        row.__errorFields?.includes('firstName') ||
+                                        row.__errorFields?.includes('lastName')
+                                    )
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.name }}
+                                </div>
+                            </template>
+
+                            <!-- Nickname -->
+                            <template #cell-nickname="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('nickname')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.nickname }}
+                                </div>
+                            </template>
+
+                            <!-- Phone -->
+                            <template #cell-phone="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('phone')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.phone }}
+                                </div>
+                            </template>
+
+                            <!-- Department -->
+                            <template #cell-department="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('department')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.department }}
+                                </div>
+                            </template>
+
+                            <!-- Team -->
+                            <template #cell-team="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('team')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.team }}
+                                </div>
+                            </template>
+
+                            <!-- Position -->
+                            <template #cell-position="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('position')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.position }}
+                                </div>
+                            </template>
+
+                            <!-- Date -->
+                            <template #cell-dateAdd="{ row }">
+                                <div class="px-4 py-3 text-center">
+                                    {{ row.dateAdd }}
+                                </div>
+                            </template>
+
+                            <!-- Empty -->
+                            <template #empty>
+                                <div class="py-10 text-center text-gray-400">
+                                    No Data Found
+                                </div>
+                            </template>
+
+                        </DataTable>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="pb-8" v-if="isTableVisible">
-        <div
-            class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex justify-start">
+    <div class="mt-12 pt-6 pb-8">
+        <div class="flex items-end">
+
+            <!-- Cancel -->
+            <div class="mr-auto ml-40">
                 <CancelButton @click="onCancel" />
             </div>
 
-            <div class="flex justify-end" :class="canCreate
-                ? 'cursor-pointer'
-                : 'opacity-50 cursor-not-allowed'
-                " :style="canCreate ? '' : 'pointer-events: none;'" :title="canCreate
-                    ? ''
-                    : 'Please upload file and click Generate Data first'
-                    ">
-                <CreateButton :disabled="!canCreate" @click="onCreate" />
+            <!-- ฝั่งขวา -->
+            <div class="flex items-center gap-4 mr-40">
+
+                <!-- Generate -->
+                <div v-if="!isTableVisible" :class="[
+                    !file || !!error || uploading
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'cursor-pointer',
+                ]" :style="!file || !!error || uploading ? 'pointer-events: none;' : ''">
+                    <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
+                </div>
+
+                <!-- Save -->
+                <div v-if="isTableVisible" :class="canCreate
+                    ? 'cursor-pointer'
+                    : 'opacity-50 cursor-not-allowed'" :style="canCreate ? '' : 'pointer-events: none;'">
+                    <CreateButton :disabled="!canCreate" @click="onCreate" />
+                </div>
 
             </div>
+
         </div>
     </div>
 
@@ -345,27 +436,76 @@ async function upload() {
             "email",
         ];
 
-        const invalidRowIndex = normalizedRows.findIndex(row =>
-            requiredFields.some(
-                key => !row[key] || String(row[key]).trim() === ""
-            )
-        );
+        // ผ่าน validation แล้ว → map
+        const mapped = mapRows(json)
 
-        if (invalidRowIndex !== -1) {
-            throw new Error(
-                `Row ${invalidRowIndex + 2}: Please fill in all required fields.`
-            );
+        // ================================
+        // VALIDATION LOGIC
+        // ================================
+        validationErrors.value = []
+        const seenIds = new Set()
+
+        for (let i = 0; i < mapped.length; i++) {
+            const row = mapped[i]
+            const rowNumber = i + 2
+
+            row.__errorFields = []
+
+            const requiredFields = [
+                "company",
+                "employeeId",
+                "prefix",
+                "firstName",
+                "lastName",
+                "nickname",
+                "department",
+                "team",
+                "position",
+                "phone",
+                "email",
+            ]
+
+            requiredFields.forEach(field => {
+                if (!row[field] || String(row[field]).trim() === "") {
+                    validationErrors.value.push(
+                        `row ${rowNumber} ${field} is missing`
+                    )
+                    row.__errorFields.push(field)
+                }
+            })
+
+            // duplicate in file
+            if (seenIds.has(row.displayEmployeeId)) {
+                validationErrors.value.push(
+                    `row ${rowNumber} employee id is duplicate in file`
+                )
+                row.__errorFields.push("displayEmployeeId")
+            } else {
+                seenIds.add(row.displayEmployeeId)
+            }
+
+            // duplicate in database
+            const resp = await axios.post("/check-employee-duplicate", {
+                emp_id: row.displayEmployeeId,
+                emp_phone: row.phone,
+                emp_email: row.email,
+            })
+
+            if (resp.data?.duplicate) {
+                validationErrors.value.push(
+                    `row ${rowNumber} employee already exists`
+                )
+                row.__errorFields.push("displayEmployeeId")
+            }
         }
 
-        // ผ่าน validation แล้ว → map
-        const mapped = mapRows(json);
+        // set rows เสมอ
+        displayRows.value = mapped
+        page.value = 1
+        error.value = ""
 
-        displayRows.value = mapped;
-        page.value = 1;
-        error.value = "";
-
-        // แก้ไข: โหลดเสร็จแล้วค่อยโชว์ตาราง
-        isTableVisible.value = true;
+        // แสดงตาราง
+        isTableVisible.value = true
 
     } catch (e) {
         console.error(e);
@@ -586,6 +726,7 @@ function resolveMasterForRow(row) {
 const errorMessage = ref("");
 const showCreateSuccess = ref(false);
 const showCannotCreate = ref(false);
+const validationErrors = ref([])
 
 // ======================================================
 function resolveCompanyId(companyCode) {
@@ -1051,16 +1192,26 @@ function onCancel() {
 // ======================================================
 const tableColumns = [
     { key: "index", label: "#", class: "text-left w-[72px] whitespace-nowrap" },
-    { key: "displayEmployeeId", label: "Employee ID", class: "text-left w-[180px]" },
+    {
+        key: "displayEmployeeId",
+        label: "Employee ID",
+        class: "text-left w-[180px]"
+    },
     { key: "name", label: "Name", class: "text-left w-[240px]" },
-    { key: "nickname", label: "Nickname", class: "text-left w-[120px]" },
+
+    {
+        key: "nickname",
+        label: "Nickname",
+        class: "text-left w-[120px]"
+    },
+
     { key: "phone", label: "Phone", class: "text-left w-[140px]" },
     { key: "department", label: "Department", class: "text-left w-[180px]" },
     { key: "team", label: "Team", class: "text-left w-[160px]" },
     { key: "position", label: "Position", class: "text-left w-[180px]" },
-    { key: "email", label: "Email", class: "text-left w-[220px]" },
+    // { key: "email", label: "Email", class: "text-left w-[220px]" },
     { key: "dateAdd", label: "Date Add (D/M/Y)", class: "text-center w-[140px]" },
-];
+]
 
 // ======================================================
 // Enable / Disable Create button
@@ -1068,6 +1219,12 @@ const tableColumns = [
 const canCreate = computed(() => {
     return displayRows.value.length > 0 &&
         !creating.value &&
-        !uploading.value;
-});
+        !uploading.value &&
+        validationErrors.value.length === 0
+})
+
+const hasValidationError = computed(() =>
+    validationErrors.value.length > 0
+)
+
 </script>
