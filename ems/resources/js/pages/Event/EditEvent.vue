@@ -384,6 +384,8 @@ export default {
                 onConfirm: null,
                 onCancel: null,
             },
+            //เก็บค่าเดิม
+            initialForm: {},
         };
     },
     methods: {
@@ -463,6 +465,41 @@ export default {
                 console.error(err)
                 this.eventTitle = '(โหลดข้อมูลไม่สำเร็จ)'
             }
+            //ส่วนเก็บค่าเดิมที่ queryมาจาก DB
+            this.initialForm = {
+                eventTitle: this.eventTitle,
+                eventCategoryId: this.eventCategoryId,
+                eventDescription: this.eventDescription,
+                eventDate: this.eventDate,
+                eventTimeStart: this.eventTimeStart,
+                eventTimeEnd: this.eventTimeEnd,
+                eventLocation: this.eventLocation,
+                selectedIds: new Set([...this.selectedIds]),
+                filesExisting: JSON.parse(JSON.stringify(this.filesExisting)),
+                filesNew: [...this.filesNew],
+            };
+        },
+        //ส่วนเช็คว่าค่าเดิมที่เก็บกับค่าที่อยู่ในช่องกรอกเหมือนกันไหม ถ้าไม่เหมือน return true แสดง popup
+        isFormChanged() {
+            if (this.eventTitle !== this.initialForm.eventTitle) return true;
+            if (this.eventCategoryId !== this.initialForm.eventCategoryId) return true;
+            if (this.eventDescription !== this.initialForm.eventDescription) return true;
+            if (this.eventDate !== this.initialForm.eventDate) return true;
+            if (this.eventTimeStart !== this.initialForm.eventTimeStart) return true;
+            if (this.eventTimeEnd !== this.initialForm.eventTimeEnd) return true;
+            if (this.eventLocation !== this.initialForm.eventLocation) return true;
+
+            // Guest list
+            if (this.selectedIds.size !== this.initialForm.selectedIds.size) return true;
+            for (let id of this.selectedIds) {
+                if (!this.initialForm.selectedIds.has(id)) return true;
+            }
+
+            // Files
+            if (this.filesExisting.length !== this.initialForm.filesExisting.length) return true;
+            if (this.filesNew.length !== this.initialForm.filesNew.length) return true;
+
+            return false;
         },
         toOptions(arr) {
             const uniq = [...new Set(arr.filter(Boolean))].sort();
@@ -778,10 +815,30 @@ export default {
             }
         },
         onCancel() {
-            if (this.saving || this.filesNew.length) {
-                if (!confirm('ยกเลิกและละทิ้งการแก้ไขทั้งหมด?')) return
+
+            // ถ้าไม่มีการแก้ไข → กลับหน้าเดิมทันที
+            if (!this.isFormChanged()) {
+                this.$router.back();
+                return;
             }
-            this.$router?.back?.()  // หรือ this.$router.push('/events')
+
+            // ถ้ามีการแก้ไข โชว์ Alert Confirm DO YOU WANT TO LEAVE THIS CHANGE?
+            this.alert = {
+                open: true,
+                type: 'confirm',
+                title: 'DO YOU WANT TO LEAVE THIS CHANGE?',
+                message: 'Your changes will be lost.',
+                showCancel: true,
+                okText: 'Ok',
+                cancelText: 'Cancel',
+                onConfirm: () => {
+                    this.alert.open = false;
+                    this.$router.back();
+                },
+                onCancel: () => {
+                    this.alert.open = false;
+                }
+            };
         },
         openAlert(cfg = {}) {
             // รีเซ็ต handler เก่า
