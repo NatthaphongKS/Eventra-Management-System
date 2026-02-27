@@ -238,7 +238,15 @@ const toggle = (key) => {
 
 const logout = async () => {
   try {
-    await axios.post("/logout");
+    const { data } = await axios.post("/logout");
+
+    // อัปเดต CSRF token ใหม่เพื่อป้องกัน 419 mismatch ตอน login ครั้งถัดไป
+    if (data.csrf_token) {
+      axios.defaults.headers.common['X-CSRF-TOKEN'] = data.csrf_token;
+      const meta = document.querySelector('meta[name="csrf-token"]');
+      if (meta) meta.setAttribute('content', data.csrf_token);
+    }
+
     router.push("/login");
   } catch (e) {
     console.error("Logout failed", e);
