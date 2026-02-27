@@ -181,65 +181,93 @@
                         >
                         <div
                             :class="[
-                                'flex h-[52px] w-full items-center rounded-2xl border px-2 shadow-sm bg-white transition',
+                                'flex h-[52px] w-full items-center rounded-2xl border px-3 shadow-sm bg-white transition',
                                 errors.eventTime
                                     ? 'border-red-500 bg-red-50'
                                     : 'border-neutral-200 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400',
                             ]"
                         >
-                            <div
-                                class="relative flex-1 flex items-center justify-center h-full overflow-hidden"
-                            >
-                                <span
-                                    v-if="!eventTimeStart"
-                                    class="absolute pointer-events-none text-red-300 text-[15px] font-medium z-10"
-                                    >Start</span
+                            <!-- Start trigger -->
+                            <div class="relative flex-1 flex items-center justify-center">
+                                <button
+                                    type="button"
+                                    class="tp-trigger"
+                                    :class="(pickerStartHour || pickerStartMin) ? 'text-neutral-800' : 'text-red-300'"
+                                    @click.stop="togglePanel('start')"
                                 >
-                                <input
-                                    type="time"
-                                    v-model="eventTimeStart"
-                                    step="300"
-                                    :class="[
-                                        'time-input w-full bg-transparent text-[15px] font-medium outline-none text-center cursor-pointer caret-transparent z-20',
-                                        eventTimeStart
-                                            ? 'text-neutral-800'
-                                            : 'text-transparent',
-                                    ]"
-                                    @click="$event.target.showPicker()"
-                                    @change="errors.eventTime = false"
-                                    @keydown.prevent
-                                />
-                            </div>
-                            <span
-                                class="flex-none text-[16px] font-bold text-red-300 px-1"
-                                >:</span
-                            >
-                            <div
-                                class="relative flex-1 flex items-center justify-center h-full overflow-hidden"
-                            >
-                                <span
-                                    v-if="!eventTimeEnd"
-                                    class="absolute pointer-events-none text-red-300 text-[15px] font-medium z-10"
-                                    >End</span
+                                    {{ (pickerStartHour || '--') + ':' + (pickerStartMin || '--') }}
+                                </button>
+                                <!-- Start panel -->
+                                <div
+                                    v-if="showStartPanel"
+                                    class="tp-panel"
+                                    @pointerdown.stop
+                                    @click.stop
                                 >
-                                <input
-                                    type="time"
-                                    v-model="eventTimeEnd"
-                                    step="300"
-                                    :class="[
-                                        'time-input w-full bg-transparent text-[15px] font-medium outline-none text-center cursor-pointer caret-transparent z-20',
-                                        eventTimeEnd
-                                            ? 'text-neutral-800'
-                                            : 'text-transparent',
-                                    ]"
-                                    @click="$event.target.showPicker()"
-                                    @change="errors.eventTime = false"
-                                    @keydown.prevent
-                                />
+                                    <div class="tp-col" ref="startHourCol">
+                                        <div class="tp-col-header">Hour</div>
+                                        <div
+                                            v-for="h in hourOptions" :key="'sh'+h"
+                                            :class="['tp-item', { 'tp-active': pickerStartHour === h }]"
+                                            :ref="pickerStartHour === h ? 'startHourActive' : undefined"
+                                            @pointerdown.stop="selectStartHour(h)"
+                                        >{{ h }}</div>
+                                    </div>
+                                    <div class="tp-col" ref="startMinCol">
+                                        <div class="tp-col-header">Min</div>
+                                        <div
+                                            v-for="m in minuteOptions" :key="'sm'+m"
+                                            :class="['tp-item', { 'tp-active': pickerStartMin === m }]"
+                                            :ref="pickerStartMin === m ? 'startMinActive' : undefined"
+                                            @pointerdown.stop="selectStartMin(m)"
+                                        >{{ m }}</div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <span class="flex-none text-[16px] font-bold text-red-300 px-1">-</span>
+
+                            <!-- End trigger -->
+                            <div class="relative flex-1 flex items-center justify-center">
+                                <button
+                                    type="button"
+                                    class="tp-trigger"
+                                    :class="(pickerEndHour || pickerEndMin) ? 'text-neutral-800' : 'text-red-300'"
+                                    @click.stop="togglePanel('end')"
+                                >
+                                    {{ (pickerEndHour || '--') + ':' + (pickerEndMin || '--') }}
+                                </button>
+                                <!-- End panel -->
+                                <div
+                                    v-if="showEndPanel"
+                                    class="tp-panel"
+                                    @pointerdown.stop
+                                    @click.stop
+                                >
+                                    <div class="tp-col" ref="endHourCol">
+                                        <div class="tp-col-header">Hour</div>
+                                        <div
+                                            v-for="h in hourOptions" :key="'eh'+h"
+                                            :class="['tp-item', { 'tp-active': pickerEndHour === h }]"
+                                            :ref="pickerEndHour === h ? 'endHourActive' : undefined"
+                                            @pointerdown.stop="selectEndHour(h)"
+                                        >{{ h }}</div>
+                                    </div>
+                                    <div class="tp-col" ref="endMinCol">
+                                        <div class="tp-col-header">Min</div>
+                                        <div
+                                            v-for="m in minuteOptions" :key="'em'+m"
+                                            :class="['tp-item', { 'tp-active': pickerEndMin === m }]"
+                                            :ref="pickerEndMin === m ? 'endMinActive' : undefined"
+                                            @pointerdown.stop="selectEndMin(m)"
+                                        >{{ m }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <Icon
                                 icon="mdi:clock-outline"
-                                class="flex-none w-5 h-5 text-red-700 mr-2 pointer-events-none"
+                                class="flex-none w-5 h-5 text-red-700 mr-1 pointer-events-none"
                             />
                         </div>
                         <p
@@ -567,6 +595,12 @@ export default {
             eventDate: "",
             eventTimeStart: "",
             eventTimeEnd: "",
+            showStartPanel: false,
+            showEndPanel: false,
+            pickerStartHour: "",
+            pickerStartMin: "",
+            pickerEndHour: "",
+            pickerEndMin: "",
             eventDurationDisplay: "",
             eventDurationMinutes: 0,
             eventLocation: "",
@@ -603,6 +637,12 @@ export default {
         };
     },
     computed: {
+        hourOptions() {
+            return Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+        },
+        minuteOptions() {
+            return Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+        },
         formattedDateDisplay() {
             if (!this.eventDate) return "";
             const [y, m, d] = this.eventDate.split("-");
@@ -700,6 +740,64 @@ export default {
         performSearch() {
             this.search = this.searchRaw;
             this.page = 1;
+        },
+        togglePanel(which) {
+            if (which === 'start') {
+                this.showEndPanel = false;
+                this.showStartPanel = !this.showStartPanel;
+                if (this.showStartPanel) this.$nextTick(() => this.scrollPanelToActive('start'));
+            } else {
+                this.showStartPanel = false;
+                this.showEndPanel = !this.showEndPanel;
+                if (this.showEndPanel) this.$nextTick(() => this.scrollPanelToActive('end'));
+            }
+        },
+        scrollPanelToActive(which) {
+            const scroll = (refArr, container) => {
+                const el = Array.isArray(refArr) ? refArr[0]?.$el || refArr[0] : refArr?.$el || refArr;
+                if (el && container) container.scrollTop = el.offsetTop - container.offsetTop - 40;
+            };
+            if (which === 'start') {
+                scroll(this.$refs.startHourActive, this.$refs.startHourCol);
+                scroll(this.$refs.startMinActive, this.$refs.startMinCol);
+            } else {
+                scroll(this.$refs.endHourActive, this.$refs.endHourCol);
+                scroll(this.$refs.endMinActive, this.$refs.endMinCol);
+            }
+        },
+        selectStartHour(h) {
+            this.pickerStartHour = h;
+            this.syncStartTime();
+        },
+        selectStartMin(m) {
+            this.pickerStartMin = m;
+            this.syncStartTime();
+        },
+        syncStartTime() {
+            if (this.pickerStartHour !== '' && this.pickerStartMin !== '') {
+                this.eventTimeStart = `${this.pickerStartHour}:${this.pickerStartMin}`;
+                this.errors.eventTime = false;
+                this.calDuration();
+            }
+        },
+        selectEndHour(h) {
+            this.pickerEndHour = h;
+            this.syncEndTime();
+        },
+        selectEndMin(m) {
+            this.pickerEndMin = m;
+            this.syncEndTime();
+        },
+        syncEndTime() {
+            if (this.pickerEndHour !== '' && this.pickerEndMin !== '') {
+                this.eventTimeEnd = `${this.pickerEndHour}:${this.pickerEndMin}`;
+                this.errors.eventTime = false;
+                this.calDuration();
+            }
+        },
+        closePickers() {
+            this.showStartPanel = false;
+            this.showEndPanel = false;
         },
         // ฟังก์ชันสำหรับคำนวณระยะเวลาของกิจกรรม (Duration)
         calDuration() {
@@ -838,33 +936,86 @@ export default {
         onCancel() {
             this.$router.back();
         },
-        onRootPointer() {},
+        onRootPointer(e) {
+            if (e.target.closest('.tp-panel') || e.target.closest('.tp-trigger')) return;
+            this.closePickers();
+        },
     },
 };
 </script>
 
 <style scoped>
-input[type="time"]::-webkit-datetime-edit,
-input[type="time"]::-webkit-datetime-edit-fields-wrapper,
-input[type="time"]::-webkit-datetime-edit-hour-field,
-input[type="time"]::-webkit-datetime-edit-minute-field,
-input[type="time"]::-webkit-datetime-edit-text {
-    color: inherit;
-    padding: 0;
-}
-input[type="time"]::-webkit-datetime-edit-hour-field:focus,
-input[type="time"]::-webkit-datetime-edit-minute-field:focus {
-    background-color: transparent !important;
-    color: inherit;
-    outline: none;
-}
-input[type="time"]::selection {
+/* Time trigger button */
+.tp-trigger {
+    width: 100%;
+    height: 44px;
+    font-size: 15px;
+    font-weight: 600;
     background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    outline: none;
+    text-align: center;
 }
-input[type="time"]::-webkit-calendar-picker-indicator {
-    display: none;
-    -webkit-appearance: none;
+.tp-trigger:hover {
+    background: #fff1f2;
 }
+/* Two-column panel */
+.tp-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.14);
+    overflow: hidden;
+    width: 160px;
+}
+.tp-col {
+    flex: 1;
+    max-height: 220px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+.tp-col + .tp-col {
+    border-left: 1px solid #f0f0f0;
+}
+.tp-col-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ca3af;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    z-index: 1;
+}
+.tp-item {
+    text-align: center;
+    padding: 6px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #525252;
+    cursor: pointer;
+    transition: background .1s;
+}
+.tp-item:hover { background: #fff1f2; }
+.tp-active {
+    background: #be123c !important;
+    color: white !important;
+    font-weight: 600;
+}
+.tp-col::-webkit-scrollbar { width: 4px; }
+.tp-col::-webkit-scrollbar-thumb { background: #e5e5e5; border-radius: 4px; }
+.tp-col::-webkit-scrollbar-track { background: transparent; }
+
 input[type="date"]::-webkit-calendar-picker-indicator {
     position: absolute;
     left: 0;
