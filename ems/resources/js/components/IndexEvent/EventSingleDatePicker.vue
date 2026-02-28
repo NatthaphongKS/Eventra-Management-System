@@ -1,3 +1,11 @@
+<!--
+    ชื่อไฟล์: EventSingleDatePicker.vue
+    คำอธิบาย: Dropdown calendar สำหรับเลือกวันที่เดียว รับค่า/ส่งค่า YYYY-MM-DD ผ่าน v-model
+    Input: modelValue (String), min (String), hasError (Boolean)
+    Output: update:modelValue (String YYYY-MM-DD)
+    ชื่อผู้เขียน/แก้ไข: Yothin S.
+    วันที่จัดทำ/แก้ไข: 28/02/2026
+-->
 <template>
     <div class="relative" ref="root">
         <!-- Display trigger -->
