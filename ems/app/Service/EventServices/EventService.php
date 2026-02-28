@@ -9,12 +9,15 @@
 
 namespace App\Service\EventServices;
 
+use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\Employee;
 use App\Models\Category;
 use App\Models\Position;
 use App\Models\Department;
 use App\Models\Team;
+use App\Models\Connect;
+use App\Models\File;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -41,32 +44,38 @@ class EventService
     ============================================================ */
     public function connectList($id)
     {
-        $participants = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
-            ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
-            ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
-            ->where('ems_connect.con_event_id', $id)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
-            ->select([
-                'ems_employees.id',
-                'ems_employees.emp_id',
-                'ems_employees.emp_prefix',
-                'ems_employees.emp_firstname',
-                'ems_employees.emp_lastname',
-                'ems_employees.emp_nickname',
-                'ems_employees.emp_phone',
-                'ems_employees.emp_email',
-                'ems_department.dpm_name as department',
-                'ems_team.tm_name as team',
-                'ems_position.pst_name as position',
-                'ems_connect.con_answer as status',
-                'ems_connect.con_checkin_status',
-                'ems_connect.con_reason'
-            ])
-            ->orderBy('ems_employees.emp_id')
+        // 1. ดึงข้อมูลผ่าน Model พร้อม Load ความสัมพันธ์
+        $connections = Connect::with(['employee.department', 'employee.team', 'employee.position'])
+            ->where('con_event_id', $id)
+            ->where('con_delete_status', 'active')
+            ->where('con_answer', '!=', 'not_invite')
             ->get();
+
+        // 2. จัดรูปแบบข้อมูล + เรียงลำดับ
+        $participants = $connections
+            ->sortBy(fn($conn) => $conn->employee?->emp_id) // เรียงลำดับตาม emp_id
+            ->values() // รีเซ็ต key ของ array หลัง sort
+            ->map(function ($connect) {
+                $emp = $connect->employee;
+
+                // คืนค่าเป็น Object
+                return (object) [
+                    'id' => $emp?->id,
+                    'emp_id' => $emp?->emp_id,
+                    'emp_prefix' => $emp?->emp_prefix,
+                    'emp_firstname' => $emp?->emp_firstname,
+                    'emp_lastname' => $emp?->emp_lastname,
+                    'emp_nickname' => $emp?->emp_nickname,
+                    'emp_phone' => $emp?->emp_phone,
+                    'emp_email' => $emp?->emp_email,
+                    'department' => $emp?->department?->dpm_name,
+                    'team' => $emp?->team?->tm_name,
+                    'position' => $emp?->position?->pst_name,
+                    'status' => $connect->con_answer,
+                    'con_checkin_status' => $connect->con_checkin_status,
+                    'con_reason' => $connect->con_reason
+                ];
+            });
 
         return [
             'employee_ids' => $participants->pluck('id')->toArray(),
@@ -80,45 +89,37 @@ class EventService
     public function show($id)
     {
         $event = Event::with('category')->find($id);
-        if (!$event)
-            return null;
 
-        $files = DB::table('ems_event_files')
-            ->where('file_event_id', $event->id)
+        if (!$event) {
+            return null;
+        }
+
+        // ใช้ Model File แทน DB::table
+        $event->files = File::where('file_event_id', $event->id)
             ->orderBy('id', 'asc')
             ->get()
-            ->map(function ($f) {
-                $f->url = asset('storage/' . $f->file_path);
-                return $f;
+            ->map(function ($file) {
+                $file->url = asset('storage/' . $file->file_path);
+                return $file;
             });
 
-        $event->files = $files;
         return $event;
     }
 
     /* ============================================================
-       4) ดึงข้อมูลตอนกดปุ่ม Edit page
-    ============================================================ */
+    4) ดึงข้อมูลตอนกดปุ่ม Edit page
+ ============================================================ */
     public function editPages($id)
     {
-        $event = Event::join('ems_categories', 'ems_event.evn_category_id', '=', 'ems_categories.id')
-            ->where('ems_event.id', $id)
-            ->select([
-                'ems_event.id',
-                'ems_event.evn_title',
-                'ems_event.evn_description',
-                'ems_event.evn_date',
-                'ems_event.evn_timestart',
-                'ems_event.evn_timeend',
-                'ems_event.evn_location',
-                'ems_event.evn_duration',
-                'ems_event.evn_category_id',
-                'ems_categories.cat_name'
-            ])
-            ->firstOrFail();
+        // 1. ดึง Event พร้อม Category ด้วย Eager Loading (แทนการใช้ Join)
+        $event = Event::with('category')->findOrFail($id);
 
-        $files = DB::table('ems_event_files')
-            ->where('file_event_id', $event->id)
+        // *ทริค: เนื่องจากโค้ดเดิมตอน Join เราได้ฟิลด์ 'cat_name' มาอยู่ใน Event เลย
+        // ถ้าฝั่ง Frontend (Vue/React/Blade) เรียกใช้ event.cat_name เราสามารถยัดค่ากลับไปแบบนี้ได้ครับ
+        $event->cat_name = $event->category?->cat_name;
+
+        // 2. ดึงข้อมูลไฟล์ด้วย Model File
+        $files = File::where('file_event_id', $event->id)
             ->orderBy('id', 'asc')
             ->get()
             ->map(function ($f) {
@@ -126,8 +127,8 @@ class EventService
                 return $f;
             });
 
-        $guestIds = DB::table('ems_connect')
-            ->where('con_event_id', $event->id)
+        // 3. ดึง Guest IDs ด้วย Model Connect
+        $guestIds = Connect::where('con_event_id', $event->id)
             ->where('con_delete_status', 'active')
             ->pluck('con_employee_id');
 
@@ -135,13 +136,13 @@ class EventService
     }
 
     /* ============================================================
-       5) สร้าง Event ใหม่
-    ============================================================ */
-    public function store($request)
+   5) สร้าง Event ใหม่
+============================================================ */
+    public function store(Request $request)
     {
         return DB::transaction(function () use ($request) {
 
-            // Create Event
+            // 1. Create Event
             $event = Event::create([
                 'evn_title' => $request->event_title,
                 'evn_category_id' => $request->event_category_id,
@@ -156,11 +157,13 @@ class EventService
                 'evn_status' => 'upcoming',
             ]);
 
-            // Files
+            // 2. Files
             $saved = [];
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
+
                     $path = $file->store("events/{$event->id}", 'public');
+
                     $saved[] = $event->files()->create([
                         'file_name' => $file->getClientOriginalName(),
                         'file_path' => $path,
@@ -171,9 +174,10 @@ class EventService
                 }
             }
 
-            // Employees
+            // 3. Employees & Send Email (รวบเงื่อนไขไว้ด้วยกัน)
             $employees = $request->employee_ids ?? [];
             if (!empty($employees)) {
+                // 3.1 บันทึกลงฐานข้อมูล
                 $event->connects()->createMany(
                     collect($employees)->map(fn($id) => [
                         'con_employee_id' => $id,
@@ -181,10 +185,8 @@ class EventService
                         'con_delete_status' => 'active'
                     ])->toArray()
                 );
-            }
 
-            // Send Email
-            if (!empty($employees)) {
+                // 3.2 ส่ง Email
                 $empList = Employee::whereIn('id', $employees)->get();
                 foreach ($empList as $emp) {
                     if ($emp->emp_email) {
@@ -203,10 +205,11 @@ class EventService
     }
 
     /* ============================================================
-       6) อัปเดต Event (ส่วนใหญ่ย้ายตรงจาก controller)
+   6) อัปเดต Event
     ============================================================ */
-    public function update($request)
+    public function update(Request $request)
     {
+        //ถ้าพังจะ rollback
         return DB::transaction(function () use ($request) {
 
             $event = Event::lockForUpdate()->findOrFail($request->id);
@@ -236,40 +239,39 @@ class EventService
             /* ---------------- Files Delete ---------------- */
             if ($request->filled('delete_file_ids')) {
                 $delIds = array_unique($request->delete_file_ids);
-                $files = DB::table('ems_event_files')
-                    ->where('file_event_id', $event->id)
+
+                // ใช้ Model File ค้นหาไฟล์ที่จะลบ
+                $filesToDelete = File::where('file_event_id', $event->id)
                     ->whereIn('id', $delIds)
                     ->get();
 
-                foreach ($files as $f) {
+                foreach ($filesToDelete as $f) {
                     Storage::disk('public')->delete($f->file_path);
                 }
 
-                DB::table('ems_event_files')
-                    ->whereIn('id', $delIds)
-                    ->delete();
+                // ลบออกจาก Database
+                File::whereIn('id', $delIds)->delete();
             }
 
             /* ---------------- Files Add ---------------- */
             if ($request->hasFile('attachments')) {
-                foreach ($request->file('attachments') as $file) {
-                    $path = $file->store("events/{$event->id}", 'public');
-                    DB::table('ems_event_files')->insert([
-                        'file_event_id' => $event->id,
-                        'file_name' => $file->getClientOriginalName(),
+                foreach ($request->file('attachments') as $uploadedFile) {
+
+                    $path = $uploadedFile->store("events/{$event->id}", 'public');
+
+                    // ใช้ Relationship สร้างไฟล์
+                    $event->files()->create([
+                        'file_name' => $uploadedFile->getClientOriginalName(),
                         'file_path' => $path,
-                        'file_type' => $file->getClientMimeType(),
-                        'file_size' => $file->getSize(),
+                        'file_type' => $uploadedFile->getClientMimeType(),
+                        'file_size' => $uploadedFile->getSize(),
                         'uploaded_at' => now()
                     ]);
                 }
             }
 
             // update flag
-            $count = DB::table('ems_event_files')
-                ->where('file_event_id', $event->id)
-                ->count();
-
+            $count = $event->files()->count();
             $event->evn_file = $count > 0 ? 'have' : 'not_have';
             $event->save();
 
@@ -277,8 +279,9 @@ class EventService
             $idsToAdd = [];
             if ($request->has('employee_ids')) {
                 $incoming = collect($request->employee_ids)->unique()->values()->all();
-                $current = DB::table('ems_connect')
-                    ->where('con_event_id', $event->id)
+
+                // ใช้ Model Connect แทน DB::table
+                $current = Connect::where('con_event_id', $event->id)
                     ->where('con_delete_status', 'active')
                     ->pluck('con_employee_id')
                     ->map(fn($id) => (int) $id)
@@ -287,24 +290,20 @@ class EventService
                 $idsToAdd = array_values(array_diff($incoming, $current));
                 $idsToRemove = array_values(array_diff($current, $incoming));
 
-                // เพิ่มใหม่
+                // เพิ่มใหม่ หรืออัปเดตคนเดิมที่อาจจะเคยถูกลบไปแล้ว
                 foreach ($idsToAdd as $empId) {
-                    $exists = DB::table('ems_connect')
-                        ->where('con_event_id', $event->id)
+                    $exists = Connect::where('con_event_id', $event->id)
                         ->where('con_employee_id', $empId)
                         ->first();
 
                     if ($exists) {
-                        DB::table('ems_connect')
-                            ->where('id', $exists->id)
-                            ->update([
-                                'con_delete_status' => 'active',
-                                'con_answer' => 'invalid',
-                                'con_reason' => null
-                            ]);
+                        $exists->update([
+                            'con_delete_status' => 'active',
+                            'con_answer' => 'invalid',
+                            'con_reason' => null
+                        ]);
                     } else {
-                        DB::table('ems_connect')->insert([
-                            'con_event_id' => $event->id,
+                        $event->connects()->create([
                             'con_employee_id' => $empId,
                             'con_answer' => 'invalid',
                             'con_delete_status' => 'active'
@@ -312,34 +311,30 @@ class EventService
                     }
                 }
 
-                // ส่งเชิญใหม่เฉพาะคนที่เพิ่ม
+                // ส่งเชิญใหม่เฉพาะคนที่เพิ่งถูกเพิ่ม
                 if (!empty($idsToAdd)) {
                     $newEmployees = Employee::whereIn('id', $idsToAdd)->get();
-                    $files = DB::table('ems_event_files')
-                        ->where('file_event_id', $event->id)
-                        ->get();
+                    $filesForMail = $event->files()->get(); // ดึงไฟล์ผ่าน Relationship
 
                     foreach ($newEmployees as $emp) {
                         if ($emp->emp_email) {
                             $url = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
                             Mail::to($emp->emp_email)
-                                ->send(new EventInvitationMail($emp, $event, $files, $url));
+                                ->send(new EventInvitationMail($emp, $event, $filesForMail, $url));
                         }
                     }
                 }
 
                 // ลบ
                 if (!empty($idsToRemove)) {
-                    DB::table('ems_connect')
-                        ->where('con_event_id', $event->id)
+                    Connect::where('con_event_id', $event->id)
                         ->whereIn('con_employee_id', $idsToRemove)
                         ->update(['con_delete_status' => 'inactive']);
 
                     $removed = Employee::whereIn('id', $idsToRemove)->get();
                     foreach ($removed as $emp) {
                         if ($emp->emp_email) {
-                            Mail::to($emp->emp_email)
-                                ->send(new EventCancellationMail($emp, $event));
+                            Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
                         }
                     }
                 }
@@ -356,56 +351,53 @@ class EventService
                 $old['location'] != $event->evn_location;
 
             if ($critical) {
-                $existing = DB::table('ems_connect')
-                    ->where('con_event_id', $event->id)
+                $existing = Connect::where('con_event_id', $event->id)
                     ->where('con_delete_status', 'active')
                     ->whereNotIn('con_employee_id', $idsToAdd)
                     ->pluck('con_employee_id');
 
-                DB::table('ems_connect')
-                    ->whereIn('con_employee_id', $existing)
+                Connect::whereIn('con_employee_id', $existing)
                     ->update(['con_answer' => 'invalid', 'con_reason' => null]);
 
                 $employees = Employee::whereIn('id', $existing)->get();
-                $files = DB::table('ems_event_files')
-                    ->where('file_event_id', $event->id)
-                    ->get();
+                $filesForMail = $event->files()->get();
 
                 foreach ($employees as $emp) {
                     if ($emp->emp_email) {
                         $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
-                        Mail::to($emp->emp_email)->send(new EventUpdateMail($emp, $event, $files, $url));
+                        Mail::to($emp->emp_email)->send(new EventUpdateMail($emp, $event, $filesForMail, $url));
                     }
                 }
             }
 
-            // Files Response
-            $files = DB::table('ems_event_files')
-                ->where('file_event_id', $event->id)
+            /* ---------------- Files Response ---------------- */
+            $filesResponse = $event->files()
                 ->orderBy('id', 'asc')
                 ->get()
-                ->map(fn($f) => tap($f, function (&$file) {
-                    $file->url = asset('storage/' . $file->file_path);
-                }));
+                ->map(function ($f) {
+                    $f->url = asset('storage/' . $f->file_path);
+                    return $f;
+                });
 
             return [
                 'message' => 'บันทึกข้อมูลสำเร็จ',
                 'event' => $event,
-                'files' => $files
+                'files' => $filesResponse
             ];
         });
     }
 
     /* ============================================================
-       7) ตาราง Event (filter + sorting + query)
-    ============================================================ */
-    public function eventTable($request)
+     7) ตาราง Event (filter + sorting + query)
+  ============================================================ */
+    public function eventTable(Request $request)
     {
         $this->syncEventStatus();
 
-        $allowSort = [
+        // เปลี่ยน $allowSort เป็น $allowedSortColumns
+        $allowedSortColumns = [
             'evn_title' => 'ems_event.evn_title',
-            'cat_name' => 'cat_name',
+            'cat_name' => 'category.cat_name',
             'evn_date' => 'ems_event.evn_date',
             'evn_duration' => 'ems_event.evn_duration',
             'evn_num_guest' => 'evn_num_guest',
@@ -414,113 +406,135 @@ class EventService
         ];
 
         $sortBy = $request->query('sortBy', 'evn_date');
-        $sortDir = $request->query('sortDir', 'desc') === 'asc' ? 'asc' : 'desc';
-        $sortCol = $allowSort[$sortBy] ?? 'ems_event.evn_date';
-        $q = trim($request->query('q', ''));
+        // เปลี่ยน $sortDir เป็น $sortDirection
+        $sortDirection = $request->query('sortDir', 'desc') === 'asc' ? 'asc' : 'desc';
+        // เปลี่ยน $sortCol เป็น $sortColumn
+        $sortColumn = $allowedSortColumns[$sortBy] ?? 'ems_event.evn_date';
+        // เปลี่ยน $q เป็น $searchKeyword
+        $searchKeyword = trim($request->query('q', ''));
 
-        $subTotal = DB::table('ems_connect')
-            ->selectRaw('COUNT(*)')
-            ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
-            ->where('con_delete_status', 'active')
-            ->where('con_answer', '!=', 'not_invite');
-
-        $subAccept = DB::table('ems_connect')
-            ->selectRaw('COUNT(*)')
-            ->whereColumn('ems_connect.con_event_id', 'ems_event.id')
-            ->where('con_delete_status', 'active')
-            ->where('con_answer', 'accepted');
-
-        $rows = Event::leftJoin('ems_categories as c', 'c.id', '=', 'ems_event.evn_category_id')
+        // เปลี่ยน $rows เป็น $events
+        $events = Event::query()
             ->select([
                 'ems_event.id',
                 'ems_event.evn_title',
-                DB::raw('ems_event.evn_category_id as evn_cat_id'),
-                DB::raw('COALESCE(c.cat_name,"") as cat_name'),
+                'ems_event.evn_category_id as evn_cat_id',
+                'category.cat_name',
                 'ems_event.evn_description',
                 'ems_event.evn_date',
                 'ems_event.evn_timestart',
                 'ems_event.evn_timeend',
                 'ems_event.evn_location',
                 'ems_event.evn_duration',
-                DB::raw('COALESCE(ems_event.evn_status,"") as evn_status')
+                'ems_event.evn_status'
             ])
-            ->selectSub($subTotal, 'evn_num_guest')
-            ->selectSub($subAccept, 'evn_sum_accept')
-            ->where(function ($w) {
-                $w->whereNull('ems_event.evn_status')
+            // เปลี่ยน Alias จาก 'c' เป็น 'category'
+            ->leftJoin('ems_categories as category', 'category.id', '=', 'ems_event.evn_category_id')
+            ->withCount([
+                'connects as evn_num_guest' => function ($query) {
+                    $query->where('con_delete_status', 'active')
+                        ->where('con_answer', '!=', 'not_invite');
+                },
+                'connects as evn_sum_accept' => function ($query) {
+                    $query->where('con_delete_status', 'active')
+                        ->where('con_answer', 'accepted');
+                }
+            ])
+            // เปลี่ยน $w เป็น $query
+            ->where(function ($query) {
+                $query->whereNull('ems_event.evn_status')
                     ->orWhere('ems_event.evn_status', '!=', 'deleted');
             })
-            ->when($q !== '', function ($b) use ($q) {
-                $like = "%{$q}%";
-                $b->where(function ($w) use ($like) {
-                    $w->where('ems_event.evn_title', 'like', $like)
-                        ->orWhere('ems_event.evn_description', 'like', $like)
-                        ->orWhere('ems_event.evn_status', 'like', $like)
-                        ->orWhere('c.cat_name', 'like', $like);
+            // เปลี่ยน $b เป็น $query
+            ->when($searchKeyword !== '', function ($query) use ($searchKeyword) {
+                $searchPattern = "%{$searchKeyword}%";
+
+                // เปลี่ยน $w เป็น $subQuery ให้แยกจาก $query ด้านบน
+                $query->where(function ($subQuery) use ($searchPattern) {
+                    $subQuery->where('ems_event.evn_title', 'like', $searchPattern)
+                        ->orWhere('ems_event.evn_description', 'like', $searchPattern)
+                        ->orWhere('ems_event.evn_status', 'like', $searchPattern)
+                        ->orWhere('category.cat_name', 'like', $searchPattern);
                 });
             })
-            ->orderBy($sortCol, $sortDir)
-            ->get();
+            ->orderBy($sortColumn, $sortDirection)
+            ->get()
+            ->map(function ($event) {
+                $event->cat_name = $event->cat_name ?? "";
+                $event->evn_status = $event->evn_status ?? "";
+                return $event;
+            });
 
-        return $rows;
+        return $events;
     }
-
     /* ============================================================
-       8) อัปเดตสถานะ Event ตามเวลา
-    ============================================================ */
+   8) อัปเดตสถานะ Event ตามเวลา
+============================================================ */
     private function syncEventStatus()
     {
-        $now = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+        // เปลี่ยนชื่อตัวแปรให้สื่อความหมายแบบ camelCase
+        $currentTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-        DB::table('ems_event')
+        // 1. อัปเดตสถานะเป็น 'done' (เลยเวลาจบแล้ว)
+        Event::query()
             ->whereNotIn('evn_status', ['done', 'deleted'])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timeend) <= ?", [$now])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) <= ?", [$currentTime])
             ->update(['evn_status' => 'done']);
 
-        DB::table('ems_event')
+        // 2. อัปเดตสถานะเป็น 'ongoing' (ถึงเวลาเริ่มแล้ว แต่ยังไม่ถึงเวลาจบ)
+        Event::query()
             ->whereNotIn('evn_status', ['ongoing', 'done', 'deleted'])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timestart) <= ?", [$now])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timeend) > ?", [$now])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) <= ?", [$currentTime])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timeend) > ?", [$currentTime])
             ->update(['evn_status' => 'ongoing']);
 
-        DB::table('ems_event')
+        // 3. อัปเดตสถานะเป็น 'upcoming' (ยังไม่ถึงเวลาเริ่ม)
+        Event::query()
             ->whereNotIn('evn_status', ['upcoming', 'deleted'])
-            ->whereRaw("TIMESTAMP(evn_date,evn_timestart) > ?", [$now])
+            ->whereRaw("TIMESTAMP(evn_date, evn_timestart) > ?", [$currentTime])
             ->update(['evn_status' => 'upcoming']);
     }
 
     /* ============================================================
-       9) Permission
+    9) Permission
     ============================================================ */
     public function permission()
     {
-        $id = Auth::id();
-        $perm = DB::table('ems_employees')->where('id', $id)->value('emp_permission');
-        return $perm ? strtolower($perm) : null;
+        $employeeId = Auth::id();
+
+        // ใช้ Model Employee ดึงค่าฟิลด์ emp_permission
+        $permission = Employee::where('id', $employeeId)->value('emp_permission');
+
+        return $permission ? strtolower($permission) : null;
     }
 
     /* ============================================================
-       10) ลบ Event + ส่งเมลแจ้งยกเลิก
+    10) ลบ Event + ส่งเมลแจ้งยกเลิก
     ============================================================ */
-    public function deleted($id)
+    public function deleted($eventId)
     {
-        $event = Event::find($id);
-        if (!$event)
-            return false;
+        $event = Event::find($eventId);
 
-        $participants = DB::table('ems_connect')
-            ->where('con_event_id', $event->id)
+        if (!$event) {
+            return false;
+        }
+
+        // ใช้ Model Connect แทน DB::table
+        $participantIds = Connect::where('con_event_id', $event->id)
             ->where('con_delete_status', 'active')
             ->pluck('con_employee_id');
 
-        $employees = Employee::whereIn('id', $participants)->get();
+        // ดึงข้อมูลพนักงานทั้งหมดที่เกี่ยวข้อง
+        $employees = Employee::whereIn('id', $participantIds)->get();
 
-        foreach ($employees as $emp) {
-            if ($emp->emp_email) {
-                Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
+        // เปลี่ยน $emp เป็น $employee เป็นคำเต็ม
+        foreach ($employees as $employee) {
+            if ($employee->emp_email) {
+                Mail::to($employee->emp_email)->send(new EventCancellationMail($employee, $event));
             }
         }
 
+        // อัปเดตสถานะเป็น deleted (Soft Delete)
         $event->update([
             'evn_status' => 'deleted',
             'evn_deleted_at' => now(),
@@ -530,26 +544,28 @@ class EventService
         return true;
     }
 
+
     /* ============================================================
        11) getEventParticipants
     ============================================================ */
     public function getEventParticipants($eventId)
     {
-        return DB::table('ems_connect')
+        // เปลี่ยน DB::table('ems_connect') เป็น Connect::query()
+        return Connect::query()
             ->where('con_event_id', $eventId)
             ->where('con_delete_status', 'active')
             ->where('con_answer', '!=', 'not_invite')
             ->selectRaw('
-                COUNT(*) as total,
-                SUM(CASE WHEN con_answer="accept" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN con_answer="denied" THEN 1 ELSE 0 END) as not_attending,
-                SUM(CASE WHEN con_answer="invalid" THEN 1 ELSE 0 END) as pending
-            ')
+            COUNT(*) as total,
+            SUM(CASE WHEN con_answer = "accept" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
+            SUM(CASE WHEN con_answer = "invalid" THEN 1 ELSE 0 END) as pending
+        ')
             ->first();
     }
 
     /* ============================================================
-       12) eventInfo (metadata สำหรับหน้า create)
+       12) eventInfo (metadata)
     ============================================================ */
     public function eventInfo()
     {
@@ -614,35 +630,42 @@ class EventService
     }
 
     /* ============================================================
-       13) รายชื่อผู้เข้าร่วม (Filter)
+    13) รายชื่อผู้เข้าร่วม (Filter)
     ============================================================ */
     public function getParticipants($eventId, $statusFilter)
     {
-        $query = DB::table('ems_connect as c')
-            ->join('ems_employees as e', 'c.con_employee_id', '=', 'e.id')
-            ->leftJoin('ems_position as p', 'e.emp_position_id', '=', 'p.id')
-            ->leftJoin('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->leftJoin('ems_team as t', 'e.emp_team_id', '=', 't.id')
-            ->where('c.con_event_id', $eventId)
-            ->where('c.con_delete_status', 'active')
-            ->where('c.con_answer', '!=', 'not_invite')
+        // 1. เริ่มที่ Model Employee และตั้ง Alias ให้ชื่อตารางสื่อความหมาย
+        $query = Employee::query()
+            ->from('ems_employees as employee')
+            ->join('ems_connect as connect', 'connect.con_employee_id', '=', 'employee.id')
+            ->leftJoin('ems_position as position', 'employee.emp_position_id', '=', 'position.id')
+            ->leftJoin('ems_department as department', 'employee.emp_department_id', '=', 'department.id')
+            ->leftJoin('ems_team as team', 'employee.emp_team_id', '=', 'team.id')
+            ->where('connect.con_event_id', $eventId)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
             ->select([
-                'e.*',
-                'p.pst_name as position',
-                'd.dpm_name as department',
-                't.tm_name as team',
-                'c.con_answer as status'
+                'employee.*',
+                'position.pst_name as position',
+                'department.dpm_name as department',
+                'team.tm_name as team',
+                'connect.con_answer as status'
             ]);
 
-        if ($statusFilter === 'pending') {
-            $query->where('c.con_answer', 'invalid');
-        } elseif ($statusFilter === 'accepted') {
-            $query->where('c.con_answer', 'accept');
-        } elseif ($statusFilter === 'declined') {
-            $query->where('c.con_answer', 'denied');
+        // 2. ใช้คำสั่ง match (PHP 8+) แปลงค่าสถานะ แทนการใช้ if-elseif ยาวๆ
+        $databaseStatus = match ($statusFilter) {
+            'pending' => 'invalid',
+            'accepted' => 'accept',
+            'declined' => 'denied',
+            default => null, // กรณีที่เป็นค่า 'all' หรือค่าอื่นๆ จะได้ null
+        };
+
+        // 3. ค้นหาตามสถานะ (ถ้ามี)
+        if ($databaseStatus) {
+            $query->where('connect.con_answer', $databaseStatus);
         }
 
-        $participants = $query->orderBy('e.emp_firstname')->get();
+        $participants = $query->orderBy('employee.emp_firstname')->get();
 
         return [
             'participants' => $participants,
@@ -661,32 +684,37 @@ class EventService
     public function getAttendanceData($eventId)
     {
         $event = Event::find($eventId);
-        if (!$event)
-            return null;
 
-        $stats = DB::table('ems_connect')
+        if (!$event) {
+            return null;
+        }
+
+        // เปลี่ยน DB::table('ems_connect') เป็น Model Connect
+        // เปลี่ยน $stats เป็น $attendanceStats เพื่อความชัดเจน
+        $attendanceStats = Connect::query()
             ->where('con_event_id', $eventId)
             ->where('con_delete_status', 'active')
             ->where('con_answer', '!=', 'not_invite')
             ->selectRaw('
-                COUNT(CASE WHEN con_answer="accept" THEN 1 END) as actual_attendance,
-                COUNT(CASE WHEN con_answer="decline" THEN 1 END) as declined,
-                COUNT(CASE WHEN con_answer IS NULL OR con_answer="pending" THEN 1 END) as pending,
-                COUNT(*) as total_invited
-            ')
+            COUNT(CASE WHEN con_answer = "accept" THEN 1 END) as actual_attendance,
+            COUNT(CASE WHEN con_answer = "decline" THEN 1 END) as declined,
+            COUNT(CASE WHEN con_answer IS NULL OR con_answer = "pending" THEN 1 END) as pending,
+            COUNT(*) as total_invited
+        ')
             ->first();
 
-        $percent = $stats->total_invited > 0
-            ? round($stats->actual_attendance / $stats->total_invited * 100, 2)
+        // เปลี่ยน $percent เป็น $attendancePercentage
+        $attendancePercentage = $attendanceStats->total_invited > 0
+            ? round(($attendanceStats->actual_attendance / $attendanceStats->total_invited) * 100, 2)
             : 0;
 
         return [
             'event_title' => $event->evn_title,
-            'actual_attendance' => $stats->actual_attendance ?? 0,
-            'declined' => $stats->declined ?? 0,
-            'pending' => $stats->pending ?? 0,
-            'total_invited' => $stats->total_invited ?? 0,
-            'attendance_percentage' => $percent
+            'actual_attendance' => $attendanceStats->actual_attendance ?? 0,
+            'declined' => $attendanceStats->declined ?? 0,
+            'pending' => $attendanceStats->pending ?? 0,
+            'total_invited' => $attendanceStats->total_invited ?? 0,
+            'attendance_percentage' => $attendancePercentage
         ];
     }
 
@@ -701,99 +729,110 @@ class EventService
                 'attending' => 0,
                 'not_attending' => 0,
                 'pending' => 0,
+                'actual_attendance' => [
+                    'attended' => 0,
+                    'total_assigned' => 0
+                ],
                 'departments' => [],
                 'teams' => [],
                 'participants' => []
             ];
         }
 
-        $stats = DB::table('ems_connect')
+        // 1. ดึงสถิติรวม (ใช้ Model Connect)
+        $overallStats = Connect::query()
             ->whereIn('con_event_id', $eventIds)
             ->where('con_delete_status', 'active')
             ->where('con_answer', '!=', 'not_invite')
             ->selectRaw('
-                COUNT(*) as total_participation,
-                SUM(CASE WHEN con_answer="accepted" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN con_answer="denied" THEN 1 ELSE 0 END) as not_attending,
-                SUM(CASE WHEN con_answer!="accepted" AND con_answer!="denied" THEN 1 ELSE 0 END) as pending
-            ')
+            COUNT(*) as total_participation,
+            SUM(CASE WHEN con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN con_answer = "denied" THEN 1 ELSE 0 END) as not_attending,
+            SUM(CASE WHEN con_answer != "accepted" AND con_answer != "denied" THEN 1 ELSE 0 END) as pending
+        ')
             ->first();
 
-        $employees = DB::table('ems_employees')
-            ->where('emp_delete_status', 'active')
-            ->count();
+        // 2. นับจำนวนพนักงานทั้งหมด (ใช้ Model Employee)
+        $totalEmployees = Employee::where('emp_delete_status', 'active')->count();
 
-        $checkedIn = DB::table('ems_connect')
+        // 3. นับจำนวนคนที่ Check-in แล้ว (ใช้ Model Connect)
+        $totalCheckedIn = Connect::query()
             ->whereIn('con_event_id', $eventIds)
             ->where('con_checkin_status', 1)
             ->count();
 
-        $totalAssigned = $employees * count($eventIds);
+        $totalAssigned = $totalEmployees * count($eventIds);
 
-        $departments = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->join('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
-            ->whereIn('ems_connect.con_event_id', $eventIds)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
-            ->groupBy('ems_department.id', 'ems_department.dpm_name')
+        // 4. สถิติแยกตามแผนก (ใช้ Model Connect + ตั้ง Alias ให้ตาราง)
+        $departmentStats = Connect::query()
+            ->from('ems_connect as connect')
+            ->join('ems_employees as employee', 'connect.con_employee_id', '=', 'employee.id')
+            ->join('ems_department as department', 'employee.emp_department_id', '=', 'department.id')
+            ->whereIn('connect.con_event_id', $eventIds)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
+            ->groupBy('department.id', 'department.dpm_name')
             ->selectRaw('
-                ems_department.dpm_name as name,
-                SUM(CASE WHEN ems_connect.con_answer="accepted" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN ems_connect.con_answer="denied" THEN 1 ELSE 0 END) as notAttending,
-                SUM(CASE WHEN ems_connect.con_answer!="accepted" AND ems_connect.con_answer!="denied" THEN 1 ELSE 0 END) as pending
-            ')
+            department.dpm_name as name,
+            SUM(CASE WHEN connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+            SUM(CASE WHEN connect.con_answer != "accepted" AND connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+        ')
             ->get();
 
-        $teams = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->join('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
-            ->whereIn('ems_connect.con_event_id', $eventIds)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
-            ->groupBy('ems_team.id', 'ems_team.tm_name')
+        // 5. สถิติแยกตามทีม (ใช้ Model Connect + ตั้ง Alias)
+        $teamStats = Connect::query()
+            ->from('ems_connect as connect')
+            ->join('ems_employees as employee', 'connect.con_employee_id', '=', 'employee.id')
+            ->join('ems_team as team', 'employee.emp_team_id', '=', 'team.id')
+            ->whereIn('connect.con_event_id', $eventIds)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
+            ->groupBy('team.id', 'team.tm_name')
             ->selectRaw('
-                ems_team.tm_name as name,
-                SUM(CASE WHEN ems_connect.con_answer="accepted" THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN ems_connect.con_answer="denied" THEN 1 ELSE 0 END) as notAttending,
-                SUM(CASE WHEN ems_connect.con_answer!="accepted" AND ems_connect.con_answer!="denied" THEN 1 ELSE 0 END) as pending
-            ')
+            team.tm_name as name,
+            SUM(CASE WHEN connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+            SUM(CASE WHEN connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+            SUM(CASE WHEN connect.con_answer != "accepted" AND connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+        ')
             ->get();
 
-        $participants = DB::table('ems_connect')
-            ->join('ems_employees', 'ems_connect.con_employee_id', '=', 'ems_employees.id')
-            ->leftJoin('ems_department', 'ems_employees.emp_department_id', '=', 'ems_department.id')
-            ->leftJoin('ems_team', 'ems_employees.emp_team_id', '=', 'ems_team.id')
-            ->leftJoin('ems_position', 'ems_employees.emp_position_id', '=', 'ems_position.id')
-            ->leftJoin('ems_event', 'ems_connect.con_event_id', '=', 'ems_event.id')
-            ->whereIn('ems_connect.con_event_id', $eventIds)
-            ->where('ems_connect.con_delete_status', 'active')
-            ->where('ems_connect.con_answer', '!=', 'not_invite')
+        // 6. ดึงรายชื่อผู้เข้าร่วมทั้งหมด (ใช้ Model Connect + ตั้ง Alias)
+        $participantsList = Connect::query()
+            ->from('ems_connect as connect')
+            ->join('ems_employees as employee', 'connect.con_employee_id', '=', 'employee.id')
+            ->leftJoin('ems_department as department', 'employee.emp_department_id', '=', 'department.id')
+            ->leftJoin('ems_team as team', 'employee.emp_team_id', '=', 'team.id')
+            ->leftJoin('ems_position as position', 'employee.emp_position_id', '=', 'position.id')
+            ->leftJoin('ems_event as event', 'connect.con_event_id', '=', 'event.id')
+            ->whereIn('connect.con_event_id', $eventIds)
+            ->where('connect.con_delete_status', 'active')
+            ->where('connect.con_answer', '!=', 'not_invite')
             ->select([
-                'ems_employees.*',
-                'ems_department.dpm_name as department',
-                'ems_team.tm_name as team',
-                'ems_position.pst_name as position',
-                'ems_event.evn_title as event_title',
-                'ems_connect.con_answer as status',
-                'ems_connect.con_checkin_status',
-                'ems_connect.con_event_id as event_id'
+                'employee.*',
+                'department.dpm_name as department',
+                'team.tm_name as team',
+                'position.pst_name as position',
+                'event.evn_title as event_title',
+                'connect.con_answer as status',
+                'connect.con_checkin_status',
+                'connect.con_event_id as event_id'
             ])
-            ->orderBy('ems_employees.emp_id')
+            ->orderBy('employee.emp_id')
             ->get();
 
         return [
-            'total_participation' => $stats->total_participation ?? 0,
-            'attending' => $stats->attending ?? 0,
-            'not_attending' => $stats->not_attending ?? 0,
-            'pending' => $stats->pending ?? 0,
+            'total_participation' => $overallStats->total_participation ?? 0,
+            'attending' => $overallStats->attending ?? 0,
+            'not_attending' => $overallStats->not_attending ?? 0,
+            'pending' => $overallStats->pending ?? 0,
             'actual_attendance' => [
-                'attended' => $checkedIn,
+                'attended' => $totalCheckedIn,
                 'total_assigned' => $totalAssigned
             ],
-            'departments' => $departments,
-            'teams' => $teams,
-            'participants' => $participants
+            'departments' => $departmentStats,
+            'teams' => $teamStats,
+            'participants' => $participantsList
         ];
     }
 }
