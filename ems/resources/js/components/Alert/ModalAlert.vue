@@ -99,8 +99,8 @@ const emit = defineEmits(['confirm', 'cancel'])
 // ---------- Icon ----------
 const iconName = computed(() => {
   switch (props.type) {
-    case 'success': return 'lets-icons:check-fill' // เช็คทึบ
-    case 'error':   return 'mdi:close-circle'
+    case 'success': return 'lets-icons:check-fill'
+    case 'error':   return 'mdi:exclamation-thick'
     case 'warning': return 'mdi:alert'
     case 'confirm': return 'mdi:help-circle'
     default:        return 'mdi:help-circle'
@@ -113,55 +113,58 @@ const iconWrapperClass = computed(() => {
   // confirm: ใหญ่ 144
   if (props.type === 'confirm') return 'h-[120px] w-[120px]  '
   // อื่นๆ โทนพาสเทล
-  if (props.type === 'error')   return 'h-[120px] w-[120px] bg-red-100 '
+  if (props.type === 'error')   return 'h-[120px] w-[120px] bg-red-600 rounded-full'
   if (props.type === 'warning') return 'h-[120px] w-[120px] bg-yellow-100 '
   return 'h-[120px] w-[120px] bg-neutral-100 '
 })
 
 const iconClass = computed(() => {
-  if (props.type === 'success') return 'h-[90px] w-[90px] text-green-500' // เช็คสีขาว
-  if (props.type === 'confirm') return 'h-[90px] w-[90px] text-[#FDC800]' // ? สีขาว
+  if (props.type === 'success') return 'h-[90px] w-[90px] text-green-500'
+  if (props.type === 'confirm') return 'h-[90px] w-[90px] text-[#FDC800]'
+  if (props.type === 'error')   return 'h-[80px] w-[80px] text-white'
   return 'h-[90px] w-[90px] text-current'
 })
 
 // ---------- Typography ----------
 const titleClass = computed(() => {
-  if (props.type === 'success') {
-    return 'text-xl font-extrabold tracking-wide text-neutral-800 uppercase'
+  if (props.type === 'success' || props.type === 'error') {
+    return 'mt-2 text-xl font-extrabold tracking-wide text-neutral-800 uppercase'
   }
   return 'text-xl font-extrabold tracking-[0.02em] text-neutral-800'
 })
 
 const messageClass = computed(() => {
-  if (props.type === 'success') {
-    return 'mx-auto  mb-10 max-w-[420px] text-base font-medium text-neutral-700'
+  if (props.type === 'success' || props.type === 'error') {
+    return 'mx-auto mb-8 max-w-[420px] text-base font-medium text-neutral-700'
   }
   return 'mt-2 mx-auto max-w-[420px] text-l font-semibold leading-6 text-neutral-800/90'
 })
 
 // ---------- Wrapper / Buttons ----------
 const wrapperClass = computed(() => {
-  // success กล่องเล็กลงตามภาพ
-  if (props.type === 'success') return 'w-[450px] rounded-[20px] bg-white p-8'
-  // อื่นๆ ใช้ขนาดเดิม
+  if (props.type === 'success' || props.type === 'error') return 'w-[380px] rounded-[20px] bg-white p-8'
   return 'w-[450px] rounded-[24px] bg-white p-6 sm:p-8'
 })
 
-// ปุ่ม OK: success เล็กลงและโค้ง 12px
+// ปุ่ม OK
 const okBtnClass = computed(() => {
-  if (props.type === 'success') {
+  if (props.type === 'success' || props.type === 'error') {
     return 'mx-auto h-[48px] w-[140px] rounded-[12px] bg-green-600 text-white font-semibold ' +
-           'transition hover:bg-green-700 focus:outline-none '
+           'transition hover:bg-green-700 focus:outline-none'
   }
   return 'h-[58px] w-[168px] rounded-[20px] border border-neutral-200 bg-green-600 text-white transition ' +
          'hover:brightness-95 active:brightness-90 focus:outline-none'
 })
 
 // ช่องว่างปุ่ม
-const actionGapClass = computed(() => (props.type === 'success' ? 'mt-0 gap-0' : 'mt-10 gap-12 sm:gap-20'))
+const actionGapClass = computed(() =>
+  (props.type === 'success' || props.type === 'error') ? 'mt-0 gap-0' : 'mt-10 gap-12 sm:gap-20'
+)
 
-// success ไม่ให้มี Cancel (แม้ตัวแม่จะส่งมา)
-const showCancelFinal = computed(() => props.type === 'success' ? false : props.showCancel)
+// success/error ไม่ให้มี Cancel
+const showCancelFinal = computed(() =>
+  (props.type === 'success' || props.type === 'error') ? false : props.showCancel
+)
 
 const okBtn = ref(null)
 watch(open, (v) => { if (v) setTimeout(() => okBtn.value?.focus(), 0) })

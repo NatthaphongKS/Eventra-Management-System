@@ -385,9 +385,6 @@
                         @change="onPick"
                     />
                 </div>
-                <p v-if="fileTypeError" class="mt-2 text-xs font-medium text-red-500">
-                    * Only accepted file types: pdf, txt, docx, jpeg, xlsx, png
-                </p>
             </div>
         </div>
 
@@ -519,6 +516,14 @@
             type="success"
             :showCancel="false"
             @confirm="onSuccessConfirm"
+        />
+
+        <ModalAlert
+            v-model:open="fileTypeError"
+            title="ERROR!"
+            message="Unsupported file type. Please try again."
+            type="error"
+            :showCancel="false"
         />
     </div>
 </template>
