@@ -87,7 +87,7 @@ export default {
             } else if (!emailRegex.test(this.email.trim())) {
                 errs.email = ["Invalid email"];
             }
-            if (!this.password) {
+            if (!this.password?.trim()) {
                 errs.password = ["Password is required"];
             }
             this.errors = errs;
