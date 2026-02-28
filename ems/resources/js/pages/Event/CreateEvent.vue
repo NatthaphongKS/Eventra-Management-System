@@ -114,7 +114,7 @@
                                     :class="(pickerStartHour || pickerStartMin) ? 'text-neutral-800' : 'text-red-300'"
                                     @click.stop="togglePanel('start')">
                                     {{ (!pickerStartHour && !pickerStartMin) ? 'Start' : (pickerStartHour || '--') + ':'
-                                    + (pickerStartMin || '--') }}
+                                        + (pickerStartMin || '--') }}
                                 </button>
                                 <!-- Start panel -->
                                 <div v-if="showStartPanel" class="tp-panel" @pointerdown.stop @click.stop>
@@ -143,7 +143,7 @@
                                     :class="(pickerEndHour || pickerEndMin) ? 'text-neutral-800' : 'text-red-300'"
                                     @click.stop="togglePanel('end')">
                                     {{ (!pickerEndHour && !pickerEndMin) ? 'End' : (pickerEndHour || '--') + ':' +
-                                    (pickerEndMin || '--') }}
+                                        (pickerEndMin || '--') }}
                                 </button>
                                 <!-- End panel -->
                                 <div v-if="showEndPanel" class="tp-panel" @pointerdown.stop @click.stop>
@@ -228,7 +228,7 @@
                                     <span class="truncate text-[16px] text-neutral-800 block">{{ item.name }}</span>
                                     <span class="text-xs text-rose-500">{{
                                         prettySize(item.size)
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
 
