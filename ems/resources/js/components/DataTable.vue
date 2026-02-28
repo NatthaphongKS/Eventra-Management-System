@@ -427,26 +427,56 @@ function toggleSelectAllOnPage(event) {
 }
 </script>
 
-<style>
+<style scoped>
 /* (Style ของ Pagination สีแดง - เหมือนเดิม) */
 
 .pg-arrow svg {
-  @apply h-5 w-5 fill-current;
+  height: 1.25rem;
+  width: 1.25rem;
+  fill: currentColor;
 }
 
 .pg-num {
-  @apply h-9 min-w-[36px] place-items-center rounded-xl border border-red-700 bg-white px-2 text-sm font-medium text-red-700 transition hover:bg-rose-50;
+  height: 2.25rem;
+  min-width: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(185, 28, 28);
+  background-color: white;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(185, 28, 28);
+  transition-property: all;
+}
+
+.pg-num:hover {
+  background-color: rgb(253, 242, 242);
 }
 
 .pg-num.pg-active {
-  @apply border-red-700 bg-red-700 text-white;
+  border-color: rgb(185, 28, 28);
+  background-color: rgb(185, 28, 28);
+  color: white;
 }
 
 .pg-ellipsis {
-  @apply flex h-9 w-9 items-end justify-center gap-0.5 pb-2.5 text-slate-400;
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.125rem;
+  padding-bottom: 0.625rem;
+  color: rgb(100, 116, 139);
 }
 
 .pg-ellipsis .dot {
-  @apply h-1 w-1 rounded-xl bg-current;
+  height: 0.25rem;
+  width: 0.25rem;
+  border-radius: 0.75rem;
+  background-color: currentColor;
 }
 </style>
