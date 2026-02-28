@@ -23,8 +23,9 @@
         "@heroicons/react": "^2.2.0",
         "@heroicons/vue": "^2.2.0",
         "@tailwindcss/postcss": "^4.1.14",
+        "chart.js": "^4.5.1",
+        "chartjs-plugin-datalabels": "^2.2.0",
         "dayjs": "^1.11.19",
-        "echarts": "^6.0.0",
         "exceljs": "^4.4.0",
         "hero-icon-js": "^1.0.1",
         "sweetalert2": "^11.22.5",
@@ -32,7 +33,6 @@
         "vue-echarts": "^8.0.1",
         "vue-router": "^4.5.1",
         "xlsx": "^0.18.5"
-       
     },
     "volta": {
         "node": "24.13.0"
