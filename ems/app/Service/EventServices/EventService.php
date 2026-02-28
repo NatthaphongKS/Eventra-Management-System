@@ -623,7 +623,7 @@ class EventService
                 ->get(),
 
             'teams' => Team::where('tm_delete_status', 'active')
-                ->select('id', 'tm_name')
+                ->select('id', 'tm_name', 'tm_department_id')
                 ->orderBy('tm_name')
                 ->get(),
         ];
@@ -780,21 +780,23 @@ class EventService
         ')
             ->get();
 
-        // 5. สถิติแยกตามทีม (ใช้ Model Connect + ตั้ง Alias)
+        // 5. สถิติแยกตามทีม
         $teamStats = Connect::query()
             ->from('ems_connect as connect')
             ->join('ems_employees as employee', 'connect.con_employee_id', '=', 'employee.id')
             ->join('ems_team as team', 'employee.emp_team_id', '=', 'team.id')
+            ->join('ems_department as department', 'employee.emp_department_id', '=', 'department.id') // ← เพิ่มบรรทัดนี้
             ->whereIn('connect.con_event_id', $eventIds)
             ->where('connect.con_delete_status', 'active')
             ->where('connect.con_answer', '!=', 'not_invite')
-            ->groupBy('team.id', 'team.tm_name')
+            ->groupBy('team.id', 'team.tm_name', 'department.dpm_name') // ← เพิ่ม department.dpm_name
             ->selectRaw('
-            team.tm_name as name,
-            SUM(CASE WHEN connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
-            SUM(CASE WHEN connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
-            SUM(CASE WHEN connect.con_answer != "accepted" AND connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
-        ')
+        team.tm_name as name,
+        department.dpm_name as department,
+        SUM(CASE WHEN connect.con_answer = "accepted" THEN 1 ELSE 0 END) as attending,
+        SUM(CASE WHEN connect.con_answer = "denied" THEN 1 ELSE 0 END) as notAttending,
+        SUM(CASE WHEN connect.con_answer != "accepted" AND connect.con_answer != "denied" THEN 1 ELSE 0 END) as pending
+    ')
             ->get();
 
         // 6. ดึงรายชื่อผู้เข้าร่วมทั้งหมด (ใช้ Model Connect + ตั้ง Alias)
