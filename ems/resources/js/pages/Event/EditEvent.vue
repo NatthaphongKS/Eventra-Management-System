@@ -34,7 +34,6 @@
                             </p>
                         </div>
 
-
                         <!-- ช่องเลือกประเภท event-->
                         <div>
                             <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
@@ -115,7 +114,7 @@
                                     :class="(pickerStartHour || pickerStartMin) ? 'text-neutral-800' : 'text-red-300'"
                                     @click.stop="togglePanel('start')">
                                     {{ (!pickerStartHour && !pickerStartMin) ? 'Start' : (pickerStartHour || '--') + ':'
-                                    + (pickerStartMin || '--') }}
+                                        + (pickerStartMin || '--') }}
                                 </button>
                                 <!-- Start panel -->
                                 <div v-if="showStartPanel" class="tp-panel" @pointerdown.stop @click.stop>
@@ -144,7 +143,7 @@
                                     :class="(pickerEndHour || pickerEndMin) ? 'text-neutral-800' : 'text-red-300'"
                                     @click.stop="togglePanel('end')">
                                     {{ (!pickerEndHour && !pickerEndMin) ? 'End' : (pickerEndHour || '--') + ':' +
-                                    (pickerEndMin || '--') }}
+                                        (pickerEndMin || '--') }}
                                 </button>
                                 <!-- End panel -->
                                 <div v-if="showEndPanel" class="tp-panel" @pointerdown.stop @click.stop>
@@ -174,7 +173,6 @@
                         </p>
                     </div>
 
-
                     <!-- ช่องกรอกแสดงช่วงเวลา -->
                     <div>
                         <label
@@ -200,7 +198,6 @@
                         Required field
                     </p>
                 </div>
-
             </div>
 
             <!-- Upload attachments -->
@@ -275,7 +272,6 @@
 
         <div class="mt-6">
             <h3 class="text-3xl font-semibold">Add Guest</h3>
-
             <div class="mt-4 flex flex-col gap-3">
                 <div class="flex flex-wrap items-center gap-3 w-full">
                     <div class="flex-1 min-w-[260px]">
