@@ -204,17 +204,16 @@ class EventService
         });
     }
 
-    /* ============================================================
-   6) อัปเดต Event
-    ============================================================ */
     public function update(Request $request)
     {
-        //ถ้าพังจะ rollback
         return DB::transaction(function () use ($request) {
+
+
+            // ✅ รับ flag จาก Frontend (ค่า default = true เผื่อ call จากที่อื่น)
+            $sendMail = $request->input('send_mail', '1') === '1';
 
             $event = Event::lockForUpdate()->findOrFail($request->id);
 
-            // เก็บค่าเก่าไว้เทียบ
             $old = [
                 'date' => $event->evn_date,
                 'start' => Carbon::parse($event->evn_timestart)->format('H:i'),
@@ -222,7 +221,6 @@ class EventService
                 'location' => $event->evn_location
             ];
 
-            // อัปเดตข้อมูลหลัก
             $event->update([
                 'evn_title' => $request->evn_title,
                 'evn_category_id' => $request->evn_category_id ?? $event->evn_category_id,
@@ -239,27 +237,18 @@ class EventService
             /* ---------------- Files Delete ---------------- */
             if ($request->filled('delete_file_ids')) {
                 $delIds = array_unique($request->delete_file_ids);
-
-                // ใช้ Model File ค้นหาไฟล์ที่จะลบ
                 $filesToDelete = File::where('file_event_id', $event->id)
-                    ->whereIn('id', $delIds)
-                    ->get();
-
+                    ->whereIn('id', $delIds)->get();
                 foreach ($filesToDelete as $f) {
                     Storage::disk('public')->delete($f->file_path);
                 }
-
-                // ลบออกจาก Database
                 File::whereIn('id', $delIds)->delete();
             }
 
             /* ---------------- Files Add ---------------- */
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $uploadedFile) {
-
                     $path = $uploadedFile->store("events/{$event->id}", 'public');
-
-                    // ใช้ Relationship สร้างไฟล์
                     $event->files()->create([
                         'file_name' => $uploadedFile->getClientOriginalName(),
                         'file_path' => $path,
@@ -270,7 +259,6 @@ class EventService
                 }
             }
 
-            // update flag
             $count = $event->files()->count();
             $event->evn_file = $count > 0 ? 'have' : 'not_have';
             $event->save();
@@ -280,7 +268,6 @@ class EventService
             if ($request->has('employee_ids')) {
                 $incoming = collect($request->employee_ids)->unique()->values()->all();
 
-                // ใช้ Model Connect แทน DB::table
                 $current = Connect::where('con_event_id', $event->id)
                     ->where('con_delete_status', 'active')
                     ->pluck('con_employee_id')
@@ -290,12 +277,9 @@ class EventService
                 $idsToAdd = array_values(array_diff($incoming, $current));
                 $idsToRemove = array_values(array_diff($current, $incoming));
 
-                // เพิ่มใหม่ หรืออัปเดตคนเดิมที่อาจจะเคยถูกลบไปแล้ว
                 foreach ($idsToAdd as $empId) {
                     $exists = Connect::where('con_event_id', $event->id)
-                        ->where('con_employee_id', $empId)
-                        ->first();
-
+                        ->where('con_employee_id', $empId)->first();
                     if ($exists) {
                         $exists->update([
                             'con_delete_status' => 'active',
@@ -311,11 +295,10 @@ class EventService
                     }
                 }
 
-                // ส่งเชิญใหม่เฉพาะคนที่เพิ่งถูกเพิ่ม
-                if (!empty($idsToAdd)) {
+                // ✅ ส่งเมลเชิญใหม่ เฉพาะเมื่อ sendMail = true
+                if ($sendMail && !empty($idsToAdd)) {
                     $newEmployees = Employee::whereIn('id', $idsToAdd)->get();
-                    $filesForMail = $event->files()->get(); // ดึงไฟล์ผ่าน Relationship
-
+                    $filesForMail = $event->files()->get();
                     foreach ($newEmployees as $emp) {
                         if ($emp->emp_email) {
                             $url = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
@@ -325,22 +308,24 @@ class EventService
                     }
                 }
 
-                // ลบ
                 if (!empty($idsToRemove)) {
                     Connect::where('con_event_id', $event->id)
                         ->whereIn('con_employee_id', $idsToRemove)
                         ->update(['con_delete_status' => 'inactive']);
 
-                    $removed = Employee::whereIn('id', $idsToRemove)->get();
-                    foreach ($removed as $emp) {
-                        if ($emp->emp_email) {
-                            Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
+                    // ✅ ส่งเมลยกเลิก เฉพาะเมื่อ sendMail = true
+                    if ($sendMail) {
+                        $removed = Employee::whereIn('id', $idsToRemove)->get();
+                        foreach ($removed as $emp) {
+                            if ($emp->emp_email) {
+                                Mail::to($emp->emp_email)->send(new EventCancellationMail($emp, $event));
+                            }
                         }
                     }
                 }
             }
 
-            /* ---------------- ส่งอัปเดตให้คนเดิมถ้ามี critical change ---------------- */
+            /* ---------------- ส่งอัปเดตให้คนเดิม (critical change) ---------------- */
             $newStart = Carbon::parse($event->evn_timestart)->format('H:i');
             $newEnd = Carbon::parse($event->evn_timeend)->format('H:i');
 
@@ -350,7 +335,8 @@ class EventService
                 $old['end'] != $newEnd ||
                 $old['location'] != $event->evn_location;
 
-            if ($critical) {
+            // ✅ ส่งเมลอัปเดต เฉพาะเมื่อ sendMail = true และมี critical change
+            if ($sendMail && $critical) {
                 $existing = Connect::where('con_event_id', $event->id)
                     ->where('con_delete_status', 'active')
                     ->whereNotIn('con_employee_id', $idsToAdd)
@@ -365,15 +351,15 @@ class EventService
                 foreach ($employees as $emp) {
                     if ($emp->emp_email) {
                         $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
-                        Mail::to($emp->emp_email)->send(new EventUpdateMail($emp, $event, $filesForMail, $url));
+                        Mail::to($emp->emp_email)
+                            ->send(new EventUpdateMail($emp, $event, $filesForMail, $url));
                     }
                 }
             }
 
             /* ---------------- Files Response ---------------- */
             $filesResponse = $event->files()
-                ->orderBy('id', 'asc')
-                ->get()
+                ->orderBy('id', 'asc')->get()
                 ->map(function ($f) {
                     $f->url = asset('storage/' . $f->file_path);
                     return $f;
