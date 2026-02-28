@@ -694,11 +694,7 @@ export default {
 
         async saveEvent() {
             this.submitted = true;
-            // [Earth (Suphanut) 2025-12-06] Check validate without alert
-            if (!this.validateForm()) {
-                // ไม่ต้องทำอะไร ปล่อยให้หน้าจอโชว์สีแดงตาม state
-                return;
-            }
+            if (!this.validateForm()) return;
 
             this.openAlert({
                 type: 'confirm',
@@ -707,87 +703,22 @@ export default {
                 showCancel: true,
                 okText: 'OK',
                 cancelText: 'Cancel',
-                onConfirm: async () => {
-                    try {
-                        this.saving = true
-
-                        const id = this.$route.params.id
-                        const formData = new FormData()
-                        formData.append('id', id)
-                        formData.append('evn_title', this.eventTitle?.trim() || '')
-
-                        if (this.eventCategoryId)
-                            formData.append('evn_category_id', String(this.eventCategoryId))
-
-                        formData.append('evn_description', this.eventDescription ?? '')
-                        formData.append('evn_date', this.eventDate)
-                        formData.append('evn_timestart', this.eventTimeStart)
-                        formData.append('evn_timeend', this.eventTimeEnd)
-                        formData.append('evn_location', this.eventLocation)
-                        formData.append('evn_duration', String(this.eventDurationMinutes || 0))
-
-                        // ไฟล์ใหม่ (ที่ลาก/เลือกมา)
-                        if (this.filesNew.length > 0) {
-                            this.filesNew.forEach((file) => {
-                                formData.append('attachments[]', file)
-                            })
-                        }
-
-                        // ไฟล์เดิมที่ถูกลบ
-                        if (this.filesDeleted.length > 0) {
-                            this.filesDeleted.forEach((id) => {
-                                formData.append('delete_file_ids[]', id)
-                            })
-                        }
-
-                        // Guest ที่เลือก (optional)
-                        // แขก (รวมแขกเดิมที่ล็อก)
-                        this.selectedIdsForSubmit.forEach(empId =>
-                            formData.append('employee_ids[]', empId)
-                        );
-
-                        const res = await axios.post('/edit-event', formData, {
-                            headers: { 'Accept': 'application/json' },
-                        })
-                        // เช็คว่ามี Warning เรื่องเมลไหม?
-                        if (res.data.mail_warning) {
-                            this.openAlert({
-                                type: 'warning', // เปลี่ยนเป็นสีเหลือง
-                                title: 'บันทึกสำเร็จ (แต่ส่งเมลไม่ได้)',
-                                message: 'ข้อมูลถูกบันทึกแล้ว แต่ระบบส่งอีเมลขัดข้อง: ' + res.data.mail_warning,
-                                okText: 'OK',
-                                onConfirm: () => this.$router.back(),
-                            })
-                        } else {
-                            // กรณีปกติ (สีเขียว)
-                            this.openAlert({
-                                type: 'success',
-                                title: 'EDIT SUCCESS!',
-                                message: 'This event has been successfully edited.',
-                                okText: 'OK',
-                                onConfirm: () => this.$router.back(),
-                            })
-                        }
-
-                        this.openAlert({
-                            type: 'success',
-                            title: 'EDIT SUCCESS!',
-                            message: 'This event has been successfully edited.',
-                            okText: 'OK',
-                            onConfirm: () => this.$router.back(),
-                        })
-                    } catch (err) {
-                        this.openAlert({
-                            type: 'error',
-                            title: 'EDIT FAILED!',
-                            message: err.response?.data?.message || 'An error occurred.',
-                        })
-                    } finally {
-                        this.saving = false
-                    }
+                onConfirm: () => {
+                    // ✅ ถามเรื่องส่งอีเมลหลัง confirm
+                    this.openAlert({
+                        type: 'confirm',
+                        title: 'SEND EMAIL NOTIFICATION?',
+                        message: 'Do you want to send an email notification to guests?',
+                        showCancel: true,
+                        okText: 'Yes, Send Email',
+                        cancelText: 'No, Skip Email',
+                        onConfirm: () => this.submitForm(true),   // ส่งอีเมล
+                        onCancel: () => this.submitForm(false),  // ไม่ส่งอีเมล
+                    })
                 },
             })
         },
+
 
         calDuration() {
             const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
@@ -841,20 +772,95 @@ export default {
             };
         },
         openAlert(cfg = {}) {
-            // รีเซ็ต handler เก่า
+            // ✅ ปิดก่อนเสมอ แล้ว nextTick ค่อยเปิดใหม่
+            this.alert.open = false
             this.alert.onConfirm = null
             this.alert.onCancel = null
 
-            // รวมค่าที่ส่งเข้ามากับค่า default
-            Object.assign(this.alert, {
-                open: true,
-                type: 'success',
-                title: '',
-                message: '',
-                showCancel: false,
-                okText: 'OK',
-                cancelText: 'Cancel',
-            }, cfg)
+            this.$nextTick(() => {
+                Object.assign(this.alert, {
+                    open: true,
+                    type: 'success',
+                    title: '',
+                    message: '',
+                    showCancel: false,
+                    okText: 'OK',
+                    cancelText: 'Cancel',
+                    onConfirm: null,
+                    onCancel: null,
+                }, cfg)
+            })
+        },
+        async submitForm(sendMail = true) {
+            try {
+                this.saving = true
+
+                const id = this.$route.params.id
+                const formData = new FormData()
+                formData.append('id', id)
+                formData.append('evn_title', this.eventTitle?.trim() || '')
+
+                if (this.eventCategoryId)
+                    formData.append('evn_category_id', String(this.eventCategoryId))
+
+                formData.append('evn_description', this.eventDescription ?? '')
+                formData.append('evn_date', this.eventDate)
+                formData.append('evn_timestart', this.eventTimeStart)
+                formData.append('evn_timeend', this.eventTimeEnd)
+                formData.append('evn_location', this.eventLocation)
+                formData.append('evn_duration', String(this.eventDurationMinutes || 0))
+
+                // ✅ ส่ง flag ไปให้ Backend
+                formData.append('send_mail', sendMail ? '1' : '0')
+
+                if (this.filesNew.length > 0) {
+                    this.filesNew.forEach((file) => formData.append('attachments[]', file))
+                }
+
+                if (this.filesDeleted.length > 0) {
+                    this.filesDeleted.forEach((fileId) => formData.append('delete_file_ids[]', fileId))
+                }
+
+                this.selectedIdsForSubmit.forEach(empId =>
+                    formData.append('employee_ids[]', empId)
+                )
+
+                console.log('sendMail parameter:', sendMail)
+                console.log('send_mail in FormData:', formData.get('send_mail'))
+
+                const res = await axios.post('/edit-event', formData, {
+                    headers: { 'Accept': 'application/json' },
+                })
+
+                if (res.data.mail_warning) {
+                    this.openAlert({
+                        type: 'warning',
+                        title: 'บันทึกสำเร็จ (แต่ส่งเมลไม่ได้)',
+                        message: 'ข้อมูลถูกบันทึกแล้ว แต่ระบบส่งอีเมลขัดข้อง: ' + res.data.mail_warning,
+                        okText: 'OK',
+                        onConfirm: () => this.$router.back(),
+                    })
+                } else {
+                    this.openAlert({
+                        type: 'success',
+                        title: 'EDIT SUCCESS!',
+                        message: sendMail
+                            ? 'This event has been successfully edited and email notification sent.'
+                            : 'This event has been successfully edited (no email sent).',
+                        okText: 'OK',
+                        onConfirm: () => this.$router.back(),
+                    })
+                }
+
+            } catch (err) {
+                this.openAlert({
+                    type: 'error',
+                    title: 'EDIT FAILED!',
+                    message: err.response?.data?.message || 'An error occurred.',
+                })
+            } finally {
+                this.saving = false
+            }
         },
     },
 
