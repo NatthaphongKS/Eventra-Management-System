@@ -118,7 +118,9 @@ export default {
                     );
                 }
 
-                if (res.data.redirect && res.data.redirect.startsWith('/')) {
+                if (typeof res.data.redirect === 'string' &&
+                    res.data.redirect.startsWith('/') &&
+                    !res.data.redirect.startsWith('//')) {
                     window.location.href = res.data.redirect;
                 } else {
                     this.$router.push('/');
