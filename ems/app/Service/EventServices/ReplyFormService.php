@@ -10,16 +10,16 @@
 namespace App\Service\EventServices;
 
 use App\Models\Connect;
-use Illuminate\Support\Facades\DB;
 
- /* ============================================================
-       1) เก็บข้อมูลารตอบกลับลง DB
-    ============================================================ */
+/* ============================================================
+      1) เก็บข้อมูลารตอบกลับลง DB
+   ============================================================ */
 class ReplyFormService
 {
     public function reply($eventId, $employeeId, $answer, $reason = null)
     {
-        return DB::table('ems_connect')
+        // เปลี่ยนมาใช้ Model Connect
+        return Connect::query()
             ->where('con_event_id', $eventId)
             ->where('con_employee_id', $employeeId)
             ->update([
