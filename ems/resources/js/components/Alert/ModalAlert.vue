@@ -4,7 +4,7 @@
  * Input: defineProps จากหน้าแม่
  * Output: หน้าAlert ตามประเภทที่หน้าแม่บอกมาใน defineprops
  * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
- * วันที่จัดทำ/แก้ไข: 2026-02-17
+ * วันที่จัดทำ/แก้ไข: 2026-02-28
  */ -->
 
 <!-- components/Alert/ModalAlert.vue -->
@@ -22,7 +22,7 @@
         <!-- Modal -->
         <transition name="pop">
           <div
-            class="relative max-w-[90vw] w-[350px] h-[350px] text-center shadow-2xl"
+            class="relative max-w-[90vw] text-center shadow-2xl"
             :class="wrapperClass"
           >
             <!-- Icon circle -->
@@ -30,7 +30,17 @@
               class="mx-auto grid place-items-center rounded-full "
               :class="iconWrapperClass"
             >
-              <Icon :icon="iconName" :class="iconClass" />
+              <svg
+                v-if="type === 'error'"
+                viewBox="0 0 24 24"
+                fill="none"
+                :class="iconClass"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect x="10.4" y="4" width="3.2" height="10" rx="1.6" fill="white" />
+                <circle cx="12" cy="18.5" r="2" fill="white" />
+              </svg>
+              <Icon v-else :icon="iconName" :class="iconClass" />
             </div>
 
             <!-- Title -->
@@ -100,7 +110,7 @@ const emit = defineEmits(['confirm', 'cancel'])
 const iconName = computed(() => {
   switch (props.type) {
     case 'success': return 'lets-icons:check-fill'
-    case 'error':   return 'mdi:exclamation-thick'
+    case 'error':   return 'tabler:exclamation-mark'
     case 'warning': return 'mdi:alert'
     case 'confirm': return 'mdi:help-circle'
     default:        return 'mdi:help-circle'
@@ -109,13 +119,13 @@ const iconName = computed(() => {
 
 const iconWrapperClass = computed(() => {
   // success: วงกลมเขียวทึบ 120x120
-  if (props.type === 'success') return 'h-[120px] w-[120px]'
+  if (props.type === 'success') return 'h-[120px] w-[120px] mb-4'
   // confirm: ใหญ่ 144
-  if (props.type === 'confirm') return 'h-[120px] w-[120px]  '
+  if (props.type === 'confirm') return 'h-[120px] w-[120px]'
   // อื่นๆ โทนพาสเทล
-  if (props.type === 'error')   return 'h-[120px] w-[120px] bg-red-600 rounded-full'
-  if (props.type === 'warning') return 'h-[120px] w-[120px] bg-yellow-100 '
-  return 'h-[120px] w-[120px] bg-neutral-100 '
+  if (props.type === 'error')   return 'h-[120px] w-[120px] bg-red-600 rounded-full mb-4'
+  if (props.type === 'warning') return 'h-[120px] w-[120px] bg-yellow-100 mb-4'
+  return 'h-[120px] w-[120px] bg-neutral-100 mb-4'
 })
 
 const iconClass = computed(() => {
@@ -142,7 +152,7 @@ const messageClass = computed(() => {
 
 // ---------- Wrapper / Buttons ----------
 const wrapperClass = computed(() => {
-  if (props.type === 'success' || props.type === 'error') return 'w-[380px] rounded-[20px] bg-white p-8'
+  if (props.type === 'success' || props.type === 'error') return 'w-[380px] rounded-[20px] bg-white p-8 flex flex-col items-center'
   return 'w-[450px] rounded-[24px] bg-white p-6 sm:p-8'
 })
 
