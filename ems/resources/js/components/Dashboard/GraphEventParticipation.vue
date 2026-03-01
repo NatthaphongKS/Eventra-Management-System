@@ -1,3 +1,13 @@
+<!-- /**
+ * ชื่อไฟล์: GraphEventParticipation.vue
+ * คำอธิบาย: Component แสดงกราฟแท่งแนวนอน (Horizontal Bar Chart) สำหรับสถิติการตอบรับเข้าร่วมกิจกรรม
+ *           แบ่งตาม Department และ Team พร้อม Filter แบบ Multi-select
+ * Input: eventId (รหัสกิจกรรม), data (ข้อมูล departments และ teams พร้อมสถิติ), options (ตัวเลือกเพิ่มเติม)
+ * Output: กราฟแท่งแสดง Accepted / Declined / Pending ของแต่ละ Team
+ * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+ * วันที่จัดทำ/แก้ไข: 2026-03-01
+ */ -->
+
 <template>
     <div class="w-full rounded-[20px] flex flex-col bg-white p-8 shadow-[0_10px_25px_-12px_rgba(0,0,0,0.25)]">
 
@@ -114,51 +124,53 @@
 
             <div v-else class="w-full h-full overflow-y-auto pr-2" ref="scrollContainer">
 
-                    <!-- ============================================================ -->
-                    <!-- Sticky Header: column titles for Y-axis + X-axis            -->
-                    <!-- ============================================================ -->
-                    <div class="flex flex-shrink-0 sticky top-0 bg-white z-10 border-b-2 border-neutral-200"
-                        :style="{ height: HEADER_HEIGHT + 'px' }">
-                        <div class="flex items-center justify-end pr-2 border-r border-neutral-200"
-                            :style="{ width: DEPT_COL_WIDTH + 'px', flexShrink: 0 }">
-                            <span style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; text-align: right;">
-                                Department
-                            </span>
-                        </div>
-                        <div class="flex items-center pl-2 border-r border-neutral-200"
-                            :style="{ width: TEAM_COL_WIDTH + 'px', flexShrink: 0 }">
-                            <span style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
-                                Team
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-center flex-1">
-                            <span style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
-                                People
-                            </span>
-                        </div>
+                <!-- ============================================================ -->
+                <!-- Sticky Header: column titles for Y-axis + X-axis            -->
+                <!-- ============================================================ -->
+                <div class="flex flex-shrink-0 sticky top-0 bg-white z-10 border-b-2 border-neutral-200"
+                    :style="{ height: headerHeight + 'px' }">
+                    <div class="flex items-center justify-end pr-2 border-r border-neutral-200"
+                        :style="{ width: deptColWidth + 'px', flexShrink: 0 }">
+                        <span
+                            style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; text-align: right;">
+                            Department
+                        </span>
                     </div>
+                    <div class="flex items-center pl-2 border-r border-neutral-200"
+                        :style="{ width: teamColWidth + 'px', flexShrink: 0 }">
+                        <span
+                            style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
+                            Team
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-center flex-1">
+                        <span
+                            style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
+                            People
+                        </span>
+                    </div>
+                </div>
 
                 <div :style="{ height: dynamicChartHeight + 'px' }" class="relative flex">
 
                     <!-- ============================================================ -->
                     <!-- Custom Y-Axis: Department (left) + Team (right)             -->
                     <!-- ============================================================ -->
-                    <div class="flex-shrink-0 flex" :style="{ width: Y_AXIS_WIDTH + 'px' }">
+                    <div class="flex-shrink-0 flex" :style="{ width: yAxisWidth + 'px' }">
 
                         <!-- Department column -->
                         <div class="flex flex-col border-r border-neutral-200"
-                            :style="{ width: DEPT_COL_WIDTH + 'px', paddingTop: chartTopPadding + 'px', paddingBottom: chartBottomPadding + 'px' }">
+                            :style="{ width: deptColWidth + 'px', paddingTop: chartTopPadding + 'px', paddingBottom: chartBottomPadding + 'px' }">
                             <template v-for="(group, gIdx) in groupedData" :key="'dept-' + gIdx">
                                 <!--
                                     เส้นขีดแบ่ง department:
                                     - ระหว่าง dept: border-b-2 สีเข้ม (เส้นหนา)
                                     - แถวสุดท้ายไม่มีเส้น (last group)
                                 -->
-                                <div class="flex items-center justify-end pr-2 relative"
-                                    :style="{
-                                        height: (group.teams.length * ROW_HEIGHT) + 'px',
-                                        borderBottom: gIdx < groupedData.length - 1 ? '2px solid #d1d5db' : 'none'
-                                    }">
+                                <div class="flex items-center justify-end pr-2 relative" :style="{
+                                    height: (group.teams.length * rowHeight) + 'px',
+                                    borderBottom: gIdx < groupedData.length - 1 ? '2px solid #d1d5db' : 'none'
+                                }">
                                     <span
                                         style="font-size: 11px; font-weight: 600; color: #374151; line-height: 1.3; text-align: right; word-break: break-word;">
                                         {{ group.department }}
@@ -169,12 +181,11 @@
 
                         <!-- Team column -->
                         <div class="flex flex-col border-r border-neutral-200"
-                            :style="{ width: TEAM_COL_WIDTH + 'px', paddingTop: chartTopPadding + 'px', paddingBottom: chartBottomPadding + 'px' }">
+                            :style="{ width: teamColWidth + 'px', paddingTop: chartTopPadding + 'px', paddingBottom: chartBottomPadding + 'px' }">
                             <template v-for="(group, gIdx) in groupedData" :key="'tg-' + gIdx">
                                 <div v-for="(team, tIdx) in group.teams" :key="'team-' + team.name"
-                                    class="flex items-center pl-2"
-                                    :style="{
-                                        height: ROW_HEIGHT + 'px',
+                                    class="flex items-center pl-2" :style="{
+                                        height: rowHeight + 'px',
                                         /* เส้นบางแบ่งระหว่างทีมในกลุ่มเดียวกัน */
                                         borderBottom: tIdx < group.teams.length - 1
                                             ? '1px dashed #e5e7eb'
@@ -183,7 +194,8 @@
                                                 ? '2px solid #d1d5db'
                                                 : 'none'
                                     }">
-                                    <span style="font-size: 11px; color: #374151; line-height: 1.3; word-break: break-word;">
+                                    <span
+                                        style="font-size: 11px; color: #374151; line-height: 1.3; word-break: break-word;">
                                         {{ team.name }}
                                     </span>
                                 </div>
@@ -197,11 +209,9 @@
                     </div>
 
                 </div>
-                </div>
             </div>
         </div>
-
-
+    </div>
 </template>
 
 <script>
@@ -211,11 +221,11 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 Chart.register(ChartDataLabels);
 
 // ค่าคงที่ที่ใช้ sync ระหว่าง HTML overlay กับ Chart.js
-const Y_AXIS_WIDTH = 190;   // ความกว้างรวมของ custom Y-axis (dept + team column)
-const DEPT_COL_WIDTH = 95;  // ความกว้าง column Department
-const TEAM_COL_WIDTH = 95;  // ความกว้าง column Team
-const ROW_HEIGHT = 90;      // ความสูงต่อ 1 แถว (ต้องตรงกับ barThickness + spacing ใน Chart.js)
-const HEADER_HEIGHT = 36;   // ความสูงของ header row (Department / Team / People)
+const yAxisWidth = 190;    // ความกว้างรวมของ custom Y-axis (dept + team column)
+const deptColWidth = 95;   // ความกว้าง column Department
+const teamColWidth = 95;   // ความกว้าง column Team
+const rowHeight = 90;      // ความสูงต่อ 1 แถว (ต้องตรงกับ barThickness + spacing ใน Chart.js)
+const headerHeight = 36;   // ความสูงของ header row (Department / Team / People)
 
 export default {
     name: "GraphEventParticipationChartJS",
@@ -226,46 +236,77 @@ export default {
     },
     data() {
         return {
-            openDropdown: null,
-            originalDepartments: [],
-            originalTeams: [],
-            selectedDepartments: [],
-            selectedTeams: [],
-            filteredData: [],
-            chartInstance: null,
+            openDropdown: null,        // ชื่อ dropdown ที่เปิดอยู่ ('department' | 'team' | null)
+            originalDepartments: [],   // ข้อมูล Department ทั้งหมดที่รับมาจาก props
+            originalTeams: [],         // ข้อมูล Team ทั้งหมดที่รับมาจาก props
+            selectedDepartments: [],   // Department ที่ถูกเลือกจาก Filter
+            selectedTeams: [],         // Team ที่ถูกเลือกจาก Filter
+            filteredData: [],          // ข้อมูล Team ที่ผ่าน Filter แล้ว ใช้ render Chart และ HTML overlay
+            chartInstance: null,       // instance ของ Chart.js (เก็บไว้เพื่อ destroy ก่อน re-render)
 
-            // expose constants to template
-            Y_AXIS_WIDTH,
-            DEPT_COL_WIDTH,
-            TEAM_COL_WIDTH,
-            ROW_HEIGHT,
-            HEADER_HEIGHT,
+            // expose constants ให้ template ใช้งานได้
+            yAxisWidth,
+            deptColWidth,
+            teamColWidth,
+            rowHeight,
+            headerHeight,
 
-            // padding ที่ chart.js ใส่ให้ plot area (top/bottom)
-            // จะถูก sync จาก afterFit callback
+            // padding บน-ล่างของ plot area ที่ Chart.js คำนวณให้
+            // sync มาจาก onComplete callback เพื่อให้ HTML overlay ตรงกับ Chart
             chartTopPadding: 10,
             chartBottomPadding: 10,
         };
     },
     computed: {
+        /**
+    * ชื่อฟังก์ชัน: departmentOptions
+    * คำอธิบาย: แปลง originalDepartments เป็น array ของชื่อ Department สำหรับแสดงใน dropdown
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         departmentOptions() {
             return this.originalDepartments.map(d => d.name);
         },
+        /**
+    * ชื่อฟังก์ชัน: isAllDeptSelected
+    * คำอธิบาย: ตรวจสอบว่า Department ทั้งหมดถูกเลือกครบไหม สำหรับ กดfilterทั้งหมด "Filter All"
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         isAllDeptSelected() {
             return this.departmentOptions.length > 0 &&
                 this.selectedDepartments.length === this.departmentOptions.length;
         },
+
+        /**
+     * ชื่อฟังก์ชัน: isAllTeamSelected
+     * คำอธิบาย: ตรวจสอบว่า Team ที่ active ทั้งหมดถูกเลือกครบไหม สำหรับ กดfilterทั้งหมด "Filter All"
+     * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+     * วันที่จัดทำ/แก้ไข: 2026-03-01
+     */
         isAllTeamSelected() {
             const activeTeams = this.originalTeams
                 .filter(t => !this.isTeamDisabled(t.department))
                 .map(t => t.name);
             return activeTeams.length > 0 && activeTeams.every(n => this.selectedTeams.includes(n));
         },
+        /**
+     * ชื่อฟังก์ชัน: dynamicChartHeight
+     * คำอธิบาย: คำนวณความสูงของ Chart ให้พอดีกับจำนวนแถวที่แสดงอยู่
+     * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+     * วันที่จัดทำ/แก้ไข: 2026-03-01
+     */
         dynamicChartHeight() {
-            // คำนวณความสูงให้พอดีกับจำนวนแถวเป๊ะๆ + รวม Padding บนล่างที่ Chart.js ใช้
-            return (this.filteredData.length * ROW_HEIGHT) + this.chartTopPadding + this.chartBottomPadding;
+            // คำนวณความสูงให้พอดีกับจำนวนแถวเป๊ะๆ + รวม padding บนล่างที่ Chart.js ใช้
+            return (this.filteredData.length * rowHeight) + this.chartTopPadding + this.chartBottomPadding;
         },
-        // จัดกลุ่ม filteredData ตาม department สำหรับ render HTML overlay
+
+        /**
+     * ชื่อฟังก์ชัน: groupedData
+     * คำอธิบาย: จัดกลุ่ม filteredData ตาม Department สำหรับ  ฝั่ง Label แกน Y ให้แสดง ทีมที่อยู่ใน department เดียวกันอยู่ด้วยกัน
+     * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+     * วันที่จัดทำ/แก้ไข: 2026-03-01
+     */
         groupedData() {
             const groups = [];
             let currentDept = null;
@@ -322,20 +363,44 @@ export default {
         }
     },
     beforeUnmount() {
+        // destroy chart instance เพื่อป้องกัน memory leak
         if (this.chartInstance) {
             this.chartInstance.destroy();
         }
     },
     methods: {
+        /**
+    * ชื่อฟังก์ชัน: isTeamDisabled
+    * คำอธิบาย: ตรวจสอบว่า Department ของ Team นั้นถูก deselect อยู่ไหม
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         isTeamDisabled(dept) {
+            // ตรวจสอบว่า Department ของ Team นั้นถูก deselect อยู่หรือไม่
             return !this.selectedDepartments.includes(dept);
         },
+
+        /**
+    * ชื่อฟังก์ชัน: toggleDropdown
+    * คำอธิบาย: เปิด/ปิด dropdown ถ้าคลิก dropdown เดิมซ้ำจะปิด
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         toggleDropdown(type) {
+            // toggle เปิด/ปิด dropdown — ถ้าคลิก dropdown เดิมให้ปิด
             this.openDropdown = this.openDropdown === type ? null : type;
         },
+
+        /**
+    * ชื่อฟังก์ชัน: toggleSelection
+    * คำอธิบาย: เพิ่ม/ลบ Department หรือ Team ออกจากรายการที่ถูกเลือก
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         toggleSelection(type, value) {
             if (type === 'department') {
                 const idx = this.selectedDepartments.indexOf(value);
+                // ถ้ามีอยู่แล้วให้เอาออก ถ้ายังไม่มีให้เพิ่ม
                 if (idx > -1) this.selectedDepartments.splice(idx, 1);
                 else this.selectedDepartments.push(value);
             } else {
@@ -345,10 +410,18 @@ export default {
                 this.updateDisplayData();
             }
         },
+        /**
+    * ชื่อฟังก์ชัน: toggleAll
+    * คำอธิบาย: เลือกทั้งหมด หรือยกเลิกทั้งหมด สำหรับ Department หรือ Team
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         toggleAll(type) {
             if (type === 'department') {
+                // ถ้าเลือกครบทุก dept อยู่แล้ว ให้ ยกเลิกทั้งหมด, ถ้ายังไม่ครบ ให้ เลือกทั้งหมด
                 this.selectedDepartments = this.isAllDeptSelected ? [] : [...this.departmentOptions];
             } else {
+                // เฉพาะ Team ที่ Department ยังถูกเลือกอยู่เท่านั้น
                 const activeTeams = this.originalTeams
                     .filter(t => !this.isTeamDisabled(t.department))
                     .map(t => t.name);
@@ -356,11 +429,26 @@ export default {
                 this.updateDisplayData();
             }
         },
+        /**
+    * ชื่อฟังก์ชัน: updateDisplayData
+    * คำอธิบาย: กรองและเรียงลำดับข้อมูล Team ที่ถูกเลือกเพื่อใช้ render Chart
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         updateDisplayData() {
+            // กรองเฉพาะ Team ที่ถูกเลือก แล้ว sort ตาม Department เพื่อให้ groupedData ถูก
             let filtered = this.originalTeams.filter(t => this.selectedTeams.includes(t.name));
             filtered.sort((a, b) => a.department.localeCompare(b.department));
             this.filteredData = filtered;
         },
+
+        /**
+    * ชื่อฟังก์ชัน: renderChart
+    * คำอธิบาย: สร้าง Bar Chart ด้วย Chart.js
+    *          และ Custom Plugin สำหรับแสดงตัวเลขผลรวมต่อท้ายบาร์
+    * ชื่อผู้เขียน/แก้ไข: Raveroj Sonthi
+    * วันที่จัดทำ/แก้ไข: 2026-03-01
+    */
         renderChart() {
             if (this.filteredData.length === 0) {
                 if (this.chartInstance) {
@@ -469,6 +557,7 @@ export default {
                             const chart = self.chartInstance;
                             if (chart) {
                                 const area = chart.chartArea;
+                                // sync padding จาก Chart.js มาให้ HTML overlay ตรงกัน
                                 self.chartTopPadding = area.top;
                                 self.chartBottomPadding = chart.height - area.bottom;
                             }
@@ -476,38 +565,7 @@ export default {
                     },
                     plugins: {
                         legend: { display: false },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: '#fff',
-                            titleColor: '#111827',
-                            bodyColor: '#374151',
-                            borderColor: '#e5e7eb',
-                            borderWidth: 1,
-                            padding: 12,
-                            callbacks: {
-                                title: (tooltipItems) => {
-                                    const idx = tooltipItems[0].dataIndex;
-                                    const team = self.filteredData[idx];
-                                    return team ? `${team.name} (${team.department})` : '';
-                                },
-                                label: (context) => {
-                                    const val = context.raw || 0;
-                                    const total = context.chart.data.datasets.reduce(
-                                        (sum, dataset) => sum + dataset.data[context.dataIndex], 0
-                                    );
-                                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                                    return ` ${context.dataset.label}: ${val} (${pct}%)`;
-                                },
-                                afterBody: (tooltipItems) => {
-                                    const dataIndex = tooltipItems[0].dataIndex;
-                                    const total = tooltipItems[0].chart.data.datasets.reduce(
-                                        (sum, dataset) => sum + dataset.data[dataIndex], 0
-                                    );
-                                    return `\nTotal: ${total}`;
-                                }
-                            }
-                        },
+                       
                         datalabels: {
                             color: '#fff',
                             font: { weight: 'bold', size: 11 },
@@ -548,9 +606,11 @@ export default {
 .overflow-y-auto::-webkit-scrollbar {
     width: 6px;
 }
+
 .overflow-y-auto::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .overflow-y-auto::-webkit-scrollbar-thumb {
     background-color: #d1d5db;
     border-radius: 10px;
