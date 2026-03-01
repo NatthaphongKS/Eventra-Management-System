@@ -259,6 +259,20 @@
             </div>
         </div>
 
+        <!-- แสดงจำนวนคนที่ถูกเลือก -->
+        <div class="mt-4 flex items-center gap-2">
+            <Icon icon="mdi:account-check" class="w-7 h-7 text-red-600" />
+            <span class="text-[16px] font-medium text-neutral-700">
+                Selected Guests :
+            </span>
+            <span class="text-[16px] font-semibold text-red-600">
+                {{ selectedIdsForSubmit.length }}
+            </span>
+            <span class="text-[16px] font-medium text-neutral-500">
+                / {{ employees.length }} people
+            </span>
+        </div>
+
         <div class="mt-6">
             <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
                 :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
