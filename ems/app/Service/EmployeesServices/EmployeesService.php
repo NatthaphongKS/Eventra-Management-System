@@ -736,8 +736,15 @@ class EmployeesService
     {
         $dupFields = [];
 
+        $query = Employee::active();
+        /*
+        |--------------------------------------------------------------------------
+        | 1) Employee ID
+        |--------------------------------------------------------------------------
+        */
         if ($request->filled('emp_id')) {
-            $exists = Employee::active()
+
+            $exists = (clone $query)
                 ->where('emp_id', $request->emp_id)
                 ->exists();
 
@@ -746,8 +753,14 @@ class EmployeesService
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 2) Phone
+        |--------------------------------------------------------------------------
+        */
         if ($request->filled('emp_phone')) {
-            $exists = Employee::active()
+
+            $exists = (clone $query)
                 ->where('emp_phone', $request->emp_phone)
                 ->exists();
 
@@ -756,13 +769,23 @@ class EmployeesService
             }
         }
 
-        if ($request->filled('emp_email')) {
-            $exists = Employee::active()
-                ->where('emp_email', $request->emp_email)
+        /*
+        |--------------------------------------------------------------------------
+        | 3) Full Name (firstname + lastname)
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('emp_firstname') && $request->filled('emp_lastname')) {
+
+            $firstName = trim(mb_strtolower($request->emp_firstname));
+            $lastName = trim(mb_strtolower($request->emp_lastname));
+
+            $exists = (clone $query)
+                ->whereRaw('LOWER(TRIM(emp_firstname)) = ?', [$firstName])
+                ->whereRaw('LOWER(TRIM(emp_lastname)) = ?', [$lastName])
                 ->exists();
 
             if ($exists) {
-                $dupFields[] = 'emp_email';
+                $dupFields[] = 'emp_name';
             }
         }
 
