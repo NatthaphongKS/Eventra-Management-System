@@ -16,122 +16,68 @@
         <div class="grid grid-cols-1 gap-7 lg:grid-cols-3">
             <div class="space-y-6 lg:col-span-2">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <BaseReadonlyField
-                        class="md:col-span-2"
-                        label="Event Title"
-                        :value="form.title"
-                    />
+                    <BaseReadonlyField class="md:col-span-2" label="Event Title" :value="form.title" />
 
-                    <BaseReadonlyField
-                        label="Category"
-                        :value="categoryDisplay"
-                        icon="iconamoon:arrow-down-2-light"
-                    />
+                    <BaseReadonlyField label="Category" :value="categoryDisplay" icon="iconamoon:arrow-down-2-light" />
                 </div>
 
                 <div>
-                    <label
-                        class="mb-1 block text-xl font-medium text-neutral-800"
-                        >Event Details</label
-                    >
+                    <label class="mb-1 block text-xl font-medium text-neutral-800">Event Details</label>
                     <div
-                        class="flex w-full items-start gap-2 rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5"
-                    >
-                        <textarea
-                            :value="form.details"
-                            rows="4"
-                            disabled
-                            class="w-full resize-none bg-transparent text-neutral-400 outline-none text-md font-medium"
-                        ></textarea>
+                        class="flex w-full items-start gap-2 rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5">
+                        <textarea :value="form.details" rows="4" disabled
+                            class="w-full resize-none bg-transparent text-neutral-400 outline-none text-md font-medium"></textarea>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <BaseReadonlyField
-                        label="Date"
-                        :value="formatDate(form.date)"
-                        icon="stash:data-date-solid"
-                    />
+                    <BaseReadonlyField label="Date" :value="formatDate(form.date)" icon="stash:data-date-solid" />
 
                     <div>
-                        <label
-                            class="mb-1 block text-xl font-medium text-neutral-800"
-                            >Time</label
-                        >
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">Time</label>
                         <div
-                            class="flex w-full items-center justify-between rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5"
-                        >
+                            class="flex w-full items-center justify-between rounded-2xl border border-neutral-400 bg-neutral-100 px-3 py-2.5">
                             <div class="flex items-center gap-3">
-                                <span
-                                    class="w-15 text-center text-neutral-400 font-medium text-md"
-                                    >{{ toThaiTime(form.timeStart) }}</span
-                                >
-                                <span class="select-none text-slate-400"
-                                    >:</span
-                                >
-                                <span
-                                    class="w-15 text-center text-neutral-400 font-medium text-md"
-                                    >{{ toThaiTime(form.timeEnd) }}</span
-                                >
+                                <span class="w-15 text-center text-neutral-400 font-medium text-md">{{
+                                    toThaiTime(form.timeStart) }}</span>
+                                <span class="select-none text-slate-400">:</span>
+                                <span class="w-15 text-center text-neutral-400 font-medium text-md">{{
+                                    toThaiTime(form.timeEnd) }}</span>
                             </div>
                             <span class="text-neutral-400">
-                                <Icon
-                                    icon="iconamoon:clock-light"
-                                    class="h-6 w-6 text-neutral-400 shrink-0"
-                                />
+                                <Icon icon="iconamoon:clock-light" class="h-6 w-6 text-neutral-400 shrink-0" />
                             </span>
                         </div>
                     </div>
 
-                    <BaseReadonlyField
-                        label="Duration"
-                        :value="
-                            calculateDuration(
-                                form.timeStart,
-                                form.timeEnd,
-                                form.duration
-                            )
-                        "
-                        icon="mingcute:time-duration-line"
-                    />
+                    <BaseReadonlyField label="Duration" :value="calculateDuration(
+                        form.timeStart,
+                        form.timeEnd,
+                        form.duration
+                    )
+                        " icon="mingcute:time-duration-line" />
                 </div>
 
                 <BaseReadonlyField label="Location" :value="form.location" />
             </div>
 
             <div>
-                <label class="mb-1 block text-xl font-medium text-neutral-800"
-                    >Upload Attachments</label
-                >
+                <label class="mb-1 block text-xl font-medium text-neutral-800">Upload Attachments</label>
                 <p class="mb-2 text-xs text-neutral-400">
                     Drag and drop document to your support task
                 </p>
 
                 <div
-                    class="flex min-h-[400px] flex-col gap-2 rounded-[20px] border border-dashed border-neutral-400 bg-neutral-100 p-4"
-                >
-                    <div
-                        v-if="files.length === 0"
-                        class="grid flex-1 place-items-center text-neutral-400 text-md"
-                    >
+                    class="flex min-h-[400px] flex-col gap-2 rounded-[20px] border border-dashed border-neutral-400 bg-neutral-100 p-4">
+                    <div v-if="files.length === 0" class="grid flex-1 place-items-center text-neutral-400 text-md">
                         ไม่มีไฟล์แนบ
                     </div>
                     <div v-else class="flex flex-col gap-2">
-                        <a
-                            v-for="(f, i) in files"
-                            :key="i"
-                            href="javascript:void(0)"
-                            @click.stop="openFile(f.url)"
-                            class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors cursor-pointer hover:bg-gray-50 no-underline"
-                        >
-                            <Icon
-                                icon="basil:file-solid"
-                                class="h-10 w-10 text-slate-700"
-                            />
-                            <span
-                                class="truncate text-md text-neutral-400 hover:text-slate-700 flex-1 text-left"
-                                :title="f.file_name || f.name"
-                            >
+                        <a v-for="(f, i) in files" :key="i" href="javascript:void(0)" @click.stop="openFile(f.url)"
+                            class="flex h-[60px] w-full items-center gap-3 rounded-2xl border border-neutral-400 bg-white px-3 p-2.5 text-neutral-400 font-medium transition-colors cursor-pointer hover:bg-gray-50 no-underline">
+                            <Icon icon="basil:file-solid" class="h-10 w-10 text-slate-700" />
+                            <span class="truncate text-md text-neutral-400 hover:text-slate-700 flex-1 text-left"
+                                :title="f.file_name || f.name">
                                 {{ f.file_name || f.name }}
                             </span>
                         </a>
@@ -144,77 +90,49 @@
             <h3 class="text-3xl font-semibold mb-4">Add Guest</h3>
             <div class="flex flex-wrap items-center gap-2">
                 <div class="flex flex-1 items-center gap-2 min-w-[200px]">
-                    <SearchBar
-                        v-model="searchInput"
-                        placeholder="Search Employee ID / Name / Nickname"
-                        @search="doSearch"
-                    >
+                    <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname"
+                        @search="doSearch">
                     </SearchBar>
                 </div>
                 <div class="mt-8 gap-2">
-                    <EmployeeDropdown
-                        label="Company"
-                        :options="uniqueCompanies"
-                        v-model="companySel"
-                        @update:modelValue="onFilterChange"
-                        class="px-2"
-                    />
-                    <EmployeeDropdown
-                        label="Department"
-                        :options="uniqueDepartments"
-                        v-model="deptSel"
-                        @update:modelValue="onFilterChange"
-                        class="px-2"
-                    />
-                    <EmployeeDropdown
-                        label="Team"
-                        :options="uniqueTeams"
-                        v-model="teamSel"
-                        @update:modelValue="onFilterChange"
-                        class="px-2"
-                    />
-                    <EmployeeDropdown
-                        label="Position"
-                        :options="uniquePositions"
-                        v-model="posSel"
-                        @update:modelValue="onFilterChange"
-                        class="px-2"
-                    />
+                    <EmployeeDropdown label="Company" :options="uniqueCompanies" v-model="companySel"
+                        @update:modelValue="onFilterChange" class="px-2" />
+                    <EmployeeDropdown label="Department" :options="uniqueDepartments" v-model="deptSel"
+                        @update:modelValue="onFilterChange" class="px-2" />
+                    <EmployeeDropdown label="Team" :options="uniqueTeams" v-model="teamSel"
+                        @update:modelValue="onFilterChange" class="px-2" />
+                    <EmployeeDropdown label="Position" :options="uniquePositions" v-model="posSel"
+                        @update:modelValue="onFilterChange" class="px-2" />
                 </div>
             </div>
 
-            <DataTable
-                :rows="pagedRows"
-                :columns="guestsTableColumns"
-                :loading="loading"
-                :total-items="filteredRows.length"
-                v-model:page="page"
-                v-model:pageSize="pageSize"
-                row-key="id"
-                :show-row-number="false"
-                :selectable="false"
-                :rowClass="rowClassFn"
-                class="mt-2"
-            >
+            <!-- แสดงจำนวน Guest ที่ถูกเลือก -->
+            <div class="mt-4 flex items-center gap-2">
+                <Icon icon="mdi:account-check" class="w-7 h-7 text-slate-600" />
+                <span class="text-[16px] font-medium text-neutral-700">
+                    Selected Guests :
+                </span>
+                <span class="text-[16px] font-semibold text-slate-700">
+                    {{ selectedIds.size }}
+                </span>
+                <span class="text-[16px] font-medium text-neutral-500">
+                    / {{ rows.length }} people
+                </span>
+            </div>
+
+            <DataTable :rows="pagedRows" :columns="guestsTableColumns" :loading="loading"
+                :total-items="filteredRows.length" v-model:page="page" v-model:pageSize="pageSize" row-key="id"
+                :show-row-number="false" :selectable="false" :rowClass="rowClassFn" class="mt-2">
                 <template #header-_select>
                     <div class="w-10 text-center">
-                        <input
-                            type="checkbox"
-                            class="accent-rose-600 opacity-60 size-5 cursor-not-allowed"
-                            disabled
-                            @click.prevent
-                        />
+                        <input type="checkbox" class="accent-rose-600 opacity-60 size-5 cursor-not-allowed" disabled
+                            @click.prevent />
                     </div>
                 </template>
                 <template #cell-_select="{ row }">
                     <div @click.stop class="flex justify-center">
-                        <input
-                            type="checkbox"
-                            class="accent-slate-700 size-5 cursor-not-allowed"
-                            disabled
-                            :checked="selectedIds.has(row.id)"
-                            @click.prevent
-                        />
+                        <input type="checkbox" class="accent-slate-700 size-5 cursor-not-allowed" disabled
+                            :checked="selectedIds.has(row.id)" @click.prevent />
                     </div>
                 </template>
 
@@ -228,10 +146,8 @@
             </DataTable>
 
             <div class="mt-6">
-                <button
-                    class="rounded-2xl bg-neutral-400 px-5 py-2 text-white hover:bg-neutral-500 transition"
-                    @click="onBack"
-                >
+                <button class="rounded-2xl bg-neutral-400 px-5 py-2 text-white hover:bg-neutral-500 transition"
+                    @click="onBack">
                     ← Back
                 </button>
             </div>
@@ -570,7 +486,7 @@ export default {
 </script>
 
 <style scoped>
-:deep(tr.row-selected) > * {
+:deep(tr.row-selected)>* {
     background-color: #d4d4d4 !important;
 }
 
