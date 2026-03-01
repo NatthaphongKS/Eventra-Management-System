@@ -1,5 +1,10 @@
+/**
+ * ชื่อไฟล์: UploadFile.vue
+ * คำอธิบาย: หน้าจอ Import พนักงานจากไฟล์ Excel พร้อมระบบ Validation และ Bulk Create
+ * ชื่อผู้เขียน/แก้ไข: Thanusin leenarat
+ * วันที่จัดทำ/แก้ไข: 1 มีนาคม 2569
+ */
 <template>
-
     <head>
         <link rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -50,11 +55,23 @@
 
             <div class="mt-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="overflow-x-auto lg:overflow-x-visible">
-                    <div v-if="validationErrors.length" class="bg-red-100 text-red-600 rounded-xl p-4 mb-6 text-sm">
-                        <p>‼ There are {{ validationErrors.length }} invalid data.</p>
+                    <div v-if="systemErrors.length || validationErrors.length || missingErrors.length"
+                        class="bg-red-100 text-red-600 rounded-xl p-4 mb-6 text-sm">
+
+                        <p class="font-semibold">
+                            {{ errorSummary }}
+                        </p>
 
                         <ul class="mt-2 space-y-1">
-                            <li v-for="(err, i) in validationErrors" :key="i">
+                            <li v-for="(err, i) in systemErrors" :key="'s' + i">
+                                {{ err }}
+                            </li>
+
+                            <li v-for="(err, i) in validationErrors" :key="'v' + i">
+                                {{ err }}
+                            </li>
+
+                            <li v-for="(err, i) in missingErrors" :key="'m' + i">
                                 {{ err }}
                             </li>
                         </ul>
@@ -228,9 +245,8 @@
         <div class="bg-white w-[420px] rounded-2xl shadow-2xl p-8 text-center">
 
             <h3 class="text-xl font-semibold text-neutral-800">
-                Saving Employees...
+                {{ progressTitle }}
             </h3>
-
             <div class="mt-6 w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                 <div class="h-4 bg-red-600 transition-all duration-300" :style="{ width: progress + '%' }"></div>
             </div>
@@ -306,6 +322,7 @@ const teams = ref([]);             // ทีม
 const progress = ref(0)
 const showProgressModal = ref(false)
 const totalRows = ref(0)
+const progressTitle = ref("")
 
 // ======================================================
 // Load master data จาก backend
@@ -362,6 +379,10 @@ async function upload() {
     // guard: ต้องมีไฟล์ และไม่มี error
     if (!file.value || error.value) return;
     uploading.value = true;
+    totalRows.value = 0
+    progress.value = 0
+    progressTitle.value = "Validating Employees..."
+    showProgressModal.value = true
 
     // แก้ไข: Reset การแสดงผลก่อนเริ่ม
     isTableVisible.value = false;
@@ -438,19 +459,28 @@ async function upload() {
 
         // ผ่าน validation แล้ว → map
         const mapped = mapRows(json)
+        totalRows.value = mapped.length
 
         // ================================
         // VALIDATION LOGIC
         // ================================
         validationErrors.value = []
-        const seenIds = new Set()
+
+        const seenEmployeeIds = new Set()
+        const seenNames = new Set()
+        const seenPhones = new Set()
+        validationErrors.value = []
+        systemErrors.value = []
+        missingErrors.value = []
 
         for (let i = 0; i < mapped.length; i++) {
             const row = mapped[i]
             const rowNumber = i + 2
-
             row.__errorFields = []
 
+            // =========================
+            // REQUIRED CHECK
+            // =========================
             const requiredFields = [
                 "company",
                 "employeeId",
@@ -467,39 +497,161 @@ async function upload() {
 
             requiredFields.forEach(field => {
                 if (!row[field] || String(row[field]).trim() === "") {
-                    validationErrors.value.push(
-                        `row ${rowNumber} ${field} is missing`
+                    missingErrors.value.push(
+                        `row ${rowNumber} ${field.toLowerCase()} is missing`
                     )
                     row.__errorFields.push(field)
                 }
             })
 
-            // duplicate in file
-            if (seenIds.has(row.displayEmployeeId)) {
+            if (!row.company || !row.employeeId) {
+                row.__errorFields.push("displayEmployeeId")
+            }
+
+            // =========================
+            // EMPLOYEE ID LENGTH CHECK (must be exactly 3 digits)
+            // =========================
+            const empId = String(row.employeeId || "").trim()
+
+            if (empId && !/^\d{3}$/.test(empId)) {
                 validationErrors.value.push(
+                    `row ${rowNumber} employee id must be exactly 3 digits`
+                )
+                row.__errorFields.push("displayEmployeeId")
+            }
+
+            // =========================
+            // DUPLICATE IN FILE
+            // =========================
+
+            // EmployeeId duplicate
+            if (seenEmployeeIds.has(row.displayEmployeeId)) {
+                systemErrors.value.push(
                     `row ${rowNumber} employee id is duplicate in file`
                 )
                 row.__errorFields.push("displayEmployeeId")
             } else {
-                seenIds.add(row.displayEmployeeId)
+                seenEmployeeIds.add(row.displayEmployeeId)
             }
 
-            // duplicate in database
+            // Name duplicate (ชื่อ-นามสกุล)
+            const first = String(row.firstName || "").trim().toLowerCase()
+            const last = String(row.lastName || "").trim().toLowerCase()
+
+            const fullNameKey = `${first}|${last}`
+
+            if (first && last) {
+                if (seenNames.has(fullNameKey)) {
+                    systemErrors.value.push(
+                        `row ${rowNumber} name is duplicate in file`
+                    )
+
+                    row.__errorFields.push("firstName")
+                    row.__errorFields.push("lastName")
+                } else {
+                    seenNames.add(fullNameKey)
+                }
+            }
+
+            // Phone duplicate
+            if (seenPhones.has(row.phone)) {
+                validationErrors.value.push(
+                    `row ${rowNumber} phone is duplicate in file`
+                )
+                row.__errorFields.push("phone")
+            } else {
+                seenPhones.add(row.phone)
+            }
+
+            // =========================
+            // MASTER RELATION CHECK
+            // =========================
+
+            const resolved = resolveMasterForRow(row)
+
+            if (!resolved.ok) {
+
+                if (resolved.reason === "notFound") {
+
+                    if (resolved.target === "Department") {
+                        validationErrors.value.push(
+                            `row ${rowNumber} department does not exist in the system`
+                        )
+                        row.__errorFields.push("department")
+                    }
+
+                    if (resolved.target === "Team") {
+                        validationErrors.value.push(
+                            `row ${rowNumber} team does not exist in the system`
+                        )
+                        row.__errorFields.push("team")
+                    }
+
+                    if (resolved.target === "Position") {
+                        validationErrors.value.push(
+                            `row ${rowNumber} position does not exist in the system`
+                        )
+                        row.__errorFields.push("position")
+                    }
+                }
+
+                if (resolved.reason === "teamNotInDepartment") {
+                    validationErrors.value.push(
+                        `row ${rowNumber} team does not belong to department`
+                    )
+                    row.__errorFields.push("team")
+                }
+
+                if (resolved.reason === "positionNotInTeam") {
+                    validationErrors.value.push(
+                        `row ${rowNumber} position does not belong to team`
+                    )
+                    row.__errorFields.push("position")
+                }
+            }
+
+            // =========================
+            // DUPLICATE IN DATABASE
+            // =========================
+
             const resp = await axios.post("/check-employee-duplicate", {
                 emp_id: row.displayEmployeeId,
                 emp_phone: row.phone,
-                emp_email: row.email,
+                emp_firstname: first,
+                emp_lastname: last,
             })
 
             if (resp.data?.duplicate) {
-                validationErrors.value.push(
-                    `row ${rowNumber} employee already exists`
-                )
-                row.__errorFields.push("displayEmployeeId")
+
+                const fields = resp.data.fields || []
+
+                if (fields.includes("emp_id")) {
+                    validationErrors.value.push(
+                        `row ${rowNumber} employee is in the system`
+                    )
+                    row.__errorFields.push("displayEmployeeId")
+                }
+
+                if (fields.includes("emp_name")) {
+                    validationErrors.value.push(
+                        `row ${rowNumber} name is in the system`
+                    )
+                    row.__errorFields.push("firstName")
+                    row.__errorFields.push("lastName")
+                }
+
+                if (fields.includes("emp_phone")) {
+                    validationErrors.value.push(
+                        `row ${rowNumber} phone is in the system`
+                    )
+                    row.__errorFields.push("phone")
+                }
             }
+            progress.value = Math.round(((i + 1) / totalRows.value) * 100)
         }
 
-        // set rows เสมอ
+        await new Promise(resolve => setTimeout(resolve, 300))
+        showProgressModal.value = false
         displayRows.value = mapped
         page.value = 1
         error.value = ""
@@ -727,6 +879,8 @@ const errorMessage = ref("");
 const showCreateSuccess = ref(false);
 const showCannotCreate = ref(false);
 const validationErrors = ref([])
+const systemErrors = ref([])
+const missingErrors = ref([])
 
 // ======================================================
 function resolveCompanyId(companyCode) {
@@ -819,35 +973,20 @@ async function onCreate() {
         }
 
         // ======================================
-        // STEP 2 + 3: check duplicate + insert (with progress)
+        // STEP 2: insert only (duplicate already checked during upload)
         // ======================================
 
         totalRows.value = preparedRows.length
         progress.value = 0
+        progressTitle.value = "Saving Employees..."
         showProgressModal.value = true
 
         for (let i = 0; i < preparedRows.length; i++) {
 
             const payload = preparedRows[i].payload
 
-            // 1️⃣ check duplicate
-            const resp = await axios.post("/check-employee-duplicate", {
-                emp_id: payload.emp_id,
-                emp_phone: payload.emp_phone,
-                emp_email: payload.emp_email,
-            })
-
-            if (resp.data?.duplicate) {
-                showProgressModal.value = false
-                errorMessage.value = `Row ${i + 2}: Employee ID / Email / Phone already exists.`
-                showCannotCreate.value = true
-                return
-            }
-
-            // 2️⃣ insert
             await axios.post("/save-employee", payload)
 
-            // 3️⃣ update progress
             progress.value = Math.round(((i + 1) / totalRows.value) * 100)
         }
 
@@ -936,7 +1075,7 @@ async function downloadTemplate() {
 
         sheet.addRow([
             "CN",
-            "1111",
+            "111",
             "นาย",
             "สมชาย",
             "เขียวสะอาด",
@@ -1226,5 +1365,66 @@ const canCreate = computed(() => {
 const hasValidationError = computed(() =>
     validationErrors.value.length > 0
 )
+
+const errorSummary = computed(() => {
+    if (!displayRows.value.length) return ""
+
+    const missingRows = new Set()
+    const duplicateRows = new Set()
+    const invalidRows = new Set()
+
+    displayRows.value.forEach((row, index) => {
+        const rowNumber = index + 2
+
+        // missing
+        if (missingErrors.value.some(e => e.includes(`row ${rowNumber}`))) {
+            missingRows.add(rowNumber)
+        }
+
+        validationErrors.value.forEach(e => {
+            if (!e.includes(`row ${rowNumber}`)) return
+
+            // duplicate in system
+            if (e.includes("is in the system")) {
+                duplicateRows.add(rowNumber)
+            }
+
+            // invalid cases
+            if (
+                e.includes("team does not belong") ||
+                e.includes("position does not belong") ||
+                e.includes("department does not exist") ||
+                e.includes("team does not exist") ||
+                e.includes("position does not exist")
+            ) {
+                invalidRows.add(rowNumber)
+            }
+        })
+    })
+
+    const parts = []
+
+    if (duplicateRows.size > 0) {
+        parts.push(
+            `${duplicateRows.size} data are already in the system`
+        )
+    }
+
+    if (invalidRows.size > 0) {
+        parts.push(
+            `${invalidRows.size} invalid data`
+        )
+    }
+
+    if (missingRows.size > 0) {
+        parts.push(
+            `${missingRows.size} missing data`
+        )
+    }
+
+    return parts.length
+        ? `!!! There are ${parts.join(" and ")}.`
+        : ""
+})
 
 </script>
