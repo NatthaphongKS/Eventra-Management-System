@@ -10,50 +10,32 @@
     <div class="relative" ref="root">
         <!-- Display trigger -->
         <div class="relative group" @click="showDropdown = !showDropdown">
-            <div
-                :class="[
-                    'flex items-center justify-between px-[20px] font-medium rounded-2xl cursor-pointer z-10 bg-white border transition h-[52px]',
-                    modelValue ? 'text-neutral-800' : 'text-red-300',
-                    hasError
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-neutral-200 group-hover:border-rose-400',
-                ]"
-            >
+            <div :class="[
+                'flex items-center justify-between px-[20px] font-medium rounded-2xl cursor-pointer z-10 bg-white border transition h-[52px]',
+                modelValue ? 'text-neutral-800' : 'text-red-300',
+                hasError
+                    ? 'border-red-500 bg-red-50'
+                    : 'border-neutral-200 group-hover:border-rose-400',
+            ]">
                 <span>{{ formattedDisplay || 'dd/mm/yy' }}</span>
-                <svg
-                    class="w-6 h-6 text-red-700"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        fill="currentColor"
-                        d="M8.5 14a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m0 3.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0M12 17.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0"
-                    />
-                    <path
-                        fill="currentColor"
-                        fill-rule="evenodd"
+                <svg class="w-6 h-6 text-red-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M8.5 14a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m0 3.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0M12 17.5a1.25 1.25 0 1 0 0-2.5a1.25 1.25 0 0 0 0 2.5m4.75-4.75a1.25 1.25 0 1 1-2.5 0a1.25 1.25 0 0 1 2.5 0" />
+                    <path fill="currentColor" fill-rule="evenodd"
                         d="M8 3.25a.75.75 0 0 1 .75.75v.75h6.5V4a.75.75 0 0 1 1.5 0v.758q.228.006.425.022c.38.03.736.098 1.073.27a2.75 2.75 0 0 1 1.202 1.202c.172.337.24.693.27 1.073c.03.365.03.81.03 1.345v7.66c0 .535 0 .98-.03 1.345c-.03.38-.098.736-.27 1.073a2.75 2.75 0 0 1-1.201 1.202c-.338.172-.694.24-1.074.27c-.365.03-.81.03-1.344.03H8.17c-.535 0-.98 0-1.345-.03c-.38-.03-.736-.098-1.073-.27a2.75 2.75 0 0 1-1.202-1.2c-.172-.338-.24-.694-.27-1.074c-.03-.365-.03-.81-.03-1.344V8.67c0-.535 0-.98.03-1.345c.03-.38.098-.736.27-1.073A2.75 2.75 0 0 1 5.752 5.05c.337-.172.693-.24 1.073-.27q.197-.016.425-.022V4A.75.75 0 0 1 8 3.25m10.25 7H5.75v6.05c0 .572 0 .957.025 1.252c.023.288.065.425.111.515c.12.236.311.427.547.547c.09.046.227.088.514.111c.296.024.68.025 1.253.025h7.6c.572 0 .957 0 1.252-.025c.288-.023.425-.065.515-.111a1.25 1.25 0 0 0 .547-.547c.046-.09.088-.227.111-.515c.024-.295.025-.68.025-1.252zM10.5 7a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5z"
-                        clip-rule="evenodd"
-                    />
+                        clip-rule="evenodd" />
                 </svg>
             </div>
         </div>
 
         <!-- Calendar dropdown -->
-        <Transition
-            enter-active-class="transition ease-out duration-150"
-            enter-from-class="opacity-0 translate-y-1 scale-95"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 translate-y-1 scale-95"
-        >
-            <div
-                v-if="showDropdown"
+        <Transition enter-active-class="transition ease-out duration-150"
+            enter-from-class="opacity-0 translate-y-1 scale-95" enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-1 scale-95">
+            <div v-if="showDropdown"
                 class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[280px] bg-white rounded-[20px] shadow-lg border border-neutral-100 z-50 p-4 space-y-2"
-                @click.stop
-                ref="dropdown"
-            >
+                @click.stop ref="dropdown">
                 <!-- Month / Year selectors (disabled) -->
                 <!-- <div class="flex items-center justify-center mb-4">
                     <div class="flex gap-2 relative">
@@ -113,7 +95,8 @@
                 <div class="flex items-center justify-between text-base font-medium mb-3 px-1">
                     <span class="font-normal text-lg">{{ currentCalendarMonth.format('MMM YYYY') }}</span>
                     <div class="flex items-center text-red-500 cursor-pointer p-1 rounded-full">
-                        <Icon icon="ic:round-navigate-next" width="25" height="25" @click="prevMonth" class="rotate-180" />
+                        <Icon icon="ic:round-navigate-next" width="25" height="25" @click="prevMonth"
+                            class="rotate-180" />
                         <Icon icon="ic:round-navigate-next" width="25" height="25" @click="nextMonth" />
                     </div>
                 </div>
@@ -122,18 +105,16 @@
                 <table class="w-full text-center text-xs border-collapse">
                     <thead>
                         <tr class="text-neutral-500 font-medium">
-                            <th v-for="d in ['Su','Mo','Tu','We','Th','Fr','Sa']" :key="d" class="font-medium pb-2">{{ d }}</th>
+                            <th v-for="d in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="d" class="font-medium pb-2">{{ d
+                                }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(week, wi) in calendarWeeks" :key="wi">
-                            <td
-                                v-for="(day, di) in week"
-                                :key="di"
-                                class="p-0 align-middle"
-                                @click="day.isCurrentMonth && !day.isDisabled ? pickDate(day.date) : null"
-                            >
-                                <div :class="dateCellClass(day)" class="w-full h-8 flex items-center justify-center transition duration-150">
+                            <td v-for="(day, di) in week" :key="di" class="p-0 align-middle"
+                                @click="day.isCurrentMonth && !day.isDisabled ? pickDate(day.date) : null">
+                                <div :class="dateCellClass(day)"
+                                    class="w-full h-8 flex items-center justify-center transition duration-150">
                                     {{ day.day }}
                                 </div>
                             </td>
@@ -143,11 +124,8 @@
 
                 <!-- Clear button -->
                 <div class="mt-4 flex justify-center">
-                    <button
-                        @click="clearDate"
-                        type="button"
-                        class="rounded-lg bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-200"
-                    >
+                    <button @click="clearDate" type="button"
+                        class="rounded-lg bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-200">
                         Clear
                     </button>
                 </div>
@@ -328,6 +306,7 @@ export default {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
