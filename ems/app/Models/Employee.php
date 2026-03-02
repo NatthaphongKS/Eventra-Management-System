@@ -60,6 +60,12 @@ class Employee extends Authenticatable
     {
         return $this->belongsTo(Employee::class, 'emp_create_by');
     }
+
+    //เชื่อมกับตาราง employee ผู้ลบ
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'emp_delete_by');
+    }
     //เชื่อมกับตาราง event
     public function events()
     {
