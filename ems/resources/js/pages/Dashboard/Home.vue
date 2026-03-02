@@ -423,6 +423,13 @@ export default {
     set(val) {
       this.selectedEventIds = new Set(val);
       this.showStatistics = false;
+      // รีเซ็ท employee table state เมื่อมีการเปลี่ยนเลือก Event
+      this.showEmployeeTable = false;
+      this.filteredEmployeesForTable = [];
+      this.employeeTableType = null;
+      this.currentPage = 1;
+      // ล้างข้อมูลผู้เข้าร่วมเก่า เพื่อป้องกันการแสดงข้อมูลหลังจากเปลี่ยนเลือก Event
+      this.eventParticipants = [];
     }
   },
     normalized() {
@@ -798,6 +805,11 @@ export default {
     }
   });
   this.showStatistics = false;
+  // รีเซ็ท employee table state เมื่อมีการเปลี่ยนเลือก
+  this.showEmployeeTable = false;
+  this.filteredEmployeesForTable = [];
+  this.employeeTableType = null;
+  this.currentPage = 1;
 },
 
 handleCheckAllEvents({ pageKeys, action }) {
@@ -809,6 +821,11 @@ handleCheckAllEvents({ pageKeys, action }) {
     }
   });
   this.showStatistics = false;
+  // รีเซ็ท employee table state เมื่อมีการเปลี่ยนเลือก
+  this.showEmployeeTable = false;
+  this.filteredEmployeesForTable = [];
+  this.employeeTableType = null;
+  this.currentPage = 1;
 },
 
     // Search handling
@@ -936,6 +953,8 @@ handleCheckAllEvents({ pageKeys, action }) {
         return;
       }
 
+      // ล้างข้อมูลผู้เข้าร่วมเก่าก่อนดึงข้อมูลใหม่ เพื่อป้องกัน race condition
+      this.eventParticipants = [];
       this.loadingParticipants = true;
       try {
         const eventIds = Array.from(this.selectedEventIds);
@@ -1183,6 +1202,13 @@ handleCheckAllEvents({ pageKeys, action }) {
         alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
         return;
       }
+      // รีเซ็ท employee table state เพื่อให้ render ใหม่
+      this.showEmployeeTable = false;
+      this.filteredEmployeesForTable = [];
+      this.employeeTableType = null;
+      this.currentPage = 1;
+      // ล้างข้อมูลผู้เข้าร่วมเก่า 
+      this.eventParticipants = [];
       // เปิดการแสดงผลกราฟและตาราง
       this.showStatistics = true;
       // เรียก fetch statistics

@@ -9,7 +9,7 @@
 
 namespace App\Service\HistoryServices;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Employee;
 
 class HistoryEmployeeService
 {
@@ -21,32 +21,51 @@ class HistoryEmployeeService
      */
     public function getAllHistoryEmployees()
     {
-        return DB::table('ems_employees as e')
-            ->join('ems_position as p', 'e.emp_position_id', '=', 'p.id')
-            ->join('ems_department as d', 'e.emp_department_id', '=', 'd.id')
-            ->join('ems_team as t', 'e.emp_team_id', '=', 't.id')
-            ->leftJoin('ems_employees as cb', 'e.emp_create_by', '=', 'cb.id')
-            ->leftJoin('ems_employees as db', 'e.emp_delete_by', '=', 'db.id')
-            ->select(
-                'e.id',
-                'e.emp_id',
-                'e.emp_prefix',
-                'e.emp_firstname',
-                'e.emp_lastname',
-                'e.emp_nickname',
-                'e.emp_delete_status',
-                'e.emp_created_at as created_at',
-                'e.emp_deleted_at',
-                'p.pst_name as position_name',
-                'd.dpm_name as department_name',
-                't.tm_name as team_name',
-                DB::raw("COALESCE(NULLIF(TRIM(cb.emp_firstname),'') , cb.emp_nickname, '-') as created_by_name"),
-                DB::raw("COALESCE(NULLIF(TRIM(db.emp_firstname),'') , db.emp_nickname, '-') as deleted_by_name")
-            )
-            // show all employees; don't filter by deletion status
-            ->orderByRaw('e.emp_deleted_at IS NULL ASC')
-            ->orderByDesc('e.emp_deleted_at')
-            ->orderBy('e.emp_id')
-            ->get();
+        return Employee::with(['position', 'department', 'team', 'creator', 'deletedBy'])
+            ->get()
+            ->map(function ($employee) {
+                return [
+                    'id' => $employee->id,
+                    'emp_id' => $employee->emp_id,
+                    'emp_prefix' => $employee->emp_prefix,
+                    'emp_firstname' => $employee->emp_firstname,
+                    'emp_lastname' => $employee->emp_lastname,
+                    'emp_nickname' => $employee->emp_nickname,
+                    'emp_delete_status' => $employee->emp_delete_status,
+                    'created_at' => $employee->emp_created_at,
+                    'emp_deleted_at' => $employee->emp_deleted_at,
+                    'position_name' => $employee->position?->pst_name ?? '-',
+                    'department_name' => $employee->department?->dpm_name ?? '-',
+                    'team_name' => $employee->team?->tm_name ?? '-',
+                    'created_by_name' => $this->formatEmployeeName($employee->creator),
+                    'deleted_by_name' => $this->formatEmployeeName($employee->deletedBy),
+                ];
+            })
+            ->sortBy(function ($employee) {
+                return $employee['emp_deleted_at'] === null ? 0 : 1;
+            })
+            ->sortByDesc('emp_deleted_at')
+            ->sortBy('emp_id')
+            ->values();
+    }
+
+    /**
+     * จัดรูปแบบชื่อพนักงาน
+     *
+     * @param \App\Models\Employee|null $employee
+     * @return string
+     */
+    private function formatEmployeeName($employee)
+    {
+        if (!$employee) {
+            return '-';
+        }
+
+        $firstName = trim($employee->emp_firstname ?? '');
+        if (!empty($firstName)) {
+            return $firstName;
+        }
+
+        return $employee->emp_nickname ?? '-';
     }
 }
