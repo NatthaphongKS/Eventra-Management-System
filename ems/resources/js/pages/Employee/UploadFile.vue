@@ -1,9 +1,18 @@
+<!--
 /**
  * ชื่อไฟล์: UploadFile.vue
  * คำอธิบาย: หน้าจอ Import พนักงานจากไฟล์ Excel พร้อมระบบ Validation และ Bulk Create
- * ชื่อผู้เขียน/แก้ไข: Thanusin leenarat
+ * Input:
+ *  - ไฟล์ Excel (.xlsx / .csv)
+ *  - ข้อมูลพนักงานตาม Template (Company, Employee ID, Prefix, Name, Department, Team, Position, Phone, Email)
+ * Output:
+ *  - แสดงข้อมูลพนักงานในรูปแบบตารางก่อนบันทึก
+ *  - แสดงผล Validation (Missing / Duplicate / Invalid relation)
+ *  - ส่งข้อมูลไปยัง Backend เพื่อสร้างพนักงานแบบ Bulk
+ * ชื่อผู้เขียน/แก้ไข: Thanusin Leenarat
  * วันที่จัดทำ/แก้ไข: 1 มีนาคม 2569
  */
+ -->
 <template>
     <head>
         <link rel="stylesheet"
