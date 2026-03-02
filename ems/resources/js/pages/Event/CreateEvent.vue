@@ -168,7 +168,7 @@
                                 class="flex-none w-5 h-5 text-red-700 mr-1 pointer-events-none" />
                         </div>
                         <p v-if="errors.eventTime" class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
-                            Required Time
+                            {{ timeErrorMessage || 'Required Time' }}
                         </p>
                     </div>
 
@@ -395,6 +395,7 @@ export default {
                 eventTime: false,
                 eventLocation: false,
             },
+            timeErrorMessage: '',
             selectCategory: [],
             filesNew: [],
             dragging: false,
@@ -586,17 +587,29 @@ export default {
         calDuration() {
             if (!this.eventTimeStart || !this.eventTimeEnd) {
                 this.eventDurationDisplay = "";
+                this.timeErrorMessage = '';
                 return;
             }
             const [sh, sm] = this.eventTimeStart.split(":").map(Number);
             const [eh, em] = this.eventTimeEnd.split(":").map(Number);
-            let diff = eh * 60 + em - (sh * 60 + sm);
-            if (diff < 0) diff += 24 * 60;
+            const startMin = sh * 60 + sm;
+            const endMin = eh * 60 + em;
+            // if end is before or equal start -> invalid (do not auto-wrap to next day)
+                if (endMin <= startMin) {
+                this.eventDurationDisplay = "";
+                this.eventDurationMinutes = 0;
+                this.errors.eventTime = true;
+                this.timeErrorMessage = 'End time must be after start time';
+                return;
+            }
+            let diff = endMin - startMin;
             this.eventDurationMinutes = diff;
             const h = Math.floor(diff / 60);
             const m = diff % 60;
             this.eventDurationDisplay =
                 h > 0 ? `${h} Hour ${m} Min` : `${m} Min`;
+            this.errors.eventTime = false;
+            this.timeErrorMessage = '';
         },
         // ฟังก์ชันตรวจสอบความถูกต้องของข้อมูล (Validation) ก่อนแสดง Modal ยืนยัน
         saveEvent() {
@@ -605,6 +618,19 @@ export default {
             this.errors.eventDescription = !this.eventDescription;
             this.errors.eventDate = !this.eventDate;
             this.errors.eventTime = !this.eventTimeStart || !this.eventTimeEnd;
+            // Additional validation: end must be after start
+            if (!this.errors.eventTime) {
+                const [sh, sm] = this.eventTimeStart.split(":").map(Number);
+                const [eh, em] = this.eventTimeEnd.split(":").map(Number);
+                const startMin = sh * 60 + sm;
+                const endMin = eh * 60 + em;
+                if (endMin <= startMin) {
+                    this.errors.eventTime = true;
+                    this.timeErrorMessage = 'End time must be after start time';
+                } else {
+                    this.timeErrorMessage = '';
+                }
+            }
             this.errors.eventLocation = !this.eventLocation;
             if (Object.values(this.errors).some((v) => v)) return;
             this.showConfirmCreate = true;

@@ -167,9 +167,9 @@
                             <Icon icon="mdi:clock-outline"
                                 class="flex-none w-5 h-5 text-red-700 mr-1 pointer-events-none" />
                         </div>
-                        <p v-if="submitted && formErrors.eventTime"
+                        <p v-if="formErrors.eventTime"
                             class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
-                            Required Time
+                            {{ timeErrorMessage || 'Required Time' }}
                         </p>
                     </div>
 
@@ -379,6 +379,8 @@ export default {
             // --- Validation ---
             formErrors: {},
             submitted: false,
+            // Time-specific error message (displayed under time inputs)
+            timeErrorMessage: '',
 
             // --- Files ---
             filesExisting: [],
@@ -670,6 +672,18 @@ export default {
             if (!this.eventDescription?.trim()) errors.eventDescription = true;
             if (!this.eventDate) errors.eventDate = true;
             if (!this.eventTimeStart || !this.eventTimeEnd) errors.eventTime = true;
+            else {
+                const [sh, sm] = this.eventTimeStart.split(':').map(Number);
+                const [eh, em] = this.eventTimeEnd.split(':').map(Number);
+                const startMin = sh * 60 + sm;
+                const endMin = eh * 60 + em;
+                if (endMin <= startMin) {
+                    errors.eventTime = true;
+                    this.timeErrorMessage = 'End time must be after start time';
+                } else {
+                    this.timeErrorMessage = '';
+                }
+            }
             if (!this.eventLocation?.trim()) errors.eventLocation = true;
 
             this.formErrors = errors;
@@ -774,29 +788,39 @@ export default {
         },
 
         calDuration() {
-            const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number); //แยกเวลาตรงส่วน : เพื่อแยก ชั่วโมงกับ นาที
-            // startHour เก็บ ชั่วโมง startMinute เก็บนาที
-            //เอาแต่ละ element ใน array ไปผ่านฟังก์ชัน Number() เพื่อแปลงจาก string → number :  ["09", "30"].map(Number) → [9, 30]
-            const [endHour, endMinute] = (this.eventTimeEnd || '0:0').split(':').map(Number);
-
-            let sumStartMin = startHour * 60 + startMinute; //แปลงแล้วรวมเวลาเป็นนาที
-            let sumEndMin = endHour * 60 + endMinute;
-            let diff = sumEndMin - sumStartMin;// เอานาทีที่รวมกับชั่วโมงแล้วทั้ง 2 ช่วงมาลบกัน
-            if (diff < 0) diff += 24 * 60; // รองรับข้ามเที่ยงคืน ถ้าลบ แล้วได้ค่า ติดลบให้ diff เพิ่มไป 24 ชม แบบนาที
-
-
-            this.eventDurationMinutes = Math.max(0, diff); //กัน bug เพื่อ diff ที่เข้ามาตรงนี้ติดลบ จะได้ค่า 0 แทน
-
-            // ส่วนโชว์ ใน input :
-            const hour = Math.floor(diff / 60), //hour เก็บชม ที่แปลง นาที จากdiff เศษปัดลง
-                min = diff % 60;  //min เก็บนาที เอาเศษ
-            this.eventDuration = `${hour} Hour ${min} Min`; // ใช้สำหรับ “แสดงผล” ชั่วโมง h นาที m -> 2h50m
-            // เช็คว่า ถ้าไม่มีนาที หรือ ชั่วโมง ให้แสดงแค่ค่าเดียว
-            if (min === 0) {
-                this.eventDuration = `${hour} Hour`;
-            } else if (hour === 0) {
-                this.eventDuration = `${min} Min`;
+            // If either time missing, clear duration and message
+            if (!this.eventTimeStart || !this.eventTimeEnd) {
+                this.eventDurationMinutes = 0;
+                this.eventDuration = '';
+                this.timeErrorMessage = '';
+                return;
             }
+
+            const [startHour, startMinute] = this.eventTimeStart.split(':').map(Number);
+            const [endHour, endMinute] = this.eventTimeEnd.split(':').map(Number);
+
+            const startMin = startHour * 60 + startMinute;
+            const endMin = endHour * 60 + endMinute;
+
+            // Enforce end > start (no automatic next-day wrap)
+            if (endMin <= startMin) {
+                this.eventDurationMinutes = 0;
+                this.eventDuration = '';
+                this.formErrors.eventTime = true;
+                this.timeErrorMessage = 'End time must be after start time';
+                return;
+            }
+
+            const diff = endMin - startMin;
+            this.eventDurationMinutes = diff;
+            const hour = Math.floor(diff / 60);
+            const min = diff % 60;
+            if (hour === 0) this.eventDuration = `${min} Min`;
+            else if (min === 0) this.eventDuration = `${hour} Hour`;
+            else this.eventDuration = `${hour} Hour ${min} Min`;
+
+            this.formErrors.eventTime = false;
+            this.timeErrorMessage = '';
         },
         onCancel() {
             if (this.saving || this.filesNew.length) {
