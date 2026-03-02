@@ -4,7 +4,7 @@
  * Input: ข้อมูลกิจกรรมจาก API /edit-event/{id}
  * Output: แบบฟอร์มแก้ไขกิจกรรม พร้อมอัปโหลดไฟล์และเลือก Guest
  * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
- * วันที่จัดทำ/แก้ไข: 2026-02-28
+ * วันที่จัดทำ/แก้ไข: 2026-03-02
  */ -->
 
 <!-- pages/edit_event.vue -->
@@ -81,34 +81,30 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-3 mt-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pb-2">
 
-                    <!-- ช่องกรอกวัน -->
+                    <!-- ช่องกรอกวันที่ -->
                     <div class="relative">
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
-                            Date <span class="text-red-600">*</span>
-                        </label>
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Date <span
+                                class="text-red-600">*</span></label>
                         <EventSingleDatePicker v-model="eventDate" :min="minDate"
                             :has-error="submitted && formErrors.eventDate"
                             @update:modelValue="formErrors.eventDate = false" />
                         <p v-if="submitted && formErrors.eventDate"
-                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
-                            Required Date
-                        </p>
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">Required Date</p>
                     </div>
 
                     <!-- ช่องกรอกเวลา -->
                     <div class="relative">
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
-                            Time <span class="text-red-600">*</span>
-                        </label>
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Time <span
+                                class="text-red-600">*</span></label>
                         <div :class="[
                             'flex h-[52px] w-full items-center rounded-2xl border px-3 shadow-sm bg-white transition',
                             submitted && formErrors.eventTime
                                 ? 'border-red-500 bg-red-50'
                                 : 'border-neutral-200 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400',
                         ]">
-                            <!-- Start trigger -->
+                            <!-- ปุ่มเลือกเวลาเริ่มต้น -->
                             <div class="relative flex-1 flex items-center justify-center">
                                 <button type="button" class="tp-trigger"
                                     :class="(pickerStartHour || pickerStartMin) ? 'text-neutral-800' : 'text-red-300'"
@@ -116,7 +112,6 @@
                                     {{ (!pickerStartHour && !pickerStartMin) ? 'Start' : (pickerStartHour || '--') + ':'
                                         + (pickerStartMin || '--') }}
                                 </button>
-                                <!-- Start panel -->
                                 <div v-if="showStartPanel" class="tp-panel" @pointerdown.stop @click.stop>
                                     <div class="tp-col" ref="startHourCol">
                                         <div class="tp-col-header">Hour</div>
@@ -136,8 +131,7 @@
                             </div>
 
                             <span class="flex-none text-[16px] font-bold text-red-300 px-1">-</span>
-
-                            <!-- End trigger -->
+                            <!-- ปุ่มเลือกเวลาสิ้นสุด -->
                             <div class="relative flex-1 flex items-center justify-center">
                                 <button type="button" class="tp-trigger"
                                     :class="(pickerEndHour || pickerEndMin) ? 'text-neutral-800' : 'text-red-300'"
@@ -145,7 +139,6 @@
                                     {{ (!pickerEndHour && !pickerEndMin) ? 'End' : (pickerEndHour || '--') + ':' +
                                         (pickerEndMin || '--') }}
                                 </button>
-                                <!-- End panel -->
                                 <div v-if="showEndPanel" class="tp-panel" @pointerdown.stop @click.stop>
                                     <div class="tp-col" ref="endHourCol">
                                         <div class="tp-col-header">Hour</div>
@@ -163,24 +156,22 @@
                                     </div>
                                 </div>
                             </div>
-
                             <Icon icon="mdi:clock-outline"
                                 class="flex-none w-5 h-5 text-red-700 mr-1 pointer-events-none" />
                         </div>
+                        <!-- ข้อความ error แสดงใต้ช่องเวลา -->
                         <p v-if="formErrors.eventTime"
-                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
-                            {{ timeErrorMessage || 'Required Time' }}
-                        </p>
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">{{ timeErrorMessage ||
+                                'Required Time' }}</p>
                     </div>
 
-                    <!-- ช่องกรอกแสดงช่วงเวลา -->
+                    <!-- ช่องแสดงผลระยะเวลาที่คำนวณได้ -->
                     <div>
-                        <label
-                            class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">Duration</label>
-                        <div class="flex h-[52px] w-full items-center gap-3 rounded-xl  px-4 shadow-sm bg-[#F5F5F5]">
-                            <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
-                                v-model="eventDuration" placeholder="Auto fill Hour"></input>
-                            <Icon icon="mingcute:time-duration-line" class="w-7 h-7  text-neutral-400" />
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Duration</label>
+                        <div class="flex h-[52px] w-full items-center gap-3 rounded-xl px-4 shadow-sm bg-[#F5F5F5]">
+                            <input class="w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
+                                v-model="eventDuration" placeholder="Auto fill Hour" />
+                            <Icon icon="mingcute:time-duration-line" class="w-7 h-7 text-neutral-400" />
                         </div>
                     </div>
                 </div>
@@ -664,6 +655,11 @@ export default {
         },
 
         // [Earth (Suphanut) 2025-12-06] Validate form
+        // คำอธิบาย:
+        // - ตรวจความครบถ้วนของฟิลด์หลัก (title, category, description, date, time, location)
+        // - สำหรับเวลา: ถ้า start หรือ end ว่าง จะถือว่า error (required)
+        // - ถ้ามีทั้งสองค่า จะคำนวณเป็นนาทีและเช็คว่าจบต้องมากกว่าเริ่ม (end > start)
+        //   ถ้าไม่เป็นไปตามนี้ จะเติม `errors.eventTime` และ `timeErrorMessage` เพื่อแสดงข้อความใต้ช่องเวลา
         validateForm() {
             const errors = {};
 
@@ -787,6 +783,11 @@ export default {
             })
         },
 
+        // คำนวณระยะเวลา (Duration)
+        // - อ่านค่า `eventTimeStart` และ `eventTimeEnd` (รูปแบบ HH:mm)
+        // - แปลงเป็นนาทีรวม (hour * 60 + minute) แล้วหาผลต่าง (end - start)
+        // - ไม่อนุญาตให้เวลาจบก่อนหรือเท่ากับเวลาเริ่ม (no next-day wrap). ถ้าเกิดขึ้น จะตั้ง error และข้อความ
+        // - เก็บผลลัพธ์เป็น `eventDurationMinutes` (ตัวเลขนาที) และ `eventDuration` (ข้อความอ่านง่าย)
         calDuration() {
             // If either time missing, clear duration and message
             if (!this.eventTimeStart || !this.eventTimeEnd) {
@@ -845,6 +846,9 @@ export default {
             }, cfg)
         },
         togglePanel(which) {
+            // Toggle the hour/min picker panels for start/end time.
+            // - When opening start panel, ensure end panel is closed and vice versa.
+            // - After opening, call `scrollPanelToActive()` to scroll to the currently selected value.
             if (which === 'start') {
                 this.showEndPanel = false;
                 this.showStartPanel = !this.showStartPanel;
@@ -877,6 +881,8 @@ export default {
             this.syncStartTime();
         },
         syncStartTime() {
+            // When both hour and minute are selected in the start picker,
+            // update `eventTimeStart` (string HH:mm), clear the time error and recalc duration.
             if (this.pickerStartHour !== '' && this.pickerStartMin !== '') {
                 this.eventTimeStart = `${this.pickerStartHour}:${this.pickerStartMin}`;
                 this.formErrors.eventTime = false;
@@ -892,6 +898,8 @@ export default {
             this.syncEndTime();
         },
         syncEndTime() {
+            // When both hour and minute are selected in the end picker,
+            // update `eventTimeEnd` (string HH:mm), clear the time error and recalc duration.
             if (this.pickerEndHour !== '' && this.pickerEndMin !== '') {
                 this.eventTimeEnd = `${this.pickerEndHour}:${this.pickerEndMin}`;
                 this.formErrors.eventTime = false;
