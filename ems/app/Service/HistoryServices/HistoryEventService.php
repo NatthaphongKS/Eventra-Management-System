@@ -20,7 +20,7 @@ class HistoryEventService
      */
     public function getAllDeletedEvents()
     {
-        // ดึงข้อมูล Event ที่มีสถานะ deleted โดยใช้ with() เพื่อดึง relation
+        // ดึงข้อมูล Event ทั้งหมด (รวมที่ไม่ถูกลบ) โดยใช้ with() เพื่อดึง relation
         $events = Event::with(['creator', 'deletedBy'])
             ->orderBy('evn_created_at', 'desc')
             ->get();

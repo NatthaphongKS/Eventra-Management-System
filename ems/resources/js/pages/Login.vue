@@ -20,48 +20,87 @@
             </div>
 
             <div class="left">
-                <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Sign In</h2>
-                <form @submit.prevent="login">
+                <!-- Login Form -->
+                <template v-if="!forgotPassword">
+                    <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Sign In</h2>
+                    <form @submit.prevent="login">
 
-                    <div class="mb-5">
-                        <input type="text" v-model="email"
-                            class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
-                            placeholder="Email" />
-                        <p v-if="errors.email" class="text-red-700 text-m mt-1 text[16px]">
-                            {{ errors.email[0] }}
-                        </p>
-                    </div>
+                        <div class="mb-5">
+                            <input type="text" v-model="email"
+                                class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
+                                placeholder="Email" />
+                            <p v-if="errors.email" class="text-red-700 text-m mt-1 text[16px]">
+                                {{ errors.email[0] }}
+                            </p>
+                        </div>
 
-                    <div class="mb-2">
-                        <input type="password" v-model="password"
-                            :class="{ 'border-red-500': errors.password, 'border-red-700': !errors.password }"
-                            class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
-                            placeholder="Password" />
-                        <p v-if="errors.password" class="text-red-700 text-m mt-1 text[16px]">
-                            {{ errors.password[0] }}
-                        </p>
-                    </div>
+                        <div class="mb-2">
+                            <input type="password" v-model="password"
+                                :class="{ 'border-red-500': errors.password, 'border-red-700': !errors.password }"
+                                class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
+                                placeholder="Password" />
+                            <p v-if="errors.password" class="text-red-700 text-m mt-1 text[16px]">
+                                {{ errors.password[0] }}
+                            </p>
+                        </div>
 
-                    <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
+                        <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
 
-                    <div class="flex justify-center mt-4 mb-4">
-                        <router-link to="/forgot-password"
-                            class="text-red-200 text-lg underline font-regular hover:text-red-700 transition-colors">
-                            forgot password
-                        </router-link>
-                    </div>
+                        <div class="flex justify-center mt-4 mb-4">
+                            <button type="button" @click="toggleForgotPassword"
+                                class="text-red-200 text-lg underline font-regular hover:text-red-700 transition-colors">
+                                forgot password
+                            </button>
+                        </div>
 
-                    <div class="flex justify-center">
-                        <button type="submit" :disabled="loading"
-                            class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-                            {{ loading ? 'Signing in...' : 'Sign In' }}
-                        </button>
-                    </div>
-                </form>
+                        <div class="flex justify-center">
+                            <button type="submit" :disabled="loading"
+                                class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
+                                {{ loading ? 'Signing in...' : 'Sign In' }}
+                            </button>
+                        </div>
+                    </form>
 
-                <p v-if="error" class="text-center text-red-600 mt-4 text-lg font-medium">
-                    {{ error }}
-                </p>
+                    <p v-if="error" class="text-center text-red-600 mt-4 text-lg font-medium">
+                        {{ error }}
+                    </p>
+                </template>
+
+                <!-- Forgot Password Form -->
+                <template v-else>
+                    <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Reset Password</h2>
+                    <form @submit.prevent="resetPassword">
+
+                        <div class="mb-5">
+                            <input type="text" v-model="resetEmail"
+                                class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
+                                placeholder="Email" />
+                            <p v-if="errors.resetEmail" class="text-red-700 text-m mt-1 text[16px]">
+                                {{ errors.resetEmail[0] }}
+                            </p>
+                        </div>
+
+                        <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
+
+                        <div class="flex justify-center mt-4 mb-4">
+                            <button type="button" @click="toggleForgotPassword"
+                                class="text-red-200 text-lg underline font-regular hover:text-red-700 transition-colors">
+                                back to sign in
+                            </button>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <button type="submit" :disabled="loading"
+                                class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
+                                {{ loading ? 'Sending...' : 'Send Reset Link' }}
+                            </button>
+                        </div>
+                    </form>
+
+                    <p v-if="error" class="text-center text-red-600 mt-4 text-lg font-medium">
+                        {{ error }}
+                    </p>
+                </template>
             </div>
         </div>
     </div>
@@ -76,10 +115,12 @@ export default {
         return {
             email: "",
             password: "",
+            resetEmail: "",
             loading: false,
             message: "",
             error: "",
             errors: {},
+            forgotPassword: false,
         };
     },
     methods: {
@@ -142,6 +183,64 @@ export default {
                     }
                 } else {
                     this.message = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
+                }
+            } finally {
+                this.loading = false;
+            }
+        },
+        toggleForgotPassword() {
+            this.forgotPassword = !this.forgotPassword;
+            this.message = "";
+            this.error = "";
+            this.errors = {};
+            // Clear form fields
+            if (this.forgotPassword) {
+                this.email = "";
+                this.password = "";
+            } else {
+                this.resetEmail = "";
+            }
+        },
+        async resetPassword() {
+            this.message = "";
+            this.error = "";
+            this.errors = {};
+
+            if (!this.resetEmail?.trim()) {
+                this.errors.resetEmail = ["Email is required"];
+                return;
+            }
+
+            const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+            if (!emailRegex.test(this.resetEmail.trim())) {
+                this.errors.resetEmail = ["Invalid email"];
+                return;
+            }
+
+            this.loading = true;
+
+            try {
+                const res = await axios.post('/forgot-password', {
+                    email: this.resetEmail
+                }, { baseURL: '' });
+
+                this.message = res.data.message || "Password reset link has been sent to your email";
+                // Auto clear the form and close forgot password after success
+                setTimeout(() => {
+                    this.resetEmail = "";
+                    this.forgotPassword = false;
+                }, 3000);
+            } catch (err) {
+                if (err.response) {
+                    if (err.response.status === 422) {
+                        this.errors = err.response.data.errors;
+                    } else if (err.response.data && err.response.data.message) {
+                        this.error = err.response.data.message;
+                    } else {
+                        this.error = "ไม่สามารถส่งรีเซ็ตลิงก์ได้ กรุณาลองอีกครั้ง";
+                    }
+                } else {
+                    this.error = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
                 }
             } finally {
                 this.loading = false;
