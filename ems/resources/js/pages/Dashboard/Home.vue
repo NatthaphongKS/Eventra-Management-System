@@ -980,6 +980,7 @@ export default {
                         })),
                         teams: (res.data.teams || []).map(team => ({
                             name: team.name,
+                            department: team.department,  // เอาไว้สำหรับ filter ทีมตามแผนก
                             attending: team.attending || 0,
                             notAttending: team.notAttending || 0,
                             pending: team.pending || 0
