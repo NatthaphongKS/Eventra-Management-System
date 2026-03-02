@@ -192,8 +192,8 @@ export default {
     computed: {
         formattedDisplay() {
             if (!this.modelValue) return '';
-            const [y, m, d] = this.modelValue.split('-');
-            return `${d}/${m}/${y.slice(-2)}`;
+            const [year, month, day] = this.modelValue.split('-');
+            return `${day}/${month}/${year.slice(-2)}`;
         },
         monthOptions() {
             return Array.from({ length: 12 }, (_, i) =>
@@ -201,9 +201,9 @@ export default {
             );
         },
         yearOptions() {
-            const cur = dayjs().year();
+            const currentYear = dayjs().year();
             const years = [];
-            for (let i = cur - 10; i <= cur + 10; i++) years.push(i);
+            for (let i = currentYear - 10; i <= currentYear + 10; i++) years.push(i);
             return years.sort((a, b) => b - a);
         },
         minDayjs() {
@@ -277,25 +277,25 @@ export default {
             this.showDropdown = false;
         },
         dateCellClass(day) {
-            let cls = 'text-xs ';
+            let classes = 'text-xs ';
 
             if (day.isDisabled) {
-                return cls + 'rounded-lg text-neutral-200 cursor-not-allowed';
+                return classes + 'rounded-lg text-neutral-200 cursor-not-allowed';
             }
 
-            cls += 'cursor-pointer ';
+            classes += 'cursor-pointer ';
 
             if (day.isSelected) {
-                cls += 'rounded-lg bg-red-500 text-white font-semibold';
+                classes += 'rounded-lg bg-red-500 text-white font-semibold';
             } else if (day.isToday) {
-                cls += 'rounded-lg bg-blue-500 text-white font-bold';
+                classes += 'rounded-lg bg-blue-500 text-white font-bold';
             } else if (day.isCurrentMonth) {
-                cls += 'rounded-lg text-neutral-800 hover:bg-neutral-100';
+                classes += 'rounded-lg text-neutral-800 hover:bg-neutral-100';
             } else {
-                cls += 'rounded-lg text-neutral-300';
+                classes += 'rounded-lg text-neutral-300';
             }
 
-            return cls;
+            return classes;
         },
     },
 };
