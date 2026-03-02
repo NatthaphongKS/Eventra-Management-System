@@ -610,11 +610,11 @@ onBeforeRouteLeave((to, from, next) => {
     if (isChanged) {
         openAlert({
             type: "confirm",
-            title: "ละทิ้งการเปลี่ยนแปลง?",
-            message: "คุณมีการแก้ไขข้อมูลที่ยังไม่ได้บันทึก ต้องการละทิ้งและออกจากหน้านี้หรือไม่?",
+            title: "DO YOU WANT TO LEAVE THIS CHANGE?",
+            message: "Your changes will be lost.",
             showCancel: true,
-            okText: "ใช่, ออกจากหน้านี้",
-            cancelText: "ยกเลิก",
+            okText: "OK",
+            cancelText: "Cancel",
             onConfirm: () => {
                 alert.open = false;
                 isConfirmedLeave = true; // ยืนยันว่ายอมออก
