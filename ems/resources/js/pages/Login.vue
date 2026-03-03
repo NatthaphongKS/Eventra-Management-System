@@ -66,7 +66,7 @@
                     </p>
                 </template>
 
-                <!-- Forgot Password Form -->
+                <!--ฟอร์มกู้คืนรหัสผ่าน -->
                 <template v-else>
                     <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Reset Password</h2>
                     <form @submit.prevent="resetPassword">
@@ -225,7 +225,7 @@ export default {
                 }, { baseURL: '' });
 
                 this.message = res.data.message || "Password reset link has been sent to your email";
-                // Auto clear the form and close forgot password after success
+                // างข้อมูลแบบฟอร์มและปิดหน้ากู้คืนรหัสผ่านโดยอัตโนมัติหลังจากสำเร็จ
                 setTimeout(() => {
                     this.resetEmail = "";
                     this.forgotPassword = false;
