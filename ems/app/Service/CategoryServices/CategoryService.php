@@ -125,6 +125,7 @@ class CategoryService
             'cat_name'        => $category->cat_name,
             'created_by_name' => $createdByName ? trim($createdByName) : '-',
             'cat_created_at'  => $category->cat_created_at,
+            
         ];
     }
 }
