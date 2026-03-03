@@ -1,9 +1,17 @@
+/**
+ * ชื่อไฟล์: EditEmployee.vue
+ * คำอธิบาย: Component สำหรับฟอร์มแก้ไขข้อมูลพนักงาน ตรวจสอบ Validation และอัปเดตข้อมูลไปยัง Backend พร้อมดักจับการเปลี่ยนหน้า
+ * Input: -
+ * Output: หน้าฟอร์มแก้ไขพนักงาน
+ * ชื่อผู้เขียน/แก้ไข: katcharuek sriphirom
+ * วันที่จัดทำ/แก้ไข: 22 กุมภาพันธ์ 2569
+ */
+
 <template>
     <div>
         <div class="mx-auto max-w-[1400px] px-6">
             <header class="pt-6 mb-6">
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-
                 <div class="flex items-center justify-between gap-3 mb-6">
                     <h2 class="text-xl font-semibold text-gray-800 ml-8">
                         Edit Employee
@@ -129,14 +137,7 @@
 </template>
 
 <script setup>
-/**
- * ชื่อไฟล์: EditEmployee.vue
- * คำอธิบาย: Component สำหรับฟอร์มแก้ไขข้อมูลพนักงาน ตรวจสอบ Validation และอัปเดตข้อมูลไปยัง Backend พร้อมดักจับการเปลี่ยนหน้า
- * Input: -
- * Output: หน้าฟอร์มแก้ไขพนักงาน
- * ชื่อผู้เขียน/แก้ไข: katcharuek sriphirom
- * วันที่จัดทำ/แก้ไข: 22 กุมภาพันธ์ 2569
- */
+
 
 import { reactive, computed, watch, ref, onMounted } from "vue";
 import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";

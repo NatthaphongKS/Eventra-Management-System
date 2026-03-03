@@ -8,7 +8,7 @@
  */
 
 namespace App\Service\CategoryServices;
-
+use App\Models\Employee;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 
@@ -117,10 +117,9 @@ class CategoryService
     ============================================================ */
     private function formatSingleCategory($category)
     {
-        $createdByName = DB::table('ems_employees')
-            ->where('id', $category->cat_created_by)
-            ->value('emp_firstname');
 
+        $createdByName = Employee::where('id', $category->cat_created_by)
+        ->value('emp_firstname');
         return [
             'id'              => $category->id,
             'cat_name'        => $category->cat_name,
