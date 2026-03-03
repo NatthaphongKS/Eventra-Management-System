@@ -1,3 +1,20 @@
+<!--
+/**
+* ชื่อไฟล์: AddEmployeePage.vue
+* คำอธิบาย: หน้า Add Employee สำหรับเพิ่มข้อมูลพนักงานใหม่เข้าสู่ระบบ
+* โดยประกอบด้วยฟอร์มกรอกข้อมูลพนักงาน การ validate ข้อมูล
+* การดึงข้อมูล meta (prefix, department, team, position, company)
+* และการส่งข้อมูลไปยัง backend ผ่าน API เพื่อบันทึกลงฐานข้อมูล
+* Input:
+*    - รับข้อมูล meta จาก API (/meta)
+*    - รับการกรอกข้อมูลจากผู้ใช้งานผ่านฟอร์ม
+* Output:
+*    - ส่งข้อมูลไปยัง API (/save-employee) เพื่อบันทึกข้อมูลพนักงาน
+*    - แสดง ModalAlert กรณี Success / Error / Confirm Leave
+* ชื่อผู้เขียน/แก้ไข: Thanusin Leenarat
+* วันที่จัดทำ/แก้ไข: 26 กุมภาพันธ์ 2569
+*/
+-->
 <template>
     <div>
         <!-- Header + ปุ่ม Import -->
@@ -6,12 +23,12 @@
                 <link rel="stylesheet"
                     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-                <div class="flex items-center justify-between gap-3 mb-6">
-                    <h2 class="text-3xl font-semibold text-nutral-800 ml-8">
+                <div class="flex items-center mb-6">
+                    <h2 class="text-3xl font-semibold text-neutral-800 ml-8">
                         Add New Employee
                     </h2>
 
-                    <div class="flex justify-end">
+                    <div class="ml-auto flex items-center">
                         <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="onImport" />
                         <ImportButton class="ml-auto" label="Import" icon="download" @click="goImport" />
                     </div>
@@ -21,12 +38,16 @@
                         type="success" @confirm="handleSuccessClose" />
 
                     <!-- Error alert -->
-                    <EmployeeCannotCreate :open="showCreateError" :message="createErrorMessage"
-                        @close="handleErrorClose" />
+                    <ModalAlert v-model:open="showCreateError" type="error" title="Error" :message="createErrorMessage"
+                        okText="Close" @confirm="handleErrorClose" />
 
                     <!-- Load meta error alert -->
-                    <EmployeeCannotCreate :open="showLoadMetaError" :message="loadMetaErrorMessage"
-                        @close="handleLoadMetaErrorClose" />
+                    <ModalAlert v-model:open="showLoadMetaError" type="error" title="Load Failed"
+                        :message="loadMetaErrorMessage" okText="Close" @confirm="handleLoadMetaErrorClose" />
+
+                    <!-- Leave confirm alert -->
+                    <ModalAlert v-model:open="showLeaveConfirm" type="confirm" title="DO YOU WANT TO LEAVE THIS CHANGE?"
+                        message="Your changes will be lost." @confirm="confirmLeave" />
                 </div>
             </header>
 
@@ -106,7 +127,7 @@
                                 <div class="grid grid-cols-2 gap-3 mt-1">
                                     <DropdownPill v-model="form.companyId" :options="companies" placeholder="Company"
                                         class="h-11 w-full" :error="errors.companyId" />
-                                    <InputPill v-model="form.employeeNumber" placeholder="Ex.0001" maxlength="4"
+                                    <InputPill v-model="form.employeeNumber" placeholder="Ex.001" maxlength="3"
                                         class="h-11 w-full" :error="errors.employeeNumber" />
                                 </div>
                             </FormField>
@@ -154,7 +175,6 @@ import ImportButton from "../../components/Button/ImportButton.vue";
 import CreateButton from "@/components/Button/CreateButton.vue";
 import CancelButton from "@/components/Button/CancelButton.vue";
 import ModalAlert from "../../components/Alert/ModalAlert.vue";
-import EmployeeCannotCreate from "../../components/Alert/Employee/EmployeeCannotCreate.vue";
 
 /* =========================================================
  * 2. Router / Navigation
@@ -213,6 +233,8 @@ const showCreateError = ref(false);
 const createErrorMessage = ref("");
 const showLoadMetaError = ref(false);
 const loadMetaErrorMessage = ref("");
+
+const showLeaveConfirm = ref(false);
 
 /* =========================================================
  * 5. Lifecycle
@@ -295,6 +317,13 @@ const employeeIdCombined = computed(() => {
  */
 const isEmployeePermission = computed(() => form.permission === "employee");
 
+/**
+ * ตรวจสอบว่าฟอร์มมีการกรอกข้อมูลหรือไม่ (dirty check)
+ */
+const isFormDirty = computed(() => {
+    return Object.values(form).some(v => v !== "" && v !== null);
+});
+
 /* =========================================================
  * 7. Validation Logic
  * ======================================================= */
@@ -305,7 +334,7 @@ const MSG = {
     requiredNumber: "Required field only number",
     requiredEmail: "Required email, should have @ and .",
     requiredField: "Required field",
-    employeeNumber4: "Employee number must be 4 digits",
+    employeeNumber3: "Employee number must be 3 digits",
     passwordMin: "Password must be at least 8 characters",
 }
 
@@ -322,7 +351,7 @@ const fieldRules = {
     email: ["requiredEmail"],
     password: ["requiredField"],
     companyId: ["requiredSelect"],
-    employeeNumber: ["employeeNumber4"],
+    employeeNumber: ["employeeNumber3"],
 };
 
 /**
@@ -379,8 +408,8 @@ function validateField(key, value) {
             return "Only numbers are allowed";
         }
 
-        if (value.length !== 4) {
-            return MSG.employeeNumber4;
+        if (value.length !== 3) {
+            return MSG.employeeNumber3;
         }
     }
 
@@ -532,12 +561,15 @@ async function handleSubmit() {
     }
 }
 
-/**
+/*
  * cancel form
  */
 function onCancel() {
-    Object.keys(form).forEach((k) => (form[k] = ""));
-    Object.keys(errors).forEach((k) => delete errors[k]);
+    if (isFormDirty.value) {
+        showLeaveConfirm.value = true;
+        return;
+    }
+
     router.push("/employee");
 }
 
@@ -568,7 +600,19 @@ function onEmployeeNumberInput(e) {
     } else {
         delete errors.employeeNumber;
     }
-    form.employeeNumber = rawValue.replace(/\D/g, "").slice(0, 4);
+    form.employeeNumber = rawValue.replace(/\D/g, "").slice(0, 3);
+}
+
+/**
+ * ยืนยันการออกจากหน้าที่มีการกรอกข้อมูล
+ */
+function confirmLeave() {
+    showLeaveConfirm.value = false;
+
+    Object.keys(form).forEach((k) => (form[k] = ""));
+    Object.keys(errors).forEach((k) => delete errors[k]);
+
+    router.push("/employee");
 }
 </script>
 
