@@ -1,3 +1,12 @@
+<!-- /**
+ * ชื่อไฟล์: EventCheckIn.vue
+ * คำอธิบาย: หน้าสำหรับเช็คชื่อผู้เข้าร่วมกิจกรรม
+ * Input: ข้อมูลพนักงานและการเช็คชื่อจาก API /getEmployeeForCheckin/eveId/{eveId}
+ * Output: หน้าจอสำหรับการเช็คชื่อ และพร้อมสำหรับการเช็คชื่อผู้เข้าร่วม
+ * คนแก้ไข: Natthaphong Kongsinl
+ * วันที่แก้ไข: 2026-02-27
+ */ -->
+<!-- pages/ReplyForm.vue -->
 <template>
     <p class="ml-6 text-[32px] font-semibold text-neutral-800">
         {{ eventTitle }}
@@ -59,8 +68,8 @@
                     class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                     :class="
                         statusFilter === 'accepted'
-                            ? 'bg-[#00A73D] text-white border-[#00A73D] shadow-lg'
-                            : 'bg-[#F1FDF4] text-[#00A73D] border-[#E9E9E9] hover:bg-[#E2FBE9]'
+                            ? 'bg-green-600 text-white border-green-600 shadow-lg'
+                            : 'bg-green-50 text-green-600 border-gray-200 hover:bg-green-100'
                     "
                     @click="setStatus('accepted')"
                 >
@@ -76,8 +85,8 @@
                     class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                     :class="
                         statusFilter === 'denied'
-                            ? 'bg-[#C91C23] text-white border-[#C91C23] shadow-lg'
-                            : 'bg-[#FFF8F8] text-[#C91C23] border-[#E9E9E9] hover:bg-[#FFD4D4]'
+                            ? 'bg-red-600 text-white border-red-600 shadow-lg'
+                            : 'bg-red-50 text-red-600 border-gray-200 hover:bg-red-100'
                     "
                     @click="setStatus('denied')"
                 >
@@ -93,8 +102,8 @@
                     class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                     :class="
                         statusFilter === 'pending'
-                            ? 'bg-[#389FDC] text-white border-[#389FDC] shadow-lg'
-                            : 'bg-[#F0F9FF] text-[#389FDC] border-[#E9E9E9] hover:bg-[#CEEBFF]'
+                            ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
+                            : 'bg-blue-50 text-blue-500 border-gray-200 hover:bg-blue-100'
                     "
                     @click="setStatus('pending')"
                 >
@@ -110,8 +119,8 @@
                     class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                     :class="
                         statusFilter === 'notInvited'
-                            ? 'bg-[#696969] text-white border-[#696969] shadow-lg'
-                            : 'bg-[#F5F5F5] text-[#696969] border-[#E9E9E9] hover:bg-[#E3E0E0]'
+                            ? 'bg-gray-500 text-white border-gray-500 shadow-lg'
+                            : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
                     "
                     @click="setStatus('notInvited')"
                 >
@@ -127,8 +136,8 @@
                     class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                     :class="
                         statusFilter === 'all'
-                            ? 'bg-[#7107E7] text-white border-[#7107E7] shadow-lg'
-                            : 'bg-[#F5F3FF] text-[#7107E7] border-[#E9E9E9] hover:bg-[#E9E4FF]'
+                            ? 'bg-purple-600 text-white border-purple-600 shadow-lg'
+                            : 'bg-purple-50 text-purple-600 border-gray-200 hover:bg-purple-100'
                     "
                     @click="setStatus('all')"
                 >
@@ -147,8 +156,8 @@
                     class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                     :class="
                         statusFilter === 'CheckIn'
-                            ? 'bg-[#007A56] text-white border-[#007A56] shadow-lg'
-                            : 'bg-[#ECFEF6] text-[#007A56] border-[#E9E9E9] hover:bg-[#D1FAE5]'
+                            ? 'bg-emerald-700 text-white border-emerald-700 shadow-lg'
+                            : 'bg-emerald-50 text-emerald-700 border-gray-200 hover:bg-emerald-100'
                     "
                     @click="setStatus('CheckIn')"
                 >
@@ -164,8 +173,8 @@
                     class="inline-flex items-center px-5 py-3 rounded-[20px] border transition-all duration-200 font-semibold text-[16px]"
                     :class="
                         statusFilter === 'notCheckIn'
-                            ? 'bg-[#C70036] text-white border-[#C70036] shadow-lg'
-                            : 'bg-[#FFF2F2] text-[#C70036] border-[#E9E9E9] hover:bg-[#FFE4E6]'
+                            ? 'bg-rose-600 text-white border-rose-600 shadow-lg'
+                            : 'bg-rose-50 text-rose-600 border-gray-200 hover:bg-rose-100'
                     "
                     @click="setStatus('notCheckIn')"
                 >
@@ -194,7 +203,6 @@
             @sort="onSort"
             :showRowNumber="true"
             :pageSizeOptions="[10, 20, 50, 100]"
-            :rowClass="rowClass"
             @checkbox-checkin="handleCheckin"
             @check-all-page="handleCheckAllOnPage"
         >
@@ -208,7 +216,7 @@
 
             <template #cell-status="{ row }">
                 <span
-                    class="inline-flex items-center justify-center rounded-[5px] px-2.5 py-0.5 text-xs font-medium w-[125px] h-[30px] "
+                    class="inline-flex items-center justify-center rounded-[5px] px-2.5 py-0.5 text-xs font-medium w-[125px] h-[30px]"
                     :class="statusClass(mapInvite(row.empInviteStatus))"
                 >
                     {{ statusLabel(mapInvite(row.empInviteStatus)) }}
@@ -221,10 +229,10 @@
         </span>
 
         <p
-            v-if="error"
+            v-if="errorMessage"
             class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700"
         >
-            {{ error }}
+            {{ errorMessage }}
         </p>
     </div>
 </template>
@@ -244,7 +252,7 @@ const eveId = computed(() => route.params.eveId);
 
 /* ===== State ===== */
 const loading = ref(true);
-const error = ref("");
+const errorMessage = ref("");
 const rows = ref([]);
 const eventTitle = ref("Event Check-In");
 const selectedIds = ref([]);
@@ -254,7 +262,7 @@ const sortKey = ref("empCompanyId");
 const sortOrder = ref("asc");
 const statusFilter = ref("all");
 
-/* ===== Logic สำหรับการเปิด Dropdown ทีละอัน (แบบไม่แก้ Component) ===== */
+/* ===== Logic สำหรับการเปิด Dropdown ทีละอัน ===== */
 const dropdownKeys = ref({
     company: 0,
     department: 0,
@@ -263,8 +271,6 @@ const dropdownKeys = ref({
 });
 
 const refreshOthers = (current) => {
-    // เมื่อคลิกที่อันใดอันหนึ่ง เราจะบวกค่า key ของอันอื่นๆ
-    // เพื่อให้ Vue บังคับ Re-render อันที่ไม่ได้ถูกคลิก (ซึ่งจะทำให้สถานะ open ภายในกลับเป็น false)
     Object.keys(dropdownKeys.value).forEach((key) => {
         if (key !== current) {
             dropdownKeys.value[key]++;
@@ -289,36 +295,35 @@ async function fetchEmployeeForCheckin(id) {
 
 function normalize(list) {
     if (!Array.isArray(list)) return [];
-    return list.map((r) => ({
-        eveId: r.eveId ?? null,
-        eveTitle: r.eveTitle ?? "",
-        empId: r.empId,
-        empFullId: r.empFullId ?? "",
-        empCompanyId: r.empCompanyId,
-        empFullname: r.empFullname ?? "",
-        empNickname: r.empNickname ?? "",
-        empDepartment: r.empDepartment ?? "",
-        empTeam: r.empTeam ?? "",
-        empPosition: r.empPosition ?? "",
-        empInviteStatus: (r.empInviteStatus ?? "").toString(),
-        empCheckinStatus: Number(r.empCheckinStatus ?? 0),
+    return list.map((record) => ({
+        eveId: record.eveId ?? null,
+        eveTitle: record.eveTitle ?? "",
+        empId: record.empId,
+        empFullId: record.empFullId ?? "",
+        empCompanyId: record.empCompanyId,
+        empFullname: record.empFullname ?? "",
+        empNickname: record.empNickname ?? "",
+        empDepartment: record.empDepartment ?? "",
+        empTeam: record.empTeam ?? "",
+        empPosition: record.empPosition ?? "",
+        empInviteStatus: (record.empInviteStatus ?? "").toString(),
+        empCheckinStatus: Number(record.empCheckinStatus ?? 0),
     }));
 }
 
 async function load(id) {
-    //loading.value = true;
-    error.value = "";
+    errorMessage.value = "";
     try {
         const data = await fetchEmployeeForCheckin(id);
         if (Array.isArray(data) && data.length) {
             if (data[0]?.eveTitle) eventTitle.value = data[0].eveTitle;
         }
-        rows.value = normalize(Array.isArray(data) ? data : data?.data ?? []);
+        rows.value = normalize(Array.isArray(data) ? data : (data?.data ?? []));
         buildFilterOptions();
-    } catch (e) {
-        if (e.name !== "AbortError") {
-            console.error(e);
-            error.value = e?.message || "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+    } catch (error) {
+        if (error.name !== "AbortError") {
+            errorMessage.value =
+                error?.message || "เกิดข้อผิดพลาดในการโหลดข้อมูล";
         }
     } finally {
         loading.value = false;
@@ -345,22 +350,28 @@ const selectedPositionIds = ref([]);
 
 function buildFilterOptions() {
     const toOpt = (arr) =>
-        [...new Set(arr.filter(Boolean))].map((v) => ({
-            label: String(v),
-            value: v,
+        [...new Set(arr.filter(Boolean))].map((value) => ({
+            label: String(value),
+            value: value,
         }));
-    companyIdOptions.value = toOpt(rows.value.map((r) => r.empCompanyId));
-    departmentOptions.value = toOpt(rows.value.map((r) => r.empDepartment));
-    teamOptions.value = toOpt(rows.value.map((r) => r.empTeam));
-    positionOptions.value = toOpt(rows.value.map((r) => r.empPosition));
+    companyIdOptions.value = toOpt(
+        rows.value.map((record) => record.empCompanyId),
+    );
+    departmentOptions.value = toOpt(
+        rows.value.map((record) => record.empDepartment),
+    );
+    teamOptions.value = toOpt(rows.value.map((record) => record.empTeam));
+    positionOptions.value = toOpt(
+        rows.value.map((record) => record.empPosition),
+    );
 }
 
-function mapInvite(ans) {
-    const a = String(ans || "").toLowerCase();
-    if (a.includes("accepted")) return "accepted";
-    if (a.includes("denied")) return "denied";
-    if (a.includes("pending")) return "pending";
-    if (a.includes("not_invite")) return "notInvited";
+function mapInvite(answer) {
+    const statusText = String(answer || "").toLowerCase();
+    if (statusText.includes("accepted")) return "accepted";
+    if (statusText.includes("denied")) return "denied";
+    if (statusText.includes("pending")) return "pending";
+    if (statusText.includes("not_invite")) return "notInvited";
     return "notInvited";
 }
 
@@ -372,23 +383,24 @@ const statusLabel = (key) =>
         notInvited: "Not Invited",
         checkIn: "Attended",
         notCheckIn: "Not Attended",
-    }[key]);
+    })[key];
+
 const statusClass = (key) =>
     ({
-        accepted: "bg-[#F1FDF4] text-[#00A73D] border-[#E9E9E9] ",
-        denied: "bg-[#FFF8F8] text-[#C91C23] border-[#E9E9E9] ",
-        pending: "bg-[#F0F9FF] text-[#389FDC] border-[#E9E9E9] ",
-        notInvited: "bg-[#F5F5F5] text-[#696969] border-[#E9E9E9] ",
-    }[key]);
+        accepted: "bg-green-50 text-green-600 border-gray-200",
+        denied: "bg-red-50 text-red-600 border-gray-200",
+        pending: "bg-blue-50 text-blue-500 border-gray-200",
+        notInvited: "bg-gray-100 text-gray-500 border-gray-200",
+    })[key];
 
-const setStatus = (s) => {
-    statusFilter.value = s;
+const setStatus = (statusFilterValue) => {
+    statusFilter.value = statusFilterValue;
     page.value = 1;
 };
 
 /* ===== Statistics ===== */
 const totals = computed(() => {
-    const t = {
+    const counts = {
         accepted: 0,
         denied: 0,
         pending: 0,
@@ -397,22 +409,20 @@ const totals = computed(() => {
         notCheckIn: 0,
     };
 
-    rows.value.forEach((r) => {
-        // นับตาม Invite Status
-        t[mapInvite(r.empInviteStatus)]++;
+    rows.value.forEach((record) => {
+        counts[mapInvite(record.empInviteStatus)]++;
 
-        // นับตามการมาเข้าร่วมจริง (Check-in Status)
-        if (Number(r.empCheckinStatus) === 1) {
-            t.checkIn++;
+        if (Number(record.empCheckinStatus) === 1) {
+            counts.checkIn++;
         } else {
-            t.notCheckIn++;
+            counts.notCheckIn++;
         }
     });
-    return t;
+    return counts;
 });
 
 const checkinStats = computed(() => {
-    const s = {
+    const stats = {
         accepted: 0,
         denied: 0,
         pending: 0,
@@ -421,71 +431,76 @@ const checkinStats = computed(() => {
         checkIn: 0,
         notCheckIn: 0,
     };
-    rows.value.forEach((r) => {
-        if (Number(r.empCheckinStatus) === 1) {
-            s[mapInvite(r.empInviteStatus)]++;
-            s.total++;
+    rows.value.forEach((record) => {
+        if (Number(record.empCheckinStatus) === 1) {
+            stats[mapInvite(record.empInviteStatus)]++;
+            stats.total++;
         }
     });
-    return s;
+    return stats;
 });
 
 /* ===== Search & Filtered List ===== */
 const filteredBase = computed(() => {
     let list = rows.value;
-    const q = search.value.trim().toLowerCase();
+    const query = search.value.trim().toLowerCase();
 
-    if (q) {
-        list = list.filter((r) =>
-            [String(r.empFullId), r.empFullname, r.empNickname].some((f) =>
-                f?.toLowerCase().includes(q)
-            )
+    if (query) {
+        list = list.filter((record) =>
+            [
+                String(record.empFullId),
+                record.empFullname,
+                record.empNickname,
+            ].some((field) => field?.toLowerCase().includes(query)),
         );
     }
 
     if (statusFilter.value === "CheckIn") {
-        // กรองเฉพาะคนที่ Check-in แล้ว (status = 1)
-        list = list.filter((r) => Number(r.empCheckinStatus) === 1);
+        list = list.filter((record) => Number(record.empCheckinStatus) === 1);
     } else if (statusFilter.value === "notCheckIn") {
-        // กรองคนที่ยังไม่ได้ Check-in (status = 0)
-        list = list.filter((r) => Number(r.empCheckinStatus) === 0);
+        list = list.filter((record) => Number(record.empCheckinStatus) === 0);
     } else if (statusFilter.value !== "all") {
-        // กรองตาม Invite Status (Accepted, Denied, etc.)
         list = list.filter(
-            (r) => mapInvite(r.empInviteStatus) === statusFilter.value
+            (record) =>
+                mapInvite(record.empInviteStatus) === statusFilter.value,
         );
     }
 
     if (selectedCompanyIds.value?.length) {
         const needles = selectedCompanyIds.value.map((x) => String(x).trim());
-        list = list.filter((r) =>
-            needles.some((n) => String(r.empCompanyId).includes(n))
+        list = list.filter((record) =>
+            needles.some((needle) =>
+                String(record.empCompanyId).includes(needle),
+            ),
         );
     }
     if (selectedDepartmentIds.value?.length) {
         const set = new Set(selectedDepartmentIds.value);
-        list = list.filter((r) => set.has(r.empDepartment));
+        list = list.filter((record) => set.has(record.empDepartment));
     }
     if (selectedTeamIds.value?.length) {
         const set = new Set(selectedTeamIds.value);
-        list = list.filter((r) => set.has(r.empTeam));
+        list = list.filter((record) => set.has(record.empTeam));
     }
     if (selectedPositionIds.value?.length) {
         const set = new Set(selectedPositionIds.value);
-        list = list.filter((r) => set.has(r.empPosition));
+        list = list.filter((record) => set.has(record.empPosition));
     }
     return list;
 });
 
 /* ===== Sorting & Pagination ===== */
 const sortedRows = computed(() => {
-    const dir = sortOrder.value === "desc" ? -1 : 1;
+    const direction = sortOrder.value === "desc" ? -1 : 1;
     return [...filteredBase.value].sort((a, b) => {
-        const va =
+        const valueA =
             sortKey.value === "fullName" ? a.empFullname : a[sortKey.value];
-        const vb =
+        const valueB =
             sortKey.value === "fullName" ? b.empFullname : b[sortKey.value];
-        return String(va || "").localeCompare(String(vb || ""), "th") * dir;
+        return (
+            String(valueA || "").localeCompare(String(valueB || ""), "th") *
+            direction
+        );
     });
 });
 
@@ -504,34 +519,28 @@ async function handleCheckin({ keys, checked }) {
     for (const empId of keys) {
         try {
             await axios.put(
-                `/updateEmployeeAttendance/eveId/${eveId.value}/empId/${empId}`
+                `/updateEmployeeAttendance/eveId/${eveId.value}/empId/${empId}`,
             );
-            const idx = rows.value.findIndex((r) => r.empId === empId);
-            if (idx !== -1) rows.value[idx].empCheckinStatus = checked ? 1 : 0;
-        } catch (err) {
-            console.error("❌ update failed:", err);
+            const index = rows.value.findIndex(
+                (record) => record.empId === empId,
+            );
+            if (index !== -1)
+                rows.value[index].empCheckinStatus = checked ? 1 : 0;
+        } catch (error) {
+            // ไม่แสดง log ใน Production
         }
     }
 }
 
 async function handleCheckAllOnPage(data) {
-    // 1. ดึงค่า action และ pageKeys ออกจาก object ที่ DataTable ส่งมา
-    const { action, pageKeys } = data;
-
-    // 2. console log ไอดีตามที่ต้องการ
-    console.log("IDs to check-in:", pageKeys);
-
+    const { pageKeys } = data;
     try {
-        // 3. ส่งอาร์เรย์ pageKeys ไปใน request body ของ axios.put
-        // หมายเหตุ: ชื่อ field (เช่น employeeIds) ให้ปรับตามที่ API หลังบ้านกำหนดไว้ครับ
         await axios.put(`/updateEmployeeAttendanceAll/eveId/${eveId.value}`, {
             employeeIds: pageKeys,
         });
-
-        // 4. โหลดข้อมูลใหม่
         load(eveId.value);
     } catch (error) {
-        console.error("Check all failed", error);
+        // ไม่แสดง log ใน Production
     }
 }
 
@@ -539,10 +548,10 @@ watch(
     rows,
     (list) => {
         selectedIds.value = list
-            .filter((r) => Number(r.empCheckinStatus) === 1)
-            .map((r) => r.empId);
+            .filter((record) => Number(record.empCheckinStatus) === 1)
+            .map((record) => record.empId);
     },
-    { deep: true }
+    { deep: true },
 );
 
 const handleBack = () => router.push("/event");
@@ -593,5 +602,3 @@ const columns = [
     },
 ];
 </script>
-
-<style scoped></style>

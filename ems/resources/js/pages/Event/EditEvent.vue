@@ -261,20 +261,6 @@
             </div>
         </div>
 
-        <!-- แสดงจำนวนคนที่ถูกเลือก -->
-        <div class="mt-4 flex items-center gap-2">
-            <Icon icon="mdi:account-check" class="w-7 h-7 text-red-600" />
-            <span class="text-[16px] font-medium text-neutral-700">
-                Selected Guests :
-            </span>
-            <span class="text-[16px] font-semibold text-red-600">
-                {{ selectedIdsForSubmit.length }}
-            </span>
-            <span class="text-[16px] font-medium text-neutral-500">
-                / {{ employees.length }} people
-            </span>
-        </div>
-
         <div class="mt-6">
             <h3 class="text-3xl font-semibold">Add Guest</h3>
             <div class="mt-4 flex flex-col gap-3">
@@ -316,32 +302,67 @@
             </div>
         </div>
 
-        <!-- ปุ่มยกเลิก / ยืนยัน -->
-
-        <!-- แถบปุ่ม -->
-        <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
-            <div class="flex-none">
-                <button type="button" @click="onCancel" :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#C10008] text-white font-semibold hover:bg-red-700 w-[140px] h-[48px] transition shadow-sm">
-                    <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white rotate-45" />
-                    <span>Cancel</span>
-                </button>
-            </div>
-
-            <div class="flex-none">
-                <button type="button" @click="saveEvent" :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
-                    <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
-                    <span>Confirm</span>
-                </button>
-            </div>
+        <!-- แสดงจำนวนคนที่ถูกเลือก -->
+        <div class="mt-4 flex items-center gap-2">
+            <Icon icon="mdi:account-check" class="w-7 h-7 text-red-600" />
+            <span class="text-[16px] font-medium text-neutral-700">
+                Selected Guests :
+            </span>
+            <span class="text-[16px] font-semibold text-red-600">
+                {{ selectedIdsForSubmit.length }}
+            </span>
+            <span class="text-[16px] font-medium text-neutral-500">
+                / {{ employees.length }} people
+            </span>
         </div>
-        <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
-            :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText"
-            @confirm="alert.onConfirm" @cancel="alert.onCancel" />
 
-        <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
-            type="error" :showCancel="false" />
+        <div class="mt-6">
+            <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
+                :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
+                :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id"
+                :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected" :rowClass="rowClass"
+                :isRowDisabled="(row) => lockedIds.has(row.id)">
+                <template #cell-fullname="{ row }">
+                    {{
+                        (row.emp_firstname || "") +
+                        " " +
+                        (row.emp_lastname || "")
+                    }}
+                </template>
+                <template #empty>
+                    <div class="py-8 text-center text-neutral-400">
+                        ไม่พบข้อมูลพนักงาน
+                    </div>
+                </template>
+            </DataTable>
+        </div>
+    </div>
+
+    <!-- แถบปุ่ม -->
+    <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
+        <div class="flex-none">
+            <button type="button" @click="onCancel" :disabled="saving"
+                class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#C10008] text-white font-semibold hover:bg-red-700 w-[140px] h-[48px] transition shadow-sm">
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white rotate-45" />
+                <span>Cancel</span>
+            </button>
+        </div>
+
+        <div class="flex-none">
+            <button type="button" @click="saveEvent" :disabled="saving"
+                class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
+                <span>Confirm</span>
+            </button>
+        </div>
+    </div>
+    <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
+        :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText" @confirm="alert.onConfirm"
+        @cancel="alert.onCancel" />
+
+    <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
+        type="error" :showCancel="false" />
+    <div>
     </div>
 </template>
 
@@ -403,13 +424,13 @@ export default {
             dragging: false,          // สถานะกำลัง drag ไฟล์เข้า drop zone
             fileTypeError: false,     // แจ้งเตือนเมื่อไฟล์ที่อัปโหลดไม่ถูกประเภท
 
-            // --- ตารางพนักงาน และ Filter ---
-            employees: [],          // รายชื่อพนักงานทั้งหมด
-            loadingEmployees: false, // สถานะกำลังโหลดข้อมูลพนักงาน
-            search: '',             // คำค้นหาพนักงาน
-            searchDraft: '',        // คำค้นหาชั่วคราว (ก่อน apply)
+            // --- Table & Filter Data ---
+            employees: [],
+            loadingEmployees: false,
+            search: '',
+            searchDraft: '',
 
-            // ค่าที่เลือกจาก Dropdown Filter
+            // เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
             selectedCompanyIds: [],
             selectedDepartmentIds: [],
             selectedTeamIds: [],
@@ -654,7 +675,6 @@ export default {
             this.dragging = false
             this.addFiles([...event.dataTransfer.files])
         },
-
         onPick(file) { this.addFiles([...file.target.files]); file.target.value = '' },
         onDrop(event) { this.dragging = false; this.addFiles([...event.dataTransfer.files]) },
 
@@ -676,20 +696,19 @@ export default {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "application/vnd.ms-excel",
             ]
-            const errors = []
+            let hasError = false
 
             list.forEach(file => {
                 if (file.size > MAX_MB * 1024 * 1024) {
-                    errors.push(`${file.name}: ไฟล์เกิน ${MAX_MB}MB`)
+                    hasError = true
                 } else if (!ALLOWED_TYPES.includes(file.type)) {
-                    errors.push(`${file.name}: ประเภทไฟล์ไม่รองรับ`)
+                    hasError = true
                 } else {
                     this.filesNew.push(file)
                 }
             })
 
-            this.fileTypeError = errors.length > 0  // ← เก็บไว้ตาม merge ก่อนหน้า
-            if (errors.length) alert(errors.join('\n'))
+            this.fileTypeError = hasError  // → เด้ง ModalAlert อัตโนมัติ
         },
 
         /**
@@ -739,12 +758,11 @@ export default {
             this.selectedPositionIds = []
             this.page = 1
         },
-
         /**
          * ชื่อฟังก์ชัน: validateForm
          * คำอธิบาย: ตรวจสอบความถูกต้องของข้อมูลในฟอร์มก่อนบันทึก
          * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
-         * วันที่จัดทำ/แก้ไข: 2026-03-1
+         * วันที่จัดทำ/แก้ไข: 2026-03-01
          */
         validateForm() {
             const errors = {}
