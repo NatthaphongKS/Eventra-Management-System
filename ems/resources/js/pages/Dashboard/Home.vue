@@ -980,6 +980,7 @@ export default {
                         })),
                         teams: (res.data.teams || []).map(team => ({
                             name: team.name,
+                            department: team.department,  // เอาไว้สำหรับ filter ทีมตามแผนก
                             attending: team.attending || 0,
                             notAttending: team.notAttending || 0,
                             pending: team.pending || 0
@@ -1065,7 +1066,7 @@ export default {
                 case "done":
                     return `${base} bg-[#DCFCE7] text-[#00A73D]`;
                 case "upcoming":
-                    return `${base} bg-[#FFF9C2] text-[#FF9D00]`;
+                    return `${base} bg-[#FFF9C2] text-[#FDC800]`;
                 case "ongoing":
                     return `${base} bg-[#DFF3FE] text-[#0084D1]`;
                 default:
