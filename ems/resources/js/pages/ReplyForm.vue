@@ -1,77 +1,147 @@
-<!-- src/views/ReplyForm.vue -->
+<!-- /**
+ * ชื่อไฟล์: ReplyForm.vue
+ * คำอธิบาย: หน้าสำหรับตอบกลับคำเชิญเข้าร่วมกิจกรรม (Reply Form)
+ * Input: ข้อมูลกิจกรรมจาก API /reply/{encryptURL}
+ * Output: แบบฟอร์มสำหรับตอบกลับคำเชิญเข้าร่วมกิจกรรม
+ * คนแก้ไข: Natthaphong Kongsinl
+ * วันที่แก้ไข: 2026-02-27
+ */ -->
+<!-- pages/ReplyForm.vue -->
 <template>
-    <div v-if="urlStatus">
-        <div class="page">
-            <section class="card head">
-                <h1>แบบฟอร์มเชิญเข้าร่วมกิจกรรม</h1>
-                <p><strong>หัวข้อ:</strong> {{ title || "-" }}</p>
-                <p><strong>วันที่:</strong> {{ formattedDateTime || "-" }}</p>
-                <p><strong>สถานที่:</strong> {{ location || "-" }}</p>
-            </section>
+    <div class="">
+        <div v-if="urlStatus">
+            <div
+                class="min-h-screen bg-red-50 py-10 px-4 flex flex-col items-center gap-5"
+            >
+                <section
+                    class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10"
+                >
+                    <h1
+                        class="mb-4 text-red-700 text-[34px] font-semibold leading-tight"
+                    >
+                        ตอบรับคำเชิญเข้าร่วมกิจกรรม
+                    </h1>
+                    <p class="my-1.5 text-gray-800 text-[15px] font-semibold">
+                        หัวข้อ: {{ title || "-" }}
+                    </p>
+                    <p class="my-1.5 text-gray-800 text-[15px] font-semibold">
+                        <strong>วันที่:</strong> {{ formattedDate || "-" }}
+                    </p>
+                    <p class="my-1.5 text-gray-800 text-[15px] font-semibold">
+                        <strong>เวลา:</strong> {{ formattedTime || "-" }}
+                    </p>
+                    <p class="my-1.5 text-gray-800 text-[15px] font-semibold">
+                        <strong>สถานที่:</strong> {{ location || "-" }}
+                    </p>
+                    <p class="my-1.5 text-gray-800 text-[15px] font-semibold">
+                        <strong>ชื่อ:</strong> {{ empName || "-" }}
+                    </p>
+                </section>
 
-            <section v-if="show" class="card form">
-                <form @submit.prevent="onSubmit">
-                    <div class="field">
-                        <label>ชื่อ–นามสกุล</label>
-                        <input type="text" :placeholder="empName || '—'" readonly />
-                        <!-- ไม่ต้องมี error เพราะล็อกไม่ให้แก้ -->
-                    </div>
-
-                    <div class="field">
-                        <label>Email</label>
-                        <input type="email" :placeholder="empEmail || '—'" readonly />
-                    </div>
-
-                    <div class="field">
-                        <label>เบอร์โทร</label>
-                        <input type="tel" :placeholder="empPhone || '—'" readonly />
-                    </div>
-
-                    <div class="field">
-                        <label>เข้าร่วมหรือไม่</label>
-                        <div class="radio-row">
-                            <label class="radio">
-                                <input type="radio" value="accepted" v-model="form.attend" />
-                                เข้าร่วม
-                            </label>
-                            <label class="radio">
-                                <input type="radio" value="denied" v-model="form.attend" />
-                                ไม่เข้าร่วม
-                            </label>
+                <section
+                    v-if="show"
+                    class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10"
+                >
+                    <form @submit.prevent="onSubmit">
+                        <div class="mb-6">
+                            <label
+                                class="block font-semibold text-gray-900 mb-3 text-[15px]"
+                                >เข้าร่วมหรือไม่</label
+                            >
+                            <div class="flex gap-10">
+                                <label
+                                    class="inline-flex items-center gap-2 font-semibold text-gray-800 cursor-pointer"
+                                >
+                                    <input
+                                        type="radio"
+                                        value="accepted"
+                                        v-model="form.attend"
+                                        class="w-[18px] h-[18px] cursor-pointer"
+                                    />
+                                    เข้าร่วม
+                                </label>
+                                <label
+                                    class="inline-flex items-center gap-2 font-semibold text-gray-800 cursor-pointer"
+                                >
+                                    <input
+                                        type="radio"
+                                        value="denied"
+                                        v-model="form.attend"
+                                        class="w-[18px] h-[18px] cursor-pointer"
+                                    />
+                                    ไม่เข้าร่วม
+                                </label>
+                            </div>
+                            <small
+                                v-if="errors.attend"
+                                class="text-red-600 text-[13px] mt-1.5 block"
+                            >
+                                {{ errors.attend }}
+                            </small>
                         </div>
-                        <small v-if="errors.attend" class="error">{{
-                            errors.attend
-                            }}</small>
-                    </div>
 
-                    <div class="field" :class="{ disabled: form.attend !== 'no' }">
-                        <label>หมายเหตุ (กรณีไม่เข้าร่วม)</label>
-                        <textarea v-model.trim="form.reason" :disabled="form.attend !== 'denied'" rows="3"
-                            placeholder="ระบุเหตุผลสั้น ๆ ค่ะ" />
-                        <small v-if="errors.reason" class="error">{{
-                            errors.reason
-                            }}</small>
-                    </div>
+                        <div
+                            class="mb-6 transition-opacity duration-200"
+                            :class="{ 'opacity-60': form.attend !== 'denied' }"
+                        >
+                            <label
+                                class="block font-semibold text-gray-900 mb-3 text-[15px]"
+                                >หมายเหตุ (กรณีไม่เข้าร่วม)</label
+                            >
+                            <input
+                                type="text"
+                                v-model.trim="form.reason"
+                                :disabled="form.attend !== 'denied'"
+                                class="w-full border-0 border-b border-gray-400 py-2 outline-none text-[15px] bg-transparent transition-colors duration-200 focus:border-gray-800 focus:ring-0 disabled:cursor-not-allowed disabled:bg-transparent"
+                            />
+                            <small
+                                v-if="errors.reason"
+                                class="text-red-600 text-[13px] mt-1.5 block"
+                            >
+                                {{ errors.reason }}
+                            </small>
+                        </div>
 
-                    <div class="actions">
-                        <button type="submit" class="primary" :disabled="submitting">
-                            {{ submitting ? "กำลังส่ง…" : "ส่งคำตอบ" }}
-                        </button>
-                    </div>
-                </form>
-            </section>
+                        <div class="flex justify-end mt-8">
+                            <button
+                                type="submit"
+                                class="bg-green-500 text-white font-semibold text-[15px] rounded-full py-2.5 px-8 cursor-pointer transition-colors duration-200 hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                                :disabled="submitting"
+                            >
+                                {{ submitting ? "กำลังส่ง…" : "ส่งคำตอบ" }}
+                            </button>
+                        </div>
+                    </form>
+                </section>
 
-            <section v-else class="label card">
-                คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
-            </section>
+                <section
+                    v-else
+                    class="w-full max-w-[640px] md:px-10 text-gray-800 font-medium"
+                >
+                    คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
+                </section>
+            </div>
         </div>
-    </div>
-    <div v-else>
-        <div class="page">
-            <section class="card head">
-                <h1>แบบฟอร์มเชิญเข้าร่วมกิจกรรม</h1>
-                <p><strong>ลิงค์แบบฟอร์มเชิญเข้าร่วมกิจกรรมไม่ถูกต้อง</strong></p>
-            </section>
+
+        <div v-else>
+            <div
+                class="min-h-screen bg-red-50 py-10 px-4 flex flex-col items-center gap-5"
+            >
+                <section
+                    class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10"
+                >
+                    <h1
+                        class="mb-4 text-red-700 text-[28px] font-semibold leading-tight"
+                    >
+                        ตอบรับเข้าร่วมการประชุม
+                    </h1>
+                    <p class="my-1.5 text-gray-800 text-[15px]">
+                        <strong
+                            >ลิงก์แบบฟอร์มเชิญเข้าร่วมกิจกรรมไม่ถูกต้อง</strong
+                        >
+                    </p>
+                </section>
+            </div>
         </div>
     </div>
 </template>
@@ -83,34 +153,37 @@ export default {
     name: "ReplyForm",
     data() {
         return {
-            // จาก URL
+            // ข้อมูลสำหรับอ้างอิงส่งกลับ API
             evnID: null,
             empID: null,
 
-            // จาก API (event + employee)
+            // ข้อมูลรายละเอียดการประชุมและพนักงานที่ได้จาก API
             title: "",
-            date: "", // "2025-09-30T00:00:00.000000Z"
-            timeStart: "", // "13:00:00"
-            timeEnd: "", // "14:00:00"
+            date: "",
+            timeStart: "",
+            timeEnd: "",
             location: "",
             empName: "",
             empEmail: "",
             empPhone: "",
-            urlStatus: true,
 
+            // สถานะของ URL และสถานะการตอบรับปัจจุบัน
+            urlStatus: true,
             replyStatus: "",
 
-            // ฟอร์มที่ให้ผู้ใช้กรอกจริง ๆ
+            // ข้อมูลที่ผู้ใช้กรอกในแบบฟอร์ม
             form: {
-                attend: "", // 'yes' | 'no'
-                reason: "", // กรอกได้เฉพาะตอน 'no'
+                attend: "",
+                reason: "",
             },
 
-            // state อื่น ๆ
+            // ข้อความแจ้งเตือนข้อผิดพลาดในฟอร์ม
             errors: { attend: "", reason: "" },
+
+            // สถานะการโหลดข้อมูลและการส่งข้อมูล
             loading: false,
             submitting: false,
-            error: "",
+            errorMessage: "", // เก็บข้อความเมื่อเกิดข้อผิดพลาด
         };
     },
 
@@ -119,133 +192,177 @@ export default {
     },
 
     computed: {
+        /**
+         * ตรวจสอบเงื่อนไขในการแสดงแบบฟอร์ม
+         * จะแสดงฟอร์มเมื่อผู้ใช้ยังไม่ได้ตอบรับ หรือตอบปฏิเสธ
+         */
         show() {
-            // แก้ไข: จะแสดงฟอร์มก็ต่อเมื่อ 'replyStatus' ไม่ใช่ 'accept' และไม่ใช่ 'denied'
-            // (คือยังอยู่ในสถานะที่ต้องตอบ เช่น 'invalid' หรือเป็นค่าว่างระหว่างโหลด)
             const status = this.replyStatus;
             return status !== "accepted" && status !== "denied";
         },
-        // แสดง "30 กันยายน 2025 เวลา 13.00 - 14.00 น."
-        formattedDateTime() {
+
+        /**
+         * จัดรูปแบบวันที่ให้อ่านง่าย (แสดงเป็นรูปแบบภาษาไทย)
+         * ตัวอย่าง: 21 สิงหาคม 2569
+         */
+        formattedDate() {
             if (!this.date) return "";
-            const d = new Date(this.date);
-            const dateStr = new Intl.DateTimeFormat(
-                "th-TH-u-nu-latn-ca-gregory",
-                {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                    timeZone: "Asia/Bangkok",
-                }
-            ).format(d);
 
-            const hhmmDot = (t) => (t ? t.slice(0, 5).replace(":", ".") : "");
-            const s = hhmmDot(this.timeStart);
-            const e = hhmmDot(this.timeEnd);
+            const dateObj = new Date(this.date);
 
-            if (s && e) return `${dateStr} เวลา ${s} - ${e} น.`;
-            if (s) return `${dateStr} เวลา ${s} น.`;
-            return dateStr;
+            return new Intl.DateTimeFormat("th-TH", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                timeZone: "Asia/Bangkok",
+            }).format(dateObj);
+        },
+
+        /**
+         * จัดรูปแบบเวลาเริ่มและเวลาจบการประชุม
+         * ตัวอย่าง: 13:00-16:00 น.
+         */
+        formattedTime() {
+            // ฟังก์ชันช่วยสำหรับตัดเอาเฉพาะชั่วโมงและนาที (HH:mm)
+            const formatHourMinute = (timeString) => {
+                return timeString ? timeString.slice(0, 5) : "";
+            };
+
+            const startTime = formatHourMinute(this.timeStart);
+            const endTime = formatHourMinute(this.timeEnd);
+
+            if (startTime && endTime) {
+                return `${startTime}-${endTime} น.`;
+            }
+            if (startTime) {
+                return `${startTime} น.`;
+            }
+            return "";
         },
     },
 
     watch: {
-        // ถ้าเลือก "เข้าร่วม" ให้ล้างเหตุผลทันที
-        "form.attend"(val) {
-            if (val === "accepted") this.form.reason = "";
+        /**
+         * เฝ้าดูการเปลี่ยนแปลงของฟิลด์ attend (การเลือกเข้าร่วม/ไม่เข้าร่วม)
+         * หากเลือก "เข้าร่วม" ให้ล้างค่าเหตุผลทิ้ง
+         */
+        "form.attend"(newValue) {
+            if (newValue === "accepted") {
+                this.form.reason = "";
+                this.errors.reason = "";
+            }
+            // หากมีการเลือก ให้ล้างข้อความแจ้งเตือนที่ไม่ได้เลือก
+            if (newValue) {
+                this.errors.attend = "";
+            }
+        },
+
+        /**
+         * เฝ้าดูการเปลี่ยนแปลงของฟิลด์ reason (เหตุผล)
+         * หากเริ่มพิมพ์ ให้ล้างข้อความแจ้งเตือน
+         */
+        "form.reason"(newValue) {
+            if (newValue) {
+                this.errors.reason = "";
+            }
         },
     },
 
     methods: {
-        // แก้ไข: เติม async เพื่อใช้ await ภายในฟังก์ชัน
+        /**
+         * ดึงข้อมูลการประชุมผ่าน API โดยใช้ Token ที่ได้จาก URL
+         */
         async fetchFromApi() {
             try {
-                this.loading = true; // เริ่มโหลด
+                this.loading = true;
 
-                // แก้ไข: ประกาศตัวแปรให้ถูกต้อง และดึงค่าจาก URL
+                // แยก URL เพื่อดึง Token จากส่วนสุดท้ายของ path
                 const pathSegments = window.location.pathname.split("/");
-                const token = pathSegments[pathSegments.length - 1]; // สมมติว่า ID อยู่ตัวสุดท้ายของ URL
+                const token = pathSegments[pathSegments.length - 1];
 
-                // แก้ไข: ใส่ await เพื่อรอข้อมูลจาก API
+                // เรียก API เพื่อดึงข้อมูล
                 const response = await axios.get(`/reply/${token}`, {
                     headers: { Accept: "application/json" },
                 });
 
-                const data = response.data;
-                console.log("Data fetched:", data);
+                const responseData = response.data;
 
-                this.urlStatus = data.success;
-                // แก้ไข: กำหนดค่าจาก data ที่ API ส่งกลับมา (ตรวจสอบ field name ให้ตรงกับ Backend นะครับ)
-                this.evnID = data.event?.id;
-                this.empID = data.employee?.id;
-                this.replyStatus = data.connect?.con_answer || "";
-                //console.log("eveID empID ReplyStatus : " + this.evnID + " " + this.empID + " " + this.replyStatus)
+                // ผูกข้อมูลที่ได้จาก API เข้ากับ State ของ Component
+                this.urlStatus = responseData.success;
+                this.evnID = responseData.event?.id;
+                this.empID = responseData.employee?.id;
+                this.replyStatus = responseData.connect?.con_answer || "";
 
-                // event info
-                this.title = data.event?.evn_title || "";
-                this.date = data.event?.evn_date || "";
-                this.timeStart = data.event?.evn_timestart || "";
-                this.timeEnd = data.event?.evn_timeend || "";
-                this.location = data.event?.evn_location || "";
+                this.title = responseData.event?.evn_title || "";
+                this.date = responseData.event?.evn_date || "";
+                this.timeStart = responseData.event?.evn_timestart || "";
+                this.timeEnd = responseData.event?.evn_timeend || "";
+                this.location = responseData.event?.evn_location || "";
 
-                // employee info
-                this.empName = `${data.employee?.emp_firstname || ""} ${data.employee?.emp_lastname || ""}`.trim();
-                this.empEmail = data.employee?.emp_email || "";
-                this.empPhone = data.employee?.emp_phone || "";
-            } catch (e) {
-                console.error("Fetch Error:", e);
-                this.error =
-                    e.response?.data?.message ??
-                    e.message ??
+                // จัดรูปแบบชื่อพนักงาน
+                const firstName = responseData.employee?.emp_firstname || "";
+                const lastName = responseData.employee?.emp_lastname || "";
+                this.empName = `${firstName} ${lastName}`.trim();
+
+                this.empEmail = responseData.employee?.emp_email || "";
+                this.empPhone = responseData.employee?.emp_phone || "";
+            } catch (error) {
+                // เก็บข้อความ Error กรณีดึงข้อมูลไม่สำเร็จ
+                this.errorMessage =
+                    error.response?.data?.message ??
+                    error.message ??
                     "โหลดข้อมูลไม่สำเร็จ";
             } finally {
                 this.loading = false;
             }
         },
 
+        /**
+         * ตรวจสอบความถูกต้องของข้อมูลก่อนส่งไปยัง API
+         * @returns {boolean} true ถ้าข้อมูลถูกต้อง, false ถ้าข้อมูลไม่ถูกต้อง
+         */
         validate() {
+            // ตรวจสอบว่าได้เลือกการเข้าร่วมหรือไม่
             this.errors.attend = this.form.attend
                 ? ""
                 : "กรุณาเลือกว่าจะเข้าร่วมหรือไม่";
+
+            // ตรวจสอบว่าได้ระบุเหตุผลหรือไม่ เมื่อเลือกไม่เข้าร่วม
             this.errors.reason =
                 this.form.attend === "denied" && !this.form.reason
-                    ? "กรุณาระบุเหตุผลสั้น ๆ"
+                    ? "Required Field"
                     : "";
-            return !Object.values(this.errors).some(Boolean);
+
+            // ตรวจสอบว่ามีค่า Error ในออบเจ็กต์ errors หรือไม่
+            const hasErrors = Object.values(this.errors).some(Boolean);
+            return !hasErrors;
         },
 
+        /**
+         * ส่งข้อมูลคำตอบรับกลับไปยัง API (Endpoint /store)
+         */
         async onSubmit() {
             if (!this.validate()) return;
+
             this.submitting = true;
             try {
+                // จัดเตรียม Payload สำหรับส่งข้อมูล
                 const payload = {
                     evnID: this.evnID,
                     empID: this.empID,
-                    // คำตอบฟอร์มจริง
                     attend: this.form.attend,
                     reason: this.form.reason,
                 };
-                console.log("payload:", payload);
-                console.log(
-                    "evnID:",
-                    this.evnID,
-                    "empID:",
-                    this.empID,
-                    this.form.attend,
-                    this.form.reason
-                );
-                console.log("POST /store", payload); // ดูใน Console ให้มีค่าจริง
+
+                // ส่งข้อมูล
                 await axios.post("/store", payload, {
                     headers: { Accept: "application/json" },
                 });
-                //alert('บันทึกคำตอบเรียบร้อย ขอบคุณค่ะ')
-                //รีเฟรชหน้าใหม่
-                window.location.reload();
 
-                // รีเซ็ตเฉพาะส่วนที่ผู้ใช้กรอก
-                this.form = { attend: "", reason: "" };
-            } catch (e) {
-                console.error(e);
+                // รีเฟรชหน้าเว็บเมื่อบันทึกข้อมูลสำเร็จ เพื่อแสดงข้อความยืนยัน
+                window.location.reload();
+            } catch (error) {
+                // แจ้งเตือนผู้ใช้เมื่อส่งข้อมูลไม่สำเร็จ
                 alert("ส่งไม่สำเร็จ กรุณาลองใหม่อีกครั้งนะคะ");
             } finally {
                 this.submitting = false;
@@ -254,122 +371,3 @@ export default {
     },
 };
 </script>
-
-<style scoped>
-/* โทนอ่อนแบบภาพตัวอย่าง */
-.page {
-    min-height: 100vh;
-    background: #fdeceb;
-    /* ชมพูอ่อน */
-    padding: 32px 16px 64px;
-    /* display: grid; */
-    gap: 24px;
-    place-items: start center;
-}
-
-.card {
-    margin-top: 10px;
-    width: min(820px, 94vw);
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06), 0 1px 0 rgba(0, 0, 0, 0.04) inset;
-    padding: 20px 24px;
-}
-
-.head h1 {
-    margin: 0 0 8px;
-    color: #e21c23;
-    /* แดงหัวเรื่อง */
-    font-size: 32px;
-    font-weight: 800;
-}
-
-.head p {
-    margin: 4px 0;
-    color: #333;
-}
-
-.form {
-    margin-top: 8px;
-}
-
-.field {
-    margin-bottom: 18px;
-}
-
-.field.disabled {
-    opacity: 0.75;
-}
-
-label {
-    display: block;
-    font-weight: 700;
-    margin-bottom: 8px;
-}
-
-input,
-textarea {
-    width: 100%;
-    border: none;
-    border-bottom: 2px solid #ddd;
-    padding: 10px 2px;
-    outline: none;
-    font-size: 15px;
-    border-radius: 0;
-    background: transparent;
-}
-
-/* input:focus,
-textarea:focus {
-    border-bottom-color: #7ab97a;
-} */
-
-.radio-row {
-    display: flex;
-    gap: 28px;
-    padding: 6px 0 0;
-}
-
-.radio {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: #444;
-}
-
-.radio input[type="radio"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #bd3017;
-}
-
-.error {
-    color: #d12c2c;
-    font-size: 12.5px;
-    margin-top: 6px;
-    display: block;
-}
-
-.actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-}
-
-button.primary {
-    background: #4caf50;
-    color: #fff;
-    font-weight: 700;
-    border: none;
-    border-radius: 999px;
-    padding: 12px 22px;
-    cursor: pointer;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
-}
-
-button.primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-</style>
