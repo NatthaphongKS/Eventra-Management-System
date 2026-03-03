@@ -1,5 +1,19 @@
+<!--
+/**
+ * ชื่อไฟล์: UploadFile.vue
+ * คำอธิบาย: หน้าจอ Import พนักงานจากไฟล์ Excel พร้อมระบบ Validation และ Bulk Create
+ * Input:
+ *  - ไฟล์ Excel (.xlsx / .csv)
+ *  - ข้อมูลพนักงานตาม Template (Company, Employee ID, Prefix, Name, Department, Team, Position, Phone, Email)
+ * Output:
+ *  - แสดงข้อมูลพนักงานในรูปแบบตารางก่อนบันทึก
+ *  - แสดงผล Validation (Missing / Duplicate / Invalid relation)
+ *  - ส่งข้อมูลไปยัง Backend เพื่อสร้างพนักงานแบบ Bulk
+ * ชื่อผู้เขียน/แก้ไข: Thanusin Leenarat
+ * วันที่จัดทำ/แก้ไข: 1 มีนาคม 2569
+ */
+ -->
 <template>
-
     <head>
         <link rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -37,25 +51,12 @@
                     @picked="() => { error = ''; isTableVisible = false; }"
                     @cleared="() => { error = ''; isTableVisible = false; displayRows = []; }" />
 
-                <div class="mt-4 flex justify-end">
-                    <div :class="[
-                        !file || !!error || uploading
-                            ? 'opacity-50 cursor-not-allowed'
-                            : 'cursor-pointer',
-                    ]" :style="!file || !!error || uploading
-                        ? 'pointer-events: none;'
-                        : ''
-                        " :title="!file || !!error || uploading
-                            ? 'Please upload or drop file first'
-                            : ''
-                            ">
-                        <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
-                    </div>
-                </div>
-
                 <p v-if="error" class="text-sm text-red-500 mt-2">
                     {{ error }}
                 </p>
+                <div v-if="isTableVisible" class="mt-4 flex justify-end">
+                    <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
+                </div>
             </div>
         </div>
 
@@ -63,67 +64,183 @@
 
             <div class="mt-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="overflow-x-auto lg:overflow-x-visible">
-                    <DataTable :loading="uploading || creating" :rows="paged" :columns="tableColumns" :page="page"
-                        :page-size="pageSize" :total-items="totalItems" :page-size-options="[10, 25, 50, 100]"
-                        :show-row-number="false" row-key="__rowKey" @update:page="(val) => (page = val)"
-                        @update:pageSize="(val) => (pageSize = val)">
-                        <template #header-index> # </template>
+                    <div v-if="systemErrors.length || validationErrors.length || missingErrors.length"
+                        class="bg-red-100 text-red-600 rounded-xl p-4 mb-6 text-sm">
 
-                        <template #cell-index="{ row }">
-                            {{ row.__displayIndex }}
-                        </template>
+                        <p class="font-semibold">
+                            {{ errorSummary }}
+                        </p>
 
-                        <template #empty> No Data Found </template>
+                        <ul class="mt-2 space-y-1">
+                            <li v-for="(err, i) in systemErrors" :key="'s' + i">
+                                {{ err }}
+                            </li>
 
-                        <template #footer-info="{ from, to, total }">
-                            <span>แสดง</span>
+                            <li v-for="(err, i) in validationErrors" :key="'v' + i">
+                                {{ err }}
+                            </li>
 
-                            <div class="relative inline-block mx-2">
-                                <select
-                                    class="appearance-none rounded-full border border-red-700 bg-white px-2 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
-                                    :value="pageSize" @change="
-                                        (e) => {
-                                            pageSize = Number(e.target.value);
-                                            page = 1;
-                                        }
-                                    ">
-                                    <option v-for="opt in [10, 25, 50, 100]" :key="opt" :value="opt">
-                                        {{ opt }}
-                                    </option>
-                                </select>
-                                <svg class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-red-700"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M6 9l6 6 6-6" />
-                                </svg>
-                            </div>
+                            <li v-for="(err, i) in missingErrors" :key="'m' + i">
+                                {{ err }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-2xl overflow-hidden">
+                        <DataTable class="text-sm" :loading="uploading || creating" :rows="paged"
+                            :columns="tableColumns" :page="page" :page-size="pageSize" :total-items="totalItems"
+                            :page-size-options="[10, 25, 50, 100]" :show-row-number="false" row-key="__rowKey"
+                            @update:page="(val) => (page = val)" @update:pageSize="(val) => (pageSize = val)">
 
-                            <span class="text-sm">
-                                {{ from }}-{{ to }} จาก {{ total }} รายการ
-                            </span>
-                        </template>
-                    </DataTable>
+                            <!-- Header index -->
+                            <template #header-index>
+                                <span class="font-semibold text-gray-600">#</span>
+                            </template>
+
+                            <!-- Row number -->
+                            <template #cell-index="{ row }">
+                                <div class="px-4 py-3 text-gray-500">
+                                    {{ row.__displayIndex }}
+                                </div>
+                            </template>
+
+                            <!-- EMPLOYEE ID -->
+                            <template #cell-displayEmployeeId="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('displayEmployeeId')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.displayEmployeeId }}
+                                </div>
+                            </template>
+
+                            <!-- Name -->
+                            <template #cell-name="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    (
+                                        row.__errorFields?.includes('prefix') ||
+                                        row.__errorFields?.includes('firstName') ||
+                                        row.__errorFields?.includes('lastName')
+                                    )
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.name }}
+                                </div>
+                            </template>
+
+                            <!-- Nickname -->
+                            <template #cell-nickname="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('nickname')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.nickname }}
+                                </div>
+                            </template>
+
+                            <!-- Phone -->
+                            <template #cell-phone="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('phone')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.phone }}
+                                </div>
+                            </template>
+
+                            <!-- Department -->
+                            <template #cell-department="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('department')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.department }}
+                                </div>
+                            </template>
+
+                            <!-- Team -->
+                            <template #cell-team="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('team')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.team }}
+                                </div>
+                            </template>
+
+                            <!-- Position -->
+                            <template #cell-position="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('position')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.position }}
+                                </div>
+                            </template>
+
+                            <!-- Date -->
+                            <template #cell-dateAdd="{ row }">
+                                <div class="px-4 py-3 text-center">
+                                    {{ row.dateAdd }}
+                                </div>
+                            </template>
+
+                            <!-- Empty -->
+                            <template #empty>
+                                <div class="py-10 text-center text-gray-400">
+                                    No Data Found
+                                </div>
+                            </template>
+
+                        </DataTable>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="pb-8" v-if="isTableVisible">
-        <div
-            class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex justify-start">
+    <div class="mt-12 pt-6 pb-8">
+        <div class="flex items-end">
+
+            <!-- Cancel -->
+            <div class="mr-auto ml-40">
                 <CancelButton @click="onCancel" />
             </div>
 
-            <div class="flex justify-end" :class="canCreate
-                ? 'cursor-pointer'
-                : 'opacity-50 cursor-not-allowed'
-                " :style="canCreate ? '' : 'pointer-events: none;'" :title="canCreate
-                    ? ''
-                    : 'Please upload file and click Generate Data first'
-                    ">
-                <CreateButton :disabled="!canCreate" @click="onCreate" />
+            <!-- ฝั่งขวา -->
+            <div class="flex items-center gap-4 mr-40">
+
+                <!-- Generate -->
+                <div v-if="!isTableVisible" :class="[
+                    !file || !!error || uploading
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'cursor-pointer',
+                ]" :style="!file || !!error || uploading ? 'pointer-events: none;' : ''">
+                    <GenerateDataButton :disabled="!file || !!error || uploading" @click="upload" />
+                </div>
+
+                <!-- Save -->
+                <div v-if="isTableVisible" :class="canCreate
+                    ? 'cursor-pointer'
+                    : 'opacity-50 cursor-not-allowed'" :style="canCreate ? '' : 'pointer-events: none;'">
+                    <CreateButton :disabled="!canCreate" @click="onCreate" />
+                </div>
 
             </div>
+
         </div>
     </div>
 
@@ -137,9 +254,8 @@
         <div class="bg-white w-[420px] rounded-2xl shadow-2xl p-8 text-center">
 
             <h3 class="text-xl font-semibold text-neutral-800">
-                Saving Employees...
+                {{ progressTitle }}
             </h3>
-
             <div class="mt-6 w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                 <div class="h-4 bg-red-600 transition-all duration-300" :style="{ width: progress + '%' }"></div>
             </div>
@@ -215,6 +331,7 @@ const teams = ref([]);             // ทีม
 const progress = ref(0)
 const showProgressModal = ref(false)
 const totalRows = ref(0)
+const progressTitle = ref("")
 
 // ======================================================
 // Load master data จาก backend
@@ -272,6 +389,10 @@ async function upload() {
     // guard: ต้องมีไฟล์ และไม่มี error
     if (!file.value || error.value) return;
     uploading.value = true;
+    totalRows.value = 0
+    progress.value = 0
+    progressTitle.value = "Validating Employees..."
+    showProgressModal.value = true
 
     // แก้ไข: Reset การแสดงผลก่อนเริ่ม
     isTableVisible.value = false;
@@ -352,25 +473,210 @@ async function upload() {
             "email",
         ];
 
+        // ผ่าน validation แล้ว → map
+        const mapped = mapRows(json)
+        totalRows.value = mapped.length
         const invalidRowIndex = normalizedRows.findIndex((row) =>
             requiredFields.some((key) => !row[key] || String(row[key]).trim() === "")
         );
 
-        if (invalidRowIndex !== -1) {
-            throw new Error(
-                `Row ${invalidRowIndex + 2}: Please fill in all required fields.`
-            );
+        // ================================
+        // VALIDATION LOGIC
+        // ================================
+        validationErrors.value = []
+
+        const seenEmployeeIds = new Set()
+        const seenNames = new Set()
+        const seenPhones = new Set()
+        validationErrors.value = []
+        systemErrors.value = []
+        missingErrors.value = []
+
+        for (let i = 0; i < mapped.length; i++) {
+            const row = mapped[i]
+            const rowNumber = i + 2
+            row.__errorFields = []
+
+            // =========================
+            // REQUIRED CHECK
+            // =========================
+            const requiredFields = [
+                "company",
+                "employeeId",
+                "prefix",
+                "firstName",
+                "lastName",
+                "nickname",
+                "department",
+                "team",
+                "position",
+                "phone",
+                "email",
+            ]
+
+            requiredFields.forEach(field => {
+                if (!row[field] || String(row[field]).trim() === "") {
+                    missingErrors.value.push(
+                        `row ${rowNumber} ${field.toLowerCase()} is missing`
+                    )
+                    row.__errorFields.push(field)
+                }
+            })
+
+            if (!row.company || !row.employeeId) {
+                row.__errorFields.push("displayEmployeeId")
+            }
+
+            // =========================
+            // EMPLOYEE ID LENGTH CHECK (must be exactly 3 digits)
+            // =========================
+            const empId = String(row.employeeId || "").trim()
+
+            if (empId && !/^\d{3}$/.test(empId)) {
+                validationErrors.value.push(
+                    `row ${rowNumber} employee id must be exactly 3 digits`
+                )
+                row.__errorFields.push("displayEmployeeId")
+            }
+
+            // =========================
+            // DUPLICATE IN FILE
+            // =========================
+
+            // EmployeeId duplicate
+            if (seenEmployeeIds.has(row.displayEmployeeId)) {
+                systemErrors.value.push(
+                    `row ${rowNumber} employee id is duplicate in file`
+                )
+                row.__errorFields.push("displayEmployeeId")
+            } else {
+                seenEmployeeIds.add(row.displayEmployeeId)
+            }
+
+            // Name duplicate (ชื่อ-นามสกุล)
+            const first = String(row.firstName || "").trim().toLowerCase()
+            const last = String(row.lastName || "").trim().toLowerCase()
+
+            const fullNameKey = `${first}|${last}`
+
+            if (first && last) {
+                if (seenNames.has(fullNameKey)) {
+                    systemErrors.value.push(
+                        `row ${rowNumber} name is duplicate in file`
+                    )
+
+                    row.__errorFields.push("firstName")
+                    row.__errorFields.push("lastName")
+                } else {
+                    seenNames.add(fullNameKey)
+                }
+            }
+
+            // Phone duplicate
+            if (seenPhones.has(row.phone)) {
+                validationErrors.value.push(
+                    `row ${rowNumber} phone is duplicate in file`
+                )
+                row.__errorFields.push("phone")
+            } else {
+                seenPhones.add(row.phone)
+            }
+
+            // =========================
+            // MASTER RELATION CHECK
+            // =========================
+
+            const resolved = resolveMasterForRow(row)
+
+            if (!resolved.ok) {
+
+                if (resolved.reason === "notFound") {
+
+                    if (resolved.target === "Department") {
+                        validationErrors.value.push(
+                            `row ${rowNumber} department does not exist in the system`
+                        )
+                        row.__errorFields.push("department")
+                    }
+
+                    if (resolved.target === "Team") {
+                        validationErrors.value.push(
+                            `row ${rowNumber} team does not exist in the system`
+                        )
+                        row.__errorFields.push("team")
+                    }
+
+                    if (resolved.target === "Position") {
+                        validationErrors.value.push(
+                            `row ${rowNumber} position does not exist in the system`
+                        )
+                        row.__errorFields.push("position")
+                    }
+                }
+
+                if (resolved.reason === "teamNotInDepartment") {
+                    validationErrors.value.push(
+                        `row ${rowNumber} team does not belong to department`
+                    )
+                    row.__errorFields.push("team")
+                }
+
+                if (resolved.reason === "positionNotInTeam") {
+                    validationErrors.value.push(
+                        `row ${rowNumber} position does not belong to team`
+                    )
+                    row.__errorFields.push("position")
+                }
+            }
+
+            // =========================
+            // DUPLICATE IN DATABASE
+            // =========================
+
+            const resp = await axios.post("/check-employee-duplicate", {
+                emp_id: row.displayEmployeeId,
+                emp_phone: row.phone,
+                emp_firstname: first,
+                emp_lastname: last,
+            })
+
+            if (resp.data?.duplicate) {
+
+                const fields = resp.data.fields || []
+
+                if (fields.includes("emp_id")) {
+                    validationErrors.value.push(
+                        `row ${rowNumber} employee is in the system`
+                    )
+                    row.__errorFields.push("displayEmployeeId")
+                }
+
+                if (fields.includes("emp_name")) {
+                    validationErrors.value.push(
+                        `row ${rowNumber} name is in the system`
+                    )
+                    row.__errorFields.push("firstName")
+                    row.__errorFields.push("lastName")
+                }
+
+                if (fields.includes("emp_phone")) {
+                    validationErrors.value.push(
+                        `row ${rowNumber} phone is in the system`
+                    )
+                    row.__errorFields.push("phone")
+                }
+            }
+            progress.value = Math.round(((i + 1) / totalRows.value) * 100)
         }
 
-        // ผ่าน validation แล้ว → map
-        const mapped = mapRows(json);
+        await new Promise(resolve => setTimeout(resolve, 300))
+        showProgressModal.value = false
+        displayRows.value = mapped
+        page.value = 1
+        error.value = ""
 
-        displayRows.value = mapped;
-        page.value = 1;
-        error.value = "";
-
-        // แก้ไข: โหลดเสร็จแล้วค่อยโชว์ตาราง
-        isTableVisible.value = true;
+        // แสดงตาราง
+        isTableVisible.value = true
 
     } catch (e) {
         console.error(e);
@@ -635,6 +941,9 @@ function resolveMasterForRow(row) {
 const errorMessage = ref("");
 const showCreateSuccess = ref(false);
 const showCannotCreate = ref(false);
+const validationErrors = ref([])
+const systemErrors = ref([])
+const missingErrors = ref([])
 
 // ======================================================
 function resolveCompanyId(companyCode) {
@@ -727,35 +1036,20 @@ async function onCreate() {
         }
 
         // ======================================
-        // STEP 2 + 3: check duplicate + insert (with progress)
+        // STEP 2: insert only (duplicate already checked during upload)
         // ======================================
 
         totalRows.value = preparedRows.length
         progress.value = 0
+        progressTitle.value = "Saving Employees..."
         showProgressModal.value = true
 
         for (let i = 0; i < preparedRows.length; i++) {
 
             const payload = preparedRows[i].payload
 
-            // 1️⃣ check duplicate
-            const resp = await axios.post("/check-employee-duplicate", {
-                emp_id: payload.emp_id,
-                emp_phone: payload.emp_phone,
-                emp_email: payload.emp_email,
-            })
-
-            if (resp.data?.duplicate) {
-                showProgressModal.value = false
-                errorMessage.value = `Row ${i + 2}: Employee ID / Email / Phone already exists.`
-                showCannotCreate.value = true
-                return
-            }
-
-            // 2️⃣ insert
             await axios.post("/save-employee", payload)
 
-            // 3️⃣ update progress
             progress.value = Math.round(((i + 1) / totalRows.value) * 100)
         }
 
@@ -844,7 +1138,7 @@ async function downloadTemplate() {
 
         sheet.addRow([
             "CN",
-            "1111",
+            "111",
             "นาย",
             "สมชาย",
             "เขียวสะอาด",
@@ -1100,16 +1394,26 @@ function onCancel() {
 // ======================================================
 const tableColumns = [
     { key: "index", label: "#", class: "text-left w-[72px] whitespace-nowrap" },
-    { key: "displayEmployeeId", label: "Employee ID", class: "text-left w-[180px]" },
+    {
+        key: "displayEmployeeId",
+        label: "Employee ID",
+        class: "text-left w-[180px]"
+    },
     { key: "name", label: "Name", class: "text-left w-[240px]" },
-    { key: "nickname", label: "Nickname", class: "text-left w-[120px]" },
+
+    {
+        key: "nickname",
+        label: "Nickname",
+        class: "text-left w-[120px]"
+    },
+
     { key: "phone", label: "Phone", class: "text-left w-[140px]" },
     { key: "department", label: "Department", class: "text-left w-[180px]" },
     { key: "team", label: "Team", class: "text-left w-[160px]" },
     { key: "position", label: "Position", class: "text-left w-[180px]" },
-    { key: "email", label: "Email", class: "text-left w-[220px]" },
+    // { key: "email", label: "Email", class: "text-left w-[220px]" },
     { key: "dateAdd", label: "Date Add (D/M/Y)", class: "text-center w-[140px]" },
-];
+]
 
 // ======================================================
 // Enable / Disable Create button
@@ -1117,6 +1421,73 @@ const tableColumns = [
 const canCreate = computed(() => {
     return displayRows.value.length > 0 &&
         !creating.value &&
-        !uploading.value;
-});
+        !uploading.value &&
+        validationErrors.value.length === 0
+})
+
+const hasValidationError = computed(() =>
+    validationErrors.value.length > 0
+)
+
+const errorSummary = computed(() => {
+    if (!displayRows.value.length) return ""
+
+    const missingRows = new Set()
+    const duplicateRows = new Set()
+    const invalidRows = new Set()
+
+    displayRows.value.forEach((row, index) => {
+        const rowNumber = index + 2
+
+        // missing
+        if (missingErrors.value.some(e => e.includes(`row ${rowNumber}`))) {
+            missingRows.add(rowNumber)
+        }
+
+        validationErrors.value.forEach(e => {
+            if (!e.includes(`row ${rowNumber}`)) return
+
+            // duplicate in system
+            if (e.includes("is in the system")) {
+                duplicateRows.add(rowNumber)
+            }
+
+            // invalid cases
+            if (
+                e.includes("team does not belong") ||
+                e.includes("position does not belong") ||
+                e.includes("department does not exist") ||
+                e.includes("team does not exist") ||
+                e.includes("position does not exist")
+            ) {
+                invalidRows.add(rowNumber)
+            }
+        })
+    })
+
+    const parts = []
+
+    if (duplicateRows.size > 0) {
+        parts.push(
+            `${duplicateRows.size} data are already in the system`
+        )
+    }
+
+    if (invalidRows.size > 0) {
+        parts.push(
+            `${invalidRows.size} invalid data`
+        )
+    }
+
+    if (missingRows.size > 0) {
+        parts.push(
+            `${missingRows.size} missing data`
+        )
+    }
+
+    return parts.length
+        ? `!!! There are ${parts.join(" and ")}.`
+        : ""
+})
+
 </script>
