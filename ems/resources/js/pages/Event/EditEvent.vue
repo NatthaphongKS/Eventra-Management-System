@@ -279,27 +279,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="mt-6">
-                <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
-                    :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
-                    :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id"
-                    :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected" :rowClass="rowClass"
-                    :isRowDisabled="(row) => lockedIds.has(row.id)">
-                    <template #cell-fullname="{ row }">
-                        {{
-                            (row.emp_firstname || "") +
-                            " " +
-                            (row.emp_lastname || "")
-                        }}
-                    </template>
-                    <template #empty>
-                        <div class="py-8 text-center text-neutral-400">
-                            ไม่พบข้อมูลพนักงาน
-                        </div>
-                    </template>
-                </DataTable>
-            </div>
         </div>
 
         <!-- แสดงจำนวนคนที่ถูกเลือก -->
@@ -338,31 +317,31 @@
         </div>
     </div>
 
-        <!-- แถบปุ่ม -->
-        <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
-            <div class="flex-none">
-                <button type="button" @click="onCancel" :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#C10008] text-white font-semibold hover:bg-red-700 w-[140px] h-[48px] transition shadow-sm">
-                    <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white rotate-45" />
-                    <span>Cancel</span>
-                </button>
-            </div>
-
-            <div class="flex-none">
-                <button type="button" @click="saveEvent" :disabled="saving"
-                    class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
-                    <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
-                    <span>Confirm</span>
-                </button>
-            </div>
+    <!-- แถบปุ่ม -->
+    <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
+        <div class="flex-none">
+            <button type="button" @click="onCancel" :disabled="saving"
+                class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#C10008] text-white font-semibold hover:bg-red-700 w-[140px] h-[48px] transition shadow-sm">
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white rotate-45" />
+                <span>Cancel</span>
+            </button>
         </div>
-        <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
-            :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText"
-            @confirm="alert.onConfirm" @cancel="alert.onCancel" />
 
-        <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
-            type="error" :showCancel="false" />
+        <div class="flex-none">
+            <button type="button" @click="saveEvent" :disabled="saving"
+                class="inline-flex items-center justify-center gap-2 rounded-[20px] px-4 bg-[#00A73D] text-white font-semibold hover:bg-green-700 w-[140px] h-[48px] transition shadow-sm">
+                <Icon icon="ic:baseline-plus" class="w-5 h-5 text-white" />
+                <span>Confirm</span>
+            </button>
+        </div>
     </div>
+    <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
+        :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText" @confirm="alert.onConfirm"
+        @cancel="alert.onCancel" />
+
+    <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
+        type="error" :showCancel="false" />
+
 </template>
 
 <!-- /**
@@ -827,6 +806,21 @@ export default {
                 this.formErrors.eventTime = true;
                 this.timeErrorMessage = 'End time must be after start time';
                 return;
+
+
+            }
+
+            const diff = endMin - startMin;
+            this.eventDurationMinutes = diff;
+            const hour = Math.floor(diff / 60);
+            const min = diff % 60;
+            if (hour === 0) this.eventDuration = `${min} Min`;
+            else if (min === 0) this.eventDuration = `${hour} Hour`;
+            else this.eventDuration = `${hour} Hour ${min} Min`;
+
+            this.formErrors.eventTime = false;
+            this.timeErrorMessage = '';
+        },
         /**
          * ชื่อฟังก์ชัน: submitForm
          * คำอธิบาย: ส่งข้อมูลกิจกรรมที่แก้ไขไปยัง Backend พร้อม flag การส่งอีเมล
@@ -899,19 +893,6 @@ export default {
             } finally {
                 this.saving = false
             }
-        },
-            }
-
-            const diff = endMin - startMin;
-            this.eventDurationMinutes = diff;
-            const hour = Math.floor(diff / 60);
-            const min = diff % 60;
-            if (hour === 0) this.eventDuration = `${min} Min`;
-            else if (min === 0) this.eventDuration = `${hour} Hour`;
-            else this.eventDuration = `${hour} Hour ${min} Min`;
-
-            this.formErrors.eventTime = false;
-            this.timeErrorMessage = '';
         },
 
         /**
