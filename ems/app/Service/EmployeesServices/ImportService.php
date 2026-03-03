@@ -1,10 +1,9 @@
 <?php
-
 /**
  * ชื่อไฟล์: ImportService.php
  * คำอธิบาย: Service สำหรับจัดการการนำเข้าข้อมูลพนักงานแบบ Bulk
- * ชื่อผู้เขียน/แก้ไข: Team ByteForge
- * วันที่จัดทำ/แก้ไข: 20 กุมภาพันธ์ 2569
+ * ชื่อผู้เขียน/แก้ไข: Thanusin leenarat
+ * วันที่จัดทำ/แก้ไข: 27 กุมภาพันธ์ 2569
  */
 
 namespace App\Service\EmployeesServices;
@@ -78,14 +77,30 @@ class ImportService
      */
     private function processRow(array $row): array
     {
-        $empId = trim($row['employeeId'] ?? '');
-        $email = trim($row['email'] ?? '');
-        $phone = preg_replace('/\D+/', '', $row['phone'] ?? '');
+        $empId = trim($row['emp_id'] ?? '');
+        $email = trim($row['emp_email'] ?? '');
+        $phone = preg_replace('/\D+/', '', $row['emp_phone'] ?? '');
+        $firstName = trim(mb_strtolower($row['emp_firstname'] ?? ''));
+        $lastName = trim(mb_strtolower($row['emp_lastname'] ?? ''));
 
-        $duplicate = Employee::where(function ($query) use ($empId, $email, $phone) {
-            $query->where('emp_id', $empId)
+        if (!$empId || !$firstName || !$lastName || !$email || !$phone) {
+            return [
+                'status' => 'failed',
+                'data' => [
+                    'emp_id' => $empId,
+                    'reason' => 'Missing required fields',
+                ],
+            ];
+        }
+
+        $duplicate = Employee::where(function ($q) use ($empId, $email, $phone, $firstName, $lastName) {
+            $q->where('emp_id', $empId)
                 ->orWhere('emp_email', $email)
-                ->orWhere('emp_phone', $phone);
+                ->orWhere('emp_phone', $phone)
+                ->orWhere(function ($qq) use ($firstName, $lastName) {
+                    $qq->whereRaw('LOWER(TRIM(emp_firstname)) = ?', [$firstName])
+                        ->whereRaw('LOWER(TRIM(emp_lastname)) = ?', [$lastName]);
+                });
         })->exists();
 
         if ($duplicate) {
@@ -93,24 +108,27 @@ class ImportService
                 'status' => 'failed',
                 'data' => [
                     'emp_id' => $empId,
-                    'reason' => 'Duplicate emp_id / email / phone',
+                    'reason' => 'Duplicate data in system',
                 ],
             ];
         }
 
         $employee = Employee::create([
-            'emp_company_id' => Auth::user()->emp_company_id ?? 1,
+            'emp_company_id' => $row['emp_company_id'],
             'emp_id' => $empId,
-            'emp_prefix' => 1,
-            'emp_firstname' => trim($row['name'] ?? ''),
-            'emp_lastname' => '',
-            'emp_nickname' => trim($row['nickname'] ?? ''),
+            'emp_prefix' => $row['emp_prefix'],
+            'emp_firstname' => $firstName,
+            'emp_lastname' => $lastName,
+            'emp_nickname' => $row['emp_nickname'] ?? null,
             'emp_email' => $email,
             'emp_phone' => $phone,
-            'emp_password' => Hash::make('Password123'),
+            'emp_position_id' => $row['emp_position_id'],
+            'emp_department_id' => $row['emp_department_id'],
+            'emp_team_id' => $row['emp_team_id'],
+            'emp_password' => null,
             'emp_permission' => 'employee',
             'emp_delete_status' => 'active',
-            'emp_created_at' => Carbon::now(),
+            'emp_created_at' => now(),
             'emp_create_by' => Auth::id(),
         ]);
 

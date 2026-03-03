@@ -279,27 +279,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="mt-6">
-                <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
-                    :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
-                    :pageSizeOptions="[10, 25, 50]" :selectable="true" :showRowNumber="true" rowKey="id"
-                    :modelValue="selectedIdsArr" @update:modelValue="onUpdateSelected" :rowClass="rowClass"
-                    :isRowDisabled="(row) => lockedIds.has(row.id)">
-                    <template #cell-fullname="{ row }">
-                        {{
-                            (row.emp_firstname || "") +
-                            " " +
-                            (row.emp_lastname || "")
-                        }}
-                    </template>
-                    <template #empty>
-                        <div class="py-8 text-center text-neutral-400">
-                            ไม่พบข้อมูลพนักงาน
-                        </div>
-                    </template>
-                </DataTable>
-            </div>
         </div>
 
         <!-- แสดงจำนวนคนที่ถูกเลือก -->
@@ -362,8 +341,7 @@
 
     <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
         type="error" :showCancel="false" />
-    <div>
-    </div>
+
 </template>
 
 <!-- /**
@@ -826,6 +804,48 @@ export default {
             })
         },
 
+        // คำนวณระยะเวลา (Duration)
+        // - อ่านค่า `eventTimeStart` และ `eventTimeEnd` (รูปแบบ HH:mm)
+        // - แปลงเป็นนาทีรวม (hour * 60 + minute) แล้วหาผลต่าง (end - start)
+        // - ไม่อนุญาตให้เวลาจบก่อนหรือเท่ากับเวลาเริ่ม (no next-day wrap). ถ้าเกิดขึ้น จะตั้ง error และข้อความ
+        // - เก็บผลลัพธ์เป็น `eventDurationMinutes` (ตัวเลขนาที) และ `eventDuration` (ข้อความอ่านง่าย)
+        calDuration() {
+            // If either time missing, clear duration and message
+            if (!this.eventTimeStart || !this.eventTimeEnd) {
+                this.eventDurationMinutes = 0;
+                this.eventDuration = '';
+                this.timeErrorMessage = '';
+                return;
+            }
+
+            const [startHour, startMinute] = this.eventTimeStart.split(':').map(Number);
+            const [endHour, endMinute] = this.eventTimeEnd.split(':').map(Number);
+
+            const startMin = startHour * 60 + startMinute;
+            const endMin = endHour * 60 + endMinute;
+
+            // Enforce end > start (no automatic next-day wrap)
+            if (endMin <= startMin) {
+                this.eventDurationMinutes = 0;
+                this.eventDuration = '';
+                this.formErrors.eventTime = true;
+                this.timeErrorMessage = 'End time must be after start time';
+                return;
+
+
+            }
+
+            const diff = endMin - startMin;
+            this.eventDurationMinutes = diff;
+            const hour = Math.floor(diff / 60);
+            const min = diff % 60;
+            if (hour === 0) this.eventDuration = `${min} Min`;
+            else if (min === 0) this.eventDuration = `${hour} Hour`;
+            else this.eventDuration = `${hour} Hour ${min} Min`;
+
+            this.formErrors.eventTime = false;
+            this.timeErrorMessage = '';
+        },
         /**
          * ชื่อฟังก์ชัน: submitForm
          * คำอธิบาย: ส่งข้อมูลกิจกรรมที่แก้ไขไปยัง Backend พร้อม flag การส่งอีเมล
@@ -892,74 +912,6 @@ export default {
             } finally {
                 this.saving = false
             }
-        },
-
-        /**
-         * ชื่อฟังก์ชัน: calDuration
-         * คำอธิบาย: คำนวณระยะเวลากิจกรรมจากเวลาเริ่มและเวลาสิ้นสุด
-         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
-         * วันที่จัดทำ/แก้ไข: 2026-03-01
-         */
-        calDuration() {
-            // ถ้าไม่มีเวลาครบ → clear ค่าทั้งหมด
-            if (!this.eventTimeStart || !this.eventTimeEnd) {
-                this.eventDurationMinutes = 0
-                this.eventDuration = ''
-                this.timeErrorMessage = ''
-                return
-            }
-
-            const [startHour, startMinute] = this.eventTimeStart.split(':').map(Number)
-            const [endHour, endMinute] = this.eventTimeEnd.split(':').map(Number)
-
-            const totalStartMinutes = startHour * 60 + startMinute
-            const totalEndMinutes = endHour * 60 + endMinute
-            let diff = totalEndMinutes - totalStartMinutes
-
-            if (diff < 0) diff += 24 * 60 // รองรับกรณีข้ามเที่ยงคืน
-
-            this.eventDurationMinutes = Math.max(0, diff)
-
-            // แสดงผลในรูปแบบ "X Hour Y Min"
-            const hours = Math.floor(diff / 60)
-            const minutes = diff % 60
-
-            if (minutes === 0) {
-                this.eventDuration = `${hours} Hour`
-            } else if (hours === 0) {
-                this.eventDuration = `${minutes} Min`
-            } else {
-                this.eventDuration = `${hours} Hour ${minutes} Min`
-            }
-        },
-
-        calDuration() {
-
-            const [startHour, startMinute] = this.eventTimeStart.split(':').map(Number);
-            const [endHour, endMinute] = this.eventTimeEnd.split(':').map(Number);
-
-            const startMin = startHour * 60 + startMinute;
-            const endMin = endHour * 60 + endMinute;
-
-            // Enforce end > start (no automatic next-day wrap)
-            if (endMin <= startMin) {
-                this.eventDurationMinutes = 0;
-                this.eventDuration = '';
-                this.formErrors.eventTime = true;
-                this.timeErrorMessage = 'End time must be after start time';
-                return;
-            }
-
-            const diff = endMin - startMin;
-            this.eventDurationMinutes = diff;
-            const hour = Math.floor(diff / 60);
-            const min = diff % 60;
-            if (hour === 0) this.eventDuration = `${min} Min`;
-            else if (min === 0) this.eventDuration = `${hour} Hour`;
-            else this.eventDuration = `${hour} Hour ${min} Min`;
-
-            this.formErrors.eventTime = false;
-            this.timeErrorMessage = '';
         },
 
         /**

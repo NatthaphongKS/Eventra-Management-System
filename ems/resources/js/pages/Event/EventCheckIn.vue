@@ -194,7 +194,7 @@
             :loading="loading"
             v-model:page="page"
             v-model:pageSize="pageSize"
-            :totalItems="sortedRows.length"
+            :totalItems="sortedEmployeeRows.length"
             rowKey="empId"
             selectable
             v-model="selectedIds"
@@ -490,15 +490,15 @@ const filteredBase = computed(() => {
 });
 
 /* ===== Sorting & Pagination ===== */
-const sortedRows = computed(() => {
+const sortedEmployeeRows = computed(() => {
     const direction = sortOrder.value === "desc" ? -1 : 1;
-    return [...filteredBase.value].sort((a, b) => {
-        const valueA =
-            sortKey.value === "fullName" ? a.empFullname : a[sortKey.value];
-        const valueB =
-            sortKey.value === "fullName" ? b.empFullname : b[sortKey.value];
+    return [...filteredBase.value].sort((employeeA, employeeB) => {
+        const employeeAValue =
+            sortKey.value === "fullName" ? employeeA.empFullname : employeeA[sortKey.value];
+        const employeeBValue =
+            sortKey.value === "fullName" ? employeeB.empFullname : employeeB[sortKey.value];
         return (
-            String(valueA || "").localeCompare(String(valueB || ""), "th") *
+            String(employeeAValue || "").localeCompare(String(employeeBValue || ""), "th") *
             direction
         );
     });
@@ -506,7 +506,7 @@ const sortedRows = computed(() => {
 
 const pagedRows = computed(() => {
     const start = (page.value - 1) * pageSize.value;
-    return sortedRows.value.slice(start, start + pageSize.value);
+    return sortedEmployeeRows.value.slice(start, start + pageSize.value);
 });
 
 const onSort = ({ key, order }) => {
