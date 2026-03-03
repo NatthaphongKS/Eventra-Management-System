@@ -19,10 +19,9 @@
 /storage/*.key
 /storage/pail
 /vendor
+/scripts
+/docs
 Homestead.json
 Homestead.yaml
 Thumbs.db
 web.txt
-backup1.vue
-backup2.php
-updateTime.php

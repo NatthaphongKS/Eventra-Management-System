@@ -44,7 +44,6 @@ class ReplyController extends Controller
             ]);
         }
 
-
         $eveId = $ids[0];
         $empId = $ids[1];
 
@@ -86,7 +85,6 @@ class ReplyController extends Controller
         );
     }
 
-
     public function store(Request $req)
     {
         $data = $req->validate([
@@ -108,8 +106,6 @@ class ReplyController extends Controller
                 'con_answer' => $data['attend'],                   // หรือ $answer
                 'con_reason' => $data['reason'],
             ]);
-
-
 
         return response()->json(['ok' => true], 201);
     }
