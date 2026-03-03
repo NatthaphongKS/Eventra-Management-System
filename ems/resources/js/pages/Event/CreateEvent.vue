@@ -228,7 +228,7 @@
                                     <span class="truncate text-[16px] text-neutral-800 block">{{ item.name }}</span>
                                     <span class="text-xs text-rose-500">{{
                                         prettySize(item.size)
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
 
