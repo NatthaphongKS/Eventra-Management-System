@@ -208,34 +208,38 @@ class EventService
     {
         return DB::transaction(function () use ($request) {
 
-
             // ✅ รับ flag จาก Frontend (ค่า default = true เผื่อ call จากที่อื่น)
             $sendMail = $request->input('send_mail', '1') === '1';
 
             $event = Event::lockForUpdate()->findOrFail($request->id);
 
-            $old = [
-                'date' => $event->evn_date,
-                'start' => Carbon::parse($event->evn_timestart)->format('H:i'),
-                'end' => Carbon::parse($event->evn_timeend)->format('H:i'),
-                'location' => $event->evn_location
-            ];
-
-            $event->update([
+            // 1. ใช้ fill() แทน update() เพื่อให้เราตรวจสอบฟิลด์ที่มีการเปลี่ยนแปลงได้ก่อนเซฟ
+            $event->fill([
                 'evn_title' => $request->evn_title,
                 'evn_category_id' => $request->evn_category_id ?? $event->evn_category_id,
                 'evn_description' => $request->evn_description ?? $event->evn_description,
                 'evn_date' => $request->evn_date ?? $event->evn_date,
-                'evn_timestart' => $request->evn_timestart ?? $event->evn_timestart,
-                'evn_timeend' => $request->evn_timeend ?? $event->evn_timeend,
+                // ป้องกันปัญหา getDirty() ทำงานผิดพลาดเนื่องจากฟอร์แมตเวลาไม่ตรงกันกับ DB
+                'evn_timestart' => $request->has('evn_timestart') ? Carbon::parse($request->evn_timestart)->format('H:i:s') : $event->evn_timestart,
+                'evn_timeend' => $request->has('evn_timeend') ? Carbon::parse($request->evn_timeend)->format('H:i:s') : $event->evn_timeend,
                 'evn_location' => $request->evn_location ?? $event->evn_location,
                 'evn_duration' => isset($request->evn_duration)
                     ? ceil(max(0, $request->evn_duration) / 60)
                     : $event->evn_duration
             ]);
 
+            // 2. ตรวจสอบว่ามีการเปลี่ยนแปลงข้อมูลส่วนอื่นที่ไม่ใช่ "หมวดหมู่" หรือไม่
+            $dirtyFields = $event->getDirty();
+            unset($dirtyFields['evn_category_id']); // ตัดหมวดหมู่ออกจากการเช็ค
+            $isDataChanged = count($dirtyFields) > 0;
+
+            // บันทึกข้อมูลลง DB
+            $event->save();
+
             /* ---------------- Files Delete ---------------- */
+            $isFileChanged = false;
             if ($request->filled('delete_file_ids')) {
+                $isFileChanged = true;
                 $delIds = array_unique($request->delete_file_ids);
                 $filesToDelete = File::where('file_event_id', $event->id)
                     ->whereIn('id', $delIds)->get();
@@ -247,6 +251,7 @@ class EventService
 
             /* ---------------- Files Add ---------------- */
             if ($request->hasFile('attachments')) {
+                $isFileChanged = true;
                 foreach ($request->file('attachments') as $uploadedFile) {
                     $path = $uploadedFile->store("events/{$event->id}", 'public');
                     $event->files()->create([
@@ -326,14 +331,8 @@ class EventService
             }
 
             /* ---------------- ส่งอัปเดตให้คนเดิม (critical change) ---------------- */
-            $newStart = Carbon::parse($event->evn_timestart)->format('H:i');
-            $newEnd = Carbon::parse($event->evn_timeend)->format('H:i');
-
-            $critical =
-                $old['date'] != $event->evn_date ||
-                $old['start'] != $newStart ||
-                $old['end'] != $newEnd ||
-                $old['location'] != $event->evn_location;
+            // ✅ เปลี่ยนเงื่อนไข: ส่งเมลก็ต่อเมื่อ ข้อมูลอื่น (นอกจากหมวดหมู่) ถูกเปลี่ยน หรือ มีการแก้ไขไฟล์
+            $critical = $isDataChanged || $isFileChanged;
 
             // ✅ ส่งเมลอัปเดต เฉพาะเมื่อ sendMail = true และมี critical change
             if ($sendMail && $critical) {
