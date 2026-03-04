@@ -1,3 +1,11 @@
+/**
+ * ชื่อไฟล์: EmployeesPage.vue
+ * คำอธิบาย: Component สำหรับแสดงและจัดการข้อมูลรายชื่อพนักงานทั้งหมด (ค้นหา, กรอง, จัดเรียง, ลบ)
+ * Input: -
+ * Output: หน้าตารางจัดการพนักงาน (UI)
+ * ชื่อผู้เขียน/แก้ไข: katcharuek sriphirom
+ * วันที่จัดทำ/แก้ไข: 22 กุมภาพันธ์ 2569
+ */
 <template>
     <section class="p-0">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
@@ -52,14 +60,7 @@
 </template>
 
 <script>
-/**
- * ชื่อไฟล์: EmployeesPage.vue
- * คำอธิบาย: Component สำหรับแสดงและจัดการข้อมูลรายชื่อพนักงานทั้งหมด (ค้นหา, กรอง, จัดเรียง, ลบ)
- * Input: -
- * Output: หน้าตารางจัดการพนักงาน (UI)
- * ชื่อผู้เขียน/แก้ไข: katcharuek sriphirom
- * วันที่จัดทำ/แก้ไข: 22 กุมภาพันธ์ 2569
- */
+
 
 import axios from "axios";
 import { Icon } from "@iconify/vue";

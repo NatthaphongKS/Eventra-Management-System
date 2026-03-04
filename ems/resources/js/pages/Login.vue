@@ -10,10 +10,9 @@
 <template>
     <div
         class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/Background.jpg')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
-        <div class="rounded-[28px] bg-neutral-200 shadow-lg"
-            :class="forgotPassword ? 'w-[343px] h-[500px] p-8' : 'w-[484px] h-[592px] p-8 md:p-10'">
-            <div v-if="!forgotPassword" class="flex justify-center items-center gap-4 mb-8">
-                <img src="../../../public/images/email/clicknext.jpeg" alt="Remote"
+        <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
+            <div class="flex justify-center items-center gap-4 mb-8">
+                <img :src="'/images/email/clicknext.jpeg'" alt="Eventra Logo"
                     class="w-20 h-20 object-cover rounded-2xl shadow-sm" loading="lazy">
                 <span class="text-5xl font-medium text-red-700 tracking-tight">
                     Eventra
@@ -103,7 +102,6 @@ export default {
             password: "",
             loading: false,
             message: "",
-            error: "",
             errors: {},
             forgotPassword: false,
         };
@@ -126,7 +124,6 @@ export default {
         },
         async login() {
             this.message = "";
-            this.error = "";
             this.errors = {};
 
             if (!this.validateInputs()) {
@@ -140,8 +137,6 @@ export default {
                     email: this.email,
                     password: this.password
                 }, { baseURL: '' });
-                // JSON.parse(localStorage.getItem("userData")) ตรวจสอบข้อมูลผู้ใช้ใน localStorage ว่าใคร login permission อะไร
-
 
                 this.message = res.data.message;
 
@@ -152,7 +147,9 @@ export default {
                     );
                 }
 
-                if (res.data.redirect) {
+                if (typeof res.data.redirect === 'string' &&
+                    res.data.redirect.startsWith('/') &&
+                    !res.data.redirect.startsWith('//')) {
                     window.location.href = res.data.redirect;
                 } else {
                     this.$router.push('/');

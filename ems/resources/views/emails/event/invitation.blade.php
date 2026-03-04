@@ -31,57 +31,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title }}</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #242424;
-            background-color: #ffffff;
+            font-family: 'Sarabun', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
             margin: 0;
-            padding: 20px;
-            font-size: 14px;
-            line-height: 1.5;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #f4f4f4;
+            padding-bottom: 40px;
         }
         .container {
-            max-width: 800px;
-            margin: 0; /* ชิดซ้ายตามภาพ */
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        h1.title {
+        .title {
             font-size: 24px;
-            font-weight: 400; /* Outlook มักไม่หนามาก */
-            margin: 0 0 4px 0;
-            color: #242424;
+            font-weight: 700;
+            color: #111111;
+            margin-top: 0;
+            margin-bottom: 10px;
+            line-height: 1.2;
         }
         .date-line {
-            font-size: 14px;
+            font-size: 16px;
             color: #444444;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         .description {
-            font-size: 14px;
-            font-weight: 600; /* ทำให้ตัวหนาเหมือนหัวข้อในภาพ */
-            color: #242424;
-            margin-bottom: 24px;
-            white-space: pre-line; /* รองรับการขึ้นบรรทัดใหม่จาก DB */
+            font-size: 15px;
+            line-height: 1.6;
+            color: #555555;
+            margin-bottom: 30px;
+            white-space: pre-line; /* รักษาการขึ้นบรรทัดใหม่จากข้อมูลใน DB */
         }
         .location-section {
+            border-top: 1px solid #eeeeee;
+            padding-top: 20px;
             margin-bottom: 30px;
         }
         .location-label {
             font-weight: 700;
             font-size: 14px;
-            margin-bottom: 2px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
         }
         .location-value {
-            font-size: 14px;
+            font-size: 16px;
+            color: #111111;
+            margin-bottom: 10px;
         }
         .map-link {
-            color: #0066CC; /* สีฟ้าลิงก์มาตรฐาน */
+            display: inline-block;
+            color: #0066CC;
             text-decoration: none;
             font-weight: 600;
+            font-size: 14px;
         }
         .map-link:hover {
             text-decoration: underline;
+        }
+        .footer-action {
+            margin-top: 40px;
+            text-align: left;
         }
         .action-link {
             font-weight: 600;
@@ -92,34 +114,31 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="wrapper">
+        <div class="container">
+            <h1 class="title">{{ $title }}</h1>
 
-        <h1 class="title">{{ $title }}</h1>
-
-        <div class="date-line">
-            วัน{{ $dateStr }} · {{ $tstart }} - {{ $tend }}
-        </div>
-
-        @if($desc)
-        <div class="description">
-            {!! nl2br(e($desc)) !!}
-        </div>
-        @endif
-
-        <div class="location-section">
-            <div class="location-label">ตำแหน่งที่ตั้ง</div>
-            <div class="location-value">
-                {{ $loc }}
+            <div class="date-line">
+                วัน{{ $dateStr }} · {{ $tstart }} - {{ $tend }}
             </div>
-            <div>
-                <a href="{{ $mapUrl }}" target="_blank" class="map-link">ดูแผนที่</a>
+
+            @if($desc)
+            <div class="description">
+                {!! nl2br(e($desc)) !!}
+            </div>
+            @endif
+
+            <div class="location-section">
+                <div class="location-label">ตำแหน่งที่ตั้ง</div>
+                <div class="location-value">
+                    {{ $loc }}
+                </div>
+            </div>
+
+            <div class="footer-action">
+                <a href="{{ $eventUrl }}" class="action-link">*คลิกเพื่อตอบรับการเข้าร่วม*</a>
             </div>
         </div>
-
-        <div>
-            <a href="{{ $eventUrl }}" class="action-link">*คลิกเพื่อตอบรับการเข้าร่วม*</a>
-        </div>
-
     </div>
 </body>
 </html>
