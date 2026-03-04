@@ -1,4 +1,11 @@
-<!-- Dashboard/Home.vue - Event Management Dashboard with Statistics & Export -->
+<!-- /**
+ * ชื่อไฟล์: Home.vue
+ * คำอธิบาย: หน้า Dashboard สำหรับแสดงรายการกิจกรรม สถิติผู้เข้าร่วม และข้อมูลสรุป
+ * Input: ข้อมูลกิจกรรมที่เลือก (selectedEventIds), ตัวกรองการค้นหา/วันที่/สถานะ
+ * Output: ตารางกิจกรรม, กราฟสถิติ, และตารางผู้เข้าร่วมตามสถานะ
+ * ชื่อผู้เขียน/แก้ไข: Kidrakon Rattanahiran
+ * วันที่จัดทำ/แก้ไข: 2026-03-04
+ */ -->
 <template>
 
     <!-- Event Table Section - Refactored to match EventPage -->
@@ -33,7 +40,8 @@
             <button @click="showDataHandler"
                 class="h-[58px] w-[170px] items-center rounded-[20px] bg-red-700 px-6 font-medium text-[20px] text-white hover:bg-red-800 flex-shrink-0 mt-6 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
                 :disabled="selectedEventIds.size === 0"
-                :class="{ 'opacity-50 cursor-not-allowed': selectedEventIds.size === 0 }">
+                :class="{ 'opacity-50 cursor-not-allowed': selectedEventIds.size === 0, 'bg-red-800 ring-2 ring-red-300': showStatistics }"
+                :aria-pressed="showStatistics ? 'true' : 'false'">
                 Show Data
             </button>
         </div>
@@ -343,6 +351,9 @@ export default {
     set(val) {
       this.selectedEventIds = new Set(val);
       this.showStatistics = false;
+            this.showEmployeeTable = false;
+            this.employeeTableType = null;
+            this.filteredEmployeesForTable = [];
     }
   },
     normalized() {
@@ -709,6 +720,76 @@ export default {
     },
 
   methods: {
+        resetEmployeeTableState() {
+            this.showEmployeeTable = false;
+            this.employeeTableType = null;
+            this.filteredEmployeesForTable = [];
+        },
+
+        buildEmployeeRowsFromParticipants(participants) {
+            return participants.map(participant => ({
+                id: participant.id,
+                unique_key: `${participant.emp_id}_${participant.event_id}_${participant.id}`,
+                emp_id: participant.emp_id,
+                emp_prefix: participant.emp_prefix,
+                emp_firstname: participant.emp_firstname,
+                emp_lastname: participant.emp_lastname,
+                emp_nickname: participant.emp_nickname,
+                emp_phone: participant.emp_phone,
+                emp_email: participant.emp_email,
+                position: participant.position || 'N/A',
+                department: participant.department || 'N/A',
+                team: participant.team || 'N/A',
+                event_title: participant.event_title || 'N/A',
+                emp_delete_status: 'active'
+            }));
+        },
+
+        rebuildEmployeeTableFromParticipants(status = this.employeeTableType) {
+            if (!this.eventParticipants || this.eventParticipants.length === 0) {
+                this.filteredEmployeesForTable = [];
+                this.showEmployeeTable = false;
+                this.currentPage = 1;
+                return;
+            }
+
+            let workingParticipants = [...this.eventParticipants];
+
+            if (status === 'attending') {
+                workingParticipants = workingParticipants.filter(participant => participant.status === 'accepted');
+            } else if (status === 'not-attending') {
+                workingParticipants = workingParticipants.filter(participant => participant.status === 'denied');
+            } else if (status === 'pending') {
+                workingParticipants = workingParticipants.filter(participant => participant.status !== 'accepted' && participant.status !== 'denied');
+            }
+
+            const uniqueParticipants = new Map();
+            workingParticipants.forEach(participant => {
+                const uniqueKey = `${participant.emp_id}_${participant.event_id}_${participant.con_checkin_status}_${participant.status}`;
+                if (!uniqueParticipants.has(uniqueKey)) {
+                    uniqueParticipants.set(uniqueKey, participant);
+                }
+            });
+
+            const deduplicatedParticipants = Array.from(uniqueParticipants.values());
+            deduplicatedParticipants.sort((a, b) => {
+                const eventCompare = (a.event_title || '').localeCompare(b.event_title || '');
+                if (eventCompare !== 0) return eventCompare;
+
+                const nameCompare = (a.emp_firstname || '').localeCompare(b.emp_firstname || '');
+                if (nameCompare !== 0) return nameCompare;
+
+                const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
+                if (empCompare !== 0) return empCompare;
+
+                return (a.event_id || 0) - (b.event_id || 0);
+            });
+
+            this.filteredEmployeesForTable = this.buildEmployeeRowsFromParticipants(deduplicatedParticipants);
+            this.showEmployeeTable = true;
+            this.currentPage = 1;
+        },
+
     showEmployees(status) {
     this.selectedStatus = status; // attending / not-attending / pending
     this.showEmployeeTable = true;
@@ -727,6 +808,7 @@ export default {
     }
   });
   this.showStatistics = false;
+    this.resetEmployeeTableState();
 },
 
 handleCheckAllEvents({ pageKeys, action }) {
@@ -738,6 +820,7 @@ handleCheckAllEvents({ pageKeys, action }) {
     }
   });
   this.showStatistics = false;
+    this.resetEmployeeTableState();
 },
 
     // Search handling
@@ -990,7 +1073,7 @@ handleCheckAllEvents({ pageKeys, action }) {
 
                     // อัพเดตรายชื่อผู้เข้าร่วม
                     this.eventParticipants = res.data.participants || [];
-                    this.showEmployeeTable = true;
+                    this.rebuildEmployeeTableFromParticipants();
 
           console.log('✅ Participation data updated:', this.participationData);
           console.log('✅ Participants loaded:', this.eventParticipants.length);
@@ -1143,74 +1226,7 @@ handleCheckAllEvents({ pageKeys, action }) {
                     this.filteredEmployeesForTable = [];
                     return;
                 }
-
-                // กรองผู้เข้าร่วมตามสถานะ
-                let filteredParticipants = [];
-
-                if (status === 'attending') {
-                    filteredParticipants = this.eventParticipants.filter(participant => {
-                        return participant.status === 'accepted';
-                    });
-                } else if (status === 'not-attending') {
-                    filteredParticipants = this.eventParticipants.filter(participant => {
-                        return participant.status === 'denied';
-                    });
-                } else if (status === 'pending') {
-                    filteredParticipants = this.eventParticipants.filter(participant => {
-                        return participant.status !== 'accepted' && participant.status !== 'denied';
-                    });
-                }
-
-                console.log(`📊 Filter: ${status} | Total: ${this.eventParticipants.length} → Filtered: ${filteredParticipants.length}`);
-
-                // กรองข้อมูลซ้ำโดยใช้ Map กับ unique key (emp_id + event_id + status)
-                const uniqueParticipants = new Map();
-                filteredParticipants.forEach(participant => {
-                    const uniqueKey = `${participant.emp_id}_${participant.event_id}_${participant.con_checkin_status}_${participant.status}`;
-                    // เก็บเฉพาะ record แรกที่พบ ไม่เอาข้อมูลซ้ำ
-                    if (!uniqueParticipants.has(uniqueKey)) {
-                        uniqueParticipants.set(uniqueKey, participant);
-                    }
-                });
-                // แปลง Map กลับเป็น Array และเรียงข้อมูล
-                const deduplicatedParticipants = Array.from(uniqueParticipants.values());
-                deduplicatedParticipants.sort((a, b) => {
-                    // เรียงตามชื่อกิจกรรมก่อน
-                    const eventCompare = (a.event_title || '').localeCompare(b.event_title || '');
-                    if (eventCompare !== 0) return eventCompare;
-
-                    // ถ้าชื่อกิจกรรมเท่ากัน ให้เรียงตามชื่อพนักงาน
-                    const nameCompare = (a.emp_firstname || '').localeCompare(b.emp_firstname || '');
-                    if (nameCompare !== 0) return nameCompare;
-
-                    // ถ้าชื่อเท่ากัน ให้เรียงตาม emp_id
-                    const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
-                    if (empCompare !== 0) return empCompare;
-
-                    // ถ้า emp_id เท่ากัน ให้เรียงตาม event_id
-                    return (a.event_id || 0) - (b.event_id || 0);
-                });
-
-                // แปลงเป็นรูปแบบพนักงานสำหรับตาราง พร้อม unique_key
-                this.filteredEmployeesForTable = deduplicatedParticipants.map(participant => ({
-                    id: participant.id,
-                    unique_key: `${participant.emp_id}_${participant.event_id}_${participant.id}`,
-                    emp_id: participant.emp_id,
-                    emp_prefix: participant.emp_prefix,
-                    emp_firstname: participant.emp_firstname,
-                    emp_lastname: participant.emp_lastname,
-                    emp_nickname: participant.emp_nickname,
-                    emp_phone: participant.emp_phone,
-                    emp_email: participant.emp_email,
-                    position: participant.position || 'N/A',
-                    department: participant.department || 'N/A',
-                    team: participant.team || 'N/A',
-                    event_title: participant.event_title || 'N/A',
-                    emp_delete_status: 'active'
-                }));
-                // Reset pagination เมื่อโหลดข้อมูลใหม่
-                this.currentPage = 1;
-
+                this.rebuildEmployeeTableFromParticipants(status);
                 console.log(`✅ Table rows: ${this.filteredEmployeesForTable.length}`);
 
       } catch (error) {
@@ -1247,6 +1263,13 @@ handleCheckAllEvents({ pageKeys, action }) {
         alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
         return;
       }
+
+            if (this.showStatistics) {
+                this.showStatistics = false;
+                this.resetEmployeeTableState();
+                return;
+            }
+
       // เปิดการแสดงผลกราฟและตาราง
       this.showStatistics = true;
       // เรียก fetch statistics

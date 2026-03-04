@@ -6,8 +6,8 @@
  * Http request: GET /history/events
  * Input: -
  * Output: JSON Array ของ Event ที่ถูกลบ พร้อมชื่อผู้สร้างและผู้ลบ
- * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
- * วันที่จัดทำ/แก้ไข: 2025-12-14
+ * ชื่อผู้เขียน/แก้ไข: Kidrakon Rattanahiran
+ * วันที่จัดทำ/แก้ไข: 2026-03-04
  */
 
 namespace App\Http\Controllers;
