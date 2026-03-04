@@ -754,7 +754,17 @@ export default {
         async saveEvent() {
             this.submitted = true
             if (!this.validateForm()) return // หยุดถ้า validate ไม่ผ่าน
-
+            if(!this.isFormChanged()) {
+                this.openAlert({
+                    type: 'error',
+                    title: 'NO CHANGES MADE',
+                    message: 'No changes detected in the form.',
+                    showCancel: true,
+                    cancelText: 'No, Go Back',
+                    
+                })
+                return
+            }
             // Alert ขั้นที่ 1: ยืนยันการแก้ไข
             this.openAlert({
                 type: 'confirm',
