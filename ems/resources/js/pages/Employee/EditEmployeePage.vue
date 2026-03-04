@@ -346,7 +346,7 @@ const validationMessages = {
     requiredNumber: "Required field only number",
     requiredEmail: "Required email",
     requiredField: "Required field",
-    employeeNumber4: "Must be 4 digits",
+    employeeNumber4: "Must be 3 digits",
     passwordMin8: "Please enter a password with at least 8 characters",
 };
 
@@ -394,7 +394,7 @@ function validateField(key, value) {
             if (!value) return validationMessages.requiredField;
         } else if (r === "employeeNumber4") {
             if (!value) return validationMessages.requiredField;
-            if (!/^\d{4}$/.test(value)) return validationMessages.employeeNumber4;
+            if (!/^\d{3}$/.test(value)) return validationMessages.employeeNumber4;
         } else if (r === "passwordMin8") {
             if (value && value.length < 8) {
                 return validationMessages.passwordMin8;
