@@ -10,8 +10,9 @@
 <template>
     <div
         class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/Background.jpg')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
-        <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
-            <div class="flex justify-center items-center gap-4 mb-8">
+        <div class="rounded-[28px] bg-neutral-200 shadow-lg"
+            :class="forgotPassword ? 'w-[343px] h-[500px] p-8' : 'w-[484px] h-[592px] p-8 md:p-10'">
+            <div v-if="!forgotPassword" class="flex justify-center items-center gap-4 mb-8">
                 <img src="../../../public/images/email/clicknext.jpeg" alt="Remote"
                     class="w-20 h-20 object-cover rounded-2xl shadow-sm" loading="lazy">
                 <span class="text-5xl font-medium text-red-700 tracking-tight">
@@ -66,40 +67,25 @@
                     </p>
                 </template>
 
-                <!--ฟอร์มกู้คืนรหัสผ่าน -->
+                <!-- Forgot Password Notice -->
                 <template v-else>
-                    <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Reset Password</h2>
-                    <form @submit.prevent="resetPassword">
-
-                        <div class="mb-5">
-                            <input type="text" v-model="resetEmail"
-                                class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
-                                placeholder="Email" />
-                            <p v-if="errors.resetEmail" class="text-red-700 text-m mt-1 text[16px]">
-                                {{ errors.resetEmail[0] }}
+                    <div class="h-full flex flex-col justify-between">
+                        <div>
+                            <h2 class="mt-4 text-[40px] font-semibold leading-tight text-neutral-800">Forgot your password?
+                            </h2>
+                            <p class="mt-16 text-[42px] leading-tight text-neutral-700">Please tell your admin
+                                <br>
+                                to reset your password
                             </p>
                         </div>
 
-                        <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
-
-                        <div class="flex justify-center mt-4 mb-4">
-                            <button type="button" @click="toggleForgotPassword"
-                                class="text-red-200 text-lg underline font-regular hover:text-red-700 transition-colors">
-                                back to sign in
+                        <div class="flex justify-center pb-2">
+                            <button type="button" @click="toggleForgotPassword" aria-label="Back to sign in"
+                                class="text-red-700 text-6xl leading-none hover:text-red-800 transition-colors">
+                                ←
                             </button>
                         </div>
-
-                        <div class="flex justify-center">
-                            <button type="submit" :disabled="loading"
-                                class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-                                {{ loading ? 'Sending...' : 'Send Reset Link' }}
-                            </button>
-                        </div>
-                    </form>
-
-                    <p v-if="error" class="text-center text-red-600 mt-4 text-lg font-medium">
-                        {{ error }}
-                    </p>
+                    </div>
                 </template>
             </div>
         </div>
@@ -115,7 +101,6 @@ export default {
         return {
             email: "",
             password: "",
-            resetEmail: "",
             loading: false,
             message: "",
             error: "",
@@ -193,57 +178,9 @@ export default {
             this.message = "";
             this.error = "";
             this.errors = {};
-            // Clear form fields
             if (this.forgotPassword) {
                 this.email = "";
                 this.password = "";
-            } else {
-                this.resetEmail = "";
-            }
-        },
-        async resetPassword() {
-            this.message = "";
-            this.error = "";
-            this.errors = {};
-
-            if (!this.resetEmail?.trim()) {
-                this.errors.resetEmail = ["Email is required"];
-                return;
-            }
-
-            const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-            if (!emailRegex.test(this.resetEmail.trim())) {
-                this.errors.resetEmail = ["Invalid email"];
-                return;
-            }
-
-            this.loading = true;
-
-            try {
-                const res = await axios.post('/forgot-password', {
-                    email: this.resetEmail
-                }, { baseURL: '' });
-
-                this.message = res.data.message || "Password reset link has been sent to your email";
-                // างข้อมูลแบบฟอร์มและปิดหน้ากู้คืนรหัสผ่านโดยอัตโนมัติหลังจากสำเร็จ
-                setTimeout(() => {
-                    this.resetEmail = "";
-                    this.forgotPassword = false;
-                }, 3000);
-            } catch (err) {
-                if (err.response) {
-                    if (err.response.status === 422) {
-                        this.errors = err.response.data.errors;
-                    } else if (err.response.data && err.response.data.message) {
-                        this.error = err.response.data.message;
-                    } else {
-                        this.error = "ไม่สามารถส่งรีเซ็ตลิงก์ได้ กรุณาลองอีกครั้ง";
-                    }
-                } else {
-                    this.error = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
-                }
-            } finally {
-                this.loading = false;
             }
         }
     }
