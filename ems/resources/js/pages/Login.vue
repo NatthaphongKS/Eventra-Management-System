@@ -11,7 +11,8 @@
     <div
         class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/Background.jpg')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
         <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
-            <div class="flex justify-center items-center gap-4 mb-8">
+
+            <div v-if="!forgotPassword" class="flex justify-center items-center gap-4 mb-8">
                 <img :src="'/images/email/clicknext.jpeg'" alt="Eventra Logo"
                     class="w-20 h-20 object-cover rounded-2xl shadow-sm" loading="lazy">
                 <span class="text-5xl font-medium text-red-700 tracking-tight">
@@ -20,7 +21,6 @@
             </div>
 
             <div class="left">
-                <!-- Login Form -->
                 <template v-if="!forgotPassword">
                     <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Sign In</h2>
                     <form @submit.prevent="login">
@@ -29,7 +29,7 @@
                             <input type="text" v-model="email"
                                 class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
                                 placeholder="Email" />
-                            <p v-if="errors.email" class="text-red-700 text-m mt-1 text[16px]">
+                            <p v-if="errors.email" class="text-red-700 text-m mt-1 text-[16px]">
                                 {{ errors.email[0] }}
                             </p>
                         </div>
@@ -39,12 +39,12 @@
                                 :class="{ 'border-red-500': errors.password, 'border-red-700': !errors.password }"
                                 class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
                                 placeholder="Password" />
-                            <p v-if="errors.password" class="text-red-700 text-m mt-1 text[16px]">
+                            <p v-if="errors.password" class="text-red-700 text-m mt-1 text-[16px]">
                                 {{ errors.password[0] }}
                             </p>
                         </div>
 
-                        <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
+                        <p v-if="message" class="text-red-700 text-m mt-1 text-[16px]">{{ message }}</p>
 
                         <div class="flex justify-center mt-4 mb-4">
                             <button type="button" @click="toggleForgotPassword"
@@ -66,46 +66,28 @@
                     </p>
                 </template>
 
-                <!--ฟอร์มกู้คืนรหัสผ่าน -->
                 <template v-else>
-                    <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Reset Password</h2>
-                    <form @submit.prevent="resetPassword">
+                    <div class="flex flex-col items-center justify-center mt-20">
+                        <h2 class="text-3xl font-semibold text-neutral-800 mb-8 text-center tracking-wide">
+                            Forgot your password?
+                        </h2>
 
-                        <div class="mb-5">
-                            <input type="text" v-model="resetEmail"
-                                class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
-                                placeholder="Email" />
-                            <p v-if="errors.resetEmail" class="text-red-700 text-m mt-1 text[16px]">
-                                {{ errors.resetEmail[0] }}
-                            </p>
-                        </div>
+                        <p class="text-2xl text-neutral-600 text-center mb-20 leading-relaxed">
+                            Please tell your admin<br>to reset your password
+                        </p>
 
-                        <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
-
-                        <div class="flex justify-center mt-4 mb-4">
-                            <button type="button" @click="toggleForgotPassword"
-                                class="text-red-200 text-lg underline font-regular hover:text-red-700 transition-colors">
-                                back to sign in
-                            </button>
-                        </div>
-
-                        <div class="flex justify-center">
-                            <button type="submit" :disabled="loading"
-                                class="w-[181px] h-[57px] bg-red-700 text-white hover:bg-red-800 rounded-3xl p-3 font-medium text-2xl transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-                                {{ loading ? 'Sending...' : 'Send Reset Link' }}
-                            </button>
-                        </div>
-                    </form>
-
-                    <p v-if="error" class="text-center text-red-600 mt-4 text-lg font-medium">
-                        {{ error }}
-                    </p>
+                        <button type="button" @click="toggleForgotPassword"
+                            class="text-red-700 hover:text-red-800 transition-colors mt-8">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-8 h-8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                        </button>
+                    </div>
                 </template>
             </div>
         </div>
     </div>
 </template>
-
 
 <script>
 import axios from "axios";
@@ -115,9 +97,9 @@ export default {
         return {
             email: "",
             password: "",
-            resetEmail: "",
             loading: false,
             message: "",
+            error: "",
             errors: {},
             forgotPassword: false,
         };
@@ -140,6 +122,7 @@ export default {
         },
         async login() {
             this.message = "";
+            this.error = "";
             this.errors = {};
 
             if (!this.validateInputs()) {
@@ -191,57 +174,10 @@ export default {
             this.message = "";
             this.error = "";
             this.errors = {};
-            // Clear form fields
+            // ล้างค่าฟอร์ม
             if (this.forgotPassword) {
                 this.email = "";
                 this.password = "";
-            } else {
-                this.resetEmail = "";
-            }
-        },
-        async resetPassword() {
-            this.message = "";
-            this.error = "";
-            this.errors = {};
-
-            if (!this.resetEmail?.trim()) {
-                this.errors.resetEmail = ["Email is required"];
-                return;
-            }
-
-            const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-            if (!emailRegex.test(this.resetEmail.trim())) {
-                this.errors.resetEmail = ["Invalid email"];
-                return;
-            }
-
-            this.loading = true;
-
-            try {
-                const res = await axios.post('/forgot-password', {
-                    email: this.resetEmail
-                }, { baseURL: '' });
-
-                this.message = res.data.message || "Password reset link has been sent to your email";
-                // างข้อมูลแบบฟอร์มและปิดหน้ากู้คืนรหัสผ่านโดยอัตโนมัติหลังจากสำเร็จ
-                setTimeout(() => {
-                    this.resetEmail = "";
-                    this.forgotPassword = false;
-                }, 3000);
-            } catch (err) {
-                if (err.response) {
-                    if (err.response.status === 422) {
-                        this.errors = err.response.data.errors;
-                    } else if (err.response.data && err.response.data.message) {
-                        this.error = err.response.data.message;
-                    } else {
-                        this.error = "ไม่สามารถส่งรีเซ็ตลิงก์ได้ กรุณาลองอีกครั้ง";
-                    }
-                } else {
-                    this.error = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
-                }
-            } finally {
-                this.loading = false;
             }
         }
     }
