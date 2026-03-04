@@ -18,8 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            // 'api/*',      //  ให้ /api ทั้งหมดไม่ต้องใช้ CSRF (Postman)
-            'logined',    //  เผื่อ login route เป็น web form
+            'api/*',      //  ให้ /api ทั้งหมดไม่ต้องใช้ CSRF (Postman)
+            'login',    //  เผื่อ login route เป็น web form
             'logout',     // เผื่อ logout เป็น POST
         ]);
 

@@ -16,7 +16,6 @@
                 <SearchBar v-model="searchInput" placeholder="Search Event" @search="applySearch" class="" />
             </div>
 
-
             <!-- DatePicker -->
             <div class="mt-6">
                 <EventDatePicker v-model="selectedDate" class="h-full [&_button]:h-full [&_input]:h-full" />

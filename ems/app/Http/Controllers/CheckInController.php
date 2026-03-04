@@ -33,14 +33,14 @@ class CheckInController extends Controller
     /**
      * ดึงข้อมูลพนักงานทั้งหมดที่เกี่ยวข้องกับกิจกรรม (Event) สำหรับการ Check-in
      *
-     * @param int $eveId รหัสกิจกรรม
+     * @param int $eve_id รหัสกิจกรรม
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getEmployeeForCheckin($eveId)
+    public function getEmployeeForCheckin($eve_id)
     {
         try {
             // เรียก service เพื่อดึงข้อมูลพนักงานสำหรับ check-in
-            $employeesData = $this->checkInService->getEmployeeForCheckin($eveId);
+            $employeesData = $this->checkInService->getEmployeeForCheckin($eve_id);
             return response()->json($employeesData, 200);
         } catch (\Exception $e) {
             // กรณีเกิด error ระหว่างดึงข้อมูล
@@ -52,15 +52,15 @@ class CheckInController extends Controller
     /**
      * อัปเดตสถานะการ Check-in ของพนักงานแต่ละคน (toggle 0/1)
      *
-     * @param int $eveId รหัสกิจกรรม
-     * @param int $empId รหัสพนักงาน
+     * @param int $eve_id รหัสกิจกรรม
+     * @param int $emp_id รหัสพนักงาน
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateEmployeeAttendance($eveId, $empId)
+    public function updateEmployeeAttendance($eve_id, $emp_id)
     {
         try {
             // เรียก service เพื่ออัปเดตสถานะ check-in ของพนักงาน
-            $result = $this->checkInService->updateEmployeeAttendance($eveId, $empId);
+            $result = $this->checkInService->updateEmployeeAttendance($eve_id, $emp_id);
 
             if ($result['created']) {
                 // ถ้าไม่มี record เดิม จะสร้างใหม่
@@ -80,18 +80,18 @@ class CheckInController extends Controller
      * อัปเดตสถานะการ Check-in ของพนักงานหลายคนพร้อมกัน (toggle ทั้งหมด)
      *
      * @param Request $request ข้อมูล request ที่มี employeeIds
-     * @param int $eveId รหัสกิจกรรม
+     * @param int $eve_id รหัสกิจกรรม
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateEmployeeAttendanceAll(Request $request, $eveId)
+    public function updateEmployeeAttendanceAll(Request $request, $eve_id)
     {
         try {
             // รับ employeeIds จาก request
             $employeeIds = $request->input('employeeIds');
             // เรียก service เพื่ออัปเดต check-in ของพนักงานทั้งหมด
-            $this->checkInService->updateEmployeeAttendanceAll($employeeIds, $eveId);
+            $this->checkInService->updateEmployeeAttendanceAll($employeeIds, $eve_id);
 
-            return response()->json(['message' => 'All records updated', 'data' => $eveId], 200);
+            return response()->json(['message' => 'All records updated', 'data' => $eve_id], 200);
         } catch (\Exception $e) {
             // กรณีเกิด error ระหว่างอัปเดต
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
