@@ -1,3 +1,9 @@
+
+     <!-- ชื่อไฟล์: ReplyController
+     * คำอธิบาย: Controller สำหรับจัดการการตอบกลับของผู้ใช้
+     * ชื่อผู้เขียน/แก้ไข: ชิตดนัย
+     * วันที่จัดทำ/แก้ไข: 4 มีนาคม 2569 -->
+
 <?php
 
 namespace App\Http\Controllers;
@@ -15,15 +21,7 @@ class ReplyController extends Controller
         $this->replyService = $replyService;
     }
 
-    /**
-     * ชื่อฟังก์ชัน: openForm
-     * Http request: get
-     * คำอธิบาย: ฟังก์ชันนี้ใช้สำหรับเปิดหน้าฟอร์มตอบกลับผ่านการตรวจสอบ URL ที่เข้ารหัส
-     * Input: string $encryptURL
-     * Output: View
-     * ชื่อผู้เขียน/แก้ไข: ชิตดนัย
-     * วันที่จัดทำ/แก้ไข: 4 มีนาคม 2569
-     */
+
     public function openForm(string $encryptURL)
     {
         try {
@@ -42,15 +40,6 @@ class ReplyController extends Controller
         return view('reply', ['message' => $message]);
     }
 
-    /**
-     * ชื่อฟังก์ชัน: show
-     * Http request: get
-     * คำอธิบาย: ฟังก์ชันนี้ใช้สำหรับตรวจสอบและดึงรายละเอียดข้อมูลพนักงานรวมถึงกิจกรรมเพื่อมาแสดงผล
-     * Input: string $encryptURL
-     * Output: JSON Response
-     * ชื่อผู้เขียน/แก้ไข: ชิตดนัย
-     * วันที่จัดทำ/แก้ไข: 4 มีนาคม 2569
-     */
     public function show(string $encryptURL)
     {
         try {
@@ -75,15 +64,7 @@ class ReplyController extends Controller
         ]);
     }
 
-    /**
-     * ชื่อฟังก์ชัน: store
-     * Http request: post
-     * คำอธิบาย: ฟังก์ชันนี้ใช้สำหรับบันทึกการตอบกลับเข้าร่วมกิจกรรมลงในฐานข้อมูล
-     * Input: Request $req
-     * Output: JSON Response
-     * ชื่อผู้เขียน/แก้ไข: ชิตดนัย
-     * วันที่จัดทำ/แก้ไข: 4 มีนาคม 2569
-     */
+
     public function store(Request $req)
     {
         $data = $req->validate([
