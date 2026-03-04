@@ -284,7 +284,7 @@ let controller = null;
 async function fetchEmployeeForCheckin(id) {
     controller?.abort?.();
     controller = new AbortController();
-    const res = await fetch(`/api/getEmployeeForCheckin/eveId/${id}`, {
+    const res = await fetch(`/api/get-employee-for-checkin/eve_id/${id}`, {
         headers: { Accept: "application/json" },
         credentials: "include",
         signal: controller.signal,
@@ -519,7 +519,7 @@ async function handleCheckin({ keys, checked }) {
     for (const empId of keys) {
         try {
             await axios.put(
-                `/updateEmployeeAttendance/eveId/${eveId.value}/empId/${empId}`,
+                `/update-employee-attendance/eve_id/${eveId.value}/emp_id/${empId}`,
             );
             const index = rows.value.findIndex(
                 (record) => record.empId === empId,
@@ -535,7 +535,7 @@ async function handleCheckin({ keys, checked }) {
 async function handleCheckAllOnPage(data) {
     const { pageKeys } = data;
     try {
-        await axios.put(`/updateEmployeeAttendanceAll/eveId/${eveId.value}`, {
+        await axios.put(`/update-employee-attendance-all/eve_id/${eveId.value}`, {
             employeeIds: pageKeys,
         });
         load(eveId.value);
