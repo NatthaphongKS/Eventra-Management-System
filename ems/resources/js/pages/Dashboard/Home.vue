@@ -1,4 +1,11 @@
-<!-- pages/event_page.vue -->
+<!-- /**
+ * ชื่อไฟล์: Home.vue
+ * คำอธิบาย: หน้า Dashboard สำหรับแสดงรายการกิจกรรม สถิติผู้เข้าร่วม และข้อมูลสรุป
+ * Input: ข้อมูลกิจกรรมที่เลือก (selectedEventIds), ตัวกรองการค้นหา/วันที่/สถานะ
+ * Output: ตารางกิจกรรม, กราฟสถิติ, และตารางผู้เข้าร่วมตามสถานะ
+ * ชื่อผู้เขียน/แก้ไข: Kidrakon Rattanahiran
+ * วันที่จัดทำ/แก้ไข: 2026-03-04
+ */ -->
 <template>
 
     <!-- Event Table Section - Refactored to match EventPage -->
@@ -32,7 +39,8 @@
             <button @click="showDataHandler"
                 class="h-[58px] w-[170px] items-center rounded-[20px] bg-red-700 px-6 font-medium text-[20px] text-white hover:bg-red-800 flex-shrink-0 mt-6 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
                 :disabled="selectedEventIds.size === 0"
-                :class="{ 'opacity-50 cursor-not-allowed': selectedEventIds.size === 0 }">
+                :class="{ 'opacity-50 cursor-not-allowed': selectedEventIds.size === 0, 'bg-red-800 ring-2 ring-red-300': showStatistics }"
+                :aria-pressed="showStatistics ? 'true' : 'false'">
                 Show Data
             </button>
         </div>
@@ -334,22 +342,25 @@ export default {
         },
     },
 
-    computed: {
-        selectedEventIdsArray: {
-            get() {
-                return Array.from(this.selectedEventIds);
-            },
-            set(val) {
-                this.selectedEventIds = new Set(val);
-                this.showStatistics = false;
-            }
-        },
-        normalized() {
-            return this.event.map(e => {
-                // ดึง category ID ที่ถูกต้อง
-                const catId = e.evn_cat_id ?? e.evn_category_id ?? e.evn_category ?? "";
-                // ดึง category name โดยให้ความสำคัญกับข้อมูลที่มาจาก API ก่อน
-                let catName = e.cat_name ?? e.category_name ?? "";
+  computed: {
+       selectedEventIdsArray: {
+    get() {
+      return Array.from(this.selectedEventIds);
+    },
+    set(val) {
+      this.selectedEventIds = new Set(val);
+      this.showStatistics = false;
+            this.showEmployeeTable = false;
+            this.employeeTableType = null;
+            this.filteredEmployeesForTable = [];
+    }
+  },
+    normalized() {
+      return this.event.map(e => {
+        // ดึง category ID ที่ถูกต้อง
+        const catId = e.evn_cat_id ?? e.evn_category_id ?? e.evn_category ?? "";
+        // ดึง category name โดยให้ความสำคัญกับข้อมูลที่มาจาก API ก่อน
+        let catName = e.cat_name ?? e.category_name ?? "";
 
                 // ถ้ายังไม่มี category name ให้ลองหาจาก catMap
                 if (!catName && catId) {
@@ -707,142 +718,214 @@ export default {
         }
     },
 
-    methods: {
-        showEmployees(status) {
-            this.selectedStatus = status; // attending / not-attending / pending
-            this.showEmployeeTable = true;
-        },
-
-        closeEmployeeTable() {
+  methods: {
+        resetEmployeeTableState() {
             this.showEmployeeTable = false;
-            this.selectedStatus = null;
-        },
-        handleEventCheck({ keys, checked }) {
-            keys.forEach(id => {
-                if (checked) {
-                    this.selectedEventIds.add(id);
-                } else {
-                    this.selectedEventIds.delete(id);
-                }
-            });
-            this.showStatistics = false;
+            this.employeeTableType = null;
+            this.filteredEmployeesForTable = [];
         },
 
-        handleCheckAllEvents({ pageKeys, action }) {
-            pageKeys.forEach(id => {
-                if (action === 'check') {
-                    this.selectedEventIds.add(id);
-                } else {
-                    this.selectedEventIds.delete(id);
-                }
-            });
-            this.showStatistics = false;
+        buildEmployeeRowsFromParticipants(participants) {
+            return participants.map(participant => ({
+                id: participant.id,
+                unique_key: `${participant.emp_id}_${participant.event_id}_${participant.id}`,
+                emp_id: participant.emp_id,
+                emp_prefix: participant.emp_prefix,
+                emp_firstname: participant.emp_firstname,
+                emp_lastname: participant.emp_lastname,
+                emp_nickname: participant.emp_nickname,
+                emp_phone: participant.emp_phone,
+                emp_email: participant.emp_email,
+                position: participant.position || 'N/A',
+                department: participant.department || 'N/A',
+                team: participant.team || 'N/A',
+                event_title: participant.event_title || 'N/A',
+                emp_delete_status: 'active'
+            }));
         },
 
-        // Search handling
-        handleSearch(searchValue) {
-            this.search = searchValue;
-        },
-        // Filter handling
-        handleFilter(filterData) {
-            this.filters = { ...this.filters, ...filterData }; // Updated to merge filters properly
-            this.page = 1;
-        },
-        // Sort handling
-        handleSort(sortData) {
-            this.handleClientSort(sortData);
-        },
-        // UNUSED - เมธอดคำนวณข้อมูลสำหรับแสดงกราฟ (ไม่ได้ใช้ใน template)
-        // getAttendingProgress() {
-        //   if (this.chartData.total_participation === 0) return 0;
-        //   return Math.round((this.chartData.attending / this.chartData.total_participation) * 251);
-        // },
-        // getNotAttendingProgress() {
-        //   if (this.chartData.total_participation === 0) return 0;
-        //   return Math.round((this.chartData.not_attending / this.chartData.total_participation) * 251);
-        // },
-        // getPendingProgress() {
-        //   if (this.chartData.total_participation === 0) return 0;
-        //   return Math.round((this.chartData.pending / this.chartData.total_participation) * 251);
-        // },
-        // getAttendingPercentage() {
-        //   return Math.round((this.chartData.attending / 100) * 251);
-        // },
-        // getNotAttendingPercentage() {
-        //   return Math.round((this.chartData.not_attending / 100) * 251);
-        // },
-        // getPendingPercentage() {
-        //   return Math.round((this.chartData.pending / 100) * 251);
-        // },
-        // getAttendancePercentage() {
-        //   const total = this.chartData.attending + this.chartData.not_attending + this.chartData.pending;
-        //   if (total === 0) return 0;
-        //   return Math.round((this.chartData.attending / total) * 100);
-        // },
-        async fetchEmployees() {
-            try {
-                const res = await axios.get("/get-employees", {
-                    params: {
-                        page: this.empPage,
-                        per_page: this.empPageSize
-                    }
-                });
-                if (res.data && res.data.data) {
-                    this.employees = res.data.data.map(e => ({
-                        id: e.id,
-                        emp_id: e.emp_id,
-                        emp_prefix: e.emp_prefix,
-                        emp_firstname: e.emp_firstname,
-                        emp_lastname: e.emp_lastname,
-                        emp_nickname: e.emp_nickname,
-                        emp_email: e.emp_email,
-                        emp_phone: e.emp_phone,
-                        position: e.position_name,
-                        department: e.department_name,
-                        team: e.team_name,
-                        emp_delete_status: e.emp_delete_status,
-                    }));
-                    this.empTotal = res.data.total || this.employees.length;
-                } else {
-                    // กรณีที่ res.data อาจจะไม่ใช่อาเรย์
-                    const dataArray = Array.isArray(res.data) ? res.data : [];
-                    this.employees = dataArray.map(e => ({
-                        id: e.id,
-                        emp_id: e.emp_id,
-                        emp_prefix: e.emp_prefix,
-                        emp_firstname: e.emp_firstname,
-                        emp_lastname: e.emp_lastname,
-                        emp_nickname: e.emp_nickname,
-                        emp_email: e.emp_email,
-                        emp_phone: e.emp_phone,
-                        position: e.position_name,
-                        department: e.department_name,
-                        team: e.team_name,
-                        emp_delete_status: e.emp_delete_status,
-                    }));
-                    this.empTotal = this.employees.length;
+        rebuildEmployeeTableFromParticipants(status = this.employeeTableType) {
+            if (!this.eventParticipants || this.eventParticipants.length === 0) {
+                this.filteredEmployeesForTable = [];
+                this.showEmployeeTable = false;
+                this.currentPage = 1;
+                return;
+            }
+
+            let workingParticipants = [...this.eventParticipants];
+
+            if (status === 'attending') {
+                workingParticipants = workingParticipants.filter(participant => participant.status === 'accepted');
+            } else if (status === 'not-attending') {
+                workingParticipants = workingParticipants.filter(participant => participant.status === 'denied');
+            } else if (status === 'pending') {
+                workingParticipants = workingParticipants.filter(participant => participant.status !== 'accepted' && participant.status !== 'denied');
+            }
+
+            const uniqueParticipants = new Map();
+            workingParticipants.forEach(participant => {
+                const uniqueKey = `${participant.emp_id}_${participant.event_id}_${participant.con_checkin_status}_${participant.status}`;
+                if (!uniqueParticipants.has(uniqueKey)) {
+                    uniqueParticipants.set(uniqueKey, participant);
                 }
-            } catch (err) {
-                console.error("fetchEmployees error", err);
-                this.employees = [];
-                this.empTotal = 0;
-            }
+            });
+
+            const deduplicatedParticipants = Array.from(uniqueParticipants.values());
+            deduplicatedParticipants.sort((a, b) => {
+                const eventCompare = (a.event_title || '').localeCompare(b.event_title || '');
+                if (eventCompare !== 0) return eventCompare;
+
+                const nameCompare = (a.emp_firstname || '').localeCompare(b.emp_firstname || '');
+                if (nameCompare !== 0) return nameCompare;
+
+                const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
+                if (empCompare !== 0) return empCompare;
+
+                return (a.event_id || 0) - (b.event_id || 0);
+            });
+
+            this.filteredEmployeesForTable = this.buildEmployeeRowsFromParticipants(deduplicatedParticipants);
+            this.showEmployeeTable = true;
+            this.currentPage = 1;
         },
-        async fetchEvent() {
-            try {
-                const res = await axios.get("/get-event");
-                this.event = Array.isArray(res.data)
-                    ? res.data
-                    : res.data?.data || [];
-            } catch (err) {
-                console.error("fetchEvent error", err);
-                this.event = [];
-            }
-        },
-        async fetchCategories() {
-            try {
-                const res = await axios.get("/event-info-dashboard");
-                const cats = res.data?.categories || [];
+
+    showEmployees(status) {
+    this.selectedStatus = status; // attending / not-attending / pending
+    this.showEmployeeTable = true;
+  },
+
+  closeEmployeeTable() {
+    this.showEmployeeTable = false;
+    this.selectedStatus = null;
+  },
+    handleEventCheck({ keys, checked }) {
+  keys.forEach(id => {
+    if (checked) {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+    this.resetEmployeeTableState();
+},
+
+handleCheckAllEvents({ pageKeys, action }) {
+  pageKeys.forEach(id => {
+    if (action === 'check') {
+      this.selectedEventIds.add(id);
+    } else {
+      this.selectedEventIds.delete(id);
+    }
+  });
+  this.showStatistics = false;
+    this.resetEmployeeTableState();
+},
+
+    // Search handling
+    handleSearch(searchValue) {
+      this.search = searchValue;
+    },
+    // Filter handling
+    handleFilter(filterData) {
+      this.filters = { ...this.filters, ...filterData }; // Updated to merge filters properly
+      this.page = 1;
+    },
+    // Sort handling
+    handleSort(sortData) {
+      this.handleClientSort(sortData);
+    },
+    // UNUSED - เมธอดคำนวณข้อมูลสำหรับแสดงกราฟ (ไม่ได้ใช้ใน template)
+    // getAttendingProgress() {
+    //   if (this.chartData.total_participation === 0) return 0;
+    //   return Math.round((this.chartData.attending / this.chartData.total_participation) * 251);
+    // },
+    // getNotAttendingProgress() {
+    //   if (this.chartData.total_participation === 0) return 0;
+    //   return Math.round((this.chartData.not_attending / this.chartData.total_participation) * 251);
+    // },
+    // getPendingProgress() {
+    //   if (this.chartData.total_participation === 0) return 0;
+    //   return Math.round((this.chartData.pending / this.chartData.total_participation) * 251);
+    // },
+    // getAttendingPercentage() {
+    //   return Math.round((this.chartData.attending / 100) * 251);
+    // },
+    // getNotAttendingPercentage() {
+    //   return Math.round((this.chartData.not_attending / 100) * 251);
+    // },
+    // getPendingPercentage() {
+    //   return Math.round((this.chartData.pending / 100) * 251);
+    // },
+    // getAttendancePercentage() {
+    //   const total = this.chartData.attending + this.chartData.not_attending + this.chartData.pending;
+    //   if (total === 0) return 0;
+    //   return Math.round((this.chartData.attending / total) * 100);
+    // },
+    async fetchEmployees() {
+      try {
+        const res = await axios.get("/get-employees", {
+          params: {
+            page: this.empPage,
+            per_page: this.empPageSize
+          }
+        });
+        if (res.data && res.data.data) {
+          this.employees = res.data.data.map(e => ({
+            id: e.id,
+            emp_id: e.emp_id,
+            emp_prefix: e.emp_prefix,
+            emp_firstname: e.emp_firstname,
+            emp_lastname: e.emp_lastname,
+            emp_nickname: e.emp_nickname,
+            emp_email: e.emp_email,
+            emp_phone: e.emp_phone,
+            position: e.position_name,
+            department: e.department_name,
+            team: e.team_name,
+            emp_delete_status: e.emp_delete_status,
+          }));
+          this.empTotal = res.data.total || this.employees.length;
+        } else {
+          // กรณีที่ res.data อาจจะไม่ใช่อาเรย์
+          const dataArray = Array.isArray(res.data) ? res.data : [];
+          this.employees = dataArray.map(e => ({
+            id: e.id,
+            emp_id: e.emp_id,
+            emp_prefix: e.emp_prefix,
+            emp_firstname: e.emp_firstname,
+            emp_lastname: e.emp_lastname,
+            emp_nickname: e.emp_nickname,
+            emp_email: e.emp_email,
+            emp_phone: e.emp_phone,
+            position: e.position_name,
+            department: e.department_name,
+            team: e.team_name,
+            emp_delete_status: e.emp_delete_status,
+          }));
+          this.empTotal = this.employees.length;
+        }
+      } catch (err) {
+        console.error("fetchEmployees error", err);
+        this.employees = [];
+        this.empTotal = 0;
+      }
+    },
+    async fetchEvent() {
+      try {
+        const res = await axios.get("/get-event");
+        this.event = Array.isArray(res.data)
+          ? res.data
+          : res.data?.data || [];
+      } catch (err) {
+        console.error("fetchEvent error", err);
+        this.event = [];
+      }
+    },
+    async fetchCategories() {
+      try {
+        const res = await axios.get("/event-info-dashboard");
+        const cats = res.data?.categories || [];
 
                 // แปลงเป็นรูปแบบที่ EventFilter ต้องการ
                 this.categories = cats.map(c => ({
@@ -850,72 +933,72 @@ export default {
                     cat_name: c.cat_name
                 }));
 
-                this.catMap = Object.fromEntries(
-                    cats.map(c => [String(c.id), c.cat_name])
-                );
-            } catch (err) {
-                console.error("fetchCategories error", err);
-                this.categories = [];
-                this.catMap = {};
-            }
-        },
-        // UNUSED - ใช้ DataTable component pagination แทน
-        // goToPage(p) {
-        //   if (p < 1) p = 1;
-        //   if (p > this.totalPages) p = this.totalPages || 1;
-        //   this.page = p;
-        // },
-        // UNUSED - ไม่มีปุ่ม Edit/Delete ใน template
-        // editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
-        //   this.$router.push(`/edit-event/${id}`)
-        // },
-        // async deleteEvent(id) {
-        //   if (confirm("Delete?")) {
-        //     try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
-        //     catch (err) { console.error("Error deleting event", err); }
-        //   }
-        // },
-        formatDate(val) {
-            if (!val) return 'N/A';
-            const d = new Date(val); if (isNaN(d)) return val;
-            const dd = String(d.getDate()).padStart(2, '0');
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const yyyy = d.getFullYear();
-            return `${dd}/${mm}/${yyyy}`;
-        },
-        // UNUSED - Employee pagination เก่า (ใช้ DataTable component แทน)
-        // goToEmpPage(p) {
-        //   if (p < 1) p = 1;
-        //   if (p > this.empTotalPages) p = this.empTotalPages || 1;
-        //   this.empPage = p;
-        // },
-        // setEmpSort(value) {
-        //   const order = value.startsWith('-') ? 'desc' : 'asc';
-        //   const key = value.replace(/^-/, '');
-        //   this.empSort = { value: key, order };
-        //   this.empPage = 1;
-        // },
-        // UNUSED - ไม่มีปุ่มนี้ใน template
-        // onViewReport() {
-        //   // ฟังก์ชันสำหรับดูรายงาน
-        // },
-        // onExport() {
-        //   // ฟังก์ชันสำหรับ export ข้อมูล - ใช้ ExportDropdown component แทน
-        // },
-        // onAddEvent() {
-        //   // ฟังก์ชันสำหรับเพิ่ม event ใหม่
-        //   console.log('Add Event clicked!');
-        //   this.$router.push('/create-event');
-        // },
-        // UNUSED - Date filter ทำโดย computed property filtered อัตโนมัติ
-        // filterByDate() {
-        //   // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
-        //   // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
-        //   this.page = 1;
-        // },
-        // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
-        async fetchEventStatistics() {
-            console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
+        this.catMap = Object.fromEntries(
+          cats.map(c => [String(c.id), c.cat_name])
+        );
+      } catch (err) {
+        console.error("fetchCategories error", err);
+        this.categories = [];
+        this.catMap = {};
+      }
+    },
+    // UNUSED - ใช้ DataTable component pagination แทน
+    // goToPage(p) {
+    //   if (p < 1) p = 1;
+    //   if (p > this.totalPages) p = this.totalPages || 1;
+    //   this.page = p;
+    // },
+    // UNUSED - ไม่มีปุ่ม Edit/Delete ใน template
+    // editEvent(id) { //ส่วนส่ง id ไปให้หน้า edit_event
+    //   this.$router.push(`/edit-event/${id}`)
+    // },
+    // async deleteEvent(id) {
+    //   if (confirm("Delete?")) {
+    //     try { await axios.delete(`/event/${id}`); this.fetchEvent(); }
+    //     catch (err) { console.error("Error deleting event", err); }
+    //   }
+    // },
+    formatDate(val) {
+      if (!val) return 'N/A';
+      const d = new Date(val); if (isNaN(d)) return val;
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    },
+    // UNUSED - Employee pagination เก่า (ใช้ DataTable component แทน)
+    // goToEmpPage(p) {
+    //   if (p < 1) p = 1;
+    //   if (p > this.empTotalPages) p = this.empTotalPages || 1;
+    //   this.empPage = p;
+    // },
+    // setEmpSort(value) {
+    //   const order = value.startsWith('-') ? 'desc' : 'asc';
+    //   const key = value.replace(/^-/, '');
+    //   this.empSort = { value: key, order };
+    //   this.empPage = 1;
+    // },
+    // UNUSED - ไม่มีปุ่มนี้ใน template
+    // onViewReport() {
+    //   // ฟังก์ชันสำหรับดูรายงาน
+    // },
+    // onExport() {
+    //   // ฟังก์ชันสำหรับ export ข้อมูล - ใช้ ExportDropdown component แทน
+    // },
+    // onAddEvent() {
+    //   // ฟังก์ชันสำหรับเพิ่ม event ใหม่
+    //   console.log('Add Event clicked!');
+    //   this.$router.push('/create-event');
+    // },
+    // UNUSED - Date filter ทำโดย computed property filtered อัตโนมัติ
+    // filterByDate() {
+    //   // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
+    //   // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
+    //   this.page = 1;
+    // },
+    // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
+    async fetchEventStatistics() {
+      console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
 
             if (this.selectedEventIds.size === 0) {
                 console.log('No events selected, resetting data');
@@ -934,9 +1017,9 @@ export default {
                 return;
             }
 
-            this.loadingParticipants = true;
-            try {
-                const eventIds = Array.from(this.selectedEventIds);
+      this.loadingParticipants = true;
+      try {
+        const eventIds = Array.from(this.selectedEventIds);
 
                 console.log('📡 Sending POST /event-statistics with event_ids:', eventIds);
 
@@ -989,149 +1072,149 @@ export default {
 
                     // อัพเดตรายชื่อผู้เข้าร่วม
                     this.eventParticipants = res.data.participants || [];
-                    this.showEmployeeTable = true;
+                    this.rebuildEmployeeTableFromParticipants();
 
-                    console.log('✅ Participation data updated:', this.participationData);
-                    console.log('✅ Participants loaded:', this.eventParticipants.length);
-                }
-            } catch (err) {
-                console.error('❌ Error fetching event statistics:', err);
-                console.error('❌ Error response:', err.response?.data);
-                console.error('❌ Error status:', err.response?.status);
-                // เกิดข้อผิดพลาด - รีเซ็ตเป็นค่าว่าง
-                this.chartData = {
-                    total_participation: 0,
-                    attending: 0,
-                    not_attending: 0,
-                    pending: 0,
-                    departments: [],
-                    actual_attendance: { attended: 0, total_assigned: 0 }
-                };
-                this.participationData = { departments: [], teams: [] };
-                this.eventParticipants = [];
-            } finally {
-                this.loadingParticipants = false;
-            }
-        },
-        // ฟังก์ชันจัดการ checkbox เลือกหลาย event - สำหรับ highlight row
-        getRowClass(row) {
-            const eventId = row.id || row.evn_id;
-            return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
-        },
-        // ดึงชื่ออีเวนต์มาแสดงผล
-        getEventTitlesText() {
-            if (this.selectedEventIds.size === 0) return 'N/A';
-            const selectedEvents = this.normalized.filter(event =>
-                this.selectedEventIds.has(event.id || event.evn_id)
-            );
-            if (selectedEvents.length === 1) {
-                return selectedEvents[0].evn_title || 'N/A';
-            } else if (selectedEvents.length > 1) {
-                return `${selectedEvents.length} events selected`;
-            }
-            return 'N/A';
-        },
-        // Filter & Sort handlers
-        applySearch() {
-            this.search = this.searchInput;
-            this.page = 1;
-        },
-        applyFilter() {
-            this.page = 1;
-        },
-        onPickSort(opt) {
-            if (!opt) return;
-            this.selectedSort = opt;
-            this.sortBy = opt.key;
-            this.sortOrder = opt.order;
-            this.page = 1;
-        },
-        handleClientSort({ key, order }) {
-            this.sortBy = key;
-            this.sortOrder = order;
-            this.page = 1;
-            this.selectedSort =
-                this.sortOptions.find(
-                    (opt) => opt.key === key && opt.order === order
-                ) || this.selectedSort;
-        },
-        timeText(startTime, endTime) {
-            const format = (t) => (t ? String(t).slice(0, 5) : "??:??");
-            return `${format(startTime)}-${format(endTime)}`;
-        },
-        badgeClass(status) {
-            const base =
-                "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
-            switch ((status || "").toLowerCase()) {
-                case "done":
-                    return `${base} bg-[#DCFCE7] text-[#00A73D]`;
-                case "upcoming":
-                    return `${base} bg-[#FFF9C2] text-[#FDC800]`;
-                case "ongoing":
-                    return `${base} bg-[#DFF3FE] text-[#0084D1]`;
-                default:
-                    return `${base} bg-slate-100 text-slate-700`;
-            }
-        },
-        // Navigation
-        goDetails(id) {
-            try {
-                this.$router.push({
-                    name: "events.show",
-                    params: { id: String(id) },
-                });
-            } catch (_) {
-                this.$router.push({ path: `/events/${id}` });
-            }
-        },
-        async loadEventStatistics(eventId) {
-            this.isLoading = true;
-            try {
-                // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
-                const response = await axios.get(`/api/event/${eventId}/participants`);
-                console.log('Event statistics response:', response.data);
+          console.log('✅ Participation data updated:', this.participationData);
+          console.log('✅ Participants loaded:', this.eventParticipants.length);
+        }
+      } catch (err) {
+        console.error('❌ Error fetching event statistics:', err);
+        console.error('❌ Error response:', err.response?.data);
+        console.error('❌ Error status:', err.response?.status);
+        // เกิดข้อผิดพลาด - รีเซ็ตเป็นค่าว่าง
+        this.chartData = {
+          total_participation: 0,
+          attending: 0,
+          not_attending: 0,
+          pending: 0,
+          departments: [],
+          actual_attendance: { attended: 0, total_assigned: 0 }
+        };
+        this.participationData = { departments: [], teams: [] };
+        this.eventParticipants = [];
+      } finally {
+        this.loadingParticipants = false;
+      }
+    },
+    // ฟังก์ชันจัดการ checkbox เลือกหลาย event - สำหรับ highlight row
+    getRowClass(row) {
+      const eventId = row.id || row.evn_id;
+      return this.selectedEventIds.has(eventId) ? 'selected-row' : '';
+    },
+    // ดึงชื่ออีเวนต์มาแสดงผล
+    getEventTitlesText() {
+      if (this.selectedEventIds.size === 0) return 'N/A';
+      const selectedEvents = this.normalized.filter(event =>
+        this.selectedEventIds.has(event.id || event.evn_id)
+      );
+      if (selectedEvents.length === 1) {
+        return selectedEvents[0].evn_title || 'N/A';
+      } else if (selectedEvents.length > 1) {
+        return `${selectedEvents.length} events selected`;
+      }
+      return 'N/A';
+    },
+    // Filter & Sort handlers
+    applySearch() {
+      this.search = this.searchInput;
+      this.page = 1;
+    },
+    applyFilter() {
+      this.page = 1;
+    },
+    onPickSort(opt) {
+      if (!opt) return;
+      this.selectedSort = opt;
+      this.sortBy = opt.key;
+      this.sortOrder = opt.order;
+      this.page = 1;
+    },
+    handleClientSort({ key, order }) {
+      this.sortBy = key;
+      this.sortOrder = order;
+      this.page = 1;
+      this.selectedSort =
+        this.sortOptions.find(
+          (opt) => opt.key === key && opt.order === order
+        ) || this.selectedSort;
+    },
+    timeText(startTime, endTime) {
+      const format = (t) => (t ? String(t).slice(0, 5) : "??:??");
+      return `${format(startTime)}-${format(endTime)}`;
+    },
+    badgeClass(status) {
+      const base =
+        "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
+      switch ((status || "").toLowerCase()) {
+        case "done":
+          return `${base} bg-[#DCFCE7] text-[#00A73D]`;
+        case "upcoming":
+          return `${base} bg-[#FFF9C2] text-[#FDC800]`;
+        case "ongoing":
+          return `${base} bg-[#DFF3FE] text-[#0084D1]`;
+        default:
+          return `${base} bg-slate-100 text-slate-700`;
+      }
+    },
+    // Navigation
+    goDetails(id) {
+      try {
+        this.$router.push({
+          name: "events.show",
+          params: { id: String(id) },
+        });
+      } catch (_) {
+        this.$router.push({ path: `/events/${id}` });
+      }
+    },
+    async loadEventStatistics(eventId) {
+      this.isLoading = true;
+      try {
+        // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
+        const response = await axios.get(`/api/event/${eventId}/participants`);
+        console.log('Event statistics response:', response.data);
 
-                if (response.data.success) {
-                    const statistics = response.data.data.statistics;
-                    // อัปเดตข้อมูลกราฟด้วยสถิติจริง
-                    this.chartData = {
-                        attending: statistics.attending || 0,
-                        notAttending: statistics.not_attending || 0,
-                        pending: statistics.pending || 0
-                    };
-                    // อัพเดตกราฟ
-                    this.participationData = {
-                        labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
-                        datasets: [{
-                            data: [
-                                this.chartData.attending,
-                                this.chartData.notAttending,
-                                this.chartData.pending
-                            ],
-                            backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
-                        }]
-                    };
-                    console.log('Updated chart data:', this.chartData);
-                } else {
-                    console.error('Failed to load event statistics:', response.data.message);
-                }
-            } catch (error) {
-                console.error('Error loading event statistics:', error);
-                // Reset to default values on error
-                this.chartData = { attending: 0, notAttending: 0, pending: 0 };
-                this.participationData = {
-                    labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
-                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#4CAF50', '#F44336', '#FF9800'] }]
-                };
-            } finally {
-                this.isLoading = false;
-            }
-        },
-        async showEmployeesByStatus(status) {
-            if (this.selectedEventIds.size === 0) {
-                alert('กรุณาเลือกกิจกรรมก่อน');
-                return;
-            }
+        if (response.data.success) {
+          const statistics = response.data.data.statistics;
+          // อัปเดตข้อมูลกราฟด้วยสถิติจริง
+          this.chartData = {
+            attending: statistics.attending || 0,
+            notAttending: statistics.not_attending || 0,
+            pending: statistics.pending || 0
+          };
+          // อัพเดตกราฟ
+          this.participationData = {
+            labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
+            datasets: [{
+              data: [
+                this.chartData.attending,
+                this.chartData.notAttending,
+                this.chartData.pending
+              ],
+              backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
+            }]
+          };
+          console.log('Updated chart data:', this.chartData);
+        } else {
+          console.error('Failed to load event statistics:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error loading event statistics:', error);
+        // Reset to default values on error
+        this.chartData = { attending: 0, notAttending: 0, pending: 0 };
+        this.participationData = {
+          labels: ['เข้าร่วม', 'ไม่เข้าร่วม', 'รอตอบกลับ'],
+          datasets: [{ data: [0, 0, 0], backgroundColor: ['#4CAF50', '#F44336', '#FF9800'] }]
+        };
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async showEmployeesByStatus(status) {
+      if (this.selectedEventIds.size === 0) {
+        alert('กรุณาเลือกกิจกรรมก่อน');
+        return;
+      }
 
             this.employeeTableType = status;
             this.showEmployeeTable = true;
@@ -1142,122 +1225,62 @@ export default {
                     this.filteredEmployeesForTable = [];
                     return;
                 }
-
-                // กรองผู้เข้าร่วมตามสถานะ
-                let filteredParticipants = [];
-
-                if (status === 'attending') {
-                    filteredParticipants = this.eventParticipants.filter(participant => {
-                        return participant.status === 'accepted';
-                    });
-                } else if (status === 'not-attending') {
-                    filteredParticipants = this.eventParticipants.filter(participant => {
-                        return participant.status === 'denied';
-                    });
-                } else if (status === 'pending') {
-                    filteredParticipants = this.eventParticipants.filter(participant => {
-                        return participant.status !== 'accepted' && participant.status !== 'denied';
-                    });
-                }
-
-                console.log(`📊 Filter: ${status} | Total: ${this.eventParticipants.length} → Filtered: ${filteredParticipants.length}`);
-
-                // กรองข้อมูลซ้ำโดยใช้ Map กับ unique key (emp_id + event_id + status)
-                const uniqueParticipants = new Map();
-                filteredParticipants.forEach(participant => {
-                    const uniqueKey = `${participant.emp_id}_${participant.event_id}_${participant.con_checkin_status}_${participant.status}`;
-                    // เก็บเฉพาะ record แรกที่พบ ไม่เอาข้อมูลซ้ำ
-                    if (!uniqueParticipants.has(uniqueKey)) {
-                        uniqueParticipants.set(uniqueKey, participant);
-                    }
-                });
-                // แปลง Map กลับเป็น Array และเรียงข้อมูล
-                const deduplicatedParticipants = Array.from(uniqueParticipants.values());
-                deduplicatedParticipants.sort((a, b) => {
-                    // เรียงตามชื่อกิจกรรมก่อน
-                    const eventCompare = (a.event_title || '').localeCompare(b.event_title || '');
-                    if (eventCompare !== 0) return eventCompare;
-
-                    // ถ้าชื่อกิจกรรมเท่ากัน ให้เรียงตามชื่อพนักงาน
-                    const nameCompare = (a.emp_firstname || '').localeCompare(b.emp_firstname || '');
-                    if (nameCompare !== 0) return nameCompare;
-
-                    // ถ้าชื่อเท่ากัน ให้เรียงตาม emp_id
-                    const empCompare = (a.emp_id || '').localeCompare(b.emp_id || '');
-                    if (empCompare !== 0) return empCompare;
-
-                    // ถ้า emp_id เท่ากัน ให้เรียงตาม event_id
-                    return (a.event_id || 0) - (b.event_id || 0);
-                });
-
-                // แปลงเป็นรูปแบบพนักงานสำหรับตาราง พร้อม unique_key
-                this.filteredEmployeesForTable = deduplicatedParticipants.map(participant => ({
-                    id: participant.id,
-                    unique_key: `${participant.emp_id}_${participant.event_id}_${participant.id}`,
-                    emp_id: participant.emp_id,
-                    emp_prefix: participant.emp_prefix,
-                    emp_firstname: participant.emp_firstname,
-                    emp_lastname: participant.emp_lastname,
-                    emp_nickname: participant.emp_nickname,
-                    emp_phone: participant.emp_phone,
-                    emp_email: participant.emp_email,
-                    position: participant.position || 'N/A',
-                    department: participant.department || 'N/A',
-                    team: participant.team || 'N/A',
-                    event_title: participant.event_title || 'N/A',
-                    emp_delete_status: 'active'
-                }));
-                // Reset pagination เมื่อโหลดข้อมูลใหม่
-                this.currentPage = 1;
-
+                this.rebuildEmployeeTableFromParticipants(status);
                 console.log(`✅ Table rows: ${this.filteredEmployeesForTable.length}`);
 
-            } catch (error) {
-                console.error('Error loading employees:', error);
-                // ใช้ array ว่างหากการกรองล้มเหลว
-                this.filteredEmployeesForTable = [];
-                alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
-            }
-        },
-        // UNUSED - ไม่ได้ใช้ mapping status
-        // mapStatusForAPI(status) {
-        //   const statusMap = {
-        //     'attending': 'accepted',
-        //     'not-attending': 'denied',
-        //     'pending': 'pending'
-        //   };
-        //   return statusMap[status] || 'pending';
-        // },
-        // UNUSED - Testing functions
-        // testClick(buttonType) {
-        //   console.log(`Button clicked: ${buttonType}`);
-        //   alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
-        // },
-        // testLoading() {
-        //   this.loadingTest = true;
-        //   setTimeout(() => {
-        //     this.loadingTest = false;
-        //     alert('Loading test completed!');
-        //   }, 2000);
-        // },
-        // Show data handler - scroll to charts and fetch statistics
-        showDataHandler() {
-            if (this.selectedEventIds.size === 0) {
-                alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
+      } catch (error) {
+        console.error('Error loading employees:', error);
+        // ใช้ array ว่างหากการกรองล้มเหลว
+        this.filteredEmployeesForTable = [];
+        alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
+      }
+    },
+    // UNUSED - ไม่ได้ใช้ mapping status
+    // mapStatusForAPI(status) {
+    //   const statusMap = {
+    //     'attending': 'accepted',
+    //     'not-attending': 'denied',
+    //     'pending': 'pending'
+    //   };
+    //   return statusMap[status] || 'pending';
+    // },
+    // UNUSED - Testing functions
+    // testClick(buttonType) {
+    //   console.log(`Button clicked: ${buttonType}`);
+    //   alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
+    // },
+    // testLoading() {
+    //   this.loadingTest = true;
+    //   setTimeout(() => {
+    //     this.loadingTest = false;
+    //     alert('Loading test completed!');
+    //   }, 2000);
+    // },
+    // Show data handler - scroll to charts and fetch statistics
+    showDataHandler() {
+      if (this.selectedEventIds.size === 0) {
+        alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
+        return;
+      }
+
+            if (this.showStatistics) {
+                this.showStatistics = false;
+                this.resetEmployeeTableState();
                 return;
             }
-            // เปิดการแสดงผลกราฟและตาราง
-            this.showStatistics = true;
-            // เรียก fetch statistics
-            this.fetchEventStatistics();
-            // Scroll to summary section
-            this.$nextTick(() => {
-                const summaryCard = document.querySelector('.summary-card');
-                if (summaryCard) {
-                    summaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        },
+
+      // เปิดการแสดงผลกราฟและตาราง
+      this.showStatistics = true;
+      // เรียก fetch statistics
+      this.fetchEventStatistics();
+      // Scroll to summary section
+      this.$nextTick(() => {
+        const summaryCard = document.querySelector('.summary-card');
+        if (summaryCard) {
+          summaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    },
 
         // Handle window focus - auto refresh เมื่อกลับมาที่หน้านี้
         handleWindowFocus() {
@@ -1303,3 +1326,4 @@ export default {
     } // End methods
 } // End export default
 </script>
+
