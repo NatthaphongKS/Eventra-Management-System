@@ -4,256 +4,279 @@
  * Input: id (รหัสกิจกรรม) จาก route params
  * Output: แบบฟอร์มแก้ไขกิจกรรม ส่งข้อมูลผ่าน POST /edit-event
  * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
- * วันที่จัดทำ/แก้ไข: 2026-03-1
+ * วันที่จัดทำ/แก้ไข: 2026-03-02
  */ -->
+
+<!-- pages/edit_event.vue -->
 <template>
-    <div class="text-neutral-800 font-semibold font-[Poppins] text-3xl mb-4">
-        Edit Event
-    </div>
-    <div class="grid grid-cols-12 h-full gap-0">
-        <div class="col-span-8">
-
-            <!-- ช่องกรอกชื่ออีเวนต์ -->
-            <div class="grid ">
-                <div class="mt-6 md:grid md:grid-cols-[3fr_200px] md:gap-8 items-stretch">
-                    <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
-                     trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
-                    <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px] mb-4 ml-1">
-                            Event Title <span class="text-red-500">*</span>
-                        </label><br />
-                        <InputPill v-model="eventTitle"
-                            class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5"
-                            :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventTitle }" />
-
-                        <p v-if="submitted && formErrors.eventTitle" class="mt-1 text-xs text-red-600 font-medium">
-                            Required field
-                        </p>
-                    </div>
-
-
-                    <!-- ช่องเลือกประเภท event-->
-                    <div>
-                        <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
-                            Event Category <span class="text-red-500">*</span>
-                        </label><br />
-                        <div class="relative w-full">
-                            <select
-                                class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white"
-                                v-model="eventCategoryId"
-                                :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventCategoryId }">
-
-                                <option :value="eventCategoryId" hidden>
-                                    {{ eventCategoryName }}
-                                </option>
-
-                                <option v-for="cat in selectCategory" :value="cat.id">
-                                    {{ cat.cat_name }}
-                                </option>
-                            </select>
-
-                            <Icon icon="iconamoon:arrow-down-2-light"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-red-600 pointer-events-none" />
-                        </div>
-
-                        <p v-if="submitted && formErrors.eventCategoryId" class="mt-1 text-xs text-red-600 font-medium">
-                            Required Select
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ช่องกรอกคำอธิบายอีเวนต์ -->
-            <div class="mt-4">
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
-                    Event Description <span class="text-red-500">*</span>
-                </label><br />
-                <textarea
-                    class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition px-5 py-4"
-                    v-model.trim="eventDescription" placeholder="Write some description... (255 words)"
-                    :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDescription }"></textarea>
-
-                <p v-if="submitted && formErrors.eventDescription" class="mt-1 text-xs text-red-600 font-medium">
-                    Required field
-                </p>
-            </div>
-
-            <div class="grid grid-cols-3 mt-4 gap-4">
-
-                <!-- ช่องกรอกวัน -->
-                <div class="">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
-                        Date <span class="text-red-500">*</span>
-                    </label><br>
-                    <div class="relative w-full">
-                        <input class="border border-neutral-200 w-full h-[52px] rounded-2xl
-                        focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition
-                        px-5 py-4
-                        [&::-webkit-calendar-picker-indicator]:hidden
-                        [&::-webkit-inner-spin-button]:hidden
-                        [&::-webkit-clear-button]:hidden" type="date" v-model="eventDate" :min="minDate"
-                            :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDate }"
-                            onclick="this.showPicker()">
-
-
-                        <Icon icon="stash:data-date-solid"
-                            class="ml-20 w-7 h-[30px] text-red-700 shrink-0 absolute right-5 top-1/2 -translate-y-1/2  pointer-events-none" />
-                    </div>
-                    <p v-if="submitted && formErrors.eventDate" class="mt-1 text-xs text-red-600 font-medium">
-                        'Required date'
-                    </p>
-                </div>
-
-                <!-- ช่องกรอกเวลา -->
-                <div class="">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
-                        Time <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex h-[52px] w-full items-center gap-1 rounded-2xl border border-neutral-200 shadow-sm px-5 py-4"
-                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd) }">
-                        <!-- Time Start -->
-                        <div class="flex items-center justify-center">
-                            <input type="time" v-model="eventTimeStart" step="300"
-                                class="time-input w-auto bg-transparent text-[16px]  font-medium text-neutral-800 outline-none text-center"
-                                @click="$event.target.showPicker()" />
-                            <span class="text-[16px]  font-medium text-neutral-800 ml-2"></span>
-
-                        </div>
-
-                        <span class="mx-1 text-[18px] font-bold text-red-600">:</span>
-                        <!-- Time End -->
-                        <div class="flex items-center justify-center">
-                            <input type="time" v-model="eventTimeEnd" step="300"
-                                class="time-input w-auto bg-transparent text-[16px]  font-medium text-neutral-800 outline-none text-center"
-                                @click="$event.target.showPicker()" />
-                            <span class="text-[16px]  font-medium text-neutral-800 ml-2"></span>
-                        </div>
-                        <div>
-                            <span class="text-red-700">
-                                <Icon icon="iconamoon:clock-light" class="h-6 w-6" />
-                            </span>
-                        </div>
-                    </div>
-
-                    <p v-if="submitted && (formErrors.eventTimeStart || formErrors.eventTimeEnd)"
-                        class="mt-1 text-xs text-red-600 font-medium">
-                        {{ formErrors.timeMsg || 'Require Time' }}
-                    </p>
-
-                </div>
-
-
-                <!-- ช่องกรอกแสดงช่วงเวลา -->
-                <div>
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">Duration</label>
-                    <div class="flex h-[52px] w-full items-center gap-3 rounded-xl  px-4 shadow-sm bg-[#F5F5F5]">
-                        <input class=" w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
-                            v-model="eventDuration" placeholder="Auto fill Hour"></input>
-                        <Icon icon="mingcute:time-duration-line" class="w-7 h-7  text-neutral-400" />
-                    </div>
-                </div>
-            </div>
-
-            <!-- ช่องกรอกสถานที่-->
-            <div class="mt-4">
-                <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
-                    Location <span class="text-red-500">*</span>
-                </label><br>
-                <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
-             border border-neutral-200 rounded-[20px] px-5"
-                    :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventLocation }" />
-
-                <p v-if="submitted && formErrors.eventLocation" class="mt-1 text-xs text-red-600 font-medium">
-                    Required field
-                </p>
-            </div>
-
+    <div class="font-[Poppins] pb-20" @pointerdown.capture="onRootPointer">
+        <div class="text-neutral-800 font-semibold font-[Poppins] text-3xl mb-4">
+            Edit Event
         </div>
+        <div class="grid grid-cols-12 h-full gap-0">
+            <div class="col-span-8">
 
-        <!-- Upload attachments -->
-        <div class="col-span-4 m-5">
-            <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
-            <p class="text-sm text-neutral-800 mb-2">Drag and drop document to your support task</p>
+                <!-- ช่องกรอกชื่ออีเวนต์ -->
+                <div class="grid ">
+                    <div class="mt-6 md:grid md:grid-cols-[3fr_200px] md:gap-8 items-stretch">
+                        <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
+                     trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
+                        <div>
+                            <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px] mb-4 ml-1">
+                                Event Title <span class="text-red-500">*</span>
+                            </label><br />
+                            <InputPill v-model="eventTitle"
+                                class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5"
+                                :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventTitle }" />
 
-            <!-- Drop zone -->
-            <div class="group relative rounded-2xl border-2 border-dashed border-red-700 bg-red-100 p-6 transition-all"
-                :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
-                @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
-                <!-- รายการไฟล์ (เดิม + ใหม่) เต็มความกว้าง เรียงลงมา -->
-                <div v-if="hasAnyFiles" class="mb-4 space-y-2">
-                    <div v-for="item in uploadItems" :key="item.key"
-                        class="w-full flex items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 shadow-sm">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-md ">
-                                <Icon icon="basil:file-solid" class="h-10 w-10 text-red-700" />
+                            <p v-if="submitted && formErrors.eventTitle" class="mt-1 text-xs text-red-600 font-medium">
+                                Required field
+                            </p>
+                        </div>
+
+                        <!-- ช่องเลือกประเภท event-->
+                        <div>
+                            <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
+                                Event Category <span class="text-red-500">*</span>
+                            </label><br />
+                            <div class="relative w-full">
+                                <select
+                                    class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white"
+                                    v-model="eventCategoryId"
+                                    :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventCategoryId }">
+
+                                    <option :value="eventCategoryId" hidden>
+                                        {{ eventCategoryName }}
+                                    </option>
+
+                                    <option v-for="cat in selectCategory" :value="cat.id">
+                                        {{ cat.cat_name }}
+                                    </option>
+                                </select>
+
+                                <Icon icon="iconamoon:arrow-down-2-light"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-red-600 pointer-events-none" />
                             </div>
 
-                            <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
-                            <template v-if="item.kind === 'existing'">
-                                <a :href="item.url" target="_blank" rel="noopener"
-                                    class="truncate text-[16px]  text-red-700 hover:underline">
-                                    {{ item.name }}
-                                </a>
-                                <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                }})</span> -->
-                            </template>
-                            <template v-else>
-                                <span class="truncate text-[16px]  text-neutral-800">{{ item.name }}</span>
-                                <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                }})</span> -->
-                            </template>
+                            <p v-if="submitted && formErrors.eventCategoryId"
+                                class="mt-1 text-xs text-red-600 font-medium">
+                                Required Select
+                            </p>
                         </div>
-
-                        <button type="button"
-                            class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100"
-                            @click="item.kind === 'existing' ? removeExisting(item.id) : removeFile(item.index)"
-                            aria-label="Remove file" title="Remove">
-                            ✕
-                        </button>
                     </div>
                 </div>
 
-                <!-- เมฆ + ข้อความ: โชว์เฉพาะตอน “ยังไม่มีไฟล์เลย” -->
-                <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
-                    <Icon icon="ep:upload-filled" class="w-40 h-28 mb-3 text-red-300" />
-                    <p class="text-[16px]  font-medium text-neutral-800">Choose a file or drag &amp; drop it here</p>
-                    <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx, png</p>
+                <!-- ช่องกรอกคำอธิบายอีเวนต์ -->
+                <div class="mt-4">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
+                        Event Description <span class="text-red-500">*</span>
+                    </label><br />
+                    <textarea
+                        class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition px-5 py-4"
+                        v-model.trim="eventDescription" placeholder="Write some description... (255 words)"
+                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDescription }"></textarea>
+
+                    <p v-if="submitted && formErrors.eventDescription" class="mt-1 text-xs text-red-600 font-medium">
+                        Required field
+                    </p>
                 </div>
 
-                <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
-                <div class="flex justify-center mt-1 mb-12">
-                    <button type="button"
-                        class="inline-flex items-center rounded-[10px] border  bg-white border-rose-500 px-2 py-1  text-neutral-800 hover:bg-rose-50 active:bg-rose-100"
-                        @click="pickFiles">
-                        <span class="text-sm font-medium">Browse files</span>
-                    </button>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pb-2">
+
+                    <!-- ช่องกรอกวันที่ -->
+                    <div class="relative">
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Date <span
+                                class="text-red-600">*</span></label>
+                        <EventSingleDatePicker v-model="eventDate" :min="minDate"
+                            :has-error="submitted && formErrors.eventDate"
+                            @update:modelValue="formErrors.eventDate = false" />
+                        <p v-if="submitted && formErrors.eventDate"
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">Required Date</p>
+                    </div>
+
+                    <!-- ช่องกรอกเวลา -->
+                    <div class="relative">
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Time <span
+                                class="text-red-600">*</span></label>
+                        <div :class="[
+                            'flex h-[52px] w-full items-center rounded-2xl border px-3 shadow-sm bg-white transition',
+                            submitted && formErrors.eventTime
+                                ? 'border-red-500 bg-red-50'
+                                : 'border-neutral-200 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400',
+                        ]">
+                            <!-- ปุ่มเลือกเวลาเริ่มต้น -->
+                            <div class="relative flex-1 flex items-center justify-center">
+                                <button type="button" class="tp-trigger"
+                                    :class="(pickerStartHour || pickerStartMin) ? 'text-neutral-800' : 'text-red-300'"
+                                    @click.stop="togglePanel('start')">
+                                    {{ (!pickerStartHour && !pickerStartMin) ? 'Start' : (pickerStartHour || '--') + ':'
+                                        + (pickerStartMin || '--') }}
+                                </button>
+                                <div v-if="showStartPanel" class="tp-panel" @pointerdown.stop @click.stop>
+                                    <div class="tp-col" ref="startHourCol">
+                                        <div class="tp-col-header">Hour</div>
+                                        <div v-for="h in hourOptions" :key="'sh' + h"
+                                            :class="['tp-item', { 'tp-active': pickerStartHour === h }]"
+                                            :ref="pickerStartHour === h ? 'startHourActive' : undefined"
+                                            @pointerdown.stop="selectStartHour(h)">{{ h }}</div>
+                                    </div>
+                                    <div class="tp-col" ref="startMinCol">
+                                        <div class="tp-col-header">Min</div>
+                                        <div v-for="m in minuteOptions" :key="'sm' + m"
+                                            :class="['tp-item', { 'tp-active': pickerStartMin === m }]"
+                                            :ref="pickerStartMin === m ? 'startMinActive' : undefined"
+                                            @pointerdown.stop="selectStartMin(m)">{{ m }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <span class="flex-none text-[16px] font-bold text-red-300 px-1">-</span>
+                            <!-- ปุ่มเลือกเวลาสิ้นสุด -->
+                            <div class="relative flex-1 flex items-center justify-center">
+                                <button type="button" class="tp-trigger"
+                                    :class="(pickerEndHour || pickerEndMin) ? 'text-neutral-800' : 'text-red-300'"
+                                    @click.stop="togglePanel('end')">
+                                    {{ (!pickerEndHour && !pickerEndMin) ? 'End' : (pickerEndHour || '--') + ':' +
+                                        (pickerEndMin || '--') }}
+                                </button>
+                                <div v-if="showEndPanel" class="tp-panel" @pointerdown.stop @click.stop>
+                                    <div class="tp-col" ref="endHourCol">
+                                        <div class="tp-col-header">Hour</div>
+                                        <div v-for="h in hourOptions" :key="'eh' + h"
+                                            :class="['tp-item', { 'tp-active': pickerEndHour === h }]"
+                                            :ref="pickerEndHour === h ? 'endHourActive' : undefined"
+                                            @pointerdown.stop="selectEndHour(h)">{{ h }}</div>
+                                    </div>
+                                    <div class="tp-col" ref="endMinCol">
+                                        <div class="tp-col-header">Min</div>
+                                        <div v-for="m in minuteOptions" :key="'em' + m"
+                                            :class="['tp-item', { 'tp-active': pickerEndMin === m }]"
+                                            :ref="pickerEndMin === m ? 'endMinActive' : undefined"
+                                            @pointerdown.stop="selectEndMin(m)">{{ m }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <Icon icon="mdi:clock-outline"
+                                class="flex-none w-5 h-5 text-red-700 mr-1 pointer-events-none" />
+                        </div>
+                        <!-- ข้อความ error แสดงใต้ช่องเวลา -->
+                        <p v-if="formErrors.eventTime"
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">{{ timeErrorMessage ||
+                                'Required Time' }}</p>
+                    </div>
+
+                    <!-- ช่องแสดงผลระยะเวลาที่คำนวณได้ -->
+                    <div>
+                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Duration</label>
+                        <div class="flex h-[52px] w-full items-center gap-3 rounded-xl px-4 shadow-sm bg-[#F5F5F5]">
+                            <input class="w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
+                                v-model="eventDuration" placeholder="Auto fill Hour" />
+                            <Icon icon="mingcute:time-duration-line" class="w-7 h-7 text-neutral-400" />
+                        </div>
+                    </div>
                 </div>
 
-                <!-- error (ถ้ามี) -->
-                <!-- <p v-if="uploadError" class="mt-2 text-xs text-red-600 text-center">{{ uploadError }}</p> -->
+                <!-- ช่องกรอกสถานที่-->
+                <div class="mt-4">
+                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
+                        Location <span class="text-red-500">*</span>
+                    </label><br>
+                    <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
+             border border-neutral-200 rounded-[20px] px-5"
+                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventLocation }" />
 
-                <!-- input file (ซ่อน) -->
-                <input ref="fileInput" type="file" multiple class="hidden"
-                    accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
+                    <p v-if="submitted && formErrors.eventLocation" class="mt-1 text-xs text-red-600 font-medium">
+                        Required field
+                    </p>
+                </div>
+            </div>
+
+            <!-- Upload attachments -->
+            <div class="col-span-4 m-5">
+                <h3 class="text-[17px] font-semibold text-neutral-800">Upload attachments</h3>
+                <p class="text-sm text-neutral-800 mb-2">Drag and drop document to your support task</p>
+
+                <!-- Drop zone -->
+                <div class="group relative rounded-2xl border-2 border-dashed border-red-700 bg-red-100 p-6 transition-all"
+                    :class="{ 'ring-2 ring-rose-300 bg-rose-100': dragging }" @dragover.prevent="dragging = true"
+                    @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
+                    <!-- รายการไฟล์ (เดิม + ใหม่) เต็มความกว้าง เรียงลงมา -->
+                    <div v-if="hasAnyFiles" class="mb-4 space-y-2">
+                        <div v-for="item in uploadItems" :key="item.key"
+                            class="w-full flex items-center justify-between rounded-2xl bg-white border border-neutral-200 px-4 py-3 shadow-sm">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-md ">
+                                    <Icon icon="basil:file-solid" class="h-10 w-10 text-red-700" />
+                                </div>
+
+                                <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
+                                <template v-if="item.kind === 'existing'">
+                                    <a :href="item.url" target="_blank" rel="noopener"
+                                        class="truncate text-[16px]  text-red-700 hover:underline">
+                                        {{ item.name }}
+                                    </a>
+                                    <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span> -->
+                                </template>
+                                <template v-else>
+                                    <span class="truncate text-[16px]  text-neutral-800">{{ item.name }}</span>
+                                    <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
+                                }})</span> -->
+                                </template>
+                            </div>
+
+                            <button type="button"
+                                class="inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100"
+                                @click="item.kind === 'existing' ? removeExisting(item.id) : removeFile(item.index)"
+                                aria-label="Remove file" title="Remove">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- เมฆ + ข้อความ: โชว์เฉพาะตอน “ยังไม่มีไฟล์เลย” -->
+                    <div v-else class="flex flex-col items-center justify-center text-center min-h-[260px]">
+                        <Icon icon="ep:upload-filled" class="w-40 h-28 mb-3 text-red-300" />
+                        <p class="text-[16px]  font-medium text-neutral-800">Choose a file or drag &amp; drop it here
+                        </p>
+                        <p class="mt-1 text-sm text-neutral-800">pdf, txt, docx, jpeg, xlsx, png</p>
+                    </div>
+
+                    <!-- ปุ่ม Browse: อยู่ล่างกลางเสมอ -->
+                    <div class="flex justify-center mt-1 mb-12">
+                        <button type="button"
+                            class="inline-flex items-center rounded-[10px] border  bg-white border-rose-500 px-2 py-1  text-neutral-800 hover:bg-rose-50 active:bg-rose-100"
+                            @click="pickFiles">
+                            <span class="text-sm font-medium">Browse files</span>
+                        </button>
+                    </div>
+
+                    <!-- error (ถ้ามี) -->
+                    <!-- <p v-if="uploadError" class="mt-2 text-xs text-red-600 text-center">{{ uploadError }}</p> -->
+
+                    <!-- input file (ซ่อน) -->
+                    <input ref="fileInput" type="file" multiple class="hidden"
+                        accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.xls" @change="onPick" />
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-6">
-        <h3 class="text-3xl font-semibold">Add Guest</h3>
+        <div class="mt-6">
+            <h3 class="text-3xl font-semibold">Add Guest</h3>
+            <div class="mt-4 flex flex-col gap-3">
+                <div class="flex flex-wrap items-center gap-3 w-full">
+                    <div class="flex-1 min-w-[260px]">
+                        <SearchBar v-model="search" placeholder="Search ID / Name / Nickname" @search="() => (page = 1)"
+                            class="" />
+                    </div>
 
-        <div class="mt-4 flex flex-col gap-3">
-            <div class="flex flex-wrap items-center gap-3 w-full">
-                <div class="flex-1 min-w-[260px]">
-                    <SearchBar v-model="search" placeholder="Search ID / Name / Nickname" @search="() => (page = 1)"
-                        class="" />
-                </div>
-
-                <div class="flex flex-row flex-wrap items-center gap-2 mt-8">
-                    <EmployeeDropdown label="Company ID" v-model="selectedCompanyIds" :options="companyIdOptions" />
-                    <EmployeeDropdown label="Department" v-model="selectedDepartmentIds" :options="departmentOptions" />
-                    <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" />
-                    <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions" />
+                    <div class="flex flex-row flex-wrap items-center gap-2 mt-8">
+                        <EmployeeDropdown label="Company ID" v-model="selectedCompanyIds" :options="companyIdOptions" />
+                        <EmployeeDropdown label="Department" v-model="selectedDepartmentIds"
+                            :options="departmentOptions" />
+                        <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" />
+                        <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -294,8 +317,6 @@
         </div>
     </div>
 
-    <!-- ปุ่มยกเลิก / ยืนยัน -->
-
     <!-- แถบปุ่ม -->
     <div class="mt-10 w-full flex flex-row justify-between items-center border-t border-neutral-100 pt-8">
         <div class="flex-none">
@@ -317,6 +338,9 @@
     <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
         :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText" @confirm="alert.onConfirm"
         @cancel="alert.onCancel" />
+
+    <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
+        type="error" :showCancel="false" />
 
 </template>
 
@@ -340,42 +364,52 @@ import DataTable from '@/components/DataTable.vue'
 import CancelButton from '@/components/Button/CancelButton.vue'
 import ModalAlert from '@/components/Alert/ModalAlert.vue'
 import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
+import EventSingleDatePicker from "@/components/IndexEvent/EventSingleDatePicker.vue";
 
 export default {
-    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert, EmployeeDropdown },
+    components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert, EmployeeDropdown, EventSingleDatePicker },
     data() {
         return {
-            // --- ข้อมูลฟอร์ม ---
-            eventTitle: '',           // ชื่อกิจกรรม
-            eventCategoryName: '',    // ชื่อหมวดหมู่กิจกรรม (แสดงผล)
-            eventCategoryId: '',      // รหัสหมวดหมู่กิจกรรม (ส่งไป Backend)
-            selectCategory: [],       // รายการหมวดหมู่สำหรับ dropdown
-            eventDescription: '',     // คำอธิบายกิจกรรม
-            eventDate: '',            // วันที่จัดกิจกรรม (format: YYYY-MM-DD)
-            eventTimeStart: '',       // เวลาเริ่มกิจกรรม (format: HH:MM)
-            eventTimeEnd: '',         // เวลาสิ้นสุดกิจกรรม (format: HH:MM)
-            eventDuration: 0,         // ระยะเวลากิจกรรม (แสดงผล เช่น "2 Hour 30 Min")
-            eventLocation: '',        // สถานที่จัดกิจกรรม
-            saving: false,            // สถานะกำลังบันทึกข้อมูล (ป้องกัน submit ซ้ำ)
-            eventDurationMinutes: 0,  // ระยะเวลากิจกรรมในหน่วยนาที (ส่งไป Backend)
+            // --- Form Data ---
+            eventTitle: '',
+            eventCategoryName: '',
+            eventCategoryId: '',
+            selectCategory: [],
+            eventDescription: '',
+            eventDate: '',
+            eventTimeStart: '',
+            eventTimeEnd: '',
+            showStartPanel: false,
+            showEndPanel: false,
+            pickerStartHour: '',
+            pickerStartMin: '',
+            pickerEndHour: '',
+            pickerEndMin: '',
+            eventDuration: 0,
+            eventLocation: '',
+            saving: false,
+            eventDurationMinutes: 0,
 
             // --- Validation ---
-            formErrors: {},   // เก็บ field ที่ validation ไม่ผ่าน
-            submitted: false, // true = กดปุ่ม submit แล้ว (เริ่มแสดง error)
+            formErrors: {},
+            submitted: false,
+            // Time-specific error message (displayed under time inputs)
+            timeErrorMessage: '',
 
-            // --- ไฟล์แนบ ---
-            filesExisting: [], // ไฟล์แนบเดิมที่มีอยู่ใน DB
-            filesNew: [],      // ไฟล์แนบใหม่ที่ผู้ใช้เพิ่ม
-            filesDeleted: [],  // รหัสไฟล์เดิมที่ผู้ใช้ลบออก
-            dragging: false,   // สถานะกำลัง drag ไฟล์เข้า drop zone
+            // --- Files ---
+            filesExisting: [],
+            filesNew: [],
+            filesDeleted: [],
+            dragging: false,
+            fileTypeError: false,
 
-            // --- ตารางพนักงาน และ Filter ---
-            employees: [],          // รายชื่อพนักงานทั้งหมด
-            loadingEmployees: false, // สถานะกำลังโหลดข้อมูลพนักงาน
-            search: '',             // คำค้นหาพนักงาน
-            searchDraft: '',        // คำค้นหาชั่วคราว (ก่อน apply)
+            // --- Table & Filter Data ---
+            employees: [],
+            loadingEmployees: false,
+            search: '',
+            searchDraft: '',
 
-            // ค่าที่เลือกจาก Dropdown Filter
+            // เพิ่มตัวแปรให้ครบตามที่ HTMLเรียกใช้ (v-model)
             selectedCompanyIds: [],
             selectedDepartmentIds: [],
             selectedTeamIds: [],
@@ -443,6 +477,20 @@ export default {
                 this.selectCategory = categories
                 this.filesExisting = payload?.files ?? []
 
+                // Sync picker state from loaded times
+                if (this.eventTimeStart) {
+                    const [h, m] = this.eventTimeStart.split(':');
+                    this.pickerStartHour = String(h).padStart(2, '0');
+                    this.pickerStartMin = String(m).padStart(2, '0');
+                }
+                if (this.eventTimeEnd) {
+                    const [h, m] = this.eventTimeEnd.split(':');
+                    this.pickerEndHour = String(h).padStart(2, '0');
+                    this.pickerEndMin = String(m).padStart(2, '0');
+                }
+
+                // ไฟล์เดิม
+                this.filesExisting = payload?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
                 // Map Guest ID เดิมเข้า Set เพื่อติ๊ก checkbox และล็อกไม่ให้แก้ไข
                 const guestsMapped = (payload?.guestIds ?? []).map(id => parseInt(id))
                 this.selectedIds = new Set(guestsMapped)
@@ -606,37 +654,15 @@ export default {
             this.addFiles([...event.dataTransfer.files])
         },
 
-        /**
-         * ชื่อฟังก์ชัน: addFiles
-         * คำอธิบาย: ตรวจสอบและเพิ่มไฟล์เข้า filesNew โดยเช็คประเภทและขนาดไฟล์
-         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
-         * วันที่จัดทำ/แก้ไข: 2026-03-1
-         */
-        addFiles(list) {
-            const MAX_MB = 50 // ขนาดไฟล์สูงสุดที่อนุญาต (MB)
-            const ALLOWED_TYPES = [ // ประเภทไฟล์ที่อนุญาต
-                "application/pdf",
-                "text/plain",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "image/jpeg",
-                "image/png",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "application/vnd.ms-excel",
-            ]
-            const errors = []
-
+        addFiles(list) {  //รับไฟล์เข้ามาในชื่อ list
+            const allowed = ['pdf', 'txt', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'xlsx', 'xls'];
+            let hasInvalid = false;
             list.forEach(file => {
-                if (file.size > MAX_MB * 1024 * 1024) {
-                    errors.push(`${file.name}: ไฟล์เกิน ${MAX_MB}MB`)
-                } else if (!ALLOWED_TYPES.includes(file.type)) {
-                    errors.push(`${file.name}: ประเภทไฟล์ไม่รองรับ`)
-                } else {
-                    this.filesNew.push(file)
-                }
-            })
-
-            if (errors.length) alert(errors.join('\n'))
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (!allowed.includes(ext)) { hasInvalid = true; return; }
+                if (file.size <= 50 * 1024 * 1024) this.filesNew.push(file);
+            });
+            this.fileTypeError = hasInvalid;
         },
 
         /**
@@ -687,25 +713,36 @@ export default {
             this.page = 1
         },
 
-        /**
-         * ชื่อฟังก์ชัน: validateForm
-         * คำอธิบาย: ตรวจสอบความถูกต้องของข้อมูลในฟอร์มก่อนบันทึก
-         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
-         * วันที่จัดทำ/แก้ไข: 2026-03-1
-         */
+        // [Earth (Suphanut) 2025-12-06] Validate form
+        // คำอธิบาย:
+        // - ตรวจความครบถ้วนของฟิลด์หลัก (title, category, description, date, time, location)
+        // - สำหรับเวลา: ถ้า start หรือ end ว่าง จะถือว่า error (required)
+        // - ถ้ามีทั้งสองค่า จะคำนวณเป็นนาทีและเช็คว่าจบต้องมากกว่าเริ่ม (end > start)
+        //   ถ้าไม่เป็นไปตามนี้ จะเติม `errors.eventTime` และ `timeErrorMessage` เพื่อแสดงข้อความใต้ช่องเวลา
         validateForm() {
-            const errors = {}
+            const errors = {};
 
-            if (!this.eventTitle?.trim()) errors.eventTitle = true
-            if (!this.eventCategoryId) errors.eventCategoryId = true
-            if (!this.eventDescription?.trim()) errors.eventDescription = true
-            if (!this.eventDate) errors.eventDate = true
-            if (!this.eventTimeStart) errors.eventTimeStart = true
-            if (!this.eventTimeEnd) errors.eventTimeEnd = true
-            if (!this.eventLocation?.trim()) errors.eventLocation = true
+            if (!this.eventTitle?.trim()) errors.eventTitle = true;
+            if (!this.eventCategoryId) errors.eventCategoryId = true;
+            if (!this.eventDescription?.trim()) errors.eventDescription = true;
+            if (!this.eventDate) errors.eventDate = true;
+            if (!this.eventTimeStart || !this.eventTimeEnd) errors.eventTime = true;
+            else {
+                const [sh, sm] = this.eventTimeStart.split(':').map(Number);
+                const [eh, em] = this.eventTimeEnd.split(':').map(Number);
+                const startMin = sh * 60 + sm;
+                const endMin = eh * 60 + em;
+                if (endMin <= startMin) {
+                    errors.eventTime = true;
+                    this.timeErrorMessage = 'End time must be after start time';
+                } else {
+                    this.timeErrorMessage = '';
+                }
+            }
+            if (!this.eventLocation?.trim()) errors.eventLocation = true;
 
-            this.formErrors = errors
-            return Object.keys(errors).length === 0
+            this.formErrors = errors;
+            return Object.keys(errors).length === 0;
         },
 
         /**
@@ -717,7 +754,17 @@ export default {
         async saveEvent() {
             this.submitted = true
             if (!this.validateForm()) return // หยุดถ้า validate ไม่ผ่าน
-
+            if(!this.isFormChanged()) {
+                this.openAlert({
+                    type: 'error',
+                    title: 'NO CHANGES MADE',
+                    message: 'No changes detected in the form.',
+                    showCancel: true,
+                    cancelText: 'No, Go Back',
+                    
+                })
+                return
+            }
             // Alert ขั้นที่ 1: ยืนยันการแก้ไข
             this.openAlert({
                 type: 'confirm',
@@ -742,6 +789,48 @@ export default {
             })
         },
 
+        // คำนวณระยะเวลา (Duration)
+        // - อ่านค่า `eventTimeStart` และ `eventTimeEnd` (รูปแบบ HH:mm)
+        // - แปลงเป็นนาทีรวม (hour * 60 + minute) แล้วหาผลต่าง (end - start)
+        // - ไม่อนุญาตให้เวลาจบก่อนหรือเท่ากับเวลาเริ่ม (no next-day wrap). ถ้าเกิดขึ้น จะตั้ง error และข้อความ
+        // - เก็บผลลัพธ์เป็น `eventDurationMinutes` (ตัวเลขนาที) และ `eventDuration` (ข้อความอ่านง่าย)
+        calDuration() {
+            // If either time missing, clear duration and message
+            if (!this.eventTimeStart || !this.eventTimeEnd) {
+                this.eventDurationMinutes = 0;
+                this.eventDuration = '';
+                this.timeErrorMessage = '';
+                return;
+            }
+
+            const [startHour, startMinute] = this.eventTimeStart.split(':').map(Number);
+            const [endHour, endMinute] = this.eventTimeEnd.split(':').map(Number);
+
+            const startMin = startHour * 60 + startMinute;
+            const endMin = endHour * 60 + endMinute;
+
+            // Enforce end > start (no automatic next-day wrap)
+            if (endMin <= startMin) {
+                this.eventDurationMinutes = 0;
+                this.eventDuration = '';
+                this.formErrors.eventTime = true;
+                this.timeErrorMessage = 'End time must be after start time';
+                return;
+
+
+            }
+
+            const diff = endMin - startMin;
+            this.eventDurationMinutes = diff;
+            const hour = Math.floor(diff / 60);
+            const min = diff % 60;
+            if (hour === 0) this.eventDuration = `${min} Min`;
+            else if (min === 0) this.eventDuration = `${hour} Hour`;
+            else this.eventDuration = `${hour} Hour ${min} Min`;
+
+            this.formErrors.eventTime = false;
+            this.timeErrorMessage = '';
+        },
         /**
          * ชื่อฟังก์ชัน: submitForm
          * คำอธิบาย: ส่งข้อมูลกิจกรรมที่แก้ไขไปยัง Backend พร้อม flag การส่งอีเมล
@@ -817,37 +906,6 @@ export default {
         },
 
         /**
-         * ชื่อฟังก์ชัน: calDuration
-         * คำอธิบาย: คำนวณระยะเวลากิจกรรมจากเวลาเริ่มและเวลาสิ้นสุด
-         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
-         * วันที่จัดทำ/แก้ไข: 2026-03-1
-         */
-        calDuration() {
-            const [startHour, startMinute] = (this.eventTimeStart || '0:0').split(':').map(Number)
-            const [endHour, endMinute] = (this.eventTimeEnd || '0:0').split(':').map(Number)
-
-            const totalStartMinutes = startHour * 60 + startMinute // แปลงเวลาเริ่มเป็นนาที
-            const totalEndMinutes = endHour * 60 + endMinute       // แปลงเวลาสิ้นสุดเป็นนาที
-            let diff = totalEndMinutes - totalStartMinutes
-
-            if (diff < 0) diff += 24 * 60 // รองรับกรณีข้ามเที่ยงคืน
-
-            this.eventDurationMinutes = Math.max(0, diff)
-
-            // แสดงผลในรูปแบบ "X Hour Y Min"
-            const hours = Math.floor(diff / 60)
-            const minutes = diff % 60
-
-            if (minutes === 0) {
-                this.eventDuration = `${hours} Hour`
-            } else if (hours === 0) {
-                this.eventDuration = `${minutes} Min`
-            } else {
-                this.eventDuration = `${hours} Hour ${minutes} Min`
-            }
-        },
-
-        /**
          * ชื่อฟังก์ชัน: onCancel
          * คำอธิบาย: จัดการการกดปุ่ม Cancel โดยเช็คว่ามีการเปลี่ยนแปลงข้อมูลไหม
          *           ถ้าไม่มีการเปลี่ยนแปลงจะกลับหน้าก่อนหน้า
@@ -907,9 +965,85 @@ export default {
                 }, cfg)
             })
         },
+        togglePanel(which) {
+            // Toggle the hour/min picker panels for start/end time.
+            // - When opening start panel, ensure end panel is closed and vice versa.
+            // - After opening, call `scrollPanelToActive()` to scroll to the currently selected value.
+            if (which === 'start') {
+                this.showEndPanel = false;
+                this.showStartPanel = !this.showStartPanel;
+                if (this.showStartPanel) this.$nextTick(() => this.scrollPanelToActive('start'));
+            } else {
+                this.showStartPanel = false;
+                this.showEndPanel = !this.showEndPanel;
+                if (this.showEndPanel) this.$nextTick(() => this.scrollPanelToActive('end'));
+            }
+        },
+        scrollPanelToActive(which) {
+            const scroll = (refArr, container) => {
+                const el = Array.isArray(refArr) ? refArr[0]?.$el || refArr[0] : refArr?.$el || refArr;
+                if (el && container) container.scrollTop = el.offsetTop - container.offsetTop - 40;
+            };
+            if (which === 'start') {
+                scroll(this.$refs.startHourActive, this.$refs.startHourCol);
+                scroll(this.$refs.startMinActive, this.$refs.startMinCol);
+            } else {
+                scroll(this.$refs.endHourActive, this.$refs.endHourCol);
+                scroll(this.$refs.endMinActive, this.$refs.endMinCol);
+            }
+        },
+        selectStartHour(h) {
+            this.pickerStartHour = h;
+            this.syncStartTime();
+        },
+        selectStartMin(m) {
+            this.pickerStartMin = m;
+            this.syncStartTime();
+        },
+        syncStartTime() {
+            // When both hour and minute are selected in the start picker,
+            // update `eventTimeStart` (string HH:mm), clear the time error and recalc duration.
+            if (this.pickerStartHour !== '' && this.pickerStartMin !== '') {
+                this.eventTimeStart = `${this.pickerStartHour}:${this.pickerStartMin}`;
+                this.formErrors.eventTime = false;
+                this.calDuration();
+            }
+        },
+        selectEndHour(h) {
+            this.pickerEndHour = h;
+            this.syncEndTime();
+        },
+        selectEndMin(m) {
+            this.pickerEndMin = m;
+            this.syncEndTime();
+        },
+        syncEndTime() {
+            // When both hour and minute are selected in the end picker,
+            // update `eventTimeEnd` (string HH:mm), clear the time error and recalc duration.
+            if (this.pickerEndHour !== '' && this.pickerEndMin !== '') {
+                this.eventTimeEnd = `${this.pickerEndHour}:${this.pickerEndMin}`;
+                this.formErrors.eventTime = false;
+                this.calDuration();
+            }
+        },
+        closePickers() {
+            this.showStartPanel = false;
+            this.showEndPanel = false;
+        },
+        onRootPointer(e) {
+            if (e.target.closest('.tp-panel') || e.target.closest('.tp-trigger')) return;
+            this.closePickers();
+        },
     },
 
     computed: {
+        hourOptions() {
+            return Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+        },
+        minuteOptions() {
+            return Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+        },
+        // --- Filtering Logic (Adapted from EventCheckIn) ---
         /**
          * ชื่อฟังก์ชัน: filteredEmployees
          * คำอธิบาย: กรองรายชื่อพนักงานตามคำค้นหาและ Filter ที่เลือก
@@ -1081,16 +1215,94 @@ export default {
 }
 </script>
 <style scoped>
-/* ทำให้ input type="time" ดู “เรียบ” และกลืนกับกล่องพิล */
-.time-input::-webkit-calendar-picker-indicator {
-    /* opacity: 0; */
-    display: none;
+/* Time trigger button */
+.tp-trigger {
+    width: 100%;
+    height: 44px;
+    font-size: 15px;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    outline: none;
+    text-align: center;
 }
 
-/* ซ่อนตัวบอก AM/PM */
-/* .time-input::-webkit-datetime-edit-ampm-field {
-    display: none;
-} */
+.tp-trigger:hover {
+    background: #fff1f2;
+}
 
-/* ซ่อนปุ่มปฏิทินเดิมของ Chrome/Safari */
+/* Two-column panel */
+.tp-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .14);
+    overflow: hidden;
+    width: 160px;
+}
+
+.tp-col {
+    flex: 1;
+    max-height: 220px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.tp-col+.tp-col {
+    border-left: 1px solid #f0f0f0;
+}
+
+.tp-col-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ca3af;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    z-index: 1;
+}
+
+.tp-item {
+    text-align: center;
+    padding: 6px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #525252;
+    cursor: pointer;
+    transition: background .1s;
+}
+
+.tp-item:hover {
+    background: #fff1f2;
+}
+
+.tp-active {
+    background: #be123c !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.tp-col::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tp-col::-webkit-scrollbar-thumb {
+    background: #e5e5e5;
+    border-radius: 4px;
+}
+
+.tp-col::-webkit-scrollbar-track {
+    background: transparent;
+}
 </style>
