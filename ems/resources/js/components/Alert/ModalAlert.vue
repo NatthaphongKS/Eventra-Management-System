@@ -91,17 +91,17 @@ const iconName = computed(() => {
 const iconWrapperClass = computed(() => {
     // success: วงกลมเขียวทึบ 120x120
     if (props.type === 'success') return 'h-[120px] w-[120px] mb-4'
-    // confirm: ใหญ่ 144
+    // confirm: ใหญ่ 120
     if (props.type === 'confirm') return 'h-[120px] w-[120px]'
     // อื่นๆ โทนพาสเทล
-    if (props.type === 'error') return 'h-[120px] w-[120px] bg-red-600 rounded-full mb-4'
+    if (props.type === 'error') return 'h-[90px] w-[90px] bg-red-600 rounded-full mb-4'
     if (props.type === 'warning') return 'h-[120px] w-[120px] bg-yellow-100 mb-4'
     return 'h-[120px] w-[120px] bg-neutral-100 mb-4'
 })
 
 const iconClass = computed(() => {
-    if (props.type === 'success') return 'h-[90px] w-[90px] text-green-500'
-    if (props.type === 'confirm') return 'h-[90px] w-[90px] text-[#FDC800]'
+    if (props.type === 'success') return 'h-[120px] w-[120px] text-green-500'
+    if (props.type === 'confirm') return 'h-[108px] w-[108px] text-[#FDC800]'
     if (props.type === 'error') return 'h-[80px] w-[80px] text-white'
     return 'h-[90px] w-[90px] text-current'
 })
@@ -111,7 +111,7 @@ const titleClass = computed(() => {
     if (props.type === 'success' || props.type === 'error') {
         return 'mt-2 text-xl font-extrabold tracking-wide text-neutral-800 uppercase'
     }
-    return 'text-xl font-extrabold tracking-[0.02em] text-neutral-800'
+    return 'mt-4 text-xl font-extrabold tracking-[0.02em] text-neutral-800'
 })
 
 const messageClass = computed(() => {
