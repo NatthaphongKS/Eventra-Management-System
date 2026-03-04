@@ -77,15 +77,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
     // === Check-in ===
-    // Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']);
     Route::get('/get-employee-for-checkin/eve_id/{eve_id}', [CheckInController::class, 'getEmployeeForCheckin']);
-    // Route::get('/getEmployeeInviteStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeInviteStatus']);
     Route::get('/get-employee-invite-status/eve_id/{eve_id}/emp_id/{emp_id}', [CheckInController::class, 'getEmployeeInviteStatus']);
-    // Route::get('/getEmployeeCheckinStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeCheckinStatus']);
     Route::get('/get-employee-checkin-stauts/eve_id/{eve_id}/emp_id/{emp_id}', [CheckInController::class, 'getEmployeeCheckinStatus']);
-    // Route::put('/updateEmployeeAttendance/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'updateEmployeeAttendance']);
     Route::put('/update-employee-attendance/eve_id/{eve_id}/emp_id/{emp_id}', [CheckInController::class, 'updateEmployeeAttendance']);
-    // Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}', [CheckInController::class, 'updateEmployeeAttendanceAll']);
     Route::put('/update-employee-attendance-all/eve_id/{eve_id}', [CheckInController::class, 'updateEmployeeAttendanceAll']);
 
     // === History ===
