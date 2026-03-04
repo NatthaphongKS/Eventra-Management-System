@@ -23,4 +23,9 @@ class Department extends Model
     {
         return $this->hasMany(Employee::class, 'emp_department_id');
     }
+
+    public function teams(): HasMany
+    {
+        return $this->hasMany(Team::class, 'tm_department_id');
+    }
 }

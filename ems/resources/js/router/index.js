@@ -21,6 +21,10 @@ import EditEvent from '../pages/Event/EditEvent.vue'
 import EditEmployee from '../pages/Employee/EditEmployeePage.vue'
 import EventDetails from '../pages/Event/EventDetail.vue'
 import EventCheckIn from '../pages/Event/EventCheckIn.vue'
+// [เพิ่ม] CRUD Modules
+import DepartmentPage from '../pages/Department/DepartmentPage.vue'
+import TeamPage from '../pages/Team/TeamPage.vue'
+import PositionPage from '../pages/Position/PositionPage.vue'
 
 
 const routes = [
@@ -38,6 +42,9 @@ const routes = [
     { path: '/event', component: EventPage, meta: { title: 'Event', activeMenu: '/event' } },
     { path: '/add-event', component: CreateEvent, meta: { title: 'Create Event', activeMenu: '/event' } },
     { path: '/employee', component: Employees, meta: { title: 'Employee', activeMenu: '/employee' } },
+    { path: '/departments', component: DepartmentPage, meta: { title: 'Department', activeMenu: '/departments' } },
+    { path: '/teams', component: TeamPage, meta: { title: 'Team', activeMenu: '/teams' } },
+    { path: '/positions', component: PositionPage, meta: { title: 'Position', activeMenu: '/positions' } },
     { path: '/history', component: History, meta: { title: 'History' } },
     { path: '/categories', component: Category, meta: { title: 'Category', activeMenu: '/categories' } },
     { path: '/history-employee', component: History_Employee, meta: { title: 'History Employee' } },
