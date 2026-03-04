@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-rose-50">
     <div 
       class="grid min-h-screen transition-all duration-300 ease-in-out" 
-      :style="{ gridTemplateColumns: sidebarOpen ? '220px 1fr' : '0 1fr' }"
+      :style="{ gridTemplateColumns: sidebarOpen ? '255px 1fr' : '0 1fr' }"
     >
       <aside
         class="sticky top-0 z-30 flex h-[100dvh] rounded rounded-r-[20px] flex-col overflow-y-auto bg-white px-4 pt-5 shadow-lg transition-all duration-300 ease-in-out"
