@@ -1,23 +1,31 @@
+
+     <!-- ชื่อไฟล์: ReplyController
+     * คำอธิบาย: Controller สำหรับจัดการการตอบกลับของผู้ใช้
+     * ชื่อผู้เขียน/แก้ไข: ชิตดนัย
+     * วันที่จัดทำ/แก้ไข: 4 มีนาคม 2569 -->
+
 <?php
 
 namespace App\Http\Controllers;
 
-use App\Models\Connect;
+use App\Services\ReplyService;
 use Exception;
 use Illuminate\Http\Request;
-use App\Models\Employee;
-use App\Models\Event;
-use Illuminate\Support\Facades\Crypt;
 
 class ReplyController extends Controller
 {
+    protected ReplyService $replyService;
 
-    // app/Http/Controllers/ReplyController.php
-    public function openForm($encryptURL)
+    public function __construct(ReplyService $replyService)
+    {
+        $this->replyService = $replyService;
+    }
+
+
+    public function openForm(string $encryptURL)
     {
         try {
-            $descryptURL = Crypt::decryptString($encryptURL);
-            $ids = explode('/', $descryptURL);
+            $this->replyService->decryptUrlData($encryptURL);
             $message = response()->json([
                 'success' => true,
                 'message' => 'Form can Open'
@@ -27,16 +35,15 @@ class ReplyController extends Controller
                 'success' => false,
                 'message' => 'Invalid URL'
             ]);
-            return view('reply', ['message' => $message]);
         }
+
         return view('reply', ['message' => $message]);
     }
 
-    public function show($encryptURL)
+    public function show(string $encryptURL)
     {
         try {
-            $descryptURL = Crypt::decryptString($encryptURL);
-            $ids = explode('/', $descryptURL);
+            $ids = $this->replyService->decryptUrlData($encryptURL);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -44,46 +51,19 @@ class ReplyController extends Controller
             ]);
         }
 
-        $eveId = $ids[0];
-        $empId = $ids[1];
+        $eveId = (int)$ids[0];
+        $empId = (int)$ids[1];
 
-        $employee = Employee::query()
-            ->select(
-                'id'
-                ,
-                'emp_prefix',
-                'emp_firstname',
-                'emp_lastname',
-                'emp_email',
-                'emp_phone'
-            )
-            ->where('id', $empId)
-            ->first();
-        $event = Event::query()
-            ->Select(
-                'id',
-                'evn_title',
-                'evn_date',
-                'evn_timestart',
-                'evn_timeend',
-                'evn_location'
-            )
-            ->where('id', $eveId)
-            ->first();
-        $connect = Connect::query()
-            ->where('con_event_id', $eveId)
-            ->where('con_employee_id', $empId)
-            ->first();
+        $details = $this->replyService->getReplyDetails($eveId, $empId);
 
-        return response()->json(
-            [
-                'success' => true,
-                'employee' => $employee,
-                'event' => $event,
-                'connect' => $connect,
-            ]
-        );
+        return response()->json([
+            'success' => true,
+            'employee' => $details['employee'],
+            'event' => $details['event'],
+            'connect' => $details['connect'],
+        ]);
     }
+
 
     public function store(Request $req)
     {
@@ -94,18 +74,7 @@ class ReplyController extends Controller
             'reason' => 'nullable|string|max:500',
         ]);
 
-        // เข้าร่วม → ล้างเหตุผล
-        if ($data['attend'] === 'accept') {
-            $data['reason'] = null;
-        }
-
-        // // อัปเดตถ้ามีคู่นี้อยู่แล้ว ไม่มีก็สร้างใหม่
-        $updated = Connect::where('con_event_id', $data['evnID'])
-            ->where('con_employee_id', $data['empID'])
-            ->update([
-                'con_answer' => $data['attend'],                   // หรือ $answer
-                'con_reason' => $data['reason'],
-            ]);
+        $this->replyService->storeReplyData($data);
 
         return response()->json(['ok' => true], 201);
     }
