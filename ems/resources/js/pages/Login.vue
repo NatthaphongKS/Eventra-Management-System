@@ -11,7 +11,7 @@
     <div
         class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/Background.jpg')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
         <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
-            <div class="flex justify-center items-center gap-4 mb-8">
+            <div v-if="!forgotPassword" class="flex justify-center items-center gap-4 mb-8">
                 <img :src="'/images/email/clicknext.jpeg'" alt="Eventra Logo"
                     class="w-20 h-20 object-cover rounded-2xl shadow-sm" loading="lazy">
                 <span class="text-5xl font-medium text-red-700 tracking-tight">
@@ -19,7 +19,7 @@
                 </span>
             </div>
 
-            <div class="left">
+            <div class="left" :class="forgotPassword ? 'h-full' : ''">
                 <!-- Login Form -->
                 <template v-if="!forgotPassword">
                     <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Sign In</h2>
@@ -68,17 +68,17 @@
 
                 <!-- Forgot Password Notice -->
                 <template v-else>
-                    <div class="h-full flex flex-col justify-between">
-                        <div>
-                            <h2 class="mt-4 text-[40px] font-semibold leading-tight text-neutral-800">Forgot your password?
+                    <div class="h-full flex flex-col items-center text-center">
+                        <div class="w-full">
+                            <h2 class="mt-3 text-[28px] font-semibold leading-tight text-neutral-800 text-center">Forgot your password?
                             </h2>
-                            <p class="mt-16 text-[42px] leading-tight text-neutral-700">Please tell your admin
+                            <p class="mt-8 text-[24px] leading-tight text-neutral-700 text-center">Please tell your admin
                                 <br>
                                 to reset your password
                             </p>
                         </div>
 
-                        <div class="flex justify-center pb-2">
+                        <div class="mt-auto w-full flex justify-center pb-2">
                             <button type="button" @click="toggleForgotPassword" aria-label="Back to sign in"
                                 class="text-red-700 text-6xl leading-none hover:text-red-800 transition-colors">
                                 ←
