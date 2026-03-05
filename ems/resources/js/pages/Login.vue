@@ -19,8 +19,7 @@
                 </span>
             </div>
 
-            <div class="left" :class="forgotPassword ? 'h-full' : ''">
-                <!-- Login Form -->
+            <div class="left">
                 <template v-if="!forgotPassword">
                     <h2 class="pl-10 mt-16 text-4xl font-medium text-neutral-900 mb-4">Sign In</h2>
                     <form @submit.prevent="login">
@@ -29,7 +28,7 @@
                             <input type="text" v-model="email"
                                 class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
                                 placeholder="Email" />
-                            <p v-if="errors.email" class="text-red-700 text-m mt-1 text[16px]">
+                            <p v-if="errors.email" class="text-red-700 text-m mt-1 text-[16px]">
                                 {{ errors.email[0] }}
                             </p>
                         </div>
@@ -39,12 +38,12 @@
                                 :class="{ 'border-red-500': errors.password, 'border-red-700': !errors.password }"
                                 class="w-[403px] h-[70px] border border-red-700 rounded-full p-3 px-5 placeholder:text-neutral-600 placeholder:text-2xl placeholder:font-medium focus:outline-none focus:ring-0"
                                 placeholder="Password" />
-                            <p v-if="errors.password" class="text-red-700 text-m mt-1 text[16px]">
+                            <p v-if="errors.password" class="text-red-700 text-m mt-1 text-[16px]">
                                 {{ errors.password[0] }}
                             </p>
                         </div>
 
-                        <p v-if="message" class="text-red-700 text-m mt-1 text[16px]">{{ message }}</p>
+                        <p v-if="message" class="text-red-700 text-m mt-1 text-[16px]">{{ message }}</p>
 
                         <div class="flex justify-center mt-4 mb-4">
                             <button type="button" @click="toggleForgotPassword"
@@ -66,31 +65,28 @@
                     </p>
                 </template>
 
-                <!-- ฟอร์มลืมรหัสผ่าน -->
                 <template v-else>
-                    <div class="h-full flex flex-col items-center text-center">
-                        <div class="w-full">
-                            <h2 class="mt-3 text-[28px] font-semibold leading-tight text-neutral-800 text-center">Forgot your password?
-                            </h2>
-                            <p class="mt-8 text-[24px] leading-tight text-neutral-700 text-center">Please tell your admin
-                                <br>
-                                to reset your password
-                            </p>
-                        </div>
+                    <div class="flex flex-col items-center justify-center mt-20">
+                        <h2 class="text-3xl font-semibold text-neutral-800 mb-8 text-center tracking-wide">
+                            Forgot your password?
+                        </h2>
 
-                        <div class="mt-auto w-full flex justify-center pb-2">
-                            <button type="button" @click="toggleForgotPassword" aria-label="Back to sign in"
-                                class="text-red-700 text-6xl leading-none hover:text-red-800 transition-colors">
-                                ←
-                            </button>
-                        </div>
+                        <p class="text-2xl text-neutral-600 text-center mb-20 leading-relaxed">
+                            Please tell your admin<br>to reset your password
+                        </p>
+
+                        <button type="button" @click="toggleForgotPassword"
+                            class="text-red-700 hover:text-red-800 transition-colors mt-8">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-8 h-8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                        </button>
                     </div>
                 </template>
             </div>
         </div>
     </div>
 </template>
-
 
 <script>
 import axios from "axios";
@@ -102,6 +98,7 @@ export default {
             password: "",
             loading: false,
             message: "",
+            error: "",
             errors: {},
             forgotPassword: false,
         };
@@ -124,6 +121,7 @@ export default {
         },
         async login() {
             this.message = "";
+            this.error = "";
             this.errors = {};
 
             if (!this.validateInputs()) {
@@ -175,6 +173,7 @@ export default {
             this.message = "";
             this.error = "";
             this.errors = {};
+            // ล้างค่าฟอร์ม
             if (this.forgotPassword) {
                 this.email = "";
                 this.password = "";

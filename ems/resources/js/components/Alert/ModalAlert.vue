@@ -3,8 +3,8 @@
  * คำอธิบาย: หน้า Alert แสดงหน้าต่างยืนยัน
  * Input: defineProps จากหน้าแม่
  * Output: หน้าAlert ตามประเภทที่หน้าแม่บอกมาใน defineprops
- * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
- * วันที่จัดทำ/แก้ไข: 2026-02-28
+ * ชื่อผู้เขียน/แก้ไข: Thanusin leenarat
+ * วันที่จัดทำ/แก้ไข: 2026-03-04
  */ -->
 
 <!-- components/Alert/ModalAlert.vue -->
@@ -19,9 +19,9 @@
                 <transition name="pop">
                     <div class="relative max-w-[90vw] text-center shadow-2xl" :class="wrapperClass">
                         <!-- Icon circle -->
-                        <div class="mx-auto grid place-items-center rounded-full " :class="iconWrapperClass">
-                            <svg v-if="type === 'error'" viewBox="0 0 24 24" fill="none" :class="iconClass"
-                                xmlns="http://www.w3.org/2000/svg">
+                        <div v-if="type !== 'progress'" class="mx-auto grid place-items-center rounded-full"
+                            :class="iconWrapperClass"> <svg v-if="type === 'error'" viewBox="0 0 24 24" fill="none"
+                                :class="iconClass" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="10.4" y="4" width="3.2" height="10" rx="1.6" fill="white" />
                                 <circle cx="12" cy="18.5" r="2" fill="white" />
                             </svg>
@@ -38,9 +38,28 @@
                             {{ message }}
                         </p>
 
+                        <!-- Progress bar -->
+                        <div v-if="type === 'progress'" class="mt-6 w-full">
+
+                            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                <div class="h-4 bg-red-600 transition-all duration-300"
+                                    :style="{ width: progress + '%' }"></div>
+                            </div>
+
+                            <p class="mt-4 text-sm text-gray-600">
+                                {{ progress }}% completed
+                            </p>
+
+                            <p class="text-xs text-gray-400 mt-1">
+                                Please wait while we process {{ total }} records
+                            </p>
+
+                        </div>
+
                         <!-- Actions -->
-                        <div class="mb-4 flex items-center justify-center" :class="actionGapClass">
-                            <button v-if="showCancelFinal" type="button" @click="handleCancel" class="h-[58px] w-[168px] rounded-[20px] border border-neutral-200 bg-red-700 text-white transition
+                        <div v-if="type !== 'progress'" class="mb-4 flex items-center justify-center"
+                            :class="actionGapClass"> <button v-if="showCancelFinal" type="button" @click="handleCancel"
+                                class="h-[58px] w-[168px] rounded-[20px] border border-neutral-200 bg-red-700 text-white transition
                        hover:brightness-95 active:brightness-90 focus:outline-none focus:ring-4 focus:ring-red-200">
                                 {{ cancelText }}
                             </button>
@@ -73,6 +92,8 @@ const props = defineProps({
     showCancel: { type: Boolean, default: true },
     okText: { type: String, default: 'OK' },
     cancelText: { type: String, default: 'Cancel' },
+    progress: { type: Number, default: 0 },
+    total: { type: Number, default: 0 }
 })
 
 const emit = defineEmits(['confirm', 'cancel'])
@@ -84,6 +105,7 @@ const iconName = computed(() => {
         case 'error': return 'tabler:exclamation-mark'
         case 'warning': return 'mdi:alert'
         case 'confirm': return 'mdi:help-circle'
+        case 'progress': return ''
         default: return 'mdi:help-circle'
     }
 })
@@ -91,17 +113,17 @@ const iconName = computed(() => {
 const iconWrapperClass = computed(() => {
     // success: วงกลมเขียวทึบ 120x120
     if (props.type === 'success') return 'h-[120px] w-[120px] mb-4'
-    // confirm: ใหญ่ 144
+    // confirm: ใหญ่ 120
     if (props.type === 'confirm') return 'h-[120px] w-[120px]'
     // อื่นๆ โทนพาสเทล
-    if (props.type === 'error') return 'h-[120px] w-[120px] bg-red-600 rounded-full mb-4'
+    if (props.type === 'error') return 'h-[90px] w-[90px] bg-red-600 rounded-full mb-4'
     if (props.type === 'warning') return 'h-[120px] w-[120px] bg-yellow-100 mb-4'
     return 'h-[120px] w-[120px] bg-neutral-100 mb-4'
 })
 
 const iconClass = computed(() => {
-    if (props.type === 'success') return 'h-[90px] w-[90px] text-green-500'
-    if (props.type === 'confirm') return 'h-[90px] w-[90px] text-[#FDC800]'
+    if (props.type === 'success') return 'h-[120px] w-[120px] text-green-500'
+    if (props.type === 'confirm') return 'h-[108px] w-[108px] text-[#FDC800]'
     if (props.type === 'error') return 'h-[80px] w-[80px] text-white'
     return 'h-[90px] w-[90px] text-current'
 })
@@ -111,7 +133,7 @@ const titleClass = computed(() => {
     if (props.type === 'success' || props.type === 'error') {
         return 'mt-2 text-xl font-extrabold tracking-wide text-neutral-800 uppercase'
     }
-    return 'text-xl font-extrabold tracking-[0.02em] text-neutral-800'
+    return 'mt-4 text-xl font-extrabold tracking-[0.02em] text-neutral-800'
 })
 
 const messageClass = computed(() => {

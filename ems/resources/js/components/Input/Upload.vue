@@ -1,3 +1,18 @@
+<!--
+/**
+ * ชื่อไฟล์: Upload.vue
+ * คำอธิบาย: Component สำหรับอัปโหลดไฟล์ Excel หรือ CSV ผ่านการเลือกไฟล์หรือ Drag & Drop
+ * Input:
+ *  - ไฟล์เอกสาร (.xls / .xlsx / .csv)
+ *  - ขนาดไฟล์สูงสุด (กำหนดผ่าน props: maxSizeMB)
+ * Output:
+ *  - ส่งไฟล์ที่ผ่านการตรวจสอบกลับไปยัง Component แม่ผ่าน event (picked)
+ *  - แจ้งข้อผิดพลาดเมื่อไฟล์ไม่ถูกต้อง เช่น ขนาดไฟล์เกินหรือชนิดไฟล์ไม่รองรับ (invalid)
+ *  - แจ้งการลบไฟล์ (cleared)
+ * ชื่อผู้เขียน/แก้ไข: Thanusin Leenarat
+ * วันที่จัดทำ/แก้ไข: 4 มีนาคม 2569
+ */
+-->
 <template>
     <div class="mt-4">
         <div class="mt-2 rounded-2xl border-2 border-dashed border-rose-400 bg-rose-50 relative transition-all">
@@ -139,7 +154,7 @@ function handleFile(f) {
 
 function validate(f) {
     if (f.size > props.maxSizeMB * 1024 * 1024) {
-        return { ok: false, message: `ไฟล์ใหญ่เกิน ${props.maxSizeMB}MB` };
+        return { ok: false, message: `File is too large. Maximum size is ${props.maxSizeMB}MB` };
     }
 
     const lower = f.name.toLowerCase();
@@ -148,7 +163,7 @@ function validate(f) {
     );
 
     if (!extOk) {
-        return { ok: false, message: "รองรับเฉพาะ .xls, .xlsx หรือ .csv" };
+        return { ok: false, message: "Only .xlsx and .csv files are supported." };
     }
 
     return { ok: true };
