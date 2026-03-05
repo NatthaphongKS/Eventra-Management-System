@@ -10,10 +10,11 @@
  *  - แสดงผล Validation (Missing / Duplicate / Invalid relation)
  *  - ส่งข้อมูลไปยัง Backend เพื่อสร้างพนักงานแบบ Bulk
  * ชื่อผู้เขียน/แก้ไข: Thanusin Leenarat
- * วันที่จัดทำ/แก้ไข: 1 มีนาคม 2569
+ * วันที่จัดทำ/แก้ไข: 4 มีนาคม 2569
  */
  -->
 <template>
+
     <head>
         <link rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -62,7 +63,7 @@
 
         <div v-if="isTableVisible">
 
-            <div class="mt-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="mt-10 mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
                 <div class="overflow-x-auto lg:overflow-x-visible">
                     <div v-if="systemErrors.length || validationErrors.length || missingErrors.length"
                         class="bg-red-100 text-red-600 rounded-xl p-4 mb-6 text-sm">
@@ -86,8 +87,8 @@
                         </ul>
                     </div>
                     <div class="bg-white rounded-2xl overflow-hidden">
-                        <DataTable class="text-sm" :loading="uploading || creating" :rows="paged"
-                            :columns="tableColumns" :page="page" :page-size="pageSize" :total-items="totalItems"
+                        <DataTable class="text-sm" :loading="uploading" :rows="paged" :columns="tableColumns"
+                            :page="page" :page-size="pageSize" :total-items="totalItems"
                             :page-size-options="[10, 25, 50, 100]" :show-row-number="false" row-key="__rowKey"
                             @update:page="(val) => (page = val)" @update:pageSize="(val) => (pageSize = val)">
 
@@ -152,6 +153,18 @@
                                         : ''
                                 ]">
                                     {{ row.phone }}
+                                </div>
+                            </template>
+
+                            <!-- Email -->
+                            <template #cell-email="{ row }">
+                                <div :class="[
+                                    'px-4 py-3',
+                                    row.__errorFields?.includes('email')
+                                        ? 'bg-[#f3edc2]'
+                                        : ''
+                                ]">
+                                    {{ row.email }}
                                 </div>
                             </template>
 
@@ -248,28 +261,8 @@
         @confirm="handleSuccessClose" />
     <ModalAlert v-model:open="showCannotCreate" type="error" title="Error" :message="errorMessage" okText="Close"
         :show-cancel="false" />
-
-    <div v-if="showProgressModal"
-        class="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div class="bg-white w-[420px] rounded-2xl shadow-2xl p-8 text-center">
-
-            <h3 class="text-xl font-semibold text-neutral-800">
-                {{ progressTitle }}
-            </h3>
-            <div class="mt-6 w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                <div class="h-4 bg-red-600 transition-all duration-300" :style="{ width: progress + '%' }"></div>
-            </div>
-
-            <p class="mt-4 text-sm text-gray-600">
-                {{ progress }}% completed
-            </p>
-
-            <p class="text-xs text-gray-400 mt-1">
-                Please wait while we process {{ totalRows }} records
-            </p>
-
-        </div>
-    </div>
+    <ModalAlert v-model:open="showProgressModal" type="progress" :title="progressTitle" :progress="progress"
+        :total="totalRows" message="" />
 </template>
 
 <script setup>
@@ -284,7 +277,7 @@ import { useRouter } from "vue-router";
 // Excel libraries
 // - XLSX : ใช้สำหรับอ่านไฟล์ Excel / CSV
 // - ExcelJS : ใช้สำหรับสร้างไฟล์ Excel template
-// import * as XLSX from "xlsx";
+import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 
 // HTTP client
@@ -381,12 +374,21 @@ watch([pageSize, totalItems], () => {
     if (page.value > lastPage) page.value = lastPage;
 });
 
+// =========================
+// EMAIL VALIDATION
+// =========================
+function isValidEmail(email) {
+    return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{3,}$/.test(email)
+}
 // ======================================================
 // Upload & Parse Excel
 // ======================================================
 // ใช้ ExcelJS อ่านไฟล์ .xlsx (และยังใช้ readFile เดิมได้)
 async function upload() {
-    // guard: ต้องมีไฟล์ และไม่มี error
+
+    progress.value = 0
+    showProgressModal.value = false
+
     if (!file.value || error.value) return;
     uploading.value = true;
     totalRows.value = 0
@@ -399,35 +401,36 @@ async function upload() {
 
     try {
         const ext = file.value.name.split(".").pop()?.toLowerCase();
-        const supported = ["xlsx", "csv"];
+        const supported = ["xls", "xlsx", "csv"];
         if (!ext || !supported.includes(ext)) {
-            throw new Error("Only .xlsx and .csv files are supported.");
+            throw new Error("Only .xls, .xlsx and .csv files are supported.");
         }
 
         // Build rowsAoA from different file types
         let rowsAoA = [];
-        if (ext === "xlsx") {
-            const data = await readFile(file.value, "array"); // ArrayBuffer
 
-            const workbook = new ExcelJS.Workbook();
-            await workbook.xlsx.load(data);
+        if (ext === "xlsx" || ext === "xls") {
 
-            const ws = workbook.worksheets[0];
-            if (!ws) throw new Error("Worksheet not found");
+            const data = await readFile(file.value, "array");
 
-            // --- ExcelJS -> rowsAoA (เหมือนเดิม: header:1)
-            // values ของ ExcelJS เป็น array ที่ index เริ่มที่ 1
-            rowsAoA = [];
-            ws.eachRow({ includeEmpty: false }, (row) => {
-                const arr = (row.values || []).slice(1).map((v) => (v ?? "")); // defval ""
-                // กันแถวว่างล้วน
-                if (arr.every((x) => x === "" || x == null || String(x).trim() === "")) return;
-                rowsAoA.push(arr);
+            // ใช้ XLSX library สำหรับอ่าน xls/xlsx
+            const workbook = XLSX.read(data, { type: "array" });
+
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+
+            rowsAoA = XLSX.utils.sheet_to_json(sheet, {
+                header: 1,
+                defval: "",
+                blankrows: false
             });
 
-        } else if (ext === "csv") {
+        }
+        else if (ext === "csv") {
+
             const text = await readFile(file.value, "text");
             rowsAoA = parseCsvToAoA(String(text || ""));
+
         }
 
         const headerRowIdx = detectHeaderRow(rowsAoA);
@@ -572,6 +575,17 @@ async function upload() {
                 }
             }
 
+            // =========================
+            // PHONE FORMAT CHECK
+            // =========================
+            const phone = String(row.phone || "").trim()
+
+            if (phone && !/^\d{10}$/.test(phone)) {
+                validationErrors.value.push(
+                    `row ${rowNumber} phone must be exactly 10 digits`
+                )
+                row.__errorFields.push("phone")
+            }
             // Phone duplicate
             if (seenPhones.has(row.phone)) {
                 validationErrors.value.push(
@@ -580,6 +594,18 @@ async function upload() {
                 row.__errorFields.push("phone")
             } else {
                 seenPhones.add(row.phone)
+            }
+
+            // =========================
+            // EMAIL FORMAT CHECK
+            // =========================
+            const email = String(row.email || "").trim()
+
+            if (email && !isValidEmail(email)) {
+                validationErrors.value.push(
+                    `row ${rowNumber} email format is invalid`
+                )
+                row.__errorFields.push("email")
             }
 
             // =========================
@@ -680,8 +706,11 @@ async function upload() {
 
     } catch (e) {
         console.error(e);
+        showProgressModal.value = false
+        progress.value = 0
         error.value = e?.message || "Unable to read file. Please check the information.";
         isTableVisible.value = false;
+
     } finally {
         uploading.value = false;
     }
@@ -787,7 +816,7 @@ function parseCsvToAoA(text) {
         fields.push(cur);
 
         // Normalize: convert undefined → "" and trim
-        const normalized = fields.map(f => (f == null ? "" : String(f)) );
+        const normalized = fields.map(f => (f == null ? "" : String(f)));
 
         // Skip fully-empty rows
         if (normalized.every(v => v === "" || v == null || String(v).trim() === "")) continue;
@@ -1062,22 +1091,18 @@ async function onCreate() {
 
     } catch (e) {
         console.error(e);
+        showProgressModal.value = false
+        progress.value = 0
 
-        // =========================
-        // ดึง error จากระบบ (Backend)
-        // =========================
         if (e.response) {
-            // Laravel / API ทั่วไป
             errorMessage.value =
                 e.response.data?.message ||
                 e.response.data?.error ||
                 "System error occurred while creating employee records.";
         } else if (e.request) {
-            // ยิง API ไม่ได้
             errorMessage.value =
                 "Unable to connect to the server. Please try again later.";
         } else {
-            // Error ฝั่ง JS
             errorMessage.value = e.message || "Unexpected system error.";
         }
 
@@ -1399,8 +1424,7 @@ const tableColumns = [
         label: "Employee ID",
         class: "text-left w-[180px]"
     },
-    { key: "name", label: "Name", class: "text-left w-[240px]" },
-
+    { key: "name", label: "Name", class: "text-left w-[320px] whitespace-nowrap" },
     {
         key: "nickname",
         label: "Nickname",
@@ -1411,7 +1435,7 @@ const tableColumns = [
     { key: "department", label: "Department", class: "text-left w-[180px]" },
     { key: "team", label: "Team", class: "text-left w-[160px]" },
     { key: "position", label: "Position", class: "text-left w-[180px]" },
-    // { key: "email", label: "Email", class: "text-left w-[220px]" },
+    { key: "email", label: "Email", class: "text-left w-[220px]" },
     { key: "dateAdd", label: "Date Add (D/M/Y)", class: "text-center w-[140px]" },
 ]
 
@@ -1479,9 +1503,9 @@ const errorSummary = computed(() => {
         )
     }
 
-    if (missingRows.size > 0) {
+    if (missingErrors.value.length > 0) {
         parts.push(
-            `${missingRows.size} missing data`
+            `${missingErrors.value.length} missing data`
         )
     }
 
