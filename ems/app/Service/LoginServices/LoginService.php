@@ -74,7 +74,7 @@ class LoginService
     }
 
     /**
-     * Log the employee in and regenerate the session.
+     * เข้าสู่ระบบพนักงานและสร้าง session ใหม่
      *
      * @param Employee $employee
      * @param Request $request
@@ -115,7 +115,7 @@ class LoginService
     }
 
     /**
-     * Log the employee out and invalidate the session.
+     * ออกจากระบบของพนักงานและยกเลิก session
      *
      * @param Request $request
      * @return void
@@ -133,7 +133,7 @@ class LoginService
     }
 
     /**
-     * Get the currently authenticated employee.
+     * ดึงพนักงานที่ล็อกอินอยู่ในปัจจุบัน
      *
      * @return Employee|null
      */
