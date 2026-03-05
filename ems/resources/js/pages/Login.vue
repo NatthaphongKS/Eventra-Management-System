@@ -66,7 +66,7 @@
                     </p>
                 </template>
 
-                <!-- Forgot Password Notice -->
+                <!-- ฟอร์มลืมรหัสผ่าน -->
                 <template v-else>
                     <div class="h-full flex flex-col items-center text-center">
                         <div class="w-full">
