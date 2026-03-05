@@ -82,6 +82,7 @@ class Employee extends Authenticatable
     |--------------------------------------------------------------------------
     */
 
+    // คืนค่า password field สำหรับระบบ Auth ของ Laravel
     public function getAuthPassword(): ?string
     {
         return $this->emp_password;
@@ -93,6 +94,7 @@ class Employee extends Authenticatable
     |--------------------------------------------------------------------------
     */
 
+    // scope สำหรับดึงเฉพาะพนักงานที่ยัง active
     public function scopeActive(Builder $query): Builder
     {
         return $query->where(function ($q) {
@@ -108,6 +110,7 @@ class Employee extends Authenticatable
     |--------------------------------------------------------------------------
     */
 
+    // สร้างชื่อเต็มจากคำนำหน้า + ชื่อ + นามสกุล
     public function getFullNameAttribute(): string
     {
         $prefix = self::PREFIXES[$this->emp_prefix] ?? '';
@@ -121,36 +124,43 @@ class Employee extends Authenticatable
     |--------------------------------------------------------------------------
     */
 
+    // เชื่อมกับตาราง company
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'emp_company_id');
     }
 
+    // เชื่อมกับตาราง employee (ผู้สร้างข้อมูล)
     public function creator(): BelongsTo
     {
         return $this->belongsTo(self::class, 'emp_create_by');
     }
 
-    public function deleter(): BelongsTo
+    // เชื่อมกับตาราง employee (ผู้ลบ)
+    public function deletedBy(): BelongsTo
     {
-        return $this->belongsTo(self::class, 'emp_delete_by');
+        return $this->belongsTo(Employee::class, 'emp_delete_by');
     }
 
+    // เชื่อมกับตาราง position
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class, 'emp_position_id');
     }
 
+    // เชื่อมกับตาราง department
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'emp_department_id');
     }
 
+    // เชื่อมกับตาราง team
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'emp_team_id');
     }
 
+    // เชื่อมแบบ many-to-many กับตาราง event ผ่านตารางกลาง ems_connect
     public function events()
     {
         return $this->belongsToMany(
