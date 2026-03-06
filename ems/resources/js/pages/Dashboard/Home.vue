@@ -130,29 +130,14 @@
 
             <!-- Bottom cards -->
             <div class="lg:col-span-12">
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-
-                    <AttendingCard :attending="chartData.attending || 0" :total="chartData.total_participation || 0"
-                        :loading="loadingParticipants" :isClickable="true"
-                        :isSelected="employeeTableType === 'attending'"
-                        @showAttendingEmployees="showEmployeesByStatus('attending')" />
-
-                    <NotAttendingCard :notAttending="chartData.not_attending || 0"
-                        :total="chartData.total_participation || 0" :loading="loadingParticipants" :isClickable="true"
-                        :isSelected="employeeTableType === 'not-attending'"
-                        @showNotAttendingEmployees="showEmployeesByStatus('not-attending')" />
-
-                    <PendingCard :pending="chartData.pending || 0" :total="chartData.total_participation || 0"
-                        :loading="loadingParticipants" :isClickable="true" :isSelected="employeeTableType === 'pending'"
-                        @showPendingEmployees="showEmployeesByStatus('pending')" />
-
-                </div>
+                <ParticipationStatusCards :chartData="chartData" :loading="loadingParticipants" :isClickable="true"
+                    :selectedStatus="selectedStatus" @select-status="showEmployeesByStatus" />
             </div>
 
         </div>
     </div>
 
-    <DataTable v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics" :rows="paginatedEmployees"
+    <DataTable v-if="showMemberTable && selectedEventIds.size > 0 && showStatistics" :rows="paginatedEmployees"
         :columns="employeeColumns" :loading="loadingParticipants" v-model:page="currentPage"
         v-model:pageSize="itemsPerPage" :totalItems="totalEmployees" :pageSizeOptions="[10, 20, 50, 100]"
         rowKey="unique_key" :showRowNumber="true">
@@ -169,11 +154,9 @@ import axios from "axios";
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
 // นำเข้า Component สำหรับ Dashboard
-import AttendingCard from '../../components/Dashboard/AttendingCard.vue';
-import NotAttendingCard from '../../components/Dashboard/NotAttendingCard.vue';
-import PendingCard from '../../components/Dashboard/PendingCard.vue';
 import DonutActualAttendance from '../../components/Dashboard/DonutActualAttendance.vue';
 import GraphEventParticipation from '../../components/Dashboard/GraphEventParticipation.vue';
+import ParticipationStatusCards from '../../components/Dashboard/ParticipationStatusCards.vue';
 import Button from "../../components/Button.vue";
 import SearchBar from "../../components/SearchBar.vue";
 import EventFilter from "../../components/IndexEvent/EventFilter.vue";
@@ -188,11 +171,9 @@ axios.defaults.headers.common["Accept"] = "application/json";
 export default {
     components: {
         MagnifyingGlassIcon,
-        AttendingCard,
-        NotAttendingCard,
-        PendingCard,
         DonutActualAttendance,
         GraphEventParticipation,
+        ParticipationStatusCards,
         Button,
         SearchBar,
         EventFilter,
@@ -260,9 +241,9 @@ export default {
             selectedEventIds: new Set(),
             // กรองตามวันที่
             selectedDate: { start: null, end: null },
-            // สถานะตารางพนักงาน
-            showEmployeeTable: false,
-            employeeTableType: null,
+            // สถานะการแสดงผลตารางสมาชิกและสถานะที่เลือก
+            showMemberTable: false,
+            selectedStatus: null,
             filteredEmployeesForTable: [],
             currentPage: 1,
             itemsPerPage: 10,
@@ -350,9 +331,7 @@ export default {
     set(val) {
       this.selectedEventIds = new Set(val);
       this.showStatistics = false;
-            this.showEmployeeTable = false;
-            this.employeeTableType = null;
-            this.filteredEmployeesForTable = [];
+            this.resetEmployeeTableState();
     }
   },
     normalized() {
@@ -720,9 +699,10 @@ export default {
 
   methods: {
         resetEmployeeTableState() {
-            this.showEmployeeTable = false;
-            this.employeeTableType = null;
+            this.showMemberTable = false;
+            this.selectedStatus = null;
             this.filteredEmployeesForTable = [];
+            this.currentPage = 1;
         },
 
         buildEmployeeRowsFromParticipants(participants) {
@@ -744,22 +724,31 @@ export default {
             }));
         },
 
-        rebuildEmployeeTableFromParticipants(status = this.employeeTableType) {
+        rebuildEmployeeTableFromParticipants(status = this.selectedStatus) {
             if (!this.eventParticipants || this.eventParticipants.length === 0) {
                 this.filteredEmployeesForTable = [];
-                this.showEmployeeTable = false;
+                this.showMemberTable = Boolean(status);
                 this.currentPage = 1;
                 return;
             }
 
             let workingParticipants = [...this.eventParticipants];
 
-            if (status === 'attending') {
-                workingParticipants = workingParticipants.filter(participant => participant.status === 'accepted');
-            } else if (status === 'not-attending') {
-                workingParticipants = workingParticipants.filter(participant => participant.status === 'denied');
+            if (status === 'accepted') {
+                workingParticipants = workingParticipants.filter(participant => {
+                    const participantStatus = (participant.status || '').toLowerCase();
+                    return participantStatus === 'accepted';
+                });
+            } else if (status === 'declined') {
+                workingParticipants = workingParticipants.filter(participant => {
+                    const participantStatus = (participant.status || '').toLowerCase();
+                    return participantStatus === 'denied' || participantStatus === 'declined';
+                });
             } else if (status === 'pending') {
-                workingParticipants = workingParticipants.filter(participant => participant.status !== 'accepted' && participant.status !== 'denied');
+                workingParticipants = workingParticipants.filter(participant => {
+                    const participantStatus = (participant.status || '').toLowerCase();
+                    return participantStatus !== 'accepted' && participantStatus !== 'denied' && participantStatus !== 'declined';
+                });
             }
 
             const uniqueParticipants = new Map();
@@ -785,19 +774,9 @@ export default {
             });
 
             this.filteredEmployeesForTable = this.buildEmployeeRowsFromParticipants(deduplicatedParticipants);
-            this.showEmployeeTable = true;
+            this.showMemberTable = Boolean(status);
             this.currentPage = 1;
         },
-
-    showEmployees(status) {
-    this.selectedStatus = status; // attending / not-attending / pending
-    this.showEmployeeTable = true;
-  },
-
-  closeEmployeeTable() {
-    this.showEmployeeTable = false;
-    this.selectedStatus = null;
-  },
     handleEventCheck({ keys, checked }) {
   keys.forEach(id => {
     if (checked) {
@@ -1013,7 +992,7 @@ handleCheckAllEvents({ pageKeys, action }) {
                 };
                 this.participationData = { departments: [], teams: [] };
                 this.eventParticipants = [];
-                this.showEmployeeTable = false;
+                this.resetEmployeeTableState();
                 return;
             }
 
@@ -1072,7 +1051,11 @@ handleCheckAllEvents({ pageKeys, action }) {
 
                     // อัพเดตรายชื่อผู้เข้าร่วม
                     this.eventParticipants = res.data.participants || [];
-                    this.rebuildEmployeeTableFromParticipants();
+
+                    // แสดงตารางเฉพาะกรณีผู้ใช้เลือกสถานะจากการ์ดแล้ว
+                    if (this.showMemberTable && this.selectedStatus) {
+                        this.rebuildEmployeeTableFromParticipants(this.selectedStatus);
+                    }
 
           console.log('✅ Participation data updated:', this.participationData);
           console.log('✅ Participants loaded:', this.eventParticipants.length);
@@ -1092,6 +1075,7 @@ handleCheckAllEvents({ pageKeys, action }) {
         };
         this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
+                this.resetEmployeeTableState();
       } finally {
         this.loadingParticipants = false;
       }
@@ -1216,13 +1200,14 @@ handleCheckAllEvents({ pageKeys, action }) {
         return;
       }
 
-            this.employeeTableType = status;
-            this.showEmployeeTable = true;
+            this.selectedStatus = status;
+            this.showMemberTable = true;
 
             try {
                 if (!this.eventParticipants || this.eventParticipants.length === 0) {
                     console.warn('⚠️ No participants data available');
                     this.filteredEmployeesForTable = [];
+                    this.currentPage = 1;
                     return;
                 }
                 this.rebuildEmployeeTableFromParticipants(status);
@@ -1269,8 +1254,9 @@ handleCheckAllEvents({ pageKeys, action }) {
                 return;
             }
 
-      // เปิดการแสดงผลกราฟและตาราง
+            // เปิดการแสดงผลเฉพาะกราฟ/การ์ด และซ่อนตารางสมาชิกจนกว่าจะเลือกสถานะ
       this.showStatistics = true;
+            this.resetEmployeeTableState();
       // เรียก fetch statistics
       this.fetchEventStatistics();
       // Scroll to summary section
