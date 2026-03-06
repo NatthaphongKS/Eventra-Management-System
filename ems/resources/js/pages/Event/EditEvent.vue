@@ -44,8 +44,8 @@
                                     class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white"
                                     v-model="eventCategoryId"
                                     :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventCategoryId }">
-
-                                    <option :value="eventCategoryId" hidden>
+                                    <!-- ใส่ option แรกเป็นค่าเดิมที่โหลดมา เพื่อให้แสดงชื่อหมวดหมู่เดิม และมี value เป็น id ของหมวดหมู่เดิม (แต่ซ่อนใน dropdown ไม่ให้เลือกซ้ำ) -->
+                                    <option :value="initialForm.eventCategoryId" hidden>
                                         {{ eventCategoryName }}
                                     </option>
 
@@ -1017,7 +1017,7 @@ export default {
                 return
             }
 
-            // มีการเปลี่ยนแปลง → แสดง Alert ยืนยันก่อนออก
+            // มีการเปลี่ยนแปลง แสดง Alert ยืนยันก่อนออก
             this.alert = {
                 open: true,
                 type: 'confirm',

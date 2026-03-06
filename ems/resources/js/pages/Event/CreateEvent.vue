@@ -4,7 +4,7 @@
  * Input: ข้อมูลกิจกรรมจากฟอร์ม, ไฟล์แนบ, รายชื่อพนักงานที่เลือก
  * Output: บันทึกข้อมูลกิจกรรมลงฐานข้อมูลผ่าน API /event-save
  * ชื่อผู้เขียน/แก้ไข: ชิตดนัย รัตนเทียนทอง
- * วันที่จัดทำ/แก้ไข: 28 กุมภาพันธ์ 2569
+ * วันที่จัดทำ/แก้ไข: 6 มีนาคม 2569
 -->
 <template>
     <div class="font-[Poppins] pb-20" @pointerdown.capture="onRootPointer">
@@ -228,7 +228,7 @@
                                     <span class="truncate text-[16px] text-neutral-800 block">{{ item.name }}</span>
                                     <span class="text-xs text-rose-500">{{
                                         prettySize(item.size)
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
 
@@ -292,6 +292,20 @@
                 </div>
             </div>
 
+            <!-- แสดงจำนวนคนที่ถูกเลือก -->
+            <div class="mt-4 flex items-center gap-2">
+                <Icon icon="mdi:account-check" class="w-7 h-7 text-red-600" />
+                <span class="text-[16px] font-medium text-neutral-700">
+                    Selected Guests :
+                </span>
+                <span class="text-[16px] font-semibold text-red-600">
+                    {{ selectedIdsForSubmit.length }}
+                </span>
+                <span class="text-[16px] font-medium text-neutral-500">
+                    / {{ employees.length }} people
+                </span>
+            </div>
+
             <div class="mt-8">
                 <DataTable :rows="pagedEmployees" :columns="columns" :loading="loadingEmployees"
                     :totalItems="filteredEmployees.length" v-model:page="page" v-model:pageSize="perPage"
@@ -340,6 +354,10 @@
 
         <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
             type="error" :showCancel="false" />
+
+        <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
+            :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText"
+            @confirm="alert.onConfirm?.()" @cancel="alert.onCancel?.()" />
     </div>
 </template>
 
@@ -418,6 +436,17 @@ export default {
             saving: false,
             showConfirmCreate: false,
             showSuccessAlert: false,
+            alert: {
+                open: false,
+                type: 'confirm',
+                title: '',
+                message: '',
+                showCancel: false,
+                okText: 'OK',
+                cancelText: 'Cancel',
+                onConfirm: null,
+                onCancel: null,
+            },
         };
     },
     computed: {
@@ -506,6 +535,9 @@ export default {
             set(arr) {
                 this.selectedIds = new Set(arr);
             },
+        },
+        selectedIdsForSubmit() {
+            return Array.from(this.selectedIds);
         },
     },
     watch: {
@@ -751,7 +783,37 @@ export default {
             this.selectedIds = new Set(ids);
         },
         onCancel() {
-            this.$router.back();
+            if (!this.isFormDirty()) {
+                this.$router.back();
+                return;
+            }
+            this.alert = {
+                open: true,
+                type: 'confirm',
+                title: 'DO YOU WANT TO LEAVE THIS CHANGE?',
+                message: 'Your changes will be lost.',
+                showCancel: true,
+                okText: 'Ok',
+                cancelText: 'Cancel',
+                onConfirm: () => {
+                    this.alert.open = false;
+                    this.$router.back();
+                },
+                onCancel: () => {
+                    this.alert.open = false;
+                },
+            };
+        },
+        isFormDirty() {
+            if (this.eventTitle) return true;
+            if (this.eventCategoryId) return true;
+            if (this.eventDescription) return true;
+            if (this.eventDate) return true;
+            if (this.eventTimeStart || this.eventTimeEnd) return true;
+            if (this.eventLocation) return true;
+            if (this.filesNew.length > 0) return true;
+            if (this.selectedIds.size > 0) return true;
+            return false;
         },
         onRootPointer(e) {
             if (e.target.closest('.tp-panel') || e.target.closest('.tp-trigger')) return;
