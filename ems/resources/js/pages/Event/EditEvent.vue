@@ -4,7 +4,7 @@
  * Input: id (รหัสกิจกรรม) จาก route params
  * Output: แบบฟอร์มแก้ไขกิจกรรม ส่งข้อมูลผ่าน POST /edit-event
  * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
- * วันที่จัดทำ/แก้ไข: 2026-03-02
+ * วันที่จัดทำ/แก้ไข: 2026-03-03
  */ -->
 
 <!-- pages/edit_event.vue -->
@@ -342,6 +342,10 @@
     <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
         type="error" :showCancel="false" />
 
+    <ModalAlert v-model:open="progressAlert.open" type="progress" title="Saving..."
+        message="Please wait while we save your changes." :progress="progressAlert.progress"
+        :total="selectedIdsForSubmit.length" :showCancel="false" />
+
 </template>
 
 <!-- /**
@@ -370,38 +374,37 @@ export default {
     components: { InputPill, Icon, SearchBar, DropdownPill, DataTable, CancelButton, ModalAlert, EmployeeDropdown, EventSingleDatePicker },
     data() {
         return {
-            // --- Form Data ---
-            eventTitle: '',
-            eventCategoryName: '',
-            eventCategoryId: '',
-            selectCategory: [],
-            eventDescription: '',
-            eventDate: '',
-            eventTimeStart: '',
-            eventTimeEnd: '',
-            showStartPanel: false,
-            showEndPanel: false,
-            pickerStartHour: '',
-            pickerStartMin: '',
-            pickerEndHour: '',
-            pickerEndMin: '',
-            eventDuration: 0,
-            eventLocation: '',
-            saving: false,
-            eventDurationMinutes: 0,
+            // --- ข้อมูลฟอร์ม ---
+            eventTitle: '',           // ชื่อกิจกรรม
+            eventCategoryName: '',    // ชื่อหมวดหมู่กิจกรรม (แสดงผล)
+            eventCategoryId: '',      // รหัสหมวดหมู่กิจกรรม (ส่งไป Backend)
+            selectCategory: [],       // รายการหมวดหมู่สำหรับ dropdown
+            eventDescription: '',     // คำอธิบายกิจกรรม
+            eventDate: '',            // วันที่จัดกิจกรรม (format: YYYY-MM-DD)
+            eventTimeStart: '',       // เวลาเริ่มกิจกรรม (format: HH:MM)
+            eventTimeEnd: '',         // เวลาสิ้นสุดกิจกรรม (format: HH:MM)
+            showStartPanel: false,    // แสดง/ซ่อน time picker ของเวลาเริ่ม
+            showEndPanel: false,      // แสดง/ซ่อน time picker ของเวลาสิ้นสุด
+            pickerStartHour: '',      // ชั่วโมงที่เลือกใน picker (เริ่ม)
+            pickerStartMin: '',       // นาทีที่เลือกใน picker (เริ่ม)
+            pickerEndHour: '',        // ชั่วโมงที่เลือกใน picker (สิ้นสุด)
+            pickerEndMin: '',         // นาทีที่เลือกใน picker (สิ้นสุด)
+            eventDuration: 0,         // ระยะเวลากิจกรรม (แสดงผล เช่น "2 Hour 30 Min")
+            eventLocation: '',        // สถานที่จัดกิจกรรม
+            saving: false,            // สถานะกำลังบันทึกข้อมูล (ป้องกัน submit ซ้ำ)
+            eventDurationMinutes: 0,  // ระยะเวลากิจกรรมในหน่วยนาที (ส่งไป Backend)
 
             // --- Validation ---
-            formErrors: {},
-            submitted: false,
-            // Time-specific error message (displayed under time inputs)
-            timeErrorMessage: '',
+            formErrors: {},           // เก็บ field ที่ validation ไม่ผ่าน
+            submitted: false,         // true = กดปุ่ม submit แล้ว (เริ่มแสดง error)
+            timeErrorMessage: '',     // ข้อความ error เฉพาะของช่วงเวลา (end ต้องหลัง start)
 
-            // --- Files ---
-            filesExisting: [],
-            filesNew: [],
-            filesDeleted: [],
-            dragging: false,
-            fileTypeError: false,
+            // --- ไฟล์แนบ ---
+            filesExisting: [],        // ไฟล์แนบเดิมที่มีอยู่ใน DB
+            filesNew: [],             // ไฟล์แนบใหม่ที่ผู้ใช้เพิ่ม
+            filesDeleted: [],         // รหัสไฟล์เดิมที่ผู้ใช้ลบออก
+            dragging: false,          // สถานะกำลัง drag ไฟล์เข้า drop zone
+            fileTypeError: false,     // แจ้งเตือนเมื่อไฟล์ที่อัปโหลดไม่ถูกประเภท
 
             // --- Table & Filter Data ---
             employees: [],
@@ -444,7 +447,15 @@ export default {
 
             // เก็บค่าเดิมตอนโหลดหน้า สำหรับเช็คว่ามีการเปลี่ยนแปลงไหม
             initialForm: {},
+
+            // --- Progress Alert ---
+            progressAlert: {
+                open: false,
+                progress: 0,
+                total: 0,
+            },
         };
+
     },
     methods: {
         /**
@@ -479,22 +490,23 @@ export default {
 
                 // Sync picker state from loaded times
                 if (this.eventTimeStart) {
-                    const [h, m] = this.eventTimeStart.split(':');
-                    this.pickerStartHour = String(h).padStart(2, '0');
-                    this.pickerStartMin = String(m).padStart(2, '0');
+                    const [h, m] = this.eventTimeStart.split(':')
+                    this.pickerStartHour = String(h).padStart(2, '0')
+                    this.pickerStartMin = String(m).padStart(2, '0')
                 }
                 if (this.eventTimeEnd) {
-                    const [h, m] = this.eventTimeEnd.split(':');
-                    this.pickerEndHour = String(h).padStart(2, '0');
-                    this.pickerEndMin = String(m).padStart(2, '0');
+                    const [h, m] = this.eventTimeEnd.split(':')
+                    this.pickerEndHour = String(h).padStart(2, '0')
+                    this.pickerEndMin = String(m).padStart(2, '0')
                 }
 
-                // ไฟล์เดิม
-                this.filesExisting = payload?.files ?? [] //เก็บข้อมูล files ที่ส่งมาจาก controller
                 // Map Guest ID เดิมเข้า Set เพื่อติ๊ก checkbox และล็อกไม่ให้แก้ไข
                 const guestsMapped = (payload?.guestIds ?? []).map(id => parseInt(id))
                 this.selectedIds = new Set(guestsMapped)
                 this.lockedIds = new Set(guestsMapped)
+
+                // ไฟล์เดิม
+                this.filesExisting = payload?.files ?? [] // เก็บข้อมูล files ที่ส่งมาจาก controller
 
                 // โหลดข้อมูลพนักงานสำหรับตาราง
                 this.loadingEmployees = true
@@ -571,6 +583,37 @@ export default {
             if (this.filesNew.length !== this.initialForm.filesNew.length) return true
 
             return false
+        },
+        /**
+        * ชื่อฟังก์ชัน: isOnlyCategoryChanged
+        * คำอธิบาย: ตรวจสอบว่ามีการแก้ไข "เฉพาะ" Category เพียงอย่างเดียวหรือไม่
+        */
+        isOnlyCategoryChanged() {
+            // เช็คว่า Category เปลี่ยนแปลงหรือไม่
+            const isCategoryChanged = this.eventCategoryId !== this.initialForm.eventCategoryId;
+
+            // เช็คว่าฟิลด์อื่นๆ มีการเปลี่ยนแปลงหรือไม่
+            let isOtherChanged = false;
+
+            if (this.eventTitle !== this.initialForm.eventTitle) isOtherChanged = true;
+            if (this.eventDescription !== this.initialForm.eventDescription) isOtherChanged = true;
+            if (this.eventDate !== this.initialForm.eventDate) isOtherChanged = true;
+            if (this.eventTimeStart !== this.initialForm.eventTimeStart) isOtherChanged = true;
+            if (this.eventTimeEnd !== this.initialForm.eventTimeEnd) isOtherChanged = true;
+            if (this.eventLocation !== this.initialForm.eventLocation) isOtherChanged = true;
+
+            // เช็ค Guest list ว่าเปลี่ยนไหม
+            if (this.selectedIds.size !== this.initialForm.selectedIds.size) isOtherChanged = true;
+            for (let id of this.selectedIds) {
+                if (!this.initialForm.selectedIds.has(id)) isOtherChanged = true;
+            }
+
+            // เช็ค Files ว่าเปลี่ยนไหม
+            if (this.filesExisting.length !== this.initialForm.filesExisting.length) isOtherChanged = true;
+            if (this.filesNew.length !== this.initialForm.filesNew.length) isOtherChanged = true;
+
+            // จะเป็น true ก็ต่อเมื่อ Category เปลี่ยนแปลง และฟิลด์อื่นๆ "ไม่" เปลี่ยนแปลง
+            return isCategoryChanged && !isOtherChanged;
         },
 
         /**
@@ -653,16 +696,40 @@ export default {
             this.dragging = false
             this.addFiles([...event.dataTransfer.files])
         },
+        onPick(file) { this.addFiles([...file.target.files]); file.target.value = '' },
+        onDrop(event) { this.dragging = false; this.addFiles([...event.dataTransfer.files]) },
 
-        addFiles(list) {  //รับไฟล์เข้ามาในชื่อ list
-            const allowed = ['pdf', 'txt', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'xlsx', 'xls'];
-            let hasInvalid = false;
+        /**
+         * ชื่อฟังก์ชัน: addFiles
+         * คำอธิบาย: ตรวจสอบและเพิ่มไฟล์เข้า filesNew โดยเช็คประเภทและขนาดไฟล์
+         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+         * วันที่จัดทำ/แก้ไข: 2026-03-01
+         */
+        addFiles(list) {
+            const MAX_MB = 50
+            const ALLOWED_TYPES = [
+                "application/pdf",
+                "text/plain",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "image/jpeg",
+                "image/png",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-excel",
+            ]
+            let hasError = false
+
             list.forEach(file => {
-                const ext = file.name.split('.').pop().toLowerCase();
-                if (!allowed.includes(ext)) { hasInvalid = true; return; }
-                if (file.size <= 50 * 1024 * 1024) this.filesNew.push(file);
-            });
-            this.fileTypeError = hasInvalid;
+                if (file.size > MAX_MB * 1024 * 1024) {
+                    hasError = true
+                } else if (!ALLOWED_TYPES.includes(file.type)) {
+                    hasError = true
+                } else {
+                    this.filesNew.push(file)
+                }
+            })
+
+            this.fileTypeError = hasError  // → เด้ง ModalAlert อัตโนมัติ
         },
 
         /**
@@ -712,37 +779,38 @@ export default {
             this.selectedPositionIds = []
             this.page = 1
         },
-
-        // [Earth (Suphanut) 2025-12-06] Validate form
-        // คำอธิบาย:
-        // - ตรวจความครบถ้วนของฟิลด์หลัก (title, category, description, date, time, location)
-        // - สำหรับเวลา: ถ้า start หรือ end ว่าง จะถือว่า error (required)
-        // - ถ้ามีทั้งสองค่า จะคำนวณเป็นนาทีและเช็คว่าจบต้องมากกว่าเริ่ม (end > start)
-        //   ถ้าไม่เป็นไปตามนี้ จะเติม `errors.eventTime` และ `timeErrorMessage` เพื่อแสดงข้อความใต้ช่องเวลา
+        /**
+         * ชื่อฟังก์ชัน: validateForm
+         * คำอธิบาย: ตรวจสอบความถูกต้องของข้อมูลในฟอร์มก่อนบันทึก
+         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+         * วันที่จัดทำ/แก้ไข: 2026-03-01
+         */
         validateForm() {
-            const errors = {};
+            const errors = {}
+            if (!this.eventTitle?.trim()) errors.eventTitle = true
+            if (!this.eventCategoryId) errors.eventCategoryId = true
+            if (!this.eventDescription?.trim()) errors.eventDescription = true
+            if (!this.eventDate) errors.eventDate = true
 
-            if (!this.eventTitle?.trim()) errors.eventTitle = true;
-            if (!this.eventCategoryId) errors.eventCategoryId = true;
-            if (!this.eventDescription?.trim()) errors.eventDescription = true;
-            if (!this.eventDate) errors.eventDate = true;
-            if (!this.eventTimeStart || !this.eventTimeEnd) errors.eventTime = true;
-            else {
-                const [sh, sm] = this.eventTimeStart.split(':').map(Number);
-                const [eh, em] = this.eventTimeEnd.split(':').map(Number);
-                const startMin = sh * 60 + sm;
-                const endMin = eh * 60 + em;
-                if (endMin <= startMin) {
-                    errors.eventTime = true;
-                    this.timeErrorMessage = 'End time must be after start time';
+            if (!this.eventTimeStart) errors.eventTimeStart = true
+            if (!this.eventTimeEnd) errors.eventTimeEnd = true
+
+            // ตรวจเพิ่มเติมเมื่อกรอกครบทั้งคู่
+            if (this.eventTimeStart && this.eventTimeEnd) {
+                const [sh, sm] = this.eventTimeStart.split(':').map(Number)
+                const [eh, em] = this.eventTimeEnd.split(':').map(Number)
+                if ((eh * 60 + em) <= (sh * 60 + sm)) {
+                    errors.eventTimeEnd = true
+                    this.timeErrorMessage = 'End time must be after start time'
                 } else {
-                    this.timeErrorMessage = '';
+                    this.timeErrorMessage = ''
                 }
             }
-            if (!this.eventLocation?.trim()) errors.eventLocation = true;
 
-            this.formErrors = errors;
-            return Object.keys(errors).length === 0;
+            if (!this.eventLocation?.trim()) errors.eventLocation = true
+
+            this.formErrors = errors
+            return Object.keys(errors).length === 0
         },
 
         /**
@@ -753,8 +821,32 @@ export default {
          */
         async saveEvent() {
             this.submitted = true
-            if (!this.validateForm()) return // หยุดถ้า validate ไม่ผ่าน
 
+            if (!this.validateForm()) return // หยุดถ้า validate ไม่ผ่าน
+            if (!this.isFormChanged()) {
+                this.openAlert({
+                    type: 'error',
+                    title: 'NO CHANGES MADE',
+                    message: 'No changes detected in the form.',
+                    showCancel: true,
+                    cancelText: 'No, Go Back',
+
+                })
+                return
+            }
+            if (this.isOnlyCategoryChanged()) {
+                // ข้ามแจ้งเตือน Are you sure? แล้วมาถามเรื่องอีเมลเลย
+                this.openAlert({
+                    type: 'confirm',
+                    title: 'ARE YOU SURE TO EDIT?',
+                    message: 'Are you sure you want to change this?',
+                    showCancel: true,
+                    okText: 'OK',
+                    cancelText: 'Cancel',
+                    onConfirm: () => this.submitForm(true),
+                })
+                return; // สั่ง return เพื่อไม่ให้โค้ดรันลงไปเจอ Alert ปกติด้านล่าง
+            }
             // Alert ขั้นที่ 1: ยืนยันการแก้ไข
             this.openAlert({
                 type: 'confirm',
@@ -825,16 +917,28 @@ export default {
          * ชื่อฟังก์ชัน: submitForm
          * คำอธิบาย: ส่งข้อมูลกิจกรรมที่แก้ไขไปยัง Backend พร้อม flag การส่งอีเมล
          * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
-         * วันที่จัดทำ/แก้ไข: 2026-03-1
+         * วันที่จัดทำ/แก้ไข: 2026-03-01
          */
         async submitForm(sendMail = true) {
             try {
                 this.saving = true
 
+                //  เปิด progress modal
+                this.progressAlert = { open: true, progress: 0, total: 100 }
+
+                // จำลอง progress 0 → 80 ระหว่างรอ API
+                let fakeProgress = 0
+                const progressInterval = setInterval(() => {
+                    if (fakeProgress < 80) {
+                        fakeProgress += Math.floor(Math.random() * 10) + 5
+                        if (fakeProgress > 80) fakeProgress = 80
+                        this.progressAlert.progress = fakeProgress
+                    }
+                }, 300)
+
                 const id = this.$route.params.id
                 const formData = new FormData()
 
-                // ข้อมูลพื้นฐานของกิจกรรม
                 formData.append('id', id)
                 formData.append('evn_title', this.eventTitle?.trim() || '')
                 if (this.eventCategoryId) formData.append('evn_category_id', String(this.eventCategoryId))
@@ -844,26 +948,28 @@ export default {
                 formData.append('evn_timeend', this.eventTimeEnd)
                 formData.append('evn_location', this.eventLocation)
                 formData.append('evn_duration', String(this.eventDurationMinutes || 0))
-                formData.append('send_mail', sendMail ? '1' : '0') // flag ส่งอีเมล
+                formData.append('send_mail', sendMail ? '1' : '0')
 
-                // ไฟล์แนบใหม่
                 if (this.filesNew.length > 0) {
                     this.filesNew.forEach((file) => formData.append('attachments[]', file))
                 }
-
-                // รหัสไฟล์เดิมที่ต้องการลบ
                 if (this.filesDeleted.length > 0) {
                     this.filesDeleted.forEach((fileId) => formData.append('delete_file_ids[]', fileId))
                 }
 
-                // รหัสพนักงานที่เป็น Guest (รวม Guest เดิมที่ล็อกไว้)
                 this.selectedIdsForSubmit.forEach(empId => formData.append('employee_ids[]', empId))
 
                 const res = await axios.post('/edit-event', formData, {
                     headers: { 'Accept': 'application/json' },
                 })
 
-                // แสดงผลตามสถานะที่ได้รับจาก Backend
+                //  API เสร็จแล้ว  progress 100 แล้วปิด
+                clearInterval(progressInterval)
+                this.progressAlert.progress = 100
+
+                await new Promise(r => setTimeout(r, 600)) // รอให้ bar เต็มก่อนปิด
+                this.progressAlert.open = false
+
                 if (res.data.mail_warning) {
                     this.openAlert({
                         type: 'warning',
@@ -885,6 +991,8 @@ export default {
                 }
 
             } catch (err) {
+                //  ปิด progress ก่อนแสดง error
+                this.progressAlert.open = false
                 this.openAlert({
                     type: 'error',
                     title: 'EDIT FAILED!',
@@ -1033,6 +1141,7 @@ export default {
         minuteOptions() {
             return Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
         },
+
         // --- Filtering Logic (Adapted from EventCheckIn) ---
         /**
          * ชื่อฟังก์ชัน: filteredEmployees

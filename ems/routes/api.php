@@ -10,7 +10,10 @@ use App\Http\Controllers\{
     HistoryEventController,
     ReplyController,
     CheckInController,
-    HistoryCategoryController
+    HistoryCategoryController,
+    DepartmentController,
+    TeamController,
+    PositionController
 };
 
 /*
@@ -18,6 +21,7 @@ use App\Http\Controllers\{
 | Public Routes
 |--------------------------------------------------------------------------
 */
+
 Route::get('/reply/{encryptURL}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
 
@@ -30,14 +34,14 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // === Auth & Profile ===
     Route::post('/logout', [LoginController::class, 'logout']);
-    Route::get('/showProfile', [LoginController::class, 'showProfile']);
+    Route::get('/show-profile', [LoginController::class, 'showProfile']); // TODO: ไม่มีใครเรียกใช้ → ลบทิ้งได้
 
     // === Employee ===
-    Route::get('/employees', [EmployeeController::class, 'index']);
-    Route::get('/get-employees', [EmployeeController::class, 'index']);
+    Route::get('/employees', [EmployeeController::class, 'index']);       // TODO: ซ้ำกับ /get-employees → ค่อยรวมเป็น /get-employees แล้วลบทิ้ง
+    Route::get('/get-employees', [EmployeeController::class, 'index']);   // ✅ ใช้งานหลัก
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);
-    Route::get('/meta', [EmployeeController::class, 'meta']);
-    Route::get('/employees-meta', [EmployeeController::class, 'meta']);
+    Route::get('/meta', [EmployeeController::class, 'meta']);             // ✅ ใช้งานหลัก
+    Route::get('/employees-meta', [EmployeeController::class, 'meta']);   // TODO: ซ้ำกับ /meta → ไม่มีใครเรียก ลบทิ้งได้
 
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/check-employee-duplicate', [EmployeeController::class, 'checkDuplicate']);
@@ -52,14 +56,39 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
 
+    // === Department ===
+    Route::get('/departments', [DepartmentController::class, 'index']);
+    Route::get('/departments/{id}', [DepartmentController::class, 'show']);
+    Route::get('/departments-all', [DepartmentController::class, 'getAll']);
+    Route::post('/departments', [DepartmentController::class, 'store']);
+    Route::put('/departments/{id}', [DepartmentController::class, 'update']);
+    Route::delete('/departments/{id}', [DepartmentController::class, 'destroy']);
+
+    // === Team ===
+    Route::get('/teams', [TeamController::class, 'index']);
+    Route::get('/teams/{id}', [TeamController::class, 'show']);
+    Route::get('/teams-all', [TeamController::class, 'getAll']);
+    Route::get('/teams/by-department/{departmentId}', [TeamController::class, 'getByDepartment']);
+    Route::post('/teams', [TeamController::class, 'store']);
+    Route::put('/teams/{id}', [TeamController::class, 'update']);
+    Route::delete('/teams/{id}', [TeamController::class, 'destroy']);
+
+    // === Position ===
+    Route::get('/positions', [PositionController::class, 'index']);
+    Route::get('/positions/{id}', [PositionController::class, 'show']);
+    Route::get('/positions-all', [PositionController::class, 'getAll']);
+    Route::get('/positions/by-team/{teamId}', [PositionController::class, 'getByTeam']);
+    Route::post('/positions', [PositionController::class, 'store']);
+    Route::put('/positions/{id}', [PositionController::class, 'update']);
+    Route::delete('/positions/{id}', [PositionController::class, 'destroy']);
+
     // === Event ===
-    Route::get('/event', [EventController::class, 'index']);
-    Route::get('/events', [EventController::class, 'index']);
-    Route::get('/get-event', [EventController::class, 'eventTable']);
-    Route::get('/event-info', [EventController::class, 'eventInfo']);
-    Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']);
+    Route::get('/event', [EventController::class, 'index']);              // TODO: ซ้ำกับ /events → ไม่มีใครเรียก ลบทิ้งได้
+    Route::get('/events', [EventController::class, 'index']);             // ✅ ใช้งานหลัก
+    Route::get('/get-event', [EventController::class, 'eventTable']);     // ✅ ใช้งานหลัก
+    Route::get('/event-info', [EventController::class, 'eventInfo']);     // ✅ ใช้งานหลัก
+    Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']); // TODO: ซ้ำกับ /event-info → Home.vue ใช้อยู่ ค่อยย้ายไปใช้ /event-info
     Route::post('/event-statistics', [EventController::class, 'eventStatistics']);
-    Route::get('/get-event', [EventController::class, 'eventTable']);
     Route::get('/permission', [EventController::class, 'permission']);
     Route::get('/event/{id}', [EventController::class, 'show']);
     Route::get('/edit-event/{id}', [EventController::class, 'editPages']);
@@ -77,16 +106,15 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
     // === Check-in ===
-    Route::get('/getEmployeeForCheckin/eveId/{eveId}', [CheckInController::class, 'getEmployeeForCheckin']);
-    Route::get('/getEmployeeInviteStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeInviteStatus']);
-    Route::get('/getEmployeeCheckinStatus/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'getEmployeeCheckinStatus']);
-    Route::put('/updateEmployeeAttendance/eveId/{eveId}/empId/{empId}', [CheckInController::class, 'updateEmployeeAttendance']);
-    Route::put('/updateEmployeeAttendanceAll/eveId/{eveId}', [CheckInController::class, 'updateEmployeeAttendanceAll']);
+    Route::get('/get-employee-for-checkin/eve_id/{eve_id}', [CheckInController::class, 'getEmployeeForCheckin']);
+    Route::get('/get-employee-invite-status/eve_id/{eve_id}/emp_id/{emp_id}', [CheckInController::class, 'getEmployeeInviteStatus']);
+    Route::get('/get-employee-checkin-stauts/eve_id/{eve_id}/emp_id/{emp_id}', [CheckInController::class, 'getEmployeeCheckinStatus']);
+    Route::put('/update-employee-attendance/eve_id/{eve_id}/emp_id/{emp_id}', [CheckInController::class, 'updateEmployeeAttendance']);
+    Route::put('/update-employee-attendance-all/eve_id/{eve_id}', [CheckInController::class, 'updateEmployeeAttendanceAll']);
 
     // === History ===
     Route::get('/history/employees', [HistoryEmployeeController::class, 'index']);
     Route::get('/history/events', [HistoryEventController::class, 'eventInfo']);
     Route::get('/history/event/{id}', [HistoryEventController::class, 'show']);
     Route::get('/history/categories', [HistoryCategoryController::class, 'index']);
-
 });
