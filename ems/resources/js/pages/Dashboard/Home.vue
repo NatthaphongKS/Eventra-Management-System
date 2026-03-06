@@ -130,29 +130,14 @@
 
             <!-- Bottom cards -->
             <div class="lg:col-span-12">
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-
-                    <AttendingCard :attending="chartData.attending || 0" :total="chartData.total_participation || 0"
-                        :loading="loadingParticipants" :isClickable="true"
-                        :isSelected="employeeTableType === 'attending'"
-                        @showAttendingEmployees="showEmployeesByStatus('attending')" />
-
-                    <NotAttendingCard :notAttending="chartData.not_attending || 0"
-                        :total="chartData.total_participation || 0" :loading="loadingParticipants" :isClickable="true"
-                        :isSelected="employeeTableType === 'not-attending'"
-                        @showNotAttendingEmployees="showEmployeesByStatus('not-attending')" />
-
-                    <PendingCard :pending="chartData.pending || 0" :total="chartData.total_participation || 0"
-                        :loading="loadingParticipants" :isClickable="true" :isSelected="employeeTableType === 'pending'"
-                        @showPendingEmployees="showEmployeesByStatus('pending')" />
-
-                </div>
+                <ParticipationStatusCards :chartData="chartData" :loading="loadingParticipants" :isClickable="true"
+                    :selectedStatus="selectedStatus" @select-status="showEmployeesByStatus" />
             </div>
 
         </div>
     </div>
 
-    <DataTable v-if="showEmployeeTable && selectedEventIds.size > 0 && showStatistics" :rows="paginatedEmployees"
+    <DataTable v-if="showMemberTable && selectedEventIds.size > 0 && showStatistics" :rows="paginatedEmployees"
         :columns="employeeColumns" :loading="loadingParticipants" v-model:page="currentPage"
         v-model:pageSize="itemsPerPage" :totalItems="totalEmployees" :pageSizeOptions="[10, 20, 50, 100]"
         rowKey="unique_key" :showRowNumber="true">
@@ -169,11 +154,9 @@ import axios from "axios";
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
 // นำเข้า Component สำหรับ Dashboard
-import AttendingCard from '../../components/Dashboard/AttendingCard.vue';
-import NotAttendingCard from '../../components/Dashboard/NotAttendingCard.vue';
-import PendingCard from '../../components/Dashboard/PendingCard.vue';
 import DonutActualAttendance from '../../components/Dashboard/DonutActualAttendance.vue';
 import GraphEventParticipation from '../../components/Dashboard/GraphEventParticipation.vue';
+import ParticipationStatusCards from '../../components/Dashboard/ParticipationStatusCards.vue';
 import Button from "../../components/Button.vue";
 import SearchBar from "../../components/SearchBar.vue";
 import EventFilter from "../../components/IndexEvent/EventFilter.vue";
@@ -188,11 +171,9 @@ axios.defaults.headers.common["Accept"] = "application/json";
 export default {
     components: {
         MagnifyingGlassIcon,
-        AttendingCard,
-        NotAttendingCard,
-        PendingCard,
         DonutActualAttendance,
         GraphEventParticipation,
+        ParticipationStatusCards,
         Button,
         SearchBar,
         EventFilter,
@@ -260,9 +241,9 @@ export default {
             selectedEventIds: new Set(),
             // กรองตามวันที่
             selectedDate: { start: null, end: null },
-            // สถานะตารางพนักงาน
-            showEmployeeTable: false,
-            employeeTableType: null,
+            // สถานะการแสดงผลตารางสมาชิกและสถานะที่เลือก
+            showMemberTable: false,
+            selectedStatus: null,
             filteredEmployeesForTable: [],
             currentPage: 1,
             itemsPerPage: 10,
@@ -350,9 +331,7 @@ export default {
     set(val) {
       this.selectedEventIds = new Set(val);
       this.showStatistics = false;
-            this.showEmployeeTable = false;
-            this.employeeTableType = null;
-            this.filteredEmployeesForTable = [];
+            this.resetEmployeeTableState();
     }
   },
     normalized() {
@@ -720,9 +699,10 @@ export default {
 
   methods: {
         resetEmployeeTableState() {
-            this.showEmployeeTable = false;
-            this.employeeTableType = null;
+            this.showMemberTable = false;
+            this.selectedStatus = null;
             this.filteredEmployeesForTable = [];
+            this.currentPage = 1;
         },
 
         buildEmployeeRowsFromParticipants(participants) {
@@ -744,22 +724,31 @@ export default {
             }));
         },
 
-        rebuildEmployeeTableFromParticipants(status = this.employeeTableType) {
+        rebuildEmployeeTableFromParticipants(status = this.selectedStatus) {
             if (!this.eventParticipants || this.eventParticipants.length === 0) {
                 this.filteredEmployeesForTable = [];
-                this.showEmployeeTable = false;
+                this.showMemberTable = Boolean(status);
                 this.currentPage = 1;
                 return;
             }
 
             let workingParticipants = [...this.eventParticipants];
 
-            if (status === 'attending') {
-                workingParticipants = workingParticipants.filter(participant => participant.status === 'accepted');
-            } else if (status === 'not-attending') {
-                workingParticipants = workingParticipants.filter(participant => participant.status === 'denied');
+            if (status === 'accepted') {
+                workingParticipants = workingParticipants.filter(participant => {
+                    const participantStatus = (participant.status || '').toLowerCase();
+                    return participantStatus === 'accepted';
+                });
+            } else if (status === 'declined') {
+                workingParticipants = workingParticipants.filter(participant => {
+                    const participantStatus = (participant.status || '').toLowerCase();
+                    return participantStatus === 'denied' || participantStatus === 'declined';
+                });
             } else if (status === 'pending') {
-                workingParticipants = workingParticipants.filter(participant => participant.status !== 'accepted' && participant.status !== 'denied');
+                workingParticipants = workingParticipants.filter(participant => {
+                    const participantStatus = (participant.status || '').toLowerCase();
+                    return participantStatus !== 'accepted' && participantStatus !== 'denied' && participantStatus !== 'declined';
+                });
             }
 
             const uniqueParticipants = new Map();
@@ -785,19 +774,9 @@ export default {
             });
 
             this.filteredEmployeesForTable = this.buildEmployeeRowsFromParticipants(deduplicatedParticipants);
-            this.showEmployeeTable = true;
+            this.showMemberTable = Boolean(status);
             this.currentPage = 1;
         },
-
-    showEmployees(status) {
-    this.selectedStatus = status; // attending / not-attending / pending
-    this.showEmployeeTable = true;
-  },
-
-  closeEmployeeTable() {
-    this.showEmployeeTable = false;
-    this.selectedStatus = null;
-  },
     handleEventCheck({ keys, checked }) {
   keys.forEach(id => {
     if (checked) {
@@ -969,10 +948,7 @@ handleCheckAllEvents({ pageKeys, action }) {
 
     // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
     async fetchEventStatistics() {
-      console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
-
             if (this.selectedEventIds.size === 0) {
-                console.log('No events selected, resetting data');
                 // รีเซ็ตเป็นค่าว่าง
                 this.chartData = {
                     total_participation: 0,
@@ -984,7 +960,7 @@ handleCheckAllEvents({ pageKeys, action }) {
                 };
                 this.participationData = { departments: [], teams: [] };
                 this.eventParticipants = [];
-                this.showEmployeeTable = false;
+                this.resetEmployeeTableState();
                 return;
             }
 
@@ -992,17 +968,8 @@ handleCheckAllEvents({ pageKeys, action }) {
       try {
         const eventIds = Array.from(this.selectedEventIds);
 
-                console.log('📡 Sending POST /event-statistics with event_ids:', eventIds);
-
                 // ดึงสถิติจาก API
                 const res = await axios.post('/event-statistics', { event_ids: eventIds });
-
-                console.log('📊 API Response received:', res.data);
-                console.log('📊 Actual Attendance from API:', {
-                    attended: res.data.actual_attendance?.attended,
-                    total_assigned: res.data.actual_attendance?.total_assigned,
-                    calculation: `${res.data.actual_attendance?.attended} / ${res.data.actual_attendance?.total_assigned}`
-                });
 
                 if (res.data) {
                     // อัพเดตข้อมูลกราฟ
@@ -1014,15 +981,6 @@ handleCheckAllEvents({ pageKeys, action }) {
                         departments: res.data.departments || [],
                         actual_attendance: res.data.actual_attendance || { attended: 0, total_assigned: 0 }
                     };
-
-                    console.log('✅ Chart data updated:', this.chartData);
-                    console.log('📊 Donut will show:', {
-                        attending: this.chartData.actual_attendance.attended,
-                        total: this.chartData.actual_attendance.total_assigned,
-                        percentage: this.chartData.actual_attendance.total_assigned > 0
-                            ? ((this.chartData.actual_attendance.attended / this.chartData.actual_attendance.total_assigned) * 100).toFixed(2) + '%'
-                            : '0%'
-                    });
 
                     // อัพเดตข้อมูลกราฟแท่ง
                     this.participationData = {
@@ -1043,10 +1001,11 @@ handleCheckAllEvents({ pageKeys, action }) {
 
                     // อัพเดตรายชื่อผู้เข้าร่วม
                     this.eventParticipants = res.data.participants || [];
-                    this.rebuildEmployeeTableFromParticipants();
 
-          console.log('✅ Participation data updated:', this.participationData);
-          console.log('✅ Participants loaded:', this.eventParticipants.length);
+                    // แสดงตารางเฉพาะกรณีผู้ใช้เลือกสถานะจากการ์ดแล้ว
+                    if (this.showMemberTable && this.selectedStatus) {
+                        this.rebuildEmployeeTableFromParticipants(this.selectedStatus);
+                    }
         }
       } catch (err) {
         console.error('❌ Error fetching event statistics:', err);
@@ -1063,6 +1022,7 @@ handleCheckAllEvents({ pageKeys, action }) {
         };
         this.participationData = { departments: [], teams: [] };
         this.eventParticipants = [];
+                this.resetEmployeeTableState();
       } finally {
         this.loadingParticipants = false;
       }
@@ -1143,7 +1103,6 @@ handleCheckAllEvents({ pageKeys, action }) {
       try {
         // ดึงข้อมูลผู้เข้าร่วมกิจกรรมจาก API ที่ถูกต้อง
         const response = await axios.get(`/api/event/${eventId}/participants`);
-        console.log('Event statistics response:', response.data);
 
         if (response.data.success) {
           const statistics = response.data.data.statistics;
@@ -1165,7 +1124,6 @@ handleCheckAllEvents({ pageKeys, action }) {
               backgroundColor: ['#4CAF50', '#F44336', '#FF9800']
             }]
           };
-          console.log('Updated chart data:', this.chartData);
         } else {
           console.error('Failed to load event statistics:', response.data.message);
         }
@@ -1187,17 +1145,17 @@ handleCheckAllEvents({ pageKeys, action }) {
         return;
       }
 
-            this.employeeTableType = status;
-            this.showEmployeeTable = true;
+            this.selectedStatus = status;
+            this.showMemberTable = true;
 
             try {
                 if (!this.eventParticipants || this.eventParticipants.length === 0) {
                     console.warn('⚠️ No participants data available');
                     this.filteredEmployeesForTable = [];
+                    this.currentPage = 1;
                     return;
                 }
                 this.rebuildEmployeeTableFromParticipants(status);
-                console.log(`✅ Table rows: ${this.filteredEmployeesForTable.length}`);
 
       } catch (error) {
         console.error('Error loading employees:', error);
@@ -1206,28 +1164,6 @@ handleCheckAllEvents({ pageKeys, action }) {
         alert('ไม่สามารถโหลดข้อมูลพนักงานได้ กรุณาลองใหม่อีกครั้ง');
       }
     },
-    // UNUSED - ไม่ได้ใช้ mapping status
-    // mapStatusForAPI(status) {
-    //   const statusMap = {
-    //     'attending': 'accepted',
-    //     'not-attending': 'denied',
-    //     'pending': 'pending'
-    //   };
-    //   return statusMap[status] || 'pending';
-    // },
-    // UNUSED - Testing functions
-    // testClick(buttonType) {
-    //   console.log(`Button clicked: ${buttonType}`);
-    //   alert(`${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)} button clicked!`);
-    // },
-    // testLoading() {
-    //   this.loadingTest = true;
-    //   setTimeout(() => {
-    //     this.loadingTest = false;
-    //     alert('Loading test completed!');
-    //   }, 2000);
-    // },
-    // Show data handler - scroll to charts and fetch statistics
     showDataHandler() {
       if (this.selectedEventIds.size === 0) {
         alert('กรุณาเลือกกิจกรรมอย่างน้อย 1 รายการ');
@@ -1240,8 +1176,9 @@ handleCheckAllEvents({ pageKeys, action }) {
                 return;
             }
 
-      // เปิดการแสดงผลกราฟและตาราง
+            // เปิดการแสดงผลเฉพาะกราฟ/การ์ด และซ่อนตารางสมาชิกจนกว่าจะเลือกสถานะ
       this.showStatistics = true;
+            this.resetEmployeeTableState();
       // เรียก fetch statistics
       this.fetchEventStatistics();
       // Scroll to summary section
@@ -1257,7 +1194,6 @@ handleCheckAllEvents({ pageKeys, action }) {
         handleWindowFocus() {
             // ถ้ามีการแสดงสถิติอยู่ และมี event ที่เลือก ให้ refresh อัตโนมัติ
             if (this.showStatistics && this.selectedEventIds.size > 0) {
-                console.log('🔄 Auto-refreshing data on window focus...');
                 this.fetchEventStatistics();
             }
         },
@@ -1268,13 +1204,8 @@ handleCheckAllEvents({ pageKeys, action }) {
                 return;
             }
 
-            console.log('🔄 Refreshing data...');
-
             // เรียก fetch statistics อีกครั้งเพื่อดึงข้อมูลล่าสุด
             await this.fetchEventStatistics();
-
-            // แสดง notification (optional)
-            console.log('✅ Data refreshed successfully!');
         },
         // Export handlers
         handleExportStart() {
@@ -1285,7 +1216,7 @@ handleCheckAllEvents({ pageKeys, action }) {
             this.exportProgress = progress;
         },
         handleExportComplete(result) {
-            console.log('Export completed:', result);
+            // Export completed successfully
         },
         handleExportError(error) {
             console.error('Export error:', error);
