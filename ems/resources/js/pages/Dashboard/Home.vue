@@ -966,36 +966,7 @@ handleCheckAllEvents({ pageKeys, action }) {
       const yyyy = d.getFullYear();
       return `${dd}/${mm}/${yyyy}`;
     },
-    // UNUSED - Employee pagination เก่า (ใช้ DataTable component แทน)
-    // goToEmpPage(p) {
-    //   if (p < 1) p = 1;
-    //   if (p > this.empTotalPages) p = this.empTotalPages || 1;
-    //   this.empPage = p;
-    // },
-    // setEmpSort(value) {
-    //   const order = value.startsWith('-') ? 'desc' : 'asc';
-    //   const key = value.replace(/^-/, '');
-    //   this.empSort = { value: key, order };
-    //   this.empPage = 1;
-    // },
-    // UNUSED - ไม่มีปุ่มนี้ใน template
-    // onViewReport() {
-    //   // ฟังก์ชันสำหรับดูรายงาน
-    // },
-    // onExport() {
-    //   // ฟังก์ชันสำหรับ export ข้อมูล - ใช้ ExportDropdown component แทน
-    // },
-    // onAddEvent() {
-    //   // ฟังก์ชันสำหรับเพิ่ม event ใหม่
-    //   console.log('Add Event clicked!');
-    //   this.$router.push('/create-event');
-    // },
-    // UNUSED - Date filter ทำโดย computed property filtered อัตโนมัติ
-    // filterByDate() {
-    //   // การกรองวันที่จะถูกจัดการโดย computed property ที่ชื่อ filtered โดยอัตโนมัติ
-    //   // รีเซ็ตเป็นหน้า 1 เมื่อมีการเปลี่ยนแปลงตัวกรอง
-    //   this.page = 1;
-    // },
+
     // ดึงสถิติและรายชื่อผู้เข้าร่วมของอีเวนต์ที่เลือกไว้
     async fetchEventStatistics() {
       console.log('🔄 fetchEventStatistics called with:', Array.from(this.selectedEventIds));
@@ -1149,7 +1120,7 @@ handleCheckAllEvents({ pageKeys, action }) {
         case "done":
           return `${base} bg-[#DCFCE7] text-[#00A73D]`;
         case "upcoming":
-          return `${base} bg-[#FFF9C2] text-[#FDC800]`;
+          return `${base} bg-[#FFF9C2] text-[#FF9D00]`;
         case "ongoing":
           return `${base} bg-[#DFF3FE] text-[#0084D1]`;
         default:
