@@ -18,6 +18,7 @@ use App\Http\Controllers\{
 | Public Routes
 |--------------------------------------------------------------------------
 */
+
 Route::get('/reply/{encryptURL}', [ReplyController::class, 'show']);
 Route::post('/store', [ReplyController::class, 'store']);
 
@@ -30,14 +31,14 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // === Auth & Profile ===
     Route::post('/logout', [LoginController::class, 'logout']);
-    Route::get('/showProfile', [LoginController::class, 'showProfile']);
+    Route::get('/show-profile', [LoginController::class, 'showProfile']); // TODO: ไม่มีใครเรียกใช้ → ลบทิ้งได้
 
     // === Employee ===
-    Route::get('/employees', [EmployeeController::class, 'index']);
-    Route::get('/get-employees', [EmployeeController::class, 'index']);
+    Route::get('/employees', [EmployeeController::class, 'index']);       // TODO: ซ้ำกับ /get-employees → ค่อยรวมเป็น /get-employees แล้วลบทิ้ง
+    Route::get('/get-employees', [EmployeeController::class, 'index']);   // ✅ ใช้งานหลัก
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);
-    Route::get('/meta', [EmployeeController::class, 'meta']);
-    Route::get('/employees-meta', [EmployeeController::class, 'meta']);
+    Route::get('/meta', [EmployeeController::class, 'meta']);             // ✅ ใช้งานหลัก
+    Route::get('/employees-meta', [EmployeeController::class, 'meta']);   // TODO: ซ้ำกับ /meta → ไม่มีใครเรียก ลบทิ้งได้
 
     Route::post('/save-employee', [EmployeeController::class, 'store']);
     Route::post('/check-employee-duplicate', [EmployeeController::class, 'checkDuplicate']);
@@ -53,13 +54,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
 
     // === Event ===
-    Route::get('/event', [EventController::class, 'index']);
-    Route::get('/events', [EventController::class, 'index']);
-    Route::get('/get-event', [EventController::class, 'eventTable']);
-    Route::get('/event-info', [EventController::class, 'eventInfo']);
-    Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']);
+    Route::get('/event', [EventController::class, 'index']);              // TODO: ซ้ำกับ /events → ไม่มีใครเรียก ลบทิ้งได้
+    Route::get('/events', [EventController::class, 'index']);             // ✅ ใช้งานหลัก
+    Route::get('/get-event', [EventController::class, 'eventTable']);     // ✅ ใช้งานหลัก
+    Route::get('/event-info', [EventController::class, 'eventInfo']);     // ✅ ใช้งานหลัก
+    Route::get('/event-info-dashboard', [EventController::class, 'eventInfo']); // TODO: ซ้ำกับ /event-info → Home.vue ใช้อยู่ ค่อยย้ายไปใช้ /event-info
     Route::post('/event-statistics', [EventController::class, 'eventStatistics']);
-    Route::get('/get-event', [EventController::class, 'eventTable']);
     Route::get('/permission', [EventController::class, 'permission']);
     Route::get('/event/{id}', [EventController::class, 'show']);
     Route::get('/edit-event/{id}', [EventController::class, 'editPages']);
@@ -88,5 +88,4 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/history/events', [HistoryEventController::class, 'eventInfo']);
     Route::get('/history/event/{id}', [HistoryEventController::class, 'show']);
     Route::get('/history/categories', [HistoryCategoryController::class, 'index']);
-
 });
