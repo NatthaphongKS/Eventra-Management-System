@@ -11,12 +11,13 @@
 <template>
     <div class="w-full rounded-[20px] flex flex-col bg-white p-8 shadow-[0_10px_25px_-12px_rgba(0,0,0,0.25)]">
 
-        <div class="relative z-50 mb-4 flex items-center justify-between flex-shrink-0">
-            <div>
+        <!-- Header: title + legend + dropdowns -->
+        <div class="relative z-50 mb-4 flex flex-wrap items-start justify-between gap-3 flex-shrink-0">
+            <div class="min-w-0 flex-shrink">
                 <h3 class="mb-3 text-left font-semibold text-neutral-700 text-2xl">
                     Event Participation Graph
                 </h3>
-                <div class="flex gap-6 text-[14px] text-neutral-400 font-medium">
+                <div class="flex flex-wrap gap-4 text-[14px] text-neutral-400 font-medium">
                     <div class="flex items-center gap-2">
                         <span class="h-4 w-4 border border-neutral-300 rounded bg-[#00a73d]"></span>
                         Accepted
@@ -32,12 +33,12 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-4">
-                <div class="relative min-w-[155px]">
+            <div class="flex flex-shrink-0 items-center gap-3">
+                <div class="relative">
                     <button @click="toggleDropdown('department')"
-                        class="flex w-full h-[48px] items-center justify-between gap-4 rounded-[24px] border border-neutral-300 bg-white px-5 py-3 text-[18px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors">
+                        class="flex h-[48px] items-center justify-between gap-3 rounded-[24px] border border-neutral-300 bg-white px-4 py-3 text-[16px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors whitespace-nowrap">
                         Department
-                        <svg class="h-5 w-5 transition-transform"
+                        <svg class="h-5 w-5 flex-shrink-0 transition-transform"
                             :class="openDropdown === 'department' ? 'rotate-180 text-[#c10008]' : 'text-neutral-500'"
                             fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -69,11 +70,11 @@
                     </div>
                 </div>
 
-                <div class="relative min-w-[125px]">
+                <div class="relative">
                     <button @click="toggleDropdown('team')"
-                        class="flex w-full h-[48px] items-center justify-between gap-4 rounded-[24px] border border-neutral-300 bg-white px-5 py-3 text-[18px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors">
+                        class="flex h-[48px] items-center justify-between gap-3 rounded-[24px] border border-neutral-300 bg-white px-4 py-3 text-[16px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors whitespace-nowrap">
                         Team
-                        <svg class="h-5 w-5 transition-transform"
+                        <svg class="h-5 w-5 flex-shrink-0 transition-transform"
                             :class="openDropdown === 'team' ? 'rotate-180 text-[#c10008]' : 'text-neutral-500'"
                             fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -123,79 +124,56 @@
             </div>
 
             <div v-else class="w-full h-full overflow-y-auto pr-2" ref="scrollContainer">
-
-                <!-- ============================================================ -->
-                <!-- Sticky Header: column titles for Y-axis + X-axis            -->
-                <!-- ============================================================ -->
                 <div class="flex flex-shrink-0 sticky top-0 bg-white z-10 border-b-2 border-neutral-200"
                     :style="{ height: headerHeight + 'px' }">
                     <div class="flex items-center justify-end pr-2 border-r border-neutral-200"
                         :style="{ width: deptColWidth + 'px', flexShrink: 0 }">
-                        <span
-                            style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; text-align: right;">
+                        <span style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; text-align: right;">
                             Department
                         </span>
                     </div>
                     <div class="flex items-center pl-2 border-r border-neutral-200"
                         :style="{ width: teamColWidth + 'px', flexShrink: 0 }">
-                        <span
-                            style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
+                        <span style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
                             Team
                         </span>
                     </div>
                     <div class="flex items-center justify-center flex-1">
-                        <span
-                            style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
+                        <span style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">
                             People
                         </span>
                     </div>
                 </div>
 
                 <div :style="{ height: dynamicChartHeight + 'px' }" class="relative flex">
-
-                    <!-- ============================================================ -->
-                    <!-- Custom Y-Axis: Department (left) + Team (right)             -->
-                    <!-- ============================================================ -->
                     <div class="flex-shrink-0 flex" :style="{ width: yAxisWidth + 'px' }">
-
-                        <!-- Department column -->
                         <div class="flex flex-col border-r border-neutral-200"
                             :style="{ width: deptColWidth + 'px', paddingTop: chartTopPadding + 'px', paddingBottom: chartBottomPadding + 'px' }">
                             <template v-for="(group, gIdx) in groupedData" :key="'dept-' + gIdx">
-                                <!--
-                                    เส้นขีดแบ่ง department:
-                                    - ระหว่าง dept: border-b-2 สีเข้ม (เส้นหนา)
-                                    - แถวสุดท้ายไม่มีเส้น (last group)
-                                -->
                                 <div class="flex items-center justify-end pr-2 relative" :style="{
                                     height: (group.teams.length * rowHeight) + 'px',
                                     borderBottom: gIdx < groupedData.length - 1 ? '2px solid #d1d5db' : 'none'
                                 }">
-                                    <span
-                                        style="font-size: 11px; font-weight: 600; color: #374151; line-height: 1.3; text-align: right; word-break: break-word;">
+                                    <span style="font-size: 11px; font-weight: 600; color: #374151; line-height: 1.3; text-align: right; word-break: break-word;">
                                         {{ group.department }}
                                     </span>
                                 </div>
                             </template>
                         </div>
 
-                        <!-- Team column -->
                         <div class="flex flex-col border-r border-neutral-200"
                             :style="{ width: teamColWidth + 'px', paddingTop: chartTopPadding + 'px', paddingBottom: chartBottomPadding + 'px' }">
                             <template v-for="(group, gIdx) in groupedData" :key="'tg-' + gIdx">
                                 <div v-for="(team, tIdx) in group.teams" :key="'team-' + team.name"
                                     class="flex items-center pl-2" :style="{
                                         height: rowHeight + 'px',
-                                        /* เส้นบางแบ่งระหว่างทีมในกลุ่มเดียวกัน */
                                         borderBottom: tIdx < group.teams.length - 1
                                             ? '1px dashed #e5e7eb'
-                                            /* เส้นหนาแบ่งระหว่าง department (ยกเว้นกลุ่มสุดท้าย) */
                                             : gIdx < groupedData.length - 1
                                                 ? '2px solid #d1d5db'
                                                 : 'none'
                                     }">
-                                    <span
-                                        style="font-size: 11px; color: #374151; line-height: 1.3; word-break: break-word;">
+                                    <span style="font-size: 11px; color: #374151; line-height: 1.3; word-break: break-word;">
                                         {{ team.name }}
                                     </span>
                                 </div>
@@ -203,14 +181,13 @@
                         </div>
                     </div>
 
-                    <!-- Canvas wrapper (takes remaining width) -->
                     <div class="flex-1 h-full">
                         <canvas ref="chartCanvas"></canvas>
                     </div>
-
                 </div>
             </div>
         </div>
+
     </div>
 </template>
 
