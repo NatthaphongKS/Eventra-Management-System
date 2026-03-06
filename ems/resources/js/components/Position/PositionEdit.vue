@@ -1,3 +1,11 @@
+<!-- /**
+ * ชื่อไฟล์: EventCheckIn.vue
+ * คำอธิบาย: หน้าสำหรับเช็คชื่อผู้เข้าร่วมกิจกรรม
+ * Input: ข้อมูลพนักงานและการเช็คชื่อจาก API /getEmployeeForCheckin/eveId/{eveId}
+ * Output: หน้าจอสำหรับการเช็คชื่อ และพร้อมสำหรับการเช็คชื่อผู้เข้าร่วม
+ * คนแก้ไข: Natthaphong Kongsinl
+ * วันที่แก้ไข: 2026-02-27
+ */ -->
 <!-- resources/js/components/Position/PositionEdit.vue -->
 <template>
   <div v-if="open" class="fixed inset-0 z-[70] flex items-center justify-center">
