@@ -21,23 +21,26 @@
     </header>
 
     <button type="button" @click="$emit('click')" class="inline-flex items-center justify-center gap-2.5 w-[140px] h-[45px] rounded-[20px] border border-neutral-200 bg-green-600 text-white
-           font-bold leading-none shadow-sm transition
-           hover:border-black/20 hover:shadow-md
-           active:translate-y-px active:shadow-inner
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35" :class="[
+        font-bold leading-none shadow-sm transition
+        hover:border-black/20 hover:shadow-md
+        active:translate-y-px active:shadow-inner
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35" :class="[
             size === 'sm' ? 'px-3.5 py-2 text-[13px]' :
                 size === 'lg' ? 'px-5 py-3 text-[15px]' :
-                    'px-7 py-2.5 text-[15px]',       // default md
+                    'px-7 py-2.5 text-[15px]',
             block ? 'w-full justify-center' : ''
         ]">
-        <span class="inline-flex" aria-hidden="true">
-            <!-- ใช้ Material Symbols ตามที่ให้มา -->
-            <!-- <span class="material-symbols-outlined text-[18px] leading-none">add</span> -->
+
+        <!-- icon -->
+        <span class="material-symbols-outlined text-[18px] leading-none">
+            check
         </span>
 
-        <span class="inline-block">
+        <!-- text -->
+        <span>
             <slot>Save</slot>
         </span>
+
     </button>
 </template>
 
