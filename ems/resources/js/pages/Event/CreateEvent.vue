@@ -595,7 +595,7 @@ export default {
             const startMin = sh * 60 + sm;
             const endMin = eh * 60 + em;
             // if end is before or equal start -> invalid (do not auto-wrap to next day)
-                if (endMin <= startMin) {
+            if (endMin <= startMin) {
                 this.eventDurationDisplay = "";
                 this.eventDurationMinutes = 0;
                 this.errors.eventTime = true;

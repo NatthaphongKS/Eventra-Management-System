@@ -1,9 +1,10 @@
 <?php
+
 /**
  * ชื่อไฟล์: CheckInController.php
  * คำอธิบาย: Controller สำหรับจัดการ Request/Response การ Check-in พนักงานในแต่ละกิจกรรม
  * ผู้เขียน: Yothin S.
- * วันที่แก้ไข: 20/02/2026
+ * วันที่แก้ไข: 05/03/2026
  */
 
 namespace App\Http\Controllers;
@@ -18,7 +19,6 @@ class CheckInController extends Controller
 {
     protected CheckInService $checkInService;
 
-
     /**
      * สร้าง instance ของ CheckInService เพื่อใช้ใน controller
      *
@@ -28,7 +28,6 @@ class CheckInController extends Controller
     {
         $this->checkInService = $checkInService;
     }
-
 
     /**
      * ดึงข้อมูลพนักงานทั้งหมดที่เกี่ยวข้องกับกิจกรรม (Event) สำหรับการ Check-in
@@ -47,7 +46,6 @@ class CheckInController extends Controller
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
     }
-
 
     /**
      * อัปเดตสถานะการ Check-in ของพนักงานแต่ละคน (toggle 0/1)
@@ -75,7 +73,6 @@ class CheckInController extends Controller
         }
     }
 
-
     /**
      * อัปเดตสถานะการ Check-in ของพนักงานหลายคนพร้อมกัน (toggle ทั้งหมด)
      *
@@ -94,6 +91,42 @@ class CheckInController extends Controller
             return response()->json(['message' => 'All records updated', 'data' => $eve_id], 200);
         } catch (\Exception $e) {
             // กรณีเกิด error ระหว่างอัปเดต
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * ดึงสถานะการ Invite ของพนักงานใน Event
+     *
+     * @param int $eve_id รหัสกิจกรรม
+     * @param int $emp_id รหัสพนักงาน
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEmployeeInviteStatus($eve_id, $emp_id)
+    {
+        try {
+            // service รับ ($empId, $eveId) — สลับ order
+            $result = $this->checkInService->getEmployeeInviteStatus($emp_id, $eve_id);
+            return response()->json(['message' => 'Success', 'data' => $result], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * ดึงสถานะการ Check-in ของพนักงานใน Event
+     *
+     * @param int $eve_id รหัสกิจกรรม
+     * @param int $emp_id รหัสพนักงาน
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEmployeeCheckinStatus($eve_id, $emp_id)
+    {
+        try {
+            //  service รับ ($empId, $eveId) — สลับ order
+            $result = $this->checkInService->getEmployeeCheckinStatus($emp_id, $eve_id);
+            return response()->json(['message' => 'Success', 'data' => $result], 200);
+        } catch (\Exception $e) {
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
     }
