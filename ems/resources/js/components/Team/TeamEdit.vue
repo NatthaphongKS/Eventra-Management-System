@@ -14,7 +14,7 @@
 
           <select
             v-model="departmentId"
-            class="w-[653px] h-[58px] rounded-2xl border border-neutral-200 px-4 py-3 text-xl font-semibold outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200"
+            class="w-[653px] h-[58px] rounded-2xl border border-neutral-200 px-4 py-3 text-xl font-semibold outline-none focus:border-red-400 focus:ring-2 focus:ring-red-300"
           >
             <option value="">-- Select Department --</option>
             <option v-for="dept in departments" :key="dept.id" :value="dept.id">
