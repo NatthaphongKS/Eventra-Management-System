@@ -33,7 +33,7 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <div class="relative min-w-[200px]">
+                <div class="relative min-w-[155px]">
                     <button @click="toggleDropdown('department')"
                         class="flex w-full h-[48px] items-center justify-between gap-4 rounded-[24px] border border-neutral-300 bg-white px-5 py-3 text-[18px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors">
                         Department
@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                <div class="relative min-w-[200px]">
+                <div class="relative min-w-[125px]">
                     <button @click="toggleDropdown('team')"
                         class="flex w-full h-[48px] items-center justify-between gap-4 rounded-[24px] border border-neutral-300 bg-white px-5 py-3 text-[18px] font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors">
                         Team
@@ -565,7 +565,7 @@ export default {
                     },
                     plugins: {
                         legend: { display: false },
-                       
+
                         datalabels: {
                             color: '#fff',
                             font: { weight: 'bold', size: 11 },
