@@ -1,10 +1,10 @@
 <!--
     ชื่อไฟล์: EventPage.vue
     คำอธิบาย: หน้าแสดงรายการกิจกรรม (Event list page) — มีการค้นหา, กรอง, เรียงลำดับ, แก้ไข, ลบ และเช็คอิน
-    Input: -
-    Output: -
+    Input: ข้อมูลกิจกรรมจาก API (get-event), ข้อมูลหมวดหมู่ (event-info), สิทธิ์ผู้ใช้ (permission)
+    Output: ตารางกิจกรรม, ฟังก์ชันค้นหา/กรอง/เรียงลำดับ, ปุ่มแก้ไข/ลบ/เช็คอิน, Modal แจ้งเตือนผลลัพธ์
     ชื่อผู้เขียน/แก้ไข: Yothin S.
-    วันที่จัดทำ/แก้ไข: 26/02/2026
+    วันที่จัดทำ/แก้ไข: 03/03/2026
 -->
 
 <template>
@@ -219,6 +219,12 @@ export default {
     },
 
     computed: {
+        /**
+         * ชื่อฟังก์ชัน: normalized
+         * คำอธิบาย: แปลงข้อมูล event ให้เป็นรูปแบบที่ใช้ในตาราง
+         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         normalized() {
             return this.event.map((e) => ({
                 id: e.id,
@@ -234,6 +240,12 @@ export default {
             }));
         },
 
+        /**
+         * ชื่อฟังก์ชัน: filtered
+         * คำอธิบาย: กรองข้อมูล event ตามวันที่ คำค้นหา หมวดหมู่ และสถานะ
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         filtered() {
             const { start, end } = this.selectedDate || {};
             let arr = [...this.normalized];
@@ -286,6 +298,12 @@ export default {
             return arr;
         },
 
+        /**
+         * ชื่อฟังก์ชัน: activeCategories
+         * คำอธิบาย: คืนค่าหมวดหมู่ที่ยัง active
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         activeCategories() {
             return (this.categories || []).filter((c) => {
                 const s = String(c.cat_delete_status ?? "").trim().toLowerCase();
@@ -295,6 +313,12 @@ export default {
             });
         },
 
+        /**
+         * ชื่อฟังก์ชัน: sorted
+         * คำอธิบาย: เรียงลำดับข้อมูล event ตามตัวเลือกที่เลือก
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         sorted() {
             const arr = [...this.filtered];
             const { key, order, type } = this.selectedSort || {};
@@ -350,7 +374,20 @@ export default {
             return arr;
         },
 
+        /**
+         * ชื่อฟังก์ชัน: totalPages
+         * คำอธิบาย: คืนค่าจำนวนหน้าทั้งหมดของข้อมูลที่ถูกแบ่งหน้า
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         totalPages() { return Math.ceil(this.sorted.length / this.pageSize) || 1; },
+
+        /**
+         * ชื่อฟังก์ชัน: paged
+         * คำอธิบาย: คืนข้อมูล event เฉพาะหน้าปัจจุบัน
+         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         paged() {
             const start = (this.page - 1) * this.pageSize;
             return this.sorted.slice(start, start + this.pageSize);
@@ -358,11 +395,31 @@ export default {
     },
 
     watch: {
+        /**
+         * ชื่อฟังก์ชัน: watch search
+         * คำอธิบาย: รีเซ็ตหน้าปัจจุบันเมื่อเปลี่ยนคำค้นหา
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         search() { this.page = 1; },
+
+        /**
+         * ชื่อฟังก์ชัน: watch selectedDate
+         * คำอธิบาย: รีเซ็ตหน้าปัจจุบันเมื่อเปลี่ยนช่วงวันที่
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         selectedDate: {
             handler() { this.page = 1; },
             deep: true,
         },
+
+        /**
+         * ชื่อฟังก์ชัน: watch selectedSort
+         * คำอธิบาย: อัปเดต key/order การเรียงลำดับและรีเซ็ตหน้าปัจจุบันเมื่อเปลี่ยนตัวเลือก
+         * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         selectedSort: {
             handler(v) {
                 if (!v) return;
@@ -373,11 +430,25 @@ export default {
             immediate: true,
             deep: true,
         },
+
+        /**
+         * ชื่อฟังก์ชัน: watch page
+         * คำอธิบาย: ตรวจสอบและปรับค่าหน้าปัจจุบันให้อยู่ในช่วงที่ถูกต้อง
+         * ชื่อผู้เขียน/แก้ไข: NatthaphongKS
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         page(newPage) {
             const total = this.totalPages;
             if (newPage < 1) this.page = 1;
             else if (newPage > total) this.page = total;
         },
+
+        /**
+         * ชื่อฟังก์ชัน: watch pageSize
+         * คำอธิบาย: รีเซ็ตหน้าปัจจุบันและปรับค่าหน้าหากเกินจำนวนหน้าทั้งหมดเมื่อเปลี่ยน pageSize
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         pageSize() {
             this.page = 1;
             if (this.page > this.totalPages) {
@@ -388,6 +459,12 @@ export default {
 
     methods: {
         onPickSort(sort) {
+            /**
+             * ชื่อฟังก์ชัน: onPickSort
+             * คำอธิบาย: เลือกตัวเลือกการเรียงลำดับและรีเซ็ตหน้าปัจจุบัน
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             if (!sort) return;
             this.selectedSort = sort;
             this.sortBy = sort.key;
@@ -396,15 +473,40 @@ export default {
         },
 
         applyFilter() { this.page = 1; },
+        /**
+         * ชื่อฟังก์ชัน: applyFilter
+         * คำอธิบาย: รีเซ็ตหน้าปัจจุบันเมื่อมีการกรองข้อมูล
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
 
         statusOf(row) {
+            /**
+             * ชื่อฟังก์ชัน: statusOf
+             * คำอธิบาย: คืนค่าสถานะของ event ในรูปแบบตัวพิมพ์เล็ก
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             return (row?.evn_status || "").toLowerCase();
         },
+
         roleOf() {
+            /**
+             * ชื่อฟังก์ชัน: roleOf
+             * คำอธิบาย: คืนค่าบทบาทของผู้ใช้ในรูปแบบตัวพิมพ์เล็ก
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             return (this.empPermission || "employee").toLowerCase();
         },
 
         canEdit(row) {
+            /**
+             * ชื่อฟังก์ชัน: canEdit
+             * คำอธิบาย: ตรวจสอบสิทธิ์การแก้ไข event ตามสถานะและบทบาท
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             const s = this.statusOf(row);
             const r = this.roleOf();
 
@@ -415,11 +517,16 @@ export default {
         },
 
         canDelete(row) {
+            /**
+             * ชื่อฟังก์ชัน: canDelete
+             * คำอธิบาย: ตรวจสอบสิทธิ์การลบ event ตามสถานะและบทบาท
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             const s = this.statusOf(row);
             const r = this.roleOf();
 
             if (r === "employee") return false;
-
             if (s === "upcoming") return r === "admin" || r === "hr";
             if (s === "done") return r === "admin";     // hr ทำไม่ได้
             // ongoing ลบไม่ได้
@@ -427,11 +534,16 @@ export default {
         },
 
         canCheckin(row) {
+            /**
+             * ชื่อฟังก์ชัน: canCheckin
+             * คำอธิบาย: ตรวจสอบสิทธิ์การเช็คชื่อ event ตามสถานะและบทบาท
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             const s = this.statusOf(row);
             const r = this.roleOf();
 
             if (r === "employee") return false;
-
             if (s === "ongoing") return r === "admin" || r === "hr";
             if (s === "done") return r === "admin";     // hr ทำไม่ได้
             // upcoming เช็คชื่อไม่ได้
@@ -439,6 +551,12 @@ export default {
         },
 
         checkinDisabledTitle(row) {
+            /**
+             * ชื่อฟังก์ชัน: checkinDisabledTitle
+             * คำอธิบาย: คืนข้อความแสดงเหตุผลที่ไม่สามารถเช็คชื่อได้
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             const s = this.statusOf(row);
             const r = this.roleOf();
 
@@ -449,6 +567,12 @@ export default {
         },
 
         async fetchEvent() {
+            /**
+             * ชื่อฟังก์ชัน: fetchEvent
+             * คำอธิบาย: ดึงข้อมูล event จาก API
+             * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             try {
                 const res = await axios.get("/get-event");
                 this.event = Array.isArray(res.data) ? res.data : res.data?.data || [];
@@ -459,6 +583,12 @@ export default {
         },
 
         async fetchCategories() {
+            /**
+             * ชื่อฟังก์ชัน: fetchCategories
+             * คำอธิบาย: ดึงข้อมูลหมวดหมู่ event จาก API
+             * ชื่อผู้เขียน/แก้ไข: RAVEROJ SONTHI
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             try {
                 const res = await axios.get("/event-info");
                 const cats = res.data?.categories || [];
@@ -481,6 +611,12 @@ export default {
         },
 
         async fetchPermission() {
+            /**
+             * ชื่อฟังก์ชัน: fetchPermission
+             * คำอธิบาย: ดึงข้อมูลสิทธิ์ของผู้ใช้จาก API
+             * ชื่อผู้เขียน/แก้ไข: Yothin S.
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             try {
                 const res = await axios.get("/permission");
                 this.empPermission = (res.data?.emp_permission || "employee").toLowerCase();
@@ -491,9 +627,28 @@ export default {
         },
 
         applySearch() { this.search = this.searchInput; this.page = 1; },
+        /**
+         * ชื่อฟังก์ชัน: applySearch
+         * คำอธิบาย: นำค่าค้นหาจาก input ไปใช้และรีเซ็ตหน้าปัจจุบัน
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
+
         editEvent(id) { this.$router.push(`/EditEvent/${id}`); },
+        /**
+         * ชื่อฟังก์ชัน: editEvent
+         * คำอธิบาย: นำทางไปยังหน้าสำหรับแก้ไข event
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
 
         formatDate(val) {
+            /**
+             * ชื่อฟังก์ชัน: formatDate
+             * คำอธิบาย: แปลงวันที่ให้อยู่ในรูปแบบ dd/mm/yyyy
+             * ชื่อผู้เขียน/แก้ไข: NatthaphongKS
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             if (!val) return "N/A";
             try {
                 const d = new Date(val);
@@ -505,11 +660,23 @@ export default {
         },
 
         timeText(startTime, endTime) {
+            /**
+             * ชื่อฟังก์ชัน: timeText
+             * คำอธิบาย: แปลงเวลาเริ่มและเวลาสิ้นสุดให้อยู่ในรูปแบบ hh:mm-hh:mm
+             * ชื่อผู้เขียน/แก้ไข: NatthaphongKS
+             * วันที่จัดทำ/แก้ไข: 2026-03-03
+             */
             const format = (t) => (t ? String(t).slice(0, 5) : "??:??");
             return `${format(startTime)}-${format(endTime)}`;
         },
 
         // กำหนดคลาสของสี badge ตามสถานะ
+        /**
+         * ชื่อฟังก์ชัน: badgeClass
+         * คำอธิบาย: คืนคลาส CSS สำหรับ badge ตามสถานะ
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         badgeClass(status) {
             const base = "inline-block min-w-[110px] rounded-md border px-2.5 py-1 text-xs capitalize";
             switch ((status || "").toLowerCase()) {
@@ -520,8 +687,20 @@ export default {
             }
         },
 
+        /**
+         * ชื่อฟังก์ชัน: openDelete
+         * คำอธิบาย: เปิด modal ยืนยันการลบ event
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         openDelete(id) { this.deleteId = id; this.showModalAsk = true; },
 
+        /**
+         * ชื่อฟังก์ชัน: handleClientSort
+         * คำอธิบาย: จัดการการเรียงลำดับข้อมูลฝั่ง client
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         handleClientSort({ key, order }) {
             this.sortBy = key;
             this.sortOrder = order;
@@ -529,6 +708,12 @@ export default {
             this.selectedSort = this.sortOptions.find((opt) => opt.key === key && opt.order === order) || this.selectedSort;
         },
 
+        /**
+         * ชื่อฟังก์ชัน: onConfirmDelete
+         * คำอธิบาย: ดำเนินการลบ event เมื่อผู้ใช้ยืนยัน
+         * ชื่อผู้เขียน/แก้ไข: Yothin S.
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         async onConfirmDelete() {
             const id = this.deleteId;
             this.showModalAsk = false;
@@ -548,9 +733,36 @@ export default {
             }
         },
 
+        /**
+         * ชื่อฟังก์ชัน: onCancelDelete
+         * คำอธิบาย: ปิด modal ยกเลิกการลบ event
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         onCancelDelete() { this.showModalAsk = false; this.deleteId = null; },
+
+        /**
+         * ชื่อฟังก์ชัน: onConfirmSuccess
+         * คำอธิบาย: ปิด modal หลังลบ event สำเร็จ
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         onConfirmSuccess() { this.showModalSuccess = false; },
+
+        /**
+         * ชื่อฟังก์ชัน: onConfirmFail
+         * คำอธิบาย: ปิด modal หลังลบ event ไม่สำเร็จ
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         onConfirmFail() { this.showModalFail = false; },
+
+        /**
+         * ชื่อฟังก์ชัน: goDetails
+         * คำอธิบาย: นำทางไปยังหน้ารายละเอียด event
+         * ชื่อผู้เขียน/แก้ไข: katcharuek
+         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         */
         goDetails(id) {
             try { this.$router.push({ name: "events.show", params: { id: String(id) } }); }
             catch (_) { this.$router.push({ path: `/events/${id}` }); }
