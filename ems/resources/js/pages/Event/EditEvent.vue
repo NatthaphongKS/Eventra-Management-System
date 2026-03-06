@@ -342,6 +342,10 @@
     <ModalAlert v-model:open="fileTypeError" title="ERROR!" message="Unsupported file type. Please try again."
         type="error" :showCancel="false" />
 
+    <ModalAlert v-model:open="progressAlert.open" type="progress" title="Saving..."
+        message="Please wait while we save your changes." :progress="progressAlert.progress"
+        :total="selectedIdsForSubmit.length" :showCancel="false" />
+
 </template>
 
 <!-- /**
@@ -443,7 +447,15 @@ export default {
 
             // เก็บค่าเดิมตอนโหลดหน้า สำหรับเช็คว่ามีการเปลี่ยนแปลงไหม
             initialForm: {},
+
+            // --- Progress Alert ---
+            progressAlert: {
+                open: false,
+                progress: 0,
+                total: 0,
+            },
         };
+
     },
     methods: {
         /**
@@ -571,6 +583,37 @@ export default {
             if (this.filesNew.length !== this.initialForm.filesNew.length) return true
 
             return false
+        },
+        /**
+        * ชื่อฟังก์ชัน: isOnlyCategoryChanged
+        * คำอธิบาย: ตรวจสอบว่ามีการแก้ไข "เฉพาะ" Category เพียงอย่างเดียวหรือไม่
+        */
+        isOnlyCategoryChanged() {
+            // เช็คว่า Category เปลี่ยนแปลงหรือไม่
+            const isCategoryChanged = this.eventCategoryId !== this.initialForm.eventCategoryId;
+
+            // เช็คว่าฟิลด์อื่นๆ มีการเปลี่ยนแปลงหรือไม่
+            let isOtherChanged = false;
+
+            if (this.eventTitle !== this.initialForm.eventTitle) isOtherChanged = true;
+            if (this.eventDescription !== this.initialForm.eventDescription) isOtherChanged = true;
+            if (this.eventDate !== this.initialForm.eventDate) isOtherChanged = true;
+            if (this.eventTimeStart !== this.initialForm.eventTimeStart) isOtherChanged = true;
+            if (this.eventTimeEnd !== this.initialForm.eventTimeEnd) isOtherChanged = true;
+            if (this.eventLocation !== this.initialForm.eventLocation) isOtherChanged = true;
+
+            // เช็ค Guest list ว่าเปลี่ยนไหม
+            if (this.selectedIds.size !== this.initialForm.selectedIds.size) isOtherChanged = true;
+            for (let id of this.selectedIds) {
+                if (!this.initialForm.selectedIds.has(id)) isOtherChanged = true;
+            }
+
+            // เช็ค Files ว่าเปลี่ยนไหม
+            if (this.filesExisting.length !== this.initialForm.filesExisting.length) isOtherChanged = true;
+            if (this.filesNew.length !== this.initialForm.filesNew.length) isOtherChanged = true;
+
+            // จะเป็น true ก็ต่อเมื่อ Category เปลี่ยนแปลง และฟิลด์อื่นๆ "ไม่" เปลี่ยนแปลง
+            return isCategoryChanged && !isOtherChanged;
         },
 
         /**
@@ -778,17 +821,31 @@ export default {
          */
         async saveEvent() {
             this.submitted = true
+
             if (!this.validateForm()) return // หยุดถ้า validate ไม่ผ่าน
-            if(!this.isFormChanged()) {
+            if (!this.isFormChanged()) {
                 this.openAlert({
                     type: 'error',
                     title: 'NO CHANGES MADE',
                     message: 'No changes detected in the form.',
                     showCancel: true,
                     cancelText: 'No, Go Back',
-                    
+
                 })
                 return
+            }
+            if (this.isOnlyCategoryChanged()) {
+                // ข้ามแจ้งเตือน Are you sure? แล้วมาถามเรื่องอีเมลเลย
+                this.openAlert({
+                    type: 'confirm',
+                    title: 'ARE YOU SURE TO EDIT?',
+                    message: 'Are you sure you want to change this?',
+                    showCancel: true,
+                    okText: 'OK',
+                    cancelText: 'Cancel',
+                    onConfirm: () => this.submitForm(true),
+                })
+                return; // สั่ง return เพื่อไม่ให้โค้ดรันลงไปเจอ Alert ปกติด้านล่าง
             }
             // Alert ขั้นที่ 1: ยืนยันการแก้ไข
             this.openAlert({
@@ -866,6 +923,19 @@ export default {
             try {
                 this.saving = true
 
+                //  เปิด progress modal
+                this.progressAlert = { open: true, progress: 0, total: 100 }
+
+                // จำลอง progress 0 → 80 ระหว่างรอ API
+                let fakeProgress = 0
+                const progressInterval = setInterval(() => {
+                    if (fakeProgress < 80) {
+                        fakeProgress += Math.floor(Math.random() * 10) + 5
+                        if (fakeProgress > 80) fakeProgress = 80
+                        this.progressAlert.progress = fakeProgress
+                    }
+                }, 300)
+
                 const id = this.$route.params.id
                 const formData = new FormData()
 
@@ -893,6 +963,13 @@ export default {
                     headers: { 'Accept': 'application/json' },
                 })
 
+                //  API เสร็จแล้ว  progress 100 แล้วปิด
+                clearInterval(progressInterval)
+                this.progressAlert.progress = 100
+
+                await new Promise(r => setTimeout(r, 600)) // รอให้ bar เต็มก่อนปิด
+                this.progressAlert.open = false
+
                 if (res.data.mail_warning) {
                     this.openAlert({
                         type: 'warning',
@@ -914,6 +991,8 @@ export default {
                 }
 
             } catch (err) {
+                //  ปิด progress ก่อนแสดง error
+                this.progressAlert.open = false
                 this.openAlert({
                     type: 'error',
                     title: 'EDIT FAILED!',
