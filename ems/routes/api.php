@@ -10,7 +10,10 @@ use App\Http\Controllers\{
     HistoryEventController,
     ReplyController,
     CheckInController,
-    HistoryCategoryController
+    HistoryCategoryController,
+    DepartmentController,
+    TeamController,
+    PositionController
 };
 
 /*
@@ -52,6 +55,32 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/save-department', [EmployeeController::class, 'saveDepartment']);
     Route::post('/save-position', [EmployeeController::class, 'savePosition']);
     Route::post('/save-team', [EmployeeController::class, 'saveTeam']);
+
+    // === Department ===
+    Route::get('/departments', [DepartmentController::class, 'index']);
+    Route::get('/departments/{id}', [DepartmentController::class, 'show']);
+    Route::get('/departments-all', [DepartmentController::class, 'getAll']);
+    Route::post('/departments', [DepartmentController::class, 'store']);
+    Route::put('/departments/{id}', [DepartmentController::class, 'update']);
+    Route::delete('/departments/{id}', [DepartmentController::class, 'destroy']);
+
+    // === Team ===
+    Route::get('/teams', [TeamController::class, 'index']);
+    Route::get('/teams/{id}', [TeamController::class, 'show']);
+    Route::get('/teams-all', [TeamController::class, 'getAll']);
+    Route::get('/teams/by-department/{departmentId}', [TeamController::class, 'getByDepartment']);
+    Route::post('/teams', [TeamController::class, 'store']);
+    Route::put('/teams/{id}', [TeamController::class, 'update']);
+    Route::delete('/teams/{id}', [TeamController::class, 'destroy']);
+
+    // === Position ===
+    Route::get('/positions', [PositionController::class, 'index']);
+    Route::get('/positions/{id}', [PositionController::class, 'show']);
+    Route::get('/positions-all', [PositionController::class, 'getAll']);
+    Route::get('/positions/by-team/{teamId}', [PositionController::class, 'getByTeam']);
+    Route::post('/positions', [PositionController::class, 'store']);
+    Route::put('/positions/{id}', [PositionController::class, 'update']);
+    Route::delete('/positions/{id}', [PositionController::class, 'destroy']);
 
     // === Event ===
     Route::get('/event', [EventController::class, 'index']);              // TODO: ซ้ำกับ /events → ไม่มีใครเรียก ลบทิ้งได้
