@@ -1,3 +1,12 @@
+<!-- /**
+ * ชื่อไฟล์: ParticipationStatusCards.vue
+ * คำอธิบาย: Component สำหรับแสดงการ์ดสถิติสถานะการเข้าร่วมกิจกรรม 3 ประเภท (เข้าร่วม, ไม่เข้าร่วม, รอตอบรับ)
+ * Input: ข้อมูลสถิติ (chartData), สถานะโหลด (loading), สถานะคลิกได้ (isClickable), สถานะที่เลือก (selectedStatus)
+ * Output: แสดงการ์ด AttendingCard, NotAttendingCard, PendingCard และ emit event select-status เมื่อคลิกเลือก
+ * ชื่อผู้เขียน/แก้ไข: Kidrakon Rattanahiran
+ * วันที่จัดทำ/แก้ไข: 2026-03-06
+ */ -->
+
 <template>
   <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
     <AttendingCard
