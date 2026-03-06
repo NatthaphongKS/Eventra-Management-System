@@ -349,6 +349,10 @@
             message="Are you sure you want to create this event?" type="confirm" :showCancel="true"
             @confirm="executeCreateEvent" />
 
+        <ModalAlert v-model:open="progressAlert.open" type="progress" title="Saving..."
+            message="Please wait while we save your changes." :progress="progressAlert.progress"
+            :total="selectedIdsForSubmit.length" :showCancel="false" />
+
         <ModalAlert v-model:open="showSuccessAlert" title="Success" message="New event has been created." type="success"
             :showCancel="false" @confirm="onSuccessConfirm" />
 
@@ -447,6 +451,7 @@ export default {
                 onConfirm: null,
                 onCancel: null,
             },
+            progressAlert: { open: false, progress: 0, total: 100 },
         };
     },
     computed: {
@@ -671,6 +676,20 @@ export default {
         async executeCreateEvent() {
             this.showConfirmCreate = false;
             this.saving = true;
+
+            //  เปิด progress modal
+            this.progressAlert = { open: true, progress: 0, total: 100 };
+
+            // จำลอง progress 0 → 80 ระหว่างรอ API
+            let fakeProgress = 0;
+            const progressInterval = setInterval(() => {
+                if (fakeProgress < 80) {
+                    fakeProgress += Math.floor(Math.random() * 10) + 5;
+                    if (fakeProgress > 80) fakeProgress = 80;
+                    this.progressAlert.progress = fakeProgress;
+                }
+            }, 300);
+
             try {
                 const formData = new FormData();
                 // จัดเตรียมข้อมูลในรูปแบบ Multipart Form Data
@@ -691,8 +710,20 @@ export default {
                 await axios.post("/event-save", formData, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
+
+                //  API เสร็จแล้ว  progress 100 แล้วปิด
+                clearInterval(progressInterval);
+                this.progressAlert.progress = 100;
+
+                await new Promise(r => setTimeout(r, 600)); // รอให้ bar เต็มก่อนปิด
+                this.progressAlert.open = false;
+
                 this.showSuccessAlert = true;
             } catch (err) {
+                //  ปิด progress ก่อนแสดง error
+                clearInterval(progressInterval);
+                this.progressAlert.open = false;
+
                 console.error(err);
                 alert("Failed to create event.");
             } finally {
