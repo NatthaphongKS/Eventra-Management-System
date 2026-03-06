@@ -114,9 +114,10 @@
 export default {
   name: "PendingCard",
   props: {
+    // เก็บไว้สำหรับใช้ (optional)
     eventId: {
       type: [Number, String],
-      required: true,
+      default: null,
     },
     pending: {
       type: [Number, String],
