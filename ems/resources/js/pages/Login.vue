@@ -11,7 +11,6 @@
     <div
         class="min-h-screen flex items-center justify-end pr-[8vw] bg-[url('/images/Background.jpg')] bg-cover bg-center md:pr-[12vw] px-6 bg-red-700">
         <div class="rounded-[28px] bg-white shadow-lg p-8 md:p-10 w-[484px] h-[592px]">
-
             <div v-if="!forgotPassword" class="flex justify-center items-center gap-4 mb-8">
                 <img :src="'/images/email/clicknext.jpeg'" alt="Eventra Logo"
                     class="w-20 h-20 object-cover rounded-2xl shadow-sm" loading="lazy">
