@@ -3,21 +3,10 @@
     <section class="p-0">
         <!-- Toolbar -->
         <div class="flex items-center gap-3">
-            <SearchBar
-                v-model="searchInput"
-                placeholder="Search Team Name"
-                @search="onSearch"
-                class=""
-            />
+            <SearchBar v-model="searchInput" placeholder="Search Team Name" @search="onSearch" class="" />
             <div class="mt-6" ref="sortWrap">
-                <SortMenu
-                    :is-open="sortMenuOpen"
-                    :options="sortOptions"
-                    :sort-by="sortBy.key"
-                    :sort-order="sortBy.order"
-                    @toggle="sortMenuOpen = !sortMenuOpen"
-                    @choose="onSortChoose"
-                />
+                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose" />
             </div>
 
             <div class="mt-6">
@@ -26,42 +15,30 @@
         </div>
 
         <!-- DataTable -->
-        <DataTable
-            :rows="paged"
-            :columns="teamTableColumns"
-            :page="page"
-            :pageSize="pageSize"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            @update:page="page = $event"
-            @update:pageSize="onChangePageSize"
-            class="mt-4"
-        >
+        <DataTable :rows="paged" :columns="teamTableColumns" :page="page" :pageSize="pageSize"
+            :total-items="sorted.length" :page-size-options="[10, 20, 50, 100]" @update:page="page = $event"
+            @update:pageSize="onChangePageSize" class="mt-4">
+            <template #cell-tm_name="{ value }">
+                <span :title="value">
+                    {{ value && value.length > 30 ? value.substring(0, 30) + '...' : value }}
+                </span>
+            </template>
+
+            <template #cell-department_name="{ value }">
+                <span :title="value">
+                    {{ value && value.length > 30 ? value.substring(0, 30) + '...' : value }}
+                </span>
+            </template>
+
             <template #actions="{ row }">
-                <button
-                    class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-emerald-600"
-                    @click="openEdit(row)"
-                    title="Edit"
-                    aria-label="edit"
-                >
-                    <Icon
-                        icon="material-symbols:edit-rounded"
-                        width="20"
-                        height="20"
-                    />
+                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-emerald-600"
+                    @click="openEdit(row)" title="Edit" aria-label="edit">
+                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
                 </button>
 
-                <button
-                    class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-red-600"
-                    @click="requestDelete(row)"
-                    title="Delete"
-                    aria-label="delete"
-                >
-                    <Icon
-                        icon="fluent:delete-12-filled"
-                        width="20"
-                        height="20"
-                    />
+                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-red-600"
+                    @click="requestDelete(row)" title="Delete" aria-label="delete">
+                    <Icon icon="fluent:delete-12-filled" width="20" height="20" />
                 </button>
             </template>
 
@@ -75,31 +52,13 @@
         </DataTable>
 
         <!-- Modals -->
-        <ModalAlert
-            v-model:open="alert.open"
-            :type="alert.type"
-            :title="alert.title"
-            :message="alert.message"
-            :show-cancel="alert.showCancel"
-            :ok-text="alert.okText"
-            :cancel-text="alert.cancelText"
-            @confirm="alert.onConfirm && alert.onConfirm()"
-            @cancel="alert.onCancel && alert.onCancel()"
-        />
+        <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
+            :show-cancel="alert.showCancel" :ok-text="alert.okText" :cancel-text="alert.cancelText"
+            @confirm="alert.onConfirm && alert.onConfirm()" @cancel="alert.onCancel && alert.onCancel()" />
 
-        <TeamCreate
-            v-model:open="addOpen"
-            :duplicate="isDuplicate"
-            :departments="departments"
-            @submit="createTeam"
-        />
-        <TeamEdit
-            v-model:open="editOpen"
-            :team="editing"
-            :is-duplicate="isDupForEdit"
-            :departments="departments"
-            @submit="updateTeam"
-        />
+        <TeamCreate v-model:open="addOpen" :duplicate="isDuplicate" :departments="departments" @submit="createTeam" />
+        <TeamEdit v-model:open="editOpen" :team="editing" :is-duplicate="isDupForEdit" :departments="departments"
+            @submit="updateTeam" />
     </section>
 </template>
 
@@ -191,7 +150,7 @@ export default {
                     label: "Department",
                     class: "text-left w-[300px]",
                 },
-                
+
             ],
         };
     },
@@ -248,8 +207,8 @@ export default {
                 this.rows = Array.isArray(res.data)
                     ? res.data
                     : Array.isArray(res.data?.data)
-                    ? res.data.data
-                    : [];
+                        ? res.data.data
+                        : [];
             } catch (e) {
                 console.error(e);
                 this.rows = [];
@@ -268,8 +227,8 @@ export default {
                 this.departments = Array.isArray(res.data)
                     ? res.data
                     : Array.isArray(res.data?.data)
-                    ? res.data.data
-                    : [];
+                        ? res.data.data
+                        : [];
             } catch (e) {
                 console.error(e);
                 this.departments = [];
@@ -405,18 +364,18 @@ export default {
                 await axios.put(`/teams/${id}`, {
                     tm_name: n,
                     tm_department_id: departmentId,
-     
+
                 });
                 const dept = this.departments.find(d => d.id === departmentId);
                 this.rows = this.rows.map((r) =>
                     r.id === id
                         ? {
-                              ...r,
-                              tm_name: n,
-                              tm_department_id: departmentId,
-                              department_name: dept?.dpm_name || "",
-                              tm_delete_status: status || "active",
-                          }
+                            ...r,
+                            tm_name: n,
+                            tm_department_id: departmentId,
+                            department_name: dept?.dpm_name || "",
+                            tm_delete_status: status || "active",
+                        }
                         : r
                 );
                 this.editOpen = false;
