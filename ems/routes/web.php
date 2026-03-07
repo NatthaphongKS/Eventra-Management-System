@@ -24,7 +24,7 @@ Route::get('/reply/{encryptURL}', [ReplyController::class, 'openForm']);
 Route::get('/login', fn() => view('spa'))->name('login');
 
 // ทำ login (ไม่ครอบ auth)
-Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
 
 // ทำ logout (ต้องกำลังล็อกอินอยู่)
 Route::post('/logout', [LoginController::class, 'logout'])
