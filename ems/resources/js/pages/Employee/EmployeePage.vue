@@ -1,38 +1,57 @@
 /**
- * ชื่อไฟล์: EmployeesPage.vue
- * คำอธิบาย: Component สำหรับแสดงและจัดการข้อมูลรายชื่อพนักงานทั้งหมด (ค้นหา, กรอง, จัดเรียง, ลบ)
- * Input: -
- * Output: หน้าตารางจัดการพนักงาน (UI)
- * ชื่อผู้เขียน/แก้ไข: katcharuek sriphirom
- * วันที่จัดทำ/แก้ไข: 22 กุมภาพันธ์ 2569
- */
+* ชื่อไฟล์: EmployeesPage.vue
+* คำอธิบาย: Component สำหรับแสดงและจัดการข้อมูลรายชื่อพนักงานทั้งหมด (ค้นหา, กรอง, จัดเรียง, ลบ)
+* Input: -
+* Output: หน้าตารางจัดการพนักงาน (UI)
+* ชื่อผู้เขียน/แก้ไข: katcharuek sriphirom
+* วันที่จัดทำ/แก้ไข: 22 กุมภาพันธ์ 2569
+*/
 <template>
     <section class="p-0">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 w-full gap-3">
             <div class="flex-1">
-                <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname" @search="onSearchText" class="" />
+                <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname"
+                    @search="onSearchText" class="" />
             </div>
 
             <div class="flex items-stretch gap-2 flex-shrink-0 mt-[30px]">
-                <FilterEmployees ref="filterDropdown" v-model="filters" :options="optionsMap" class="[&_button]:h-full" />
+                <FilterEmployees ref="filterDropdown" v-model="filters" :options="optionsMap"
+                    class="[&_button]:h-full" />
 
                 <div ref="sortWrap" class="h-[58px]">
-                    <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key" :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose" class="[&_button]:h-full h-full" />
+                    <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                        :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose"
+                        class="[&_button]:h-full h-full" />
                 </div>
 
                 <AddButton @click="goAdd" class="h-full w-[44px] flex items-center justify-center" />
             </div>
         </div>
 
-        <DataTable :rows="paged" :columns="employeeTableColumns" :page="page" :pageSize="pageSize" :total-items="sorted.length" :page-size-options="[10, 20, 50, 100]" @update:page="page = $event" @update:pageSize="
+        <DataTable :rows="paged" :columns="employeeTableColumns" :page="page" :pageSize="pageSize"
+            :total-items="sorted.length" :page-size-options="[10, 20, 50, 100]" @update:page="page = $event"
+            @update:pageSize="
                 (s) => {
                     pageSize = s;
                     page = 1;
                 }
             " class="mt-4">
 
+            <template #cell-emp_fullname="{ value }">
+                <span :title="value">
+                    {{ value && value.length > 30 ? value.substring(0, 30) + '...' : value }}
+                </span>
+            </template>
+
+            <template #cell-emp_nickname="{ value }">
+                <span :title="value">
+                    {{ value && value.length > 15 ? value.substring(0, 15) + '...' : value }}
+                </span>
+            </template>
+
             <template #actions="{ row }">
-                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600" @click="editEmployee(row.emp_id)" title="Edit" aria-label="edit">
+                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-800 hover:text-emerald-600"
+                    @click="editEmployee(row.emp_id)" title="Edit" aria-label="edit">
                     <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
                 </button>
 
@@ -41,7 +60,8 @@
            hover:text-red-600
            disabled:text-neutral-400
            disabled:cursor-not-allowed
-           disabled:opacity-40" @click="openDelete(row.emp_id)" :title="canDelete ? 'Delete' : 'You do not have permission'" aria-label="delete">
+           disabled:opacity-40" @click="openDelete(row.emp_id)"
+                    :title="canDelete ? 'Delete' : 'You do not have permission'" aria-label="delete">
                     <Icon icon="fluent:delete-12-filled" width="20" height="20" />
                 </button>
             </template>
@@ -51,11 +71,16 @@
             </template>
         </DataTable>
 
-        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE" message="This employee will be deleted permanently. Are you sure?" :show-cancel="true" okText="OK" cancelText="Cancel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
+            message="This employee will be deleted permanently. Are you sure?" :show-cancel="true" okText="OK"
+            cancelText="Cancel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
 
-        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!" message="Employee has been deleted successfully." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
+        <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
+            message="Employee has been deleted successfully." :show-cancel="false" okText="OK"
+            @confirm="onConfirmSuccess" />
 
-        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later." :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
+        <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
+            :show-cancel="false" okText="OK" @confirm="onConfirmFail" />
     </section>
 </template>
 
@@ -320,8 +345,8 @@ export default {
             this.search = this.searchInput.trim();
             this.page = 1;
             if (this.$refs.filterDropdown) {
-                if(typeof this.$refs.filterDropdown.close === 'function') {
-                     this.$refs.filterDropdown.close();
+                if (typeof this.$refs.filterDropdown.close === 'function') {
+                    this.$refs.filterDropdown.close();
                 }
             }
         },
