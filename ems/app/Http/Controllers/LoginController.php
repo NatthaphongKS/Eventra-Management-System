@@ -26,7 +26,7 @@ class LoginController extends Controller
         $this->loginService = $loginService;
     }
 
-    /**
+    /**1
      * Redirect ไปหน้า login (API route)
      *
      * @return \Illuminate\Http\JsonResponse
@@ -35,7 +35,6 @@ class LoginController extends Controller
     {
         return response()->json(['redirect' => '/login']);
     }
-
 
     /**
      * ตรวจสอบข้อมูลเข้าสู่ระบบและสร้าง session ให้ผู้ใช้
