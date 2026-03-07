@@ -9,11 +9,11 @@
       ></div>
     </div>
 
-    <div
-      class="overflow-hidden rounded-2xl border border-neutral-200"
+<div
+      class="overflow-x-auto rounded-2xl border border-neutral-200"
       :class="{ 'opacity-50': loading }"
     >
-      <table class="w-full table-auto">
+      <table class="w-full table-auto min-w-[800px]">
         <thead>
           <tr class="bg-neutral-100 text-neutral-800">
             <th v-if="selectable" class="w-10 py-3 text-center">
