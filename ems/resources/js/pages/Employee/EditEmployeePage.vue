@@ -5,15 +5,17 @@
 * Input: -
 * Output: หน้าฟอร์มแก้ไขพนักงาน
 * ชื่อผู้เขียน/แก้ไข: katcharuek sriphirom
-* วันที่จัดทำ/แก้ไข: 22 กุมภาพันธ์ 2569
+* วันที่จัดทำ/แก้ไข: 8 มีนาคม 2569
 */
 
 <template>
     <div>
         <div class="mx-auto max-w-[1400px] px-6">
             <header class="pt-6 mb-6">
-                <link rel="stylesheet"
-                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+                />
                 <div class="flex items-center justify-between gap-3 mb-6">
                     <h2 class="text-xl font-semibold text-gray-800 ml-8">
                         Edit Employee
@@ -24,87 +26,154 @@
             <div class="px-2 py-0">
                 <div class="max-w-[1400px] mx-auto px-6">
                     <form @submit.prevent="openConfirmSave">
-                        <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5">
-
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5"
+                        >
                             <FormField label="Prefix" required class="w-full">
-                                <DropdownPill v-model="form.emp_prefix" :options="prefixes" placeholder="Select prefix"
-                                    class="mt-1 block h-11 w-full" :error="errors.emp_prefix" />
+                                <DropdownPill
+                                    v-model="form.emp_prefix"
+                                    :options="prefixes"
+                                    placeholder="Select prefix"
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_prefix"
+                                />
                             </FormField>
 
                             <FormField label="Department" required>
-                                <DropdownPill v-model="form.emp_department_id" :options="departments"
-                                    placeholder="Select Department" class="mt-1 block h-11 w-full"
-                                    :error="errors.emp_department_id" />
+                                <DropdownPill
+                                    v-model="form.emp_department_id"
+                                    :options="departments"
+                                    placeholder="Select Department"
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_department_id"
+                                />
                             </FormField>
 
                             <FormField label="First Name" required>
-                                <InputPill v-model="form.emp_firstname" placeholder="Ex.Perapat"
-                                    class="mt-1 block h-11 w-full" :error="errors.emp_firstname" />
+                                <InputPill
+                                    v-model="form.emp_firstname"
+                                    placeholder="Ex.Perapat"
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_firstname"
+                                />
                             </FormField>
 
                             <FormField label="Team" required>
-                                <DropdownPill v-model="form.emp_team_id" :options="teamOptions"
-                                    :placeholder="form.emp_department_id ? 'Select Team' : 'Please select Department first'"
-                                    class="mt-1 block h-11 w-full" :error="errors.emp_team_id"
-                                    :disabled="!form.emp_department_id" />
+                                <DropdownPill
+                                    v-model="form.emp_team_id"
+                                    :options="teamOptions"
+                                    :placeholder="
+                                        form.emp_department_id
+                                            ? 'Select Team'
+                                            : 'Please select Department first'
+                                    "
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_team_id"
+                                    :disabled="!form.emp_department_id"
+                                />
                             </FormField>
 
                             <FormField label="Last Name" required>
-                                <InputPill v-model="form.emp_lastname" placeholder="Ex.Saimai"
-                                    class="mt-1 block h-11 w-full" :error="errors.emp_lastname" />
+                                <InputPill
+                                    v-model="form.emp_lastname"
+                                    placeholder="Ex.Saimai"
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_lastname"
+                                />
                             </FormField>
 
                             <FormField label="Position" required>
-                                <DropdownPill v-model="form.emp_position_id" :options="positionOptions"
-                                    :placeholder="form.emp_team_id ? 'Select Position' : 'Please select Team first'"
-                                    class="mt-1 block h-11 w-full" :error="errors.emp_position_id"
-                                    :disabled="!form.emp_team_id" />
+                                <DropdownPill
+                                    v-model="form.emp_position_id"
+                                    :options="positionOptions"
+                                    :placeholder="
+                                        form.emp_team_id
+                                            ? 'Select Position'
+                                            : 'Please select Team first'
+                                    "
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_position_id"
+                                    :disabled="!form.emp_team_id"
+                                />
                             </FormField>
 
                             <FormField label="Nickname" required>
-                                <InputPill v-model="form.emp_nickname" placeholder="Ex.beam"
-                                    class="mt-1 block h-11 w-full" :error="errors.emp_nickname" />
+                                <InputPill
+                                    v-model="form.emp_nickname"
+                                    placeholder="Ex.beam"
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_nickname"
+                                />
                             </FormField>
 
                             <FormField label="Email" required>
                                 <div class="relative">
-                                    <InputPill v-model="form.emp_email" type="email" placeholder="Ex.example@gmail.com"
+                                    <InputPill
+                                        v-model="form.emp_email"
+                                        type="email"
+                                        placeholder="Ex.example@gmail.com"
                                         class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400"
-                                        :error="errors.emp_email" :disabled="!isAdmin" />
-                                    <p v-if="!isAdmin"
-                                        class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none">
+                                        :error="errors.emp_email"
+                                        :disabled="!isAdmin"
+                                    />
+                                    <p
+                                        v-if="!isAdmin"
+                                        class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none"
+                                    >
                                         *Only Administrator can change email
                                     </p>
                                 </div>
                             </FormField>
 
                             <FormField label="Phone" required>
-                                <InputPill v-model="form.emp_phone" placeholder="Ex.0988900988" maxlength="10"
-                                    class="mt-1 block h-11 w-full" :error="errors.emp_phone" />
+                                <InputPill
+                                    v-model="form.emp_phone"
+                                    placeholder="Ex.0988900988"
+                                    maxlength="10"
+                                    class="mt-1 block h-11 w-full"
+                                    :error="errors.emp_phone"
+                                />
                             </FormField>
 
-                            <FormField label="Password" :required="requirePassword">
+                            <FormField
+                                label="Password"
+                                :required="requirePassword"
+                            >
                                 <div class="relative">
-                                    <InputPill v-model="form.password" type="password"
-                                        :disabled="(!isAdmin || form.emp_permission === 'employee') && !requirePassword"
-                                        :placeholder="requirePassword
-                                            ? 'Password is required'
-                                            : form.emp_permission === 'employee'
-                                                ? 'No password required'
-                                                : isAdmin
+                                    <InputPill
+                                        v-model="form.password"
+                                        type="password"
+                                        :disabled="
+                                            (!isAdmin ||
+                                                form.emp_permission ===
+                                                    'employee') &&
+                                            !requirePassword
+                                        "
+                                        :placeholder="
+                                            requirePassword
+                                                ? 'Password is required'
+                                                : form.emp_permission ===
+                                                    'employee'
+                                                  ? 'No password required'
+                                                  : isAdmin
                                                     ? 'Leave blank to keep current password'
                                                     : 'Admin only'
-                                            " class="mt-1 block h-11 w-full
-                                            disabled:!bg-neutral-100
-                                            disabled:cursor-not-allowed
-                                            disabled:!text-neutral-400
-                                            disabled:placeholder:!text-neutral-400" :error="errors.password" />
-                                    <p v-if="form.emp_permission === 'employee'"
-                                        class="absolute -bottom-5 left-0 text-[10px] text-gray-400 pointer-events-none">
+                                        "
+                                        class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400 disabled:placeholder:!text-neutral-400"
+                                        :error="errors.password"
+                                    />
+                                    <p
+                                        v-if="
+                                            form.emp_permission === 'employee'
+                                        "
+                                        class="absolute -bottom-5 left-0 text-[10px] text-gray-400 pointer-events-none"
+                                    >
                                         *Employee does not require password
                                     </p>
-                                    <p v-if="!isAdmin"
-                                        class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none">
+                                    <p
+                                        v-if="!isAdmin"
+                                        class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none"
+                                    >
                                         *Only Administrator can change password
                                     </p>
                                 </div>
@@ -112,63 +181,100 @@
 
                             <FormField label="Employee ID" required>
                                 <div class="grid grid-cols-2 gap-3 mt-1">
-                                    <DropdownPill v-model="form.emp_company_id" :options="companies"
-                                        placeholder="Company" class="h-11 w-full" :error="errors.emp_company_id" />
-                                    <InputPill v-model="form.employeeNumber" placeholder="Ex.0001" maxlength="4"
-                                        class="h-11 w-full" :error="errors.employeeNumber"
-                                        @input="onEmployeeNumberInput" />
+                                    <DropdownPill
+                                        v-model="form.emp_company_id"
+                                        :options="companies"
+                                        placeholder="Company"
+                                        class="h-11 w-full"
+                                        :error="errors.emp_company_id"
+                                    />
+                                    <InputPill
+                                        v-model="form.employeeNumber"
+                                        placeholder="Ex.0001"
+                                        maxlength="4"
+                                        class="h-11 w-full"
+                                        :error="errors.employeeNumber"
+                                        @input="onEmployeeNumberInput"
+                                    />
                                 </div>
                             </FormField>
 
                             <FormField label="Permission" required>
                                 <div class="relative">
-                                    <DropdownPill v-model="form.emp_permission" :options="permissions"
-                                        placeholder="Select Permission" class="mt-1 block h-11 w-full"
-                                        :error="errors.emp_permission" :disabled="!isAdmin" />
-                                    <p v-if="!isAdmin"
-                                        class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none">
-                                        *Only Administrator can change permission
+                                    <DropdownPill
+                                        v-model="form.emp_permission"
+                                        :options="permissions"
+                                        placeholder="Select Permission"
+                                        class="mt-1 block h-11 w-full"
+                                        :error="errors.emp_permission"
+                                        :disabled="!isAdmin"
+                                    />
+                                    <p
+                                        v-if="!isAdmin"
+                                        class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none"
+                                    >
+                                        *Only Administrator can change
+                                        permission
                                     </p>
                                 </div>
                             </FormField>
 
                             <div class="pt-2 flex items-end">
-                                <button type="button" @click="onCancel" class="inline-flex -ml-11">
+                                <button
+                                    type="button"
+                                    @click="onCancel"
+                                    class="inline-flex -ml-11"
+                                >
                                     <CancelButton />
                                 </button>
                             </div>
 
-                            <div class="mt-auto pt-2 flex justify-end flex-col items-end relative z-10">
-                                <button type="submit" :disabled="saving"
-                                    class="inline-flex items-center justify-center gap-2 w-[140px] h-[45px] rounded-[20px] bg-green-600 text-white font-bold text-[15px] shadow-sm transition hover:shadow-md disabled:opacity-50">
-                                    <span v-if="!saving"
-                                        class="material-symbols-outlined text-[20px] leading-none">check</span>
-                                    <span>{{ saving ? "Saving…" : "Save" }}</span>
+                            <div
+                                class="mt-auto pt-2 flex justify-end flex-col items-end relative z-10"
+                            >
+                                <button
+                                    type="submit"
+                                    :disabled="saving"
+                                    class="inline-flex items-center justify-center gap-2 w-[140px] h-[45px] rounded-[20px] bg-green-600 text-white font-bold text-[15px] shadow-sm transition hover:shadow-md disabled:opacity-50"
+                                >
+                                    <span
+                                        v-if="!saving"
+                                        class="material-symbols-outlined text-[20px] leading-none"
+                                        >check</span
+                                    >
+                                    <span>{{
+                                        saving ? "Saving…" : "Save"
+                                    }}</span>
                                 </button>
 
-                                <!-- <p v-if="noChange" class="text-amber-600 text-sm pt-2">
-                                    No changes were made.
-                                </p> -->
-                                <p v-if="saveError" class="text-rose-600 text-sm pt-2">
+                                <p
+                                    v-if="saveError"
+                                    class="text-rose-600 text-sm pt-2"
+                                >
                                     {{ saveError }}
                                 </p>
                             </div>
-
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
-            :showCancel="alert.showCancel" :okText="alert.okText" :cancelText="alert.cancelText"
-            @confirm="alert.onConfirm" @cancel="alert.onCancel" />
+        <ModalAlert
+            v-model:open="alert.open"
+            :type="alert.type"
+            :title="alert.title"
+            :message="alert.message"
+            :showCancel="alert.showCancel"
+            :okText="alert.okText"
+            :cancelText="alert.cancelText"
+            @confirm="alert.onConfirm"
+            @cancel="alert.onCancel"
+        />
     </div>
 </template>
 
 <script setup>
-
-
 import { reactive, computed, watch, ref, onMounted } from "vue";
 import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
 import axios from "axios";
@@ -241,7 +347,6 @@ const alert = reactive({
     onCancel: null,
 });
 
-// ฟังก์ชันเปิด Modal แจ้งเตือน
 function openAlert(cfg = {}) {
     alert.onConfirm = null;
     alert.onCancel = null;
@@ -256,7 +361,7 @@ function openAlert(cfg = {}) {
             okText: "OK",
             cancelText: "Cancel",
         },
-        cfg
+        cfg,
     );
 }
 
@@ -274,14 +379,12 @@ const isAdmin = computed(() => {
     return currentUser.value.emp_permission === "admin";
 });
 
-// กำหนดเงื่อนไขที่บังคับให้ต้องใส่รหัสผ่านใหม่
 const requirePassword = computed(() => {
     return (
         originalPermission.value === "employee" &&
         (form.emp_permission === "admin" || form.emp_permission === "hr")
     );
 });
-
 
 /* ------- Computed Options ------- */
 const teamOptions = computed(() => {
@@ -342,10 +445,10 @@ onMounted(async () => {
 
         const fullId = (userData.emp_id || "").trim();
         const sortedCompanies = [...companies.value].sort(
-            (a, b) => b.code.length - a.code.length
+            (a, b) => b.code.length - a.code.length,
         );
         const matchedCompany = sortedCompanies.find((c) =>
-            fullId.toUpperCase().startsWith(c.code.toUpperCase())
+            fullId.toUpperCase().startsWith(c.code.toUpperCase()),
         );
 
         if (matchedCompany) {
@@ -419,12 +522,14 @@ function validateField(key, value) {
             if (!/^\d+$/.test(value) || value.length !== 10)
                 return "Phone number must be 10 digits";
         } else if (r === "requiredEmail") {
-            if (!value || !value.includes("@")) return validationMessages.requiredEmail;
+            if (!value || !value.includes("@"))
+                return validationMessages.requiredEmail;
         } else if (r === "requiredField") {
             if (!value) return validationMessages.requiredField;
         } else if (r === "employeeNumber4") {
             if (!value) return validationMessages.requiredField;
-            if (!/^\d{3}$/.test(value)) return validationMessages.employeeNumber4;
+            if (!/^\d{3}$/.test(value))
+                return validationMessages.employeeNumber4;
         } else if (r === "passwordMin8") {
             if (value && value.length < 8) {
                 return validationMessages.passwordMin8;
@@ -457,7 +562,7 @@ Object.keys(fieldRules).forEach((k) => {
             const msg = validateField(k, v);
             if (msg) errors[k] = msg;
             else delete errors[k];
-        }
+        },
     );
 });
 
@@ -468,7 +573,7 @@ watch(
             form.emp_team_id = "";
             form.emp_position_id = "";
         }
-    }
+    },
 );
 
 watch(
@@ -477,7 +582,7 @@ watch(
         if (o && n !== o) {
             form.emp_position_id = "";
         }
-    }
+    },
 );
 
 watch(
@@ -485,20 +590,17 @@ watch(
     (newId) => {
         const found = companies.value.find((c) => c.value === newId);
         form.companyCode = found ? found.code : "";
-    }
+    },
 );
 
 watch(
     () => form.emp_permission,
     (newVal, oldVal) => {
-        if (
-            newVal === "employee" &&
-            (oldVal === "admin" || oldVal === "hr")
-        ) {
+        if (newVal === "employee" && (oldVal === "admin" || oldVal === "hr")) {
             form.password = null;
             delete errors.password;
         }
-    }
+    },
 );
 
 /* ------- Logic การบันทึก ------- */
@@ -508,7 +610,6 @@ function openConfirmSave() {
 
     if (!validate()) return;
 
-
     const current = { ...form };
     const prev = { ...original };
     if (!current.password) delete current.password;
@@ -517,13 +618,12 @@ function openConfirmSave() {
     if (JSON.stringify(current) === JSON.stringify(prev) && !form.password) {
         noChange.value = true;
         openAlert({
-            type: 'error',
-            title: 'NO CHANGES MADE',
-            message: 'No changes detected in the form.',
+            type: "error",
+            title: "NO CHANGES MADE",
+            message: "No changes detected in the form.",
             showCancel: true,
-            cancelText: 'No, Go Back',
-
-        })
+            cancelText: "No, Go Back",
+        });
         return;
     }
 
@@ -539,7 +639,6 @@ function openConfirmSave() {
     });
 }
 
-// ตัวแปรสำหรับอนุญาตให้เปลี่ยนหน้าได้โดยไม่ต้องผ่านการเช็ค (ใช้เมื่อ Save สำเร็จ)
 let isConfirmedLeave = false;
 
 async function confirmSaveProcess() {
@@ -548,6 +647,30 @@ async function confirmSaveProcess() {
     Object.keys(errors).forEach((k) => delete errors[k]);
 
     try {
+        // ---- ✅ ตรวจสอบชื่อ-นามสกุลซ้ำก่อน Save ----
+        const { data: allEmp } = await axios.get("/employees");
+        const empList = allEmp.data || allEmp;
+        const normalizeStr = (s) => (s || "").trim().toLowerCase();
+
+        const newFirst = normalizeStr(form.emp_firstname);
+        const newLast = normalizeStr(form.emp_lastname);
+        console.log("empList sample:", empList[0]);
+        const duplicate = empList.find((e) => {
+            if (String(e.emp_id) === String(employeeId)) return false;
+            return (
+                normalizeStr(e.emp_firstname) === newFirst &&
+                normalizeStr(e.emp_lastname) === newLast
+            );
+        });
+
+        if (duplicate) {
+            errors.emp_firstname ="This first name is already in use.";
+            errors.emp_lastname = "This last name is already in use.";
+            saving.value = false;
+            return;
+        }
+        // ---- สิ้นสุดการตรวจสอบชื่อซ้ำ ----
+
         const payload = { ...form };
         payload.emp_id = `${form.companyCode}${form.employeeNumber}`;
 
@@ -571,8 +694,12 @@ async function confirmSaveProcess() {
             title: "UPDATE SUCCESS!",
             message: "Employee data has been updated.",
             okText: "OK",
+            onCancel: () => {
+                isConfirmedLeave = true;
+                router.push("/employee");
+            },
             onConfirm: () => {
-                isConfirmedLeave = true; // ตั้งค่าอนุญาตเปลี่ยนหน้า
+                isConfirmedLeave = true;
                 router.push("/employee");
             },
         });
@@ -623,30 +750,26 @@ async function confirmSaveProcess() {
     }
 }
 
-// ฟังก์ชันยกเลิกการแก้ไข
 function onCancel() {
     if (saving.value) return;
-    // ใช้ push เพื่อส่งไปทำงานที่ onBeforeRouteLeave ให้มันเด้งแจ้งเตือนจากจุดเดียว
     router.push("/employee");
 }
 
 /* ====== ดักจับการเปลี่ยนหน้า (Navigation Guard) ====== */
 onBeforeRouteLeave((to, from, next) => {
-    // ถ้ากดยืนยันการออกหรือกด Save สำเร็จแล้ว ให้เปลี่ยนหน้าได้เลย
     if (isConfirmedLeave || saving.value) {
         next();
         return;
     }
 
-    // ตรวจสอบการเปลี่ยนแปลงข้อมูล
     const current = { ...form };
     const prev = { ...original };
     if (!current.password) delete current.password;
     delete prev.password;
 
-    const isChanged = (JSON.stringify(current) !== JSON.stringify(prev)) || !!form.password;
+    const isChanged =
+        JSON.stringify(current) !== JSON.stringify(prev) || !!form.password;
 
-    // ถ้าเปลี่ยน ให้เด้ง Modal ถาม
     if (isChanged) {
         openAlert({
             type: "confirm",
@@ -657,16 +780,15 @@ onBeforeRouteLeave((to, from, next) => {
             cancelText: "Cancel",
             onConfirm: () => {
                 alert.open = false;
-                isConfirmedLeave = true; // ยืนยันว่ายอมออก
-                next(); // อนุญาตให้เปลี่ยนหน้า
+                isConfirmedLeave = true;
+                next();
             },
             onCancel: () => {
                 alert.open = false;
-                next(false); // ยกเลิกการเปลี่ยนหน้า ให้อยู่หน้าเดิม
-            }
+                next(false);
+            },
         });
     } else {
-        // ไม่มีอะไรเปลี่ยนแปลง ผ่านได้เลย
         next();
     }
 });
