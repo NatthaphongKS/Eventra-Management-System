@@ -51,7 +51,7 @@ services:
             - TUNNEL_TOKEN=${TUNNEL_TOKEN}
         command: tunnel --no-autoupdate run
         depends_on:
-            - my-web-app
+            - app
 
 networks:
     appnet:
