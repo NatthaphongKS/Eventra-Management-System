@@ -1,12 +1,13 @@
 services:
   app:
-    build: .  
+    build: .
     container_name: ems_app
     ports: ["7080:80"]
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
-      - /var/www/html/public/build 
+      - /var/www/html/vendor
+      - /var/www/html/public/build
       - /var/www/html/node_modules
     environment:
       DB_CONNECTION: ${DB_CONNECTION}
@@ -32,7 +33,7 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
     networks: [appnet]
-    
+
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: ems_pma
@@ -47,4 +48,3 @@ networks:
 
 volumes:
   dbdata:
-  
