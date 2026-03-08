@@ -49,7 +49,7 @@ services:
         restart: always
         environment:
             - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-        command: tunnel --no-autoupdate run
+        command: tunnel --no-autoupdate run --protocol http2
         depends_on:
             - app
 
