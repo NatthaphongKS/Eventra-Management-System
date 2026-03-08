@@ -2,7 +2,7 @@ services:
   app:
     build: .
     container_name: ems_app
-    ports: ["7080:80"]
+    ports: ["7080:8080"]
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
