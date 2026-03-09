@@ -18,7 +18,7 @@ class EmployeeSeeder extends Seeder
         DB::table('ems_employees')->insert([
             [
                 'id' => 1,
-                'emp_id' => 'CN000',
+                'emp_id' => 'CN0000',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'แอดมิน',
@@ -37,7 +37,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'emp_id' => 'CN001',
+                'emp_id' => 'CN0001',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'HR',
@@ -56,7 +56,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'emp_id' => 'CN011',
+                'emp_id' => 'CN0101',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'ณัฐพงศ์',
@@ -75,7 +75,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 4,
-                'emp_id' => 'CN020',
+                'emp_id' => 'CN0230',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นางสาว',
                 'emp_firstname' => 'นิธิวดี',
@@ -94,7 +94,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 5,
-                'emp_id' => 'CN008',
+                'emp_id' => 'CN0083',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'ชิตดนัย',
@@ -113,7 +113,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 6,
-                'emp_id' => 'CN012',
+                'emp_id' => 'CN0102',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'ณัฐพงษ์',
@@ -132,7 +132,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 7,
-                'emp_id' => 'CN008',
+                'emp_id' => 'CN0081',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'กัจจาฤกษ์',
@@ -151,7 +151,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 8,
-                'emp_id' => 'CN030',
+                'emp_id' => 'CN0350',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'ณปรารินทร์',
@@ -170,7 +170,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 9,
-                'emp_id' => 'CN013',
+                'emp_id' => 'CN0103',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'ธนูศิลป์',
@@ -189,7 +189,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 10,
-                'emp_id' => 'CN042',
+                'emp_id' => 'CN0342',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'กิดากร',
@@ -208,7 +208,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 11,
-                'emp_id' => 'CN070',
+                'emp_id' => 'CN0370',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'รวีโรจน์',
@@ -227,7 +227,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 12,
-                'emp_id' => 'CN016',
+                'emp_id' => 'CN0106',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'ศุภณัฐ',
@@ -246,7 +246,7 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'id' => 13,
-                'emp_id' => 'CN008',
+                'emp_id' => 'CN0088',
                 'emp_company_id' => 1,
                 'emp_prefix' => 'นาย',
                 'emp_firstname' => 'โยธิน',
