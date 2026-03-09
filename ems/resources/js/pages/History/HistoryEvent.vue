@@ -59,13 +59,13 @@
       </template>
 
       <template #cell-created_by="{ value }">
-        <span class="block py-2 text-slate-600 text-sm" :title="value">
+        <span class="text-center block py-2 text-slate-600 text-sm" :title="value">
           {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </span>
       </template>
 
       <template #cell-deleted_by="{ value }">
-        <span class="block py-2 text-slate-600 text-sm" :title="value">
+        <span class="text-center block py-2 text-slate-600 text-sm" :title="value">
           {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </span>
       </template>
@@ -181,7 +181,7 @@ export default {
         {
           key: "created_by",
           label: "Created by",
-          class: "text-left",
+          class: "text-center",
           sortable: true,
         },
         {
@@ -194,7 +194,7 @@ export default {
         {
           key: "deleted_by",
           label: "Deleted by",
-          class: "text-left",
+          class: "text-center",
           sortable: true,
         },
         {

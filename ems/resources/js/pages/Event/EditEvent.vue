@@ -521,7 +521,7 @@ export default {
                 link.target = "_blank";
                 link.click();
             }
-        },
+        }, 
         /**
          * ชื่อฟังก์ชัน: fetchData
          * คำอธิบาย: ดึงข้อมูลกิจกรรมจาก API มาแสดงในฟอร์ม รวมถึงข้อมูลพนักงานและ Guest เดิม
