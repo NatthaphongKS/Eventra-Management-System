@@ -320,8 +320,8 @@ function formatValue(row, col) {
         result = col.format(value, row);
     }
 
-    if (typeof result === "string" && result.length > 20) {
-        return result.slice(0, 20) + "...";
+    if (typeof result === "string" && result.length > 35) {
+        return result.slice(0, 35) + "...";
     }
 
     return result ?? "N/A";
