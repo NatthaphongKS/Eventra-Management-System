@@ -115,6 +115,9 @@
         <ModalAlert :open="showModalAsk" type="confirm" title="ARE YOU SURE TO DELETE"
             message="This will be deleted permanently. Are you sure?" :show-cancel="true" okText="OK"
             cancelText="Cancel" @confirm="onConfirmDelete" @cancel="onCancelDelete" />
+        <ModalAlert :open="showModalLoading" type="progress" title="Deleting..."
+            message="Please wait while the record is being deleted" :progress="deleteProgress" :show-cancel="false"
+            class="hide-progress-text" />
         <ModalAlert :open="showModalSuccess" type="success" title="DELETE SUCCESS!"
             message="We have already deleted event." :show-cancel="false" okText="OK" @confirm="onConfirmSuccess" />
         <ModalAlert :open="showModalFail" type="error" title="ERROR!" message="Sorry, Please try again later."
@@ -205,8 +208,11 @@ export default {
                 { key: "evn_status", label: "Status", class: "text-center", sortable: true },
             ],
             showModalAsk: false,
+            showModalLoading: false,
             showModalSuccess: false,
             showModalFail: false,
+            deleteProgress: 0,
+            deleteProgressInterval: null,
         };
     },
 
@@ -712,21 +718,44 @@ export default {
          * ชื่อฟังก์ชัน: onConfirmDelete
          * คำอธิบาย: ดำเนินการลบ event เมื่อผู้ใช้ยืนยัน
          * ชื่อผู้เขียน/แก้ไข: Yothin S.
-         * วันที่จัดทำ/แก้ไข: 2026-03-03
+         * วันที่จัดทำ/แก้ไข: 2026-03-09
          */
         async onConfirmDelete() {
             const id = this.deleteId;
             this.showModalAsk = false;
             if (!id) return;
             this.isDeleting = true;
+            this.showModalLoading = true;
+            this.deleteProgress = 0;
+
+            // Add a global class to the body while the loading modal is active
+            document.body.classList.add('hide-modal-records-text');
+
+            // Fake loading progress
+            this.deleteProgressInterval = setInterval(() => {
+                if (this.deleteProgress < 90) {
+                    const inc = Math.floor(Math.random() * 10) + 5;
+                    this.deleteProgress = Math.min(this.deleteProgress + inc, 80);
+                }
+            }, 100);
+
             try {
                 await axios.patch(`/event/${id}/deleted`);
-                this.showModalAsk = false;
-                this.showModalSuccess = true;
-                this.deleteId = null;
-                await this.fetchEvent();
+                clearInterval(this.deleteProgressInterval);
+                this.deleteProgress = 100;
+
+                // Add a small delay so user sees 100% before it switches to success modal
+                setTimeout(async () => {
+                    document.body.classList.remove('hide-modal-records-text');
+                    this.showModalLoading = false;
+                    this.showModalSuccess = true;
+                    this.deleteId = null;
+                    await this.fetchEvent();
+                }, 300);
             } catch (_) {
-                this.showModalAsk = false;
+                document.body.classList.remove('hide-modal-records-text');
+                clearInterval(this.deleteProgressInterval);
+                this.showModalLoading = false;
                 this.showModalFail = true;
             } finally {
                 this.isDeleting = false;
