@@ -145,7 +145,7 @@ export default {
                 },
                 {
                     key: "cat_created_at",
-                    label: "Created date (D/M/Y)",
+                    label: "Created Date (D/M/Y)",
                     class: "text-center w-[202px]",
                     format: (v) => new Date(v).toLocaleDateString(),
                 },

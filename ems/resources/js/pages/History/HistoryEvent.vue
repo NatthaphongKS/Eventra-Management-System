@@ -186,7 +186,7 @@ export default {
         },
         {
           key: "created_at",
-          label: "Created Date",
+          label: "Created Date (D/M/Y)",
           class: "text-center whitespace-nowrap",
           format: this.formatDate,
           sortable: true,
@@ -199,7 +199,7 @@ export default {
         },
         {
           key: "deleted_at",
-          label: "Deleted Date",
+          label: "Deleted Date (D/M/Y)",
           class: "text-center whitespace-nowrap",
           format: this.formatDate,
           sortable: true,

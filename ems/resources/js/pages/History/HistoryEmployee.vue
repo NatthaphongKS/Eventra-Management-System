@@ -5,7 +5,7 @@
         <div class="flex items-center gap-3">
             <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname" @search="onSearch" />
 
-            <div class="relative z-[60] mt-8" ref="sortWrap">
+            <div class="relative z-[60] mt-6" ref="sortWrap">
                 <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
                     :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose" />
             </div>
@@ -123,23 +123,23 @@ export default {
                 },
                 {
                     key: 'created_by_name',
-                    label: 'Created By',
+                    label: 'Created by',
                     class: 'text-center w-[120px]',
                 },
                 {
                     key: 'created_at',
-                    label: 'Created Date',
+                    label: 'Created Date (D/M/Y)',
                     class: 'text-center w-[130px]',
                     format: (v) => v ? new Date(v).toLocaleDateString('th-TH') : '-',
                 },
                 {
                     key: 'deleted_by_name',
-                    label: 'Deleted By',
+                    label: 'Deleted by',
                     class: 'text-center w-[120px]',
                 },
                 {
                     key: 'emp_deleted_at',
-                    label: 'Deleted Date',
+                    label: 'Deleted Date (D/M/Y)',
                     class: 'text-center w-[130px]',
                     format: (v) => v ? new Date(v).toLocaleDateString('th-TH') : '-',
                 },
