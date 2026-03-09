@@ -474,41 +474,25 @@ export default {
         openFile(url) {
             if (!url) return;
 
-            // 1. เปิดไฟล์ใน Tab ใหม่ทันที
-            window.open(url, "_blank");
+            // 1. จัดการเรื่อง Mixed Content (HTTP -> HTTPS)
+            const secureUrl = url.replace("http://", "https://");
 
-            // 2. จัดการเรื่องการดาวน์โหลด (ใช้ Fetch + Blob เพื่อบังคับให้ Browser ดาวน์โหลดจริง)
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.blob();
-                })
-                .then(blob => {
-                    const blobUrl = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
+            // 2. สร้าง Link ชั่วคราว (ไม่ต้องใช้ window.open แยกต่างหาก)
+            const link = document.createElement('a');
+            link.href = secureUrl;
 
-                    // พยายามดึงชื่อไฟล์จาก URL
-                    const fileName = url.split('/').pop().split('#')[0].split('?')[0] || 'download';
-                    link.download = fileName;
+            // ดึงชื่อไฟล์
+            const fileName = secureUrl.split('/').pop().split('#')[0].split('?')[0];
+            link.download = fileName || 'download';
 
-                    document.body.appendChild(link);
-                    link.click();
+            // 3. ป้องกันหน้าเว็บเดิมหาย และป้องกันการโหลดซ้ำซ้อน
+            // ใช้ target="_blank" ตรงนี้เพื่อรองรับกรณีที่ Browser บล็อกการ download
+            link.target = "_blank";
 
-                    // ทำความสะอาดหลังใช้งาน
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(blobUrl);
-                })
-                .catch(error => {
-                    console.error("Download failed, using fallback:", error);
-                    // Fallback: หาก fetch ไม่สำเร็จ (เช่น ติด CORS) ให้ใช้ link แบบเดิม
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', ''); // พยายามสั่ง download
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                });
+            // 4. สั่งทำงาน
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         },
         /**
          * ชื่อฟังก์ชัน: fetchData

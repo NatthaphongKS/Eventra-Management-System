@@ -331,24 +331,22 @@ export default {
         openFile(url) {
             if (!url) return;
 
-            // A. แก้ Mixed Content: บังคับเป็น https เพื่อให้เบราว์เซอร์ยอมรับ
+            // 1. จัดการเรื่อง Mixed Content (HTTP -> HTTPS)
             const secureUrl = url.replace("http://", "https://");
 
-            // B. เปิดไฟล์ใน Tab ใหม่ทันที
-            window.open(secureUrl, "_blank");
-
-            // C. จัดการดาวน์โหลด
+            // 2. สร้าง Link ชั่วคราว (ไม่ต้องใช้ window.open แยกต่างหาก)
             const link = document.createElement('a');
             link.href = secureUrl;
 
-            // ดึงชื่อไฟล์จาก URL
+            // ดึงชื่อไฟล์
             const fileName = secureUrl.split('/').pop().split('#')[0].split('?')[0];
             link.download = fileName || 'download';
 
-            // D. *** หัวใจสำคัญ ***: ใส่ target="_blank"
-            // เพื่อที่ว่าถ้า 'download' พัง มันจะไปเปิดที่ Tab ใหม่แทนการทับหน้าเดิม
+            // 3. ป้องกันหน้าเว็บเดิมหาย และป้องกันการโหลดซ้ำซ้อน
+            // ใช้ target="_blank" ตรงนี้เพื่อรองรับกรณีที่ Browser บล็อกการ download
             link.target = "_blank";
 
+            // 4. สั่งทำงาน
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
