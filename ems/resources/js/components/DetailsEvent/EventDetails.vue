@@ -331,28 +331,19 @@ export default {
         openFile(url) {
             if (!url) return;
 
-            // 1. พยายามเปิดใน Tab ใหม่ก่อน
+            // พยายามเปิดใน Tab ใหม่
             const newWindow = window.open(url, "_blank");
 
-            // 2. เช็คว่าหน้าต่างถูกบล็อก (Popup Blocker) หรือเปิดไม่สำเร็จหรือไม่
-            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            const link = document.createElement('a');
+            link.href = url;
 
-                // แผน B: สร้างลิงก์หลอกๆ ขึ้นมาเพื่อสั่ง Download
-                const link = document.createElement('a');
-                link.href = url;
+            // พยายามดึงชื่อไฟล์จาก URL
+            const fileName = url.split('/').pop().split('#')[0].split('?')[0];
+            link.download = fileName || 'download';
 
-                // ดึงชื่อไฟล์จาก URL (ถ้ามี) มาเป็นชื่อตอนโหลด
-                const fileName = url.split('/').pop().split('#')[0].split('?')[0];
-                link.download = fileName || 'download';
-
-                link.target = "_blank";
-                document.body.appendChild(link);
-                link.click();
-
-                // ลบทิ้งเมื่อทำงานเสร็จ
-                document.body.removeChild(link);
-
-            }
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         },
 
         /**
