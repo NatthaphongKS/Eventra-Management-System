@@ -70,7 +70,7 @@
                 </div>
                 <div class="mb-6">
                     <label class="mb-1 block text-xl font-medium text-neutral-800">
-                        Event Description <span class="text-red-600">*</span>
+                        Event Details <span class="text-red-600">*</span>
                     </label>
                     <div class="relative">
                         <textarea v-model.trim="eventDescription" placeholder="Write some description... (255 words)"

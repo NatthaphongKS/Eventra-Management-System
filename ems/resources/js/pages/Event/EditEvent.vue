@@ -69,7 +69,7 @@
                 <!-- ช่องกรอกคำอธิบายอีเวนต์ -->
                 <div class="mb-6">
                     <label class="mb-1 block text-xl font-medium text-neutral-800">
-                        Event Description <span class="text-red-500">*</span>
+                        Event Details <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <textarea :class="[
