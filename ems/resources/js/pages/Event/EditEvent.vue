@@ -471,28 +471,56 @@ export default {
         * ชื่อผู้เขียน/แก้ไข: Natthaphong Kongsinl
         * วันที่จัดทำ/แก้ไข: 2026-03-9
         */
-        openFile(url) {
+        async openFile(url) {
             if (!url) return;
 
-            // 1. จัดการเรื่อง Mixed Content (HTTP -> HTTPS)
             const secureUrl = url.replace("http://", "https://");
 
-            // 2. สร้าง Link ชั่วคราว (ไม่ต้องใช้ window.open แยกต่างหาก)
-            const link = document.createElement('a');
-            link.href = secureUrl;
+            try {
+                const response = await fetch(secureUrl);
+                if (!response.ok) throw new Error('Download failed');
 
-            // ดึงชื่อไฟล์
-            const fileName = secureUrl.split('/').pop().split('#')[0].split('?')[0];
-            link.download = fileName || 'download';
+                // --- 1. พยายามดึงชื่อไฟล์จาก Header (วิธีที่แม่นยำที่สุด) ---
+                // Server มักส่งชื่อไฟล์มาใน Content-Disposition
+                let fileName = "";
+                const disposition = response.headers.get('content-disposition');
 
-            // 3. ป้องกันหน้าเว็บเดิมหาย และป้องกันการโหลดซ้ำซ้อน
-            // ใช้ target="_blank" ตรงนี้เพื่อรองรับกรณีที่ Browser บล็อกการ download
-            link.target = "_blank";
+                if (disposition && disposition.includes('filename')) {
+                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    const matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        fileName = matches[1].replace(/['"]/g, '');
+                    }
+                }
 
-            // 4. สั่งทำงาน
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                // --- 2. ถ้า Header ไม่มี ให้ดึงจาก URL (เป็นแผนสำรอง) ---
+                if (!fileName) {
+                    // ใช้ decodeURIComponent เพื่อให้รองรับชื่อไฟล์ภาษาไทย (%E0%B8...)
+                    const urlPath = secureUrl.split('/').pop().split('#')[0].split('?')[0];
+                    fileName = decodeURIComponent(urlPath) || 'download';
+                }
+
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = fileName; // ใช้ชื่อที่เราดึงมาได้
+
+                document.body.appendChild(link);
+                link.click();
+
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+            } catch (error) {
+                console.error("Error:", error);
+                // แผนสำรองสุดท้ายถ้า Fetch พัง
+                const link = document.createElement('a');
+                link.href = secureUrl;
+                link.target = "_blank";
+                link.click();
+            }
         },
         /**
          * ชื่อฟังก์ชัน: fetchData
