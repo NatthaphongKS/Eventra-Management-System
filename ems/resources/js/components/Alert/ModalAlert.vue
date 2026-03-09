@@ -48,11 +48,6 @@
                             <p class="mt-4 text-sm text-gray-600">
                                 {{ progress }}% completed
                             </p>
-
-                            <p class="text-xs text-gray-400 mt-1">
-                                Please wait while we process {{ total }} records
-                            </p>
-
                         </div>
 
                         <!-- Actions -->
