@@ -3,36 +3,18 @@
     <section class="p-0">
         <!-- Toolbar -->
         <div class="flex items-center gap-3">
-            <SearchBar
-                v-model="searchInput"
-                placeholder="Search Employee ID / Name / Nickname"
-                @search="onSearch"
-            />
+            <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname" @search="onSearch" />
 
             <div class="relative z-[60] mt-8" ref="sortWrap">
-                <SortMenu
-                    :is-open="sortMenuOpen"
-                    :options="sortOptions"
-                    :sort-by="sortBy.key"
-                    :sort-order="sortBy.order"
-                    @toggle="sortMenuOpen = !sortMenuOpen"
-                    @choose="onSortChoose"
-                />
+                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose" />
             </div>
         </div>
 
         <!-- DataTable -->
-        <DataTable
-            :rows="paged"
-            :columns="columns"
-            :page="page"
-            :pageSize="pageSize"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            @update:page="page = $event"
-            @update:pageSize="onChangePageSize"
-            class="mt-4"
-        >
+        <DataTable :rows="paged" :columns="columns" :page="page" :pageSize="pageSize" :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]" @update:page="page = $event" @update:pageSize="onChangePageSize"
+            class="mt-4">
             <template #empty>
                 {{
                     sorted.length === 0
@@ -42,8 +24,8 @@
             </template>
 
             <!-- Custom cell for Name -->
-            <template #cell-emp_name="{ row }">
-                {{ getFullName(row) }}
+            <template #cell-emp_name="{ value }">
+                
             </template>
         </DataTable>
     </section>
@@ -167,26 +149,26 @@ export default {
 
     computed: {
         filtered() {
-  const q = (this.search || '').trim().toLowerCase();
-  if (!q) return this.rows;
+            const q = (this.search || '').trim().toLowerCase();
+            if (!q) return this.rows;
 
-  return this.rows.filter((r) => {
-    const id = (r.emp_id || '').toLowerCase();
-    const firstname = (r.emp_firstname || '').toLowerCase();
-    const lastname = (r.emp_lastname || '').toLowerCase();
-    const nickname = (r.emp_nickname || '').toLowerCase();
+            return this.rows.filter((r) => {
+                const id = (r.emp_id || '').toLowerCase();
+                const firstname = (r.emp_firstname || '').toLowerCase();
+                const lastname = (r.emp_lastname || '').toLowerCase();
+                const nickname = (r.emp_nickname || '').toLowerCase();
 
-    const fullName = `${firstname} ${lastname}`.trim();
+                const fullName = `${firstname} ${lastname}`.trim();
 
-    return (
-      id.includes(q) ||
-      firstname.includes(q) ||
-      lastname.includes(q) ||
-      fullName.includes(q) ||
-      nickname.includes(q)
-    );
-  });
-},
+                return (
+                    id.includes(q) ||
+                    firstname.includes(q) ||
+                    lastname.includes(q) ||
+                    fullName.includes(q) ||
+                    nickname.includes(q)
+                );
+            });
+        },
 
         sorted() {
             const { key, order } = this.sortBy;
@@ -235,8 +217,8 @@ export default {
                 const data = Array.isArray(res.data)
                     ? res.data
                     : Array.isArray(res.data?.data)
-                    ? res.data.data
-                    : [];
+                        ? res.data.data
+                        : [];
 
                 this.rows = data.map((x) => ({
                     id: x.id,

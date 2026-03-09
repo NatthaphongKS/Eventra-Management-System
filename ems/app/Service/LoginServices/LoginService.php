@@ -92,7 +92,7 @@ class LoginService
             // 3) ตอบกลับผลลัพธ์การล็อกอินสำเร็จ
             return [
                 'success' => true,
-                'message' => 'Login successful',
+                'message' => '', //ถ้าเอา message ออกจะ frontend ที่มีเรียกใช้จะ error
                 'status' => 200,
             ];
         } catch (\Exception $e) {

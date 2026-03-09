@@ -4,7 +4,7 @@
  * Input: defineProps จากหน้าแม่
  * Output: หน้าAlert ตามประเภทที่หน้าแม่บอกมาใน defineprops
  * ชื่อผู้เขียน/แก้ไข: Thanusin leenarat
- * วันที่จัดทำ/แก้ไข: 2026-03-04
+ * วันที่จัดทำ/แก้ไข: 9 มีนาคม 2569
  */ -->
 
 <!-- components/Alert/ModalAlert.vue -->
@@ -13,8 +13,7 @@
         <transition name="fade">
             <div v-if="open"
                 class="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
-                role="dialog" aria-modal="true" @keydown.esc.prevent="handleCancel"
-                @keyup.enter.prevent="handleConfirm">
+                role="dialog" aria-modal="true" @keyup.enter.prevent="handleConfirm">
                 <!-- Modal -->
                 <transition name="pop">
                     <div class="relative max-w-[90vw] text-center shadow-2xl" :class="wrapperClass">
@@ -49,11 +48,6 @@
                             <p class="mt-4 text-sm text-gray-600">
                                 {{ progress }}% completed
                             </p>
-
-                            <p class="text-xs text-gray-400 mt-1">
-                                Please wait while we process {{ total }} records
-                            </p>
-
                         </div>
 
                         <!-- Actions -->

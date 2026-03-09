@@ -95,6 +95,46 @@ class TeamSeeder extends Seeder
             // Byteforge
             // ===============================
             ['tm_name' => 'Byteforge', 'tm_department_id' => 15],
+
+            // ===============================
+            // Cloud Infrastructure
+            // ===============================
+            ['tm_name' => 'AWS & Cloud Team', 'tm_department_id' => 16],
+            ['tm_name' => 'Infrastructure Operations', 'tm_department_id' => 16],
+
+            // ===============================
+            // Data Analytics
+            // ===============================
+            ['tm_name' => 'Business Intelligence', 'tm_department_id' => 17],
+            ['tm_name' => 'Data Engineering', 'tm_department_id' => 17],
+            ['tm_name' => 'Analytics & Reporting', 'tm_department_id' => 17],
+
+            // ===============================
+            // Customer Success
+            // ===============================
+            ['tm_name' => 'Customer Support', 'tm_department_id' => 18],
+            ['tm_name' => 'Implementation Team', 'tm_department_id' => 18],
+            ['tm_name' => 'Customer Experience', 'tm_department_id' => 18],
+
+            // ===============================
+            // Marketing & Brand
+            // ===============================
+            ['tm_name' => 'Brand & Communications', 'tm_department_id' => 19],
+            ['tm_name' => 'Digital Marketing', 'tm_department_id' => 19],
+            ['tm_name' => 'Content & Social Media', 'tm_department_id' => 19],
+
+            // ===============================
+            // Human Resources
+            // ===============================
+            ['tm_name' => 'Recruitment & Talent', 'tm_department_id' => 20],
+            ['tm_name' => 'Employee Relations', 'tm_department_id' => 20],
+            ['tm_name' => 'Learning & Development', 'tm_department_id' => 20],
+
+            // ===============================
+            // Legal & Compliance
+            // ===============================
+            ['tm_name' => 'Legal Team', 'tm_department_id' => 21],
+            ['tm_name' => 'Compliance & Risk', 'tm_department_id' => 21],
         ];
 
         foreach ($teams as $team) {
