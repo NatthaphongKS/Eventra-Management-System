@@ -331,41 +331,27 @@ export default {
         openFile(url) {
             if (!url) return;
 
-            // 1. เปิดไฟล์ใน Tab ใหม่ทันที
-            window.open(url, "_blank");
+            // A. แก้ Mixed Content: บังคับเป็น https เพื่อให้เบราว์เซอร์ยอมรับ
+            const secureUrl = url.replace("http://", "https://");
 
-            // 2. จัดการเรื่องการดาวน์โหลด (ใช้ Fetch + Blob เพื่อบังคับให้ Browser ดาวน์โหลดจริง)
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.blob();
-                })
-                .then(blob => {
-                    const blobUrl = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
+            // B. เปิดไฟล์ใน Tab ใหม่ทันที
+            window.open(secureUrl, "_blank");
 
-                    // พยายามดึงชื่อไฟล์จาก URL
-                    const fileName = url.split('/').pop().split('#')[0].split('?')[0] || 'download';
-                    link.download = fileName;
+            // C. จัดการดาวน์โหลด
+            const link = document.createElement('a');
+            link.href = secureUrl;
 
-                    document.body.appendChild(link);
-                    link.click();
+            // ดึงชื่อไฟล์จาก URL
+            const fileName = secureUrl.split('/').pop().split('#')[0].split('?')[0];
+            link.download = fileName || 'download';
 
-                    // ทำความสะอาดหลังใช้งาน
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(blobUrl);
-                })
-                .catch(error => {
-                    console.error("Download failed, using fallback:", error);
-                    // Fallback: หาก fetch ไม่สำเร็จ (เช่น ติด CORS) ให้ใช้ link แบบเดิม
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', ''); // พยายามสั่ง download
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                });
+            // D. *** หัวใจสำคัญ ***: ใส่ target="_blank"
+            // เพื่อที่ว่าถ้า 'download' พัง มันจะไปเปิดที่ Tab ใหม่แทนการทับหน้าเดิม
+            link.target = "_blank";
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         },
 
         /**
