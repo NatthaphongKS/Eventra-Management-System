@@ -733,7 +733,7 @@ export default {
 
             // Fake loading progress
             this.deleteProgressInterval = setInterval(() => {
-                if (this.deleteProgress < 90) {
+                if (this.deleteProgress < 80) {
                     const inc = Math.floor(Math.random() * 10) + 5;
                     this.deleteProgress = Math.min(this.deleteProgress + inc, 80);
                 }
