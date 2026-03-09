@@ -262,7 +262,6 @@ export default {
 
         getFullName(row) {
             const parts = [
-                row.emp_prefix,
                 row.emp_firstname,
                 row.emp_lastname
             ].filter(Boolean);
