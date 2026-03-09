@@ -64,6 +64,50 @@ class PositionSeeder extends Seeder
             ['pst_name' => 'Quality Engineer', 'pst_team_id' => 29],
             ['pst_name' => 'Support Manager', 'pst_team_id' => 29],
             ['pst_name' => 'Support Engineer', 'pst_team_id' => 29],
+
+            // Cloud Infrastructure
+            ['pst_name' => 'Cloud Architect', 'pst_team_id' => 30],
+            ['pst_name' => 'Cloud Engineer', 'pst_team_id' => 30],
+            ['pst_name' => 'Infrastructure Engineer', 'pst_team_id' => 31],
+            ['pst_name' => 'Operations Manager', 'pst_team_id' => 31],
+
+            // Data Analytics
+            ['pst_name' => 'BI Developer', 'pst_team_id' => 32],
+            ['pst_name' => 'BI Analyst', 'pst_team_id' => 32],
+            ['pst_name' => 'Data Engineer', 'pst_team_id' => 33],
+            ['pst_name' => 'Senior Data Engineer', 'pst_team_id' => 33],
+            ['pst_name' => 'Analytics Specialist', 'pst_team_id' => 34],
+            ['pst_name' => 'Data Analyst', 'pst_team_id' => 34],
+
+            // Customer Success
+            ['pst_name' => 'Support Executive', 'pst_team_id' => 35],
+            ['pst_name' => 'Customer Support Specialist', 'pst_team_id' => 35],
+            ['pst_name' => 'Implementation Specialist', 'pst_team_id' => 36],
+            ['pst_name' => 'Implementation Manager', 'pst_team_id' => 36],
+            ['pst_name' => 'Customer Success Manager', 'pst_team_id' => 37],
+            ['pst_name' => 'Customer Experience Officer', 'pst_team_id' => 37],
+
+            // Marketing & Brand
+            ['pst_name' => 'Brand Manager', 'pst_team_id' => 38],
+            ['pst_name' => 'Communications Officer', 'pst_team_id' => 38],
+            ['pst_name' => 'Digital Marketing Manager', 'pst_team_id' => 39],
+            ['pst_name' => 'Marketing Analyst', 'pst_team_id' => 39],
+            ['pst_name' => 'Content Writer', 'pst_team_id' => 40],
+            ['pst_name' => 'Social Media Specialist', 'pst_team_id' => 40],
+
+            // Human Resources
+            ['pst_name' => 'Recruiter', 'pst_team_id' => 41],
+            ['pst_name' => 'Recruitment Manager', 'pst_team_id' => 41],
+            ['pst_name' => 'HR Officer', 'pst_team_id' => 42],
+            ['pst_name' => 'HR Manager', 'pst_team_id' => 42],
+            ['pst_name' => 'Training Coordinator', 'pst_team_id' => 43],
+            ['pst_name' => 'L&D Manager', 'pst_team_id' => 43],
+
+            // Legal & Compliance
+            ['pst_name' => 'Lawyer', 'pst_team_id' => 44],
+            ['pst_name' => 'Legal Counsel', 'pst_team_id' => 44],
+            ['pst_name' => 'Compliance Officer', 'pst_team_id' => 45],
+            ['pst_name' => 'Risk Manager', 'pst_team_id' => 45],
         ];
 
         foreach ($positions as $pos) {

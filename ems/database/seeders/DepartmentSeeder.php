@@ -28,6 +28,12 @@ class DepartmentSeeder extends Seeder
             ['id' => 13, 'dpm_name' => 'System Engineer'],
             ['id' => 14, 'dpm_name' => 'System Integration'],
             ['id' => 15, 'dpm_name' => 'Byteforge Project'],
+            ['id' => 16, 'dpm_name' => 'Cloud Infrastructure'],
+            ['id' => 17, 'dpm_name' => 'Data Analytics'],
+            ['id' => 18, 'dpm_name' => 'Customer Success'],
+            ['id' => 19, 'dpm_name' => 'Marketing & Brand'],
+            ['id' => 20, 'dpm_name' => 'Human Resources'],
+            ['id' => 21, 'dpm_name' => 'Legal & Compliance'],
         ];
 
         DB::table('ems_department')->insert($departments);

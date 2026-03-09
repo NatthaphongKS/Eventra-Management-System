@@ -201,7 +201,7 @@ class PositionService
             $position = Position::findOrFail($id);
 
             // Check if position has related employees
-            if ($position->employees()->count() > 0) {
+            if ($position->employees()->where('emp_delete_status', 'active')->count() > 0) {
                 return response()->json([
                     'message' => 'Cannot delete position with existing employees',
                 ], 422);
