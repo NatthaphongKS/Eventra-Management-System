@@ -54,19 +54,19 @@
           :title="value"
 
         >
-          {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
+          {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </router-link>
       </template>
 
       <template #cell-created_by="{ value }">
         <span class="block py-2 text-slate-600 text-sm" :title="value">
-          {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
+          {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </span>
       </template>
 
       <template #cell-deleted_by="{ value }">
         <span class="block py-2 text-slate-600 text-sm" :title="value">
-          {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
+          {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </span>
       </template>
 
