@@ -24,8 +24,8 @@
             </template>
 
             <!-- Custom cell for Name -->
-            <template #cell-emp_name="{ value }">
-                
+            <template #cell-emp_name="{ row }">
+                {{ getFullName(row) }}
             </template>
         </DataTable>
     </section>
