@@ -474,20 +474,41 @@ export default {
         openFile(url) {
             if (!url) return;
 
-            // พยายามเปิดใน Tab ใหม่
-            const newWindow = window.open(url, "_blank");
+            // 1. เปิดไฟล์ใน Tab ใหม่ทันที
+            window.open(url, "_blank");
 
-            const link = document.createElement('a');
-            link.href = url;
+            // 2. จัดการเรื่องการดาวน์โหลด (ใช้ Fetch + Blob เพื่อบังคับให้ Browser ดาวน์โหลดจริง)
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
 
-            // พยายามดึงชื่อไฟล์จาก URL
-            const fileName = url.split('/').pop().split('#')[0].split('?')[0];
-            link.download = fileName || 'download';
+                    // พยายามดึงชื่อไฟล์จาก URL
+                    const fileName = url.split('/').pop().split('#')[0].split('?')[0] || 'download';
+                    link.download = fileName;
 
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                    document.body.appendChild(link);
+                    link.click();
 
+                    // ทำความสะอาดหลังใช้งาน
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(blobUrl);
+                })
+                .catch(error => {
+                    console.error("Download failed, using fallback:", error);
+                    // Fallback: หาก fetch ไม่สำเร็จ (เช่น ติด CORS) ให้ใช้ link แบบเดิม
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', ''); // พยายามสั่ง download
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
         },
         /**
          * ชื่อฟังก์ชัน: fetchData
