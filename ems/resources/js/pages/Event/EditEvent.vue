@@ -221,12 +221,10 @@
 
                                 <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
                                 <template v-if="item.kind === 'existing'">
-                                    <a :href="item.url" target="_blank" rel="noopener"
-                                        class="truncate text-[16px]  text-red-700 hover:underline">
+                                    <a href="javascript:void(0)" @click.prevent="openFile(item.url)"
+                                        class="truncate text-[16px] text-red-700 hover:underline cursor-pointer">
                                         {{ item.name }}
                                     </a>
-                                    <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                }})</span> -->
                                 </template>
                                 <template v-else>
                                     <span class="truncate text-[16px]  text-neutral-800">{{ item.name }}</span>
@@ -467,6 +465,32 @@ export default {
 
     },
     methods: {
+        /**
+        * ชื่อฟังก์ชัน: openFile
+        * คำอธิบาย: เปิดหรือโหลดไฟล์
+        * ชื่อผู้เขียน/แก้ไข: Natthaphong Kongsinl
+        * วันที่จัดทำ/แก้ไข: 2026-03-9
+        */
+        openFile(url) {
+            if (!url) return;
+
+            // พยายามเปิดใน Tab ใหม่
+            const newWindow = window.open(url, "_blank");
+
+            // ถ้าเปิดไม่ได้ (โดนบล็อก Popup) ให้ทำการดาวน์โหลดแทน
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                const link = document.createElement('a');
+                link.href = url;
+
+                // พยายามดึงชื่อไฟล์จาก URL
+                const fileName = url.split('/').pop().split('#')[0].split('?')[0];
+                link.download = fileName || 'download';
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        },
         /**
          * ชื่อฟังก์ชัน: fetchData
          * คำอธิบาย: ดึงข้อมูลกิจกรรมจาก API มาแสดงในฟอร์ม รวมถึงข้อมูลพนักงานและ Guest เดิม
