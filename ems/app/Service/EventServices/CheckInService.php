@@ -63,7 +63,7 @@ class CheckInService
                 'empId'           => $employee->id,
                 'empFullId'       => $employee->emp_id,
                 'empCompanyId'    => $employee->company->com_name,
-                'empFullname'     => $employee->emp_prefix . $employee->emp_firstname . ' ' . $employee->emp_lastname,
+                'empFullname'     => $employee->emp_firstname . ' ' . $employee->emp_lastname,
                 'empNickname'     => $employee->emp_nickname,
                 'empTeam'         => $employee->team->tm_name,
                 'empDepartment'   => $employee->department->dpm_name,

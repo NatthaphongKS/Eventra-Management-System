@@ -25,99 +25,100 @@
 
             <div class="px-2 py-0">
                 <div class="max-w-[1400px] mx-auto px-6">
-                    <form @submit.prevent="openConfirmSaveDialog">
+                    <form @submit.prevent="openConfirmSave">
                         <div
                             class="grid grid-cols-1 md:grid-cols-2 md:gap-x-10 gap-y-5"
                         >
                             <FormField label="Prefix" required class="w-full">
                                 <DropdownPill
-                                    v-model="employeeForm.prefix"
-                                    :options="prefixOptions"
+                                    v-model="form.emp_prefix"
+                                    :options="prefixes"
                                     placeholder="Select prefix"
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.prefix"
+                                    :error="errors.emp_prefix"
+
                                 />
                             </FormField>
 
                             <FormField label="Department" required>
                                 <DropdownPill
-                                    v-model="employeeForm.departmentId"
-                                    :options="departmentOptions"
+                                    v-model="form.emp_department_id"
+                                    :options="departments"
                                     placeholder="Select Department"
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.departmentId"
+                                    :error="errors.emp_department_id"
                                 />
                             </FormField>
 
                             <FormField label="First Name" required>
                                 <InputPill
-                                    v-model="employeeForm.firstName"
+                                    v-model="form.emp_firstname"
                                     placeholder="Ex.Perapat"
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.firstName"
+                                    :error="errors.emp_firstname"
                                 />
                             </FormField>
 
                             <FormField label="Team" required>
                                 <DropdownPill
-                                    v-model="employeeForm.teamId"
-                                    :options="filteredTeamOptions"
+                                    v-model="form.emp_team_id"
+                                    :options="teamOptions"
                                     :placeholder="
-                                        employeeForm.departmentId
+                                        form.emp_department_id
                                             ? 'Select Team'
                                             : 'Please select Department first'
                                     "
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.teamId"
-                                    :disabled="!employeeForm.departmentId"
+                                    :error="errors.emp_team_id"
+                                    :disabled="!form.emp_department_id"
                                 />
                             </FormField>
 
                             <FormField label="Last Name" required>
                                 <InputPill
-                                    v-model="employeeForm.lastName"
+                                    v-model="form.emp_lastname"
                                     placeholder="Ex.Saimai"
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.lastName"
+                                    :error="errors.emp_lastname"
                                 />
                             </FormField>
 
                             <FormField label="Position" required>
                                 <DropdownPill
-                                    v-model="employeeForm.positionId"
-                                    :options="filteredPositionOptions"
+                                    v-model="form.emp_position_id"
+                                    :options="positionOptions"
                                     :placeholder="
-                                        employeeForm.teamId
+                                        form.emp_team_id
                                             ? 'Select Position'
                                             : 'Please select Team first'
                                     "
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.positionId"
-                                    :disabled="!employeeForm.teamId"
+                                    :error="errors.emp_position_id"
+                                    :disabled="!form.emp_team_id"
                                 />
                             </FormField>
 
                             <FormField label="Nickname" required>
                                 <InputPill
-                                    v-model="employeeForm.nickname"
+                                    v-model="form.emp_nickname"
                                     placeholder="Ex.beam"
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.nickname"
+                                    :error="errors.emp_nickname"
                                 />
                             </FormField>
 
                             <FormField label="Email" required>
                                 <div class="relative">
                                     <InputPill
-                                        v-model="employeeForm.email"
+                                        v-model="form.emp_email"
                                         type="email"
                                         placeholder="Ex.example@gmail.com"
                                         class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400"
-                                        :error="fieldErrors.email"
-                                        :disabled="!isAdminUser"
+                                        :error="errors.emp_email"
+                                        :disabled="!isAdmin"
                                     />
                                     <p
-                                        v-if="!isAdminUser"
+                                        v-if="!isAdmin"
                                         class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none"
                                     >
                                         *Only Administrator can change email
@@ -127,51 +128,51 @@
 
                             <FormField label="Phone" required>
                                 <InputPill
-                                    v-model="employeeForm.phone"
+                                    v-model="form.emp_phone"
                                     placeholder="Ex.0988900988"
                                     maxlength="10"
                                     class="mt-1 block h-11 w-full"
-                                    :error="fieldErrors.phone"
+                                    :error="errors.emp_phone"
                                 />
                             </FormField>
 
                             <FormField
                                 label="Password"
-                                :required="isPasswordRequired"
+                                :required="requirePassword"
                             >
                                 <div class="relative">
                                     <InputPill
-                                        v-model="employeeForm.password"
+                                        v-model="form.password"
                                         type="password"
                                         :disabled="
-                                            (!isAdminUser ||
-                                                employeeForm.permission ===
+                                            (!isAdmin ||
+                                                form.emp_permission ===
                                                     'employee') &&
-                                            !isPasswordRequired
+                                            !requirePassword
                                         "
                                         :placeholder="
-                                            isPasswordRequired
+                                            requirePassword
                                                 ? 'Password is required'
-                                                : employeeForm.permission ===
+                                                : form.emp_permission ===
                                                     'employee'
                                                   ? 'No password required'
-                                                  : isAdminUser
+                                                  : isAdmin
                                                     ? 'Leave blank to keep current password'
                                                     : 'Admin only'
                                         "
                                         class="mt-1 block h-11 w-full disabled:!bg-neutral-100 disabled:cursor-not-allowed disabled:!text-neutral-400 disabled:placeholder:!text-neutral-400"
-                                        :error="fieldErrors.password"
+                                        :error="errors.password"
                                     />
                                     <p
                                         v-if="
-                                            employeeForm.permission === 'employee'
+                                            form.emp_permission === 'employee'
                                         "
                                         class="absolute -bottom-5 left-0 text-[10px] text-gray-400 pointer-events-none"
                                     >
                                         *Employee does not require password
                                     </p>
                                     <p
-                                        v-if="!isAdminUser"
+                                        v-if="!isAdmin"
                                         class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none"
                                     >
                                         *Only Administrator can change password
@@ -182,18 +183,18 @@
                             <FormField label="Employee ID" required>
                                 <div class="grid grid-cols-2 gap-3 mt-1">
                                     <DropdownPill
-                                        v-model="employeeForm.companyId"
-                                        :options="companyOptions"
+                                        v-model="form.emp_company_id"
+                                        :options="companies"
                                         placeholder="Company"
                                         class="h-11 w-full"
-                                        :error="fieldErrors.companyId"
+                                        :error="errors.emp_company_id"
                                     />
                                     <InputPill
-                                        v-model="employeeForm.employeeNumber"
+                                        v-model="form.employeeNumber"
                                         placeholder="Ex.0001"
                                         maxlength="4"
                                         class="h-11 w-full"
-                                        :error="fieldErrors.employeeNumber"
+                                        :error="errors.employeeNumber"
                                         @input="onEmployeeNumberInput"
                                     />
                                 </div>
@@ -202,15 +203,15 @@
                             <FormField label="Permission" required>
                                 <div class="relative">
                                     <DropdownPill
-                                        v-model="employeeForm.permission"
-                                        :options="permissionOptions"
+                                        v-model="form.emp_permission"
+                                        :options="permissions"
                                         placeholder="Select Permission"
                                         class="mt-1 block h-11 w-full"
-                                        :error="fieldErrors.permission"
-                                        :disabled="!isAdminUser"
+                                        :error="errors.emp_permission"
+                                        :disabled="!isAdmin"
                                     />
                                     <p
-                                        v-if="!isAdminUser"
+                                        v-if="!isAdmin"
                                         class="absolute -bottom-5 left-0 text-[10px] text-rose-500 pointer-events-none"
                                     >
                                         *Only Administrator can change
@@ -234,24 +235,24 @@
                             >
                                 <button
                                     type="submit"
-                                    :disabled="isSaving"
+                                    :disabled="saving"
                                     class="inline-flex items-center justify-center gap-2 w-[140px] h-[45px] rounded-[20px] bg-green-600 text-white font-bold text-[15px] shadow-sm transition hover:shadow-md disabled:opacity-50"
                                 >
                                     <span
-                                        v-if="!isSaving"
+                                        v-if="!saving"
                                         class="material-symbols-outlined text-[20px] leading-none"
                                         >check</span
                                     >
                                     <span>{{
-                                        isSaving ? "Saving…" : "Save"
+                                        saving ? "Saving…" : "Save"
                                     }}</span>
                                 </button>
 
                                 <p
-                                    v-if="submitErrorMessage"
+                                    v-if="saveError"
                                     class="text-rose-600 text-sm pt-2"
                                 >
-                                    {{ submitErrorMessage }}
+                                    {{ saveError }}
                                 </p>
                             </div>
                         </div>
@@ -261,15 +262,15 @@
         </div>
 
         <ModalAlert
-            v-model:open="alertDialog.isOpen"
-            :type="alertDialog.type"
-            :title="alertDialog.title"
-            :message="alertDialog.message"
-            :showCancel="alertDialog.showCancel"
-            :okText="alertDialog.okText"
-            :cancelText="alertDialog.cancelText"
-            @confirm="alertDialog.onConfirm"
-            @cancel="alertDialog.onCancel"
+            v-model:open="alert.open"
+            :type="alert.type"
+            :title="alert.title"
+            :message="alert.message"
+            :showCancel="alert.showCancel"
+            :okText="alert.okText"
+            :cancelText="alert.cancelText"
+            @confirm="alert.onConfirm"
+            @cancel="alert.onCancel"
         />
     </div>
 </template>
@@ -290,53 +291,53 @@ const router = useRouter();
 const route = useRoute();
 const employeeId = route.params.id;
 
-/* ------- Dropdown Options ------- */
-const prefixOptions = [
+/* ------- Options ------- */
+const prefixes = [
     { label: "นาย", value: "นาย" },
     { label: "นาง", value: "นาง" },
     { label: "นางสาว", value: "นางสาว" },
 ];
 
-const permissionOptions = [
+const permissions = [
     { label: "Administrator", value: "admin" },
     { label: "Human Resources", value: "hr" },
     { label: "Employee", value: "employee" },
 ];
 
-const companyOptions = ref([]);
-const departmentOptions = ref([]);
-const allTeams = ref([]);
-const allPositions = ref([]);
+const companies = ref([]);
+const departments = ref([]);
+const teams = ref([]);
+const positions = ref([]);
 
 /* ------- Form ------- */
-const employeeForm = reactive({
-    prefix: "",
-    firstName: "",
-    lastName: "",
-    nickname: "",
-    phone: "",
-    companyId: "",
+const form = reactive({
+    emp_prefix: "",
+    emp_firstname: "",
+    emp_lastname: "",
+    emp_nickname: "",
+    emp_phone: "",
+    emp_company_id: "",
     employeeNumber: "",
     companyCode: "",
-    departmentId: "",
-    teamId: "",
-    positionId: "",
-    email: "",
+    emp_department_id: "",
+    emp_team_id: "",
+    emp_position_id: "",
+    emp_email: "",
     password: "",
-    permission: "",
+    emp_permission: "",
 });
 
-let originalFormSnapshot = {};
+let original = {};
 
 /* ------- State ------- */
-const fieldErrors = reactive({});
-const isSaving = ref(false);
-const submitErrorMessage = ref("");
-const hasNoChanges = ref(false);
+const errors = reactive({});
+const saving = ref(false);
+const saveError = ref("");
+const noChange = ref(false);
 
-/* ------- Alert Dialog State ------- */
-const alertDialog = reactive({
-    isOpen: false,
+/* ------- Alert State ------- */
+const alert = reactive({
+    open: false,
     type: "confirm",
     title: "",
     message: "",
@@ -347,13 +348,13 @@ const alertDialog = reactive({
     onCancel: null,
 });
 
-function openAlertDialog(config = {}) {
-    alertDialog.onConfirm = null;
-    alertDialog.onCancel = null;
+function openAlert(cfg = {}) {
+    alert.onConfirm = null;
+    alert.onCancel = null;
     Object.assign(
-        alertDialog,
+        alert,
         {
-            isOpen: true,
+            open: true,
             type: "success",
             title: "",
             message: "",
@@ -361,109 +362,109 @@ function openAlertDialog(config = {}) {
             okText: "OK",
             cancelText: "Cancel",
         },
-        config,
+        cfg,
     );
 }
 
 /* ------- Check User Role ------- */
-const loggedInUser = computed(() => {
+const currentUser = computed(() => {
     try {
-        const storedUser = localStorage.getItem("userData");
-        return storedUser ? JSON.parse(storedUser) : {};
+        const u = localStorage.getItem("userData");
+        return u ? JSON.parse(u) : {};
     } catch (e) {
         return {};
     }
 });
 
-const isAdminUser = computed(() => {
-    return loggedInUser.value.emp_permission === "admin";
+const isAdmin = computed(() => {
+    return currentUser.value.emp_permission === "admin";
 });
 
-const isPasswordRequired = computed(() => {
+const requirePassword = computed(() => {
     return (
-        previousPermission.value === "employee" &&
-        (employeeForm.permission === "admin" || employeeForm.permission === "hr")
+        originalPermission.value === "employee" &&
+        (form.emp_permission === "admin" || form.emp_permission === "hr")
     );
 });
 
-/* ------- Filtered Dropdown Options ------- */
-const filteredTeamOptions = computed(() => {
-    if (!employeeForm.departmentId) return [];
-    const selectedDeptId = Number(employeeForm.departmentId);
-    return allTeams.value.filter((t) => t.department_id === selectedDeptId);
+/* ------- Computed Options ------- */
+const teamOptions = computed(() => {
+    if (!form.emp_department_id) return [];
+    const depId = Number(form.emp_department_id);
+    return teams.value.filter((t) => t.department_id === depId);
 });
 
-const filteredPositionOptions = computed(() => {
-    if (!employeeForm.teamId) return [];
-    const selectedTeamId = Number(employeeForm.teamId);
-    return allPositions.value.filter((p) => p.team_id === selectedTeamId);
+const positionOptions = computed(() => {
+    if (!form.emp_team_id) return [];
+    const teamId = Number(form.emp_team_id);
+    return positions.value.filter((p) => p.team_id === teamId);
 });
 
-let previousPermission = ref("");
+let originalPermission = ref("");
 
-/* ------- Load Data on Mount ------- */
+/* ------- Load Data ------- */
 onMounted(async () => {
     try {
         const { data: metaData } = await axios.get("/meta");
 
-        companyOptions.value = (metaData.companies || []).map((c) => ({
+        companies.value = (metaData.companies || []).map((c) => ({
             label: c.com_name,
             value: c.id,
             code: c.com_code || c.com_name,
         }));
 
-        departmentOptions.value = (metaData.departments || []).map((d) => ({
+        departments.value = (metaData.departments || []).map((d) => ({
             label: d.dpm_name,
             value: d.id,
         }));
-        allTeams.value = (metaData.teams || []).map((t) => ({
+        teams.value = (metaData.teams || []).map((t) => ({
             label: t.tm_name,
             value: t.id,
             department_id: t.tm_department_id ?? null,
         }));
-        allPositions.value = (metaData.positions || []).map((p) => ({
+        positions.value = (metaData.positions || []).map((p) => ({
             label: p.pst_name,
             value: p.id,
             team_id: p.pst_team_id ?? null,
         }));
 
         const { data: res } = await axios.get(`/employees/${employeeId}`);
-        const fetchedEmployee = res.data || res;
+        const userData = res.data || res;
 
-        employeeForm.prefix = fetchedEmployee.emp_prefix;
-        employeeForm.firstName = fetchedEmployee.emp_firstname;
-        employeeForm.lastName = fetchedEmployee.emp_lastname;
-        employeeForm.nickname = fetchedEmployee.emp_nickname;
-        employeeForm.phone = fetchedEmployee.emp_phone;
-        employeeForm.departmentId = fetchedEmployee.emp_department_id;
-        employeeForm.teamId = fetchedEmployee.emp_team_id;
-        employeeForm.positionId = fetchedEmployee.emp_position_id;
-        employeeForm.email = fetchedEmployee.emp_email;
-        employeeForm.permission = fetchedEmployee.emp_permission;
-        previousPermission.value = fetchedEmployee.emp_permission;
-        employeeForm.password = "";
+        form.emp_prefix = userData.emp_prefix;
+        form.emp_firstname = userData.emp_firstname;
+        form.emp_lastname = userData.emp_lastname;
+        form.emp_nickname = userData.emp_nickname;
+        form.emp_phone = userData.emp_phone;
+        form.emp_department_id = userData.emp_department_id;
+        form.emp_team_id = userData.emp_team_id;
+        form.emp_position_id = userData.emp_position_id;
+        form.emp_email = userData.emp_email;
+        form.emp_permission = userData.emp_permission;
+        originalPermission.value = userData.emp_permission;
+        form.password = "";
 
-        const fullEmployeeId = (fetchedEmployee.emp_id || "").trim();
-        const sortedCompanies = [...companyOptions.value].sort(
+        const fullId = (userData.emp_id || "").trim();
+        const sortedCompanies = [...companies.value].sort(
             (a, b) => b.code.length - a.code.length,
         );
         const matchedCompany = sortedCompanies.find((c) =>
-            fullEmployeeId.toUpperCase().startsWith(c.code.toUpperCase()),
+            fullId.toUpperCase().startsWith(c.code.toUpperCase()),
         );
 
         if (matchedCompany) {
-            employeeForm.companyId = matchedCompany.value;
-            employeeForm.companyCode = matchedCompany.code;
-            const prefixRegex = new RegExp(`^${matchedCompany.code}`, "i");
-            employeeForm.employeeNumber = fullEmployeeId.replace(prefixRegex, "");
+            form.emp_company_id = matchedCompany.value;
+            form.companyCode = matchedCompany.code;
+            const regex = new RegExp(`^${matchedCompany.code}`, "i");
+            form.employeeNumber = fullId.replace(regex, "");
         } else {
-            employeeForm.employeeNumber = fullEmployeeId;
+            form.employeeNumber = fullId;
         }
 
-        originalFormSnapshot = JSON.parse(JSON.stringify(employeeForm));
+        original = JSON.parse(JSON.stringify(form));
     } catch (e) {
         console.error(e);
-        openAlertDialog({
+        openAlert({
             type: "error",
             title: "Error!",
             message: "Failed to load data.",
@@ -483,55 +484,55 @@ const validationMessages = {
     passwordMin8: "Please enter a password with at least 8 characters",
 };
 
-const fieldValidationRules = {
-    prefix: ["requiredSelect"],
-    departmentId: ["requiredSelect"],
-    teamId: ["requiredSelect"],
-    positionId: ["requiredSelect"],
-    permission: ["requiredSelect"],
-    firstName: ["requiredText"],
-    lastName: ["requiredText"],
-    nickname: ["requiredText"],
-    phone: ["requiredNumber"],
-    email: ["requiredEmail"],
-    companyId: ["requiredSelect"],
+const fieldRules = {
+    emp_prefix: ["requiredSelect"],
+    emp_department_id: ["requiredSelect"],
+    emp_team_id: ["requiredSelect"],
+    emp_position_id: ["requiredSelect"],
+    emp_permission: ["requiredSelect"],
+    emp_firstname: ["requiredText"],
+    emp_lastname: ["requiredText"],
+    emp_nickname: ["requiredText"],
+    emp_phone: ["requiredNumber"],
+    emp_email: ["requiredEmail"],
+    emp_company_id: ["requiredSelect"],
     employeeNumber: ["employeeNumber4"],
     password: ["passwordMin8"],
 };
 
-function validateSingleField(fieldKey, fieldValue) {
-    if (fieldKey === "password" && isPasswordRequired.value) {
-        if (!fieldValue) return "Password is required";
-        if (fieldValue.length < 8) return validationMessages.passwordMin8;
+function validateField(key, value) {
+    if (key === "password" && requirePassword.value) {
+        if (!value) return "Password is required";
+        if (value.length < 8) return validationMessages.passwordMin8;
         return "";
     }
-    if (employeeForm.permission === "employee" && fieldKey === "password") {
+    if (form.emp_permission === "employee" && key === "password") {
         return "";
     }
 
-    const rules = fieldValidationRules[fieldKey] || [];
-    for (const rule of rules) {
-        if (rule === "requiredSelect") {
-            if (!fieldValue) return validationMessages.requiredSelect;
-        } else if (rule === "requiredText") {
-            if (!fieldValue) return validationMessages.requiredText;
-            const textOnlyRegex = /^[A-Za-zก-๙ .'-]+$/u;
-            if (!textOnlyRegex.test(fieldValue)) return validationMessages.requiredText;
-        } else if (rule === "requiredNumber") {
-            if (!fieldValue) return "Required phone number";
-            if (!/^\d+$/.test(fieldValue) || fieldValue.length !== 10)
+    const rules = fieldRules[key] || [];
+    for (const r of rules) {
+        if (r === "requiredSelect") {
+            if (!value) return validationMessages.requiredSelect;
+        } else if (r === "requiredText") {
+            if (!value) return validationMessages.requiredText;
+            const re = /^[A-Za-zก-๙ .'-]+$/u;
+            if (!re.test(value)) return validationMessages.requiredText;
+        } else if (r === "requiredNumber") {
+            if (!value) return "Required phone number";
+            if (!/^\d+$/.test(value) || value.length !== 10)
                 return "Phone number must be 10 digits";
-        } else if (rule === "requiredEmail") {
-            if (!fieldValue || !fieldValue.includes("@"))
+        } else if (r === "requiredEmail") {
+            if (!value || !value.includes("@"))
                 return validationMessages.requiredEmail;
-        } else if (rule === "requiredField") {
-            if (!fieldValue) return validationMessages.requiredField;
-        } else if (rule === "employeeNumber4") {
-            if (!fieldValue) return validationMessages.requiredField;
-            if (!/^\d{3}$/.test(fieldValue))
+        } else if (r === "requiredField") {
+            if (!value) return validationMessages.requiredField;
+        } else if (r === "employeeNumber4") {
+            if (!value) return validationMessages.requiredField;
+            if (!/^\d{3}$/.test(value))
                 return validationMessages.employeeNumber4;
-        } else if (rule === "passwordMin8") {
-            if (fieldValue && fieldValue.length < 8) {
+        } else if (r === "passwordMin8") {
+            if (value && value.length < 8) {
                 return validationMessages.passwordMin8;
             }
         }
@@ -539,85 +540,85 @@ function validateSingleField(fieldKey, fieldValue) {
     return "";
 }
 
-function validateAllFields() {
-    Object.keys(fieldErrors).forEach((k) => delete fieldErrors[k]);
-    Object.keys(fieldValidationRules).forEach((fieldKey) => {
-        const errorMsg = validateSingleField(fieldKey, employeeForm[fieldKey]);
-        if (errorMsg) fieldErrors[fieldKey] = errorMsg;
+function validate() {
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    Object.keys(fieldRules).forEach((k) => {
+        const msg = validateField(k, form[k]);
+        if (msg) errors[k] = msg;
     });
-    return Object.keys(fieldErrors).length === 0;
+    return Object.keys(errors).length === 0;
 }
 
 function onEmployeeNumberInput(e) {
-    let sanitizedValue = e.target.value.replace(/\D/g, "").slice(0, 4);
-    employeeForm.employeeNumber = sanitizedValue;
-    if (fieldErrors.employeeNumber) delete fieldErrors.employeeNumber;
+    let val = e.target.value.replace(/\D/g, "").slice(0, 4);
+    form.employeeNumber = val;
+    if (errors.employeeNumber) delete errors.employeeNumber;
 }
 
 /* ====== Watchers ====== */
-Object.keys(fieldValidationRules).forEach((fieldKey) => {
+Object.keys(fieldRules).forEach((k) => {
     watch(
-        () => employeeForm[fieldKey],
-        (newValue) => {
-            const errorMsg = validateSingleField(fieldKey, newValue);
-            if (errorMsg) fieldErrors[fieldKey] = errorMsg;
-            else delete fieldErrors[fieldKey];
+        () => form[k],
+        (v) => {
+            const msg = validateField(k, v);
+            if (msg) errors[k] = msg;
+            else delete errors[k];
         },
     );
 });
 
 watch(
-    () => employeeForm.departmentId,
-    (newDeptId, oldDeptId) => {
-        if (oldDeptId && newDeptId !== oldDeptId) {
-            employeeForm.teamId = "";
-            employeeForm.positionId = "";
+    () => form.emp_department_id,
+    (n, o) => {
+        if (o && n !== o) {
+            form.emp_team_id = "";
+            form.emp_position_id = "";
         }
     },
 );
 
 watch(
-    () => employeeForm.teamId,
-    (newTeamId, oldTeamId) => {
-        if (oldTeamId && newTeamId !== oldTeamId) {
-            employeeForm.positionId = "";
+    () => form.emp_team_id,
+    (n, o) => {
+        if (o && n !== o) {
+            form.emp_position_id = "";
         }
     },
 );
 
 watch(
-    () => employeeForm.companyId,
-    (newCompanyId) => {
-        const matchedCompany = companyOptions.value.find((c) => c.value === newCompanyId);
-        employeeForm.companyCode = matchedCompany ? matchedCompany.code : "";
+    () => form.emp_company_id,
+    (newId) => {
+        const found = companies.value.find((c) => c.value === newId);
+        form.companyCode = found ? found.code : "";
     },
 );
 
 watch(
-    () => employeeForm.permission,
-    (newPermission, oldPermission) => {
-        if (newPermission === "employee" && (oldPermission === "admin" || oldPermission === "hr")) {
-            employeeForm.password = null;
-            delete fieldErrors.password;
+    () => form.emp_permission,
+    (newVal, oldVal) => {
+        if (newVal === "employee" && (oldVal === "admin" || oldVal === "hr")) {
+            form.password = null;
+            delete errors.password;
         }
     },
 );
 
-/* ------- Save Logic ------- */
-function openConfirmSaveDialog() {
-    hasNoChanges.value = false;
-    submitErrorMessage.value = "";
+/* ------- Logic การบันทึก ------- */
+function openConfirmSave() {
+    noChange.value = false;
+    saveError.value = "";
 
-    if (!validateAllFields()) return;
+    if (!validate()) return;
 
-    const currentFormData = { ...employeeForm };
-    const originalFormData = { ...originalFormSnapshot };
-    if (!currentFormData.password) delete currentFormData.password;
-    delete originalFormData.password;
+    const current = { ...form };
+    const prev = { ...original };
+    if (!current.password) delete current.password;
+    delete prev.password;
 
-    if (JSON.stringify(currentFormData) === JSON.stringify(originalFormData) && !employeeForm.password) {
-        hasNoChanges.value = true;
-        openAlertDialog({
+    if (JSON.stringify(current) === JSON.stringify(prev) && !form.password) {
+        noChange.value = true;
+        openAlert({
             type: "error",
             title: "NO CHANGES MADE",
             message: "No changes detected in the form.",
@@ -627,151 +628,151 @@ function openConfirmSaveDialog() {
         return;
     }
 
-    openAlertDialog({
+    openAlert({
         type: "confirm",
         title: "CONFIRM UPDATE",
         message: "Are you sure you want to update this employee?",
         showCancel: true,
         okText: "Yes, Update",
         onConfirm: async () => {
-            await processSave();
+            await confirmSaveProcess();
         },
     });
 }
 
-let hasUserConfirmedLeave = false;
+let isConfirmedLeave = false;
 
-async function processSave() {
-    isSaving.value = true;
-    submitErrorMessage.value = "";
-    Object.keys(fieldErrors).forEach((k) => delete fieldErrors[k]);
+async function confirmSaveProcess() {
+    saving.value = true;
+    saveError.value = "";
+    Object.keys(errors).forEach((k) => delete errors[k]);
 
     try {
-        // ---- ✅ Check for duplicate name before saving ----
-        const { data: allEmployeesRes } = await axios.get("/employees");
-        const employeeList = allEmployeesRes.data || allEmployeesRes;
-        const normalizeString = (s) => (s || "").trim().toLowerCase();
+        // ---- ✅ ตรวจสอบชื่อ-นามสกุลซ้ำก่อน Save ----
+        const { data: allEmp } = await axios.get("/employees");
+        const empList = allEmp.data || allEmp;
+        const normalizeStr = (s) => (s || "").trim().toLowerCase();
 
-        const newFirstName = normalizeString(employeeForm.firstName);
-        const newLastName = normalizeString(employeeForm.lastName);
-
-        const duplicateEmployee = employeeList.find((emp) => {
-            if (String(emp.emp_id) === String(employeeId)) return false;
+        const newFirst = normalizeStr(form.emp_firstname);
+        const newLast = normalizeStr(form.emp_lastname);
+        console.log("empList sample:", empList[0]);
+        const duplicate = empList.find((e) => {
+            if (String(e.emp_id) === String(employeeId)) return false;
             return (
-                normalizeString(emp.emp_firstname) === newFirstName &&
-                normalizeString(emp.emp_lastname) === newLastName
+                normalizeStr(e.emp_firstname) === newFirst &&
+                normalizeStr(e.emp_lastname) === newLast
             );
         });
 
-        if (duplicateEmployee) {
-            fieldErrors.firstName = "This first name is already in use.";
-            fieldErrors.lastName = "This last name is already in use.";
-            isSaving.value = false;
+        if (duplicate) {
+            errors.emp_firstname ="This first name is already in use.";
+            errors.emp_lastname = "This last name is already in use.";
+            saving.value = false;
             return;
         }
-        // ---- End duplicate name check ----
+        // ---- สิ้นสุดการตรวจสอบชื่อซ้ำ ----
 
-        const requestPayload = { ...employeeForm };
-        requestPayload.emp_id = `${employeeForm.companyCode}${employeeForm.employeeNumber}`;
+        const payload = { ...form };
+        payload.emp_id = `${form.companyCode}${form.employeeNumber}`;
 
-        if (requestPayload.password) {
-            requestPayload.emp_password = requestPayload.password;
+        if (payload.password) {
+            payload.emp_password = payload.password;
         }
-        delete requestPayload.password;
-        delete requestPayload.employeeNumber;
-        delete requestPayload.companyCode;
+        delete payload.password;
+        delete payload.employeeNumber;
+        delete payload.companyCode;
 
-        if (!requestPayload.password) delete requestPayload.password;
-        if (requestPayload.emp_permission === "employee") requestPayload.password = null;
+        if (!payload.password) delete payload.password;
+        if (payload.emp_permission === "employee") payload.password = null;
 
-        await axios.put(`/employees/${employeeId}`, requestPayload);
+        await axios.put(`/employees/${employeeId}`, payload);
 
-        originalFormSnapshot = JSON.parse(JSON.stringify(employeeForm));
-        originalFormSnapshot.password = "";
+        original = JSON.parse(JSON.stringify(form));
+        original.password = "";
 
-        openAlertDialog({
+        openAlert({
             type: "success",
             title: "UPDATE SUCCESS!",
             message: "Employee data has been updated.",
             okText: "OK",
             onCancel: () => {
-                hasUserConfirmedLeave = true;
+                isConfirmedLeave = true;
                 router.push("/employee");
             },
             onConfirm: () => {
-                hasUserConfirmedLeave = true;
+                isConfirmedLeave = true;
                 router.push("/employee");
             },
         });
     } catch (err) {
         console.error(err);
-        let hasDuplicateFieldError = false;
-        const apiResponse = err.response;
-        const errorMessage = apiResponse?.data?.message || err.message || "";
+        let hasValidationError = false;
+        const res = err.response;
+        const msg = res?.data?.message || err.message || "";
 
-        if (apiResponse && apiResponse.status === 422 && apiResponse.data.errors) {
-            const apiFieldErrors = apiResponse.data.errors;
-            if (apiFieldErrors.emp_phone) {
-                fieldErrors.phone = "This phone number is already in use.";
-                hasDuplicateFieldError = true;
+        if (res && res.status === 422 && res.data.errors) {
+            const apiErrors = res.data.errors;
+            if (apiErrors.emp_phone) {
+                errors.emp_phone = "This phone number is already in use.";
+                hasValidationError = true;
             }
-            if (apiFieldErrors.emp_email) {
-                fieldErrors.email = "This email is already in use.";
-                hasDuplicateFieldError = true;
+            if (apiErrors.emp_email) {
+                errors.emp_email = "This email is already in use.";
+                hasValidationError = true;
             }
-            if (apiFieldErrors.emp_id) {
-                fieldErrors.employeeNumber = "This ID is already in use.";
-                hasDuplicateFieldError = true;
+            if (apiErrors.emp_id) {
+                errors.employeeNumber = "This ID is already in use.";
+                hasValidationError = true;
             }
-        } else if (errorMessage.includes("Duplicate entry")) {
-            hasDuplicateFieldError = true;
-            if (errorMessage.includes("phone"))
-                fieldErrors.phone = "This phone number is already in use.";
-            else if (errorMessage.includes("email"))
-                fieldErrors.email = "This email is already in use.";
-            else if (errorMessage.includes("emp_id"))
-                fieldErrors.employeeNumber = "This employee ID is already in use.";
-            else hasDuplicateFieldError = false;
+        } else if (msg.includes("Duplicate entry")) {
+            hasValidationError = true;
+            if (msg.includes("phone"))
+                errors.emp_phone = "This phone number is already in use.";
+            else if (msg.includes("email"))
+                errors.emp_email = "This email is already in use.";
+            else if (msg.includes("emp_id"))
+                errors.employeeNumber = "This employee ID is already in use.";
+            else hasValidationError = false;
         }
 
-        if (hasDuplicateFieldError) {
-            isSaving.value = false;
+        if (hasValidationError) {
+            saving.value = false;
             return;
         }
 
-        submitErrorMessage.value = errorMessage;
-        openAlertDialog({
+        saveError.value = msg;
+        openAlert({
             type: "error",
             title: "UPDATE FAILED!",
-            message: errorMessage,
+            message: msg,
         });
     } finally {
-        isSaving.value = false;
+        saving.value = false;
     }
 }
 
 function onCancel() {
-    if (isSaving.value) return;
+    if (saving.value) return;
     router.push("/employee");
 }
 
-/* ====== Navigation Guard ====== */
+/* ====== ดักจับการเปลี่ยนหน้า (Navigation Guard) ====== */
 onBeforeRouteLeave((to, from, next) => {
-    if (hasUserConfirmedLeave || isSaving.value) {
+    if (isConfirmedLeave || saving.value) {
         next();
         return;
     }
 
-    const currentFormData = { ...employeeForm };
-    const originalFormData = { ...originalFormSnapshot };
-    if (!currentFormData.password) delete currentFormData.password;
-    delete originalFormData.password;
+    const current = { ...form };
+    const prev = { ...original };
+    if (!current.password) delete current.password;
+    delete prev.password;
 
-    const hasUnsavedChanges =
-        JSON.stringify(currentFormData) !== JSON.stringify(originalFormData) || !!employeeForm.password;
+    const isChanged =
+        JSON.stringify(current) !== JSON.stringify(prev) || !!form.password;
 
-    if (hasUnsavedChanges) {
-        openAlertDialog({
+    if (isChanged) {
+        openAlert({
             type: "confirm",
             title: "DO YOU WANT TO LEAVE THIS CHANGE?",
             message: "Your changes will be lost.",
@@ -779,12 +780,12 @@ onBeforeRouteLeave((to, from, next) => {
             okText: "OK",
             cancelText: "Cancel",
             onConfirm: () => {
-                alertDialog.isOpen = false;
-                hasUserConfirmedLeave = true;
+                alert.open = false;
+                isConfirmedLeave = true;
                 next();
             },
             onCancel: () => {
-                alertDialog.isOpen = false;
+                alert.open = false;
                 next(false);
             },
         });
