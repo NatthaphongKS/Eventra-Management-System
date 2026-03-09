@@ -4,7 +4,7 @@
     Input: ข้อมูลกิจกรรมจาก API (get-event), ข้อมูลหมวดหมู่ (event-info), สิทธิ์ผู้ใช้ (permission)
     Output: ตารางกิจกรรม, ฟังก์ชันค้นหา/กรอง/เรียงลำดับ, ปุ่มแก้ไข/ลบ/เช็คอิน, Modal แจ้งเตือนผลลัพธ์
     ชื่อผู้เขียน/แก้ไข: Yothin S.
-    วันที่จัดทำ/แก้ไข: 03/03/2026
+    วันที่จัดทำ/แก้ไข: 09/03/2026
 -->
 
 <template>
@@ -40,10 +40,8 @@
             " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
-                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)"
-                    title="ดูรายละเอียด">
-                    {{ value }}
+                <span role="button" tabindex="0" @click="goDetails(row.id)" :title="value">
+                    {{ value && value.length > 30 ? value.slice(0, 30) + '...' : value }}
                 </span>
             </template>
 
