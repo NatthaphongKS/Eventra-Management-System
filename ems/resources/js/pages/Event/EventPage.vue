@@ -42,16 +42,15 @@
             <template #cell-evn_title="{ row, value }">
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
                     @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)"
-                    :title="value">
-                    {{ value && value.length > 30 ? value.substring(0, 30) + '...' : value }}
+                    title="ดูรายละเอียด">
+                    {{ value }}
                 </span>
             </template>
 
             <template #cell-cat_name="{ row, value }">
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)"
-                    :title="value">
-                    {{ value && value.length > 15 ? value.substring(0, 15) + '...' : value }}
+                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
+                    {{ value }}
                 </span>
             </template>
 
