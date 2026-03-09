@@ -198,3 +198,5 @@ class ConnectSeeder extends Seeder
         ];
 
         DB::table('ems_connect')->insert($connections);
+    }
+}

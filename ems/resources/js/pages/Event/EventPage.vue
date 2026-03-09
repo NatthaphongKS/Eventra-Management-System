@@ -41,28 +41,28 @@
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
                 <span role="button" tabindex="0" @click="goDetails(row.id)" :title="value">
-                    {{ value && value.length > 30 ? value.slice(0, 30) + '...' : value }}
+                    {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
                 </span>
             </template>
 
             <template #cell-cat_name="{ row, value }">
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
-                    {{ value }}
+                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)" :title="value">
+                    {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
                 </span>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
                     @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
-                    {{ value }}
+                    {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
                 </span>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
                     @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
-                    {{ value }}
+                    {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
                 </span>
             </template>
 
@@ -70,7 +70,7 @@
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
                     @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
                     <span :class="badgeClass(value)">
-                        {{ value || "N/A" }}
+                        {{ value && value.length > 20 ? value.slice(0, 20) + '...' : value }}
                     </span>
                 </span>
             </template>
