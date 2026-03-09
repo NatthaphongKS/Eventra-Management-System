@@ -3,36 +3,18 @@
     <section class="p-0">
         <!-- Toolbar -->
         <div class="flex items-center gap-3">
-            <SearchBar
-                v-model="searchInput"
-                placeholder="Search Employee ID / Name / Nickname"
-                @search="onSearch"
-            />
+            <SearchBar v-model="searchInput" placeholder="Search Employee ID / Name / Nickname" @search="onSearch" />
 
-            <div class="relative z-[60] mt-8" ref="sortWrap">
-                <SortMenu
-                    :is-open="sortMenuOpen"
-                    :options="sortOptions"
-                    :sort-by="sortBy.key"
-                    :sort-order="sortBy.order"
-                    @toggle="sortMenuOpen = !sortMenuOpen"
-                    @choose="onSortChoose"
-                />
+            <div class="relative z-[60] mt-6" ref="sortWrap">
+                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose" />
             </div>
         </div>
 
         <!-- DataTable -->
-        <DataTable
-            :rows="paged"
-            :columns="columns"
-            :page="page"
-            :pageSize="pageSize"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            @update:page="page = $event"
-            @update:pageSize="onChangePageSize"
-            class="mt-4"
-        >
+        <DataTable :rows="paged" :columns="columns" :page="page" :pageSize="pageSize" :total-items="sorted.length"
+            :page-size-options="[10, 20, 50, 100]" @update:page="page = $event" @update:pageSize="onChangePageSize"
+            class="mt-4">
             <template #empty>
                 {{
                     sorted.length === 0
@@ -141,23 +123,23 @@ export default {
                 },
                 {
                     key: 'created_by_name',
-                    label: 'Created By',
+                    label: 'Created by',
                     class: 'text-center w-[120px]',
                 },
                 {
                     key: 'created_at',
-                    label: 'Created Date',
+                    label: 'Created Date (D/M/Y)',
                     class: 'text-center w-[130px]',
                     format: (v) => v ? new Date(v).toLocaleDateString('th-TH') : '-',
                 },
                 {
                     key: 'deleted_by_name',
-                    label: 'Deleted By',
+                    label: 'Deleted by',
                     class: 'text-center w-[120px]',
                 },
                 {
                     key: 'emp_deleted_at',
-                    label: 'Deleted Date',
+                    label: 'Deleted Date (D/M/Y)',
                     class: 'text-center w-[130px]',
                     format: (v) => v ? new Date(v).toLocaleDateString('th-TH') : '-',
                 },
@@ -167,26 +149,26 @@ export default {
 
     computed: {
         filtered() {
-  const q = (this.search || '').trim().toLowerCase();
-  if (!q) return this.rows;
+            const q = (this.search || '').trim().toLowerCase();
+            if (!q) return this.rows;
 
-  return this.rows.filter((r) => {
-    const id = (r.emp_id || '').toLowerCase();
-    const firstname = (r.emp_firstname || '').toLowerCase();
-    const lastname = (r.emp_lastname || '').toLowerCase();
-    const nickname = (r.emp_nickname || '').toLowerCase();
+            return this.rows.filter((r) => {
+                const id = (r.emp_id || '').toLowerCase();
+                const firstname = (r.emp_firstname || '').toLowerCase();
+                const lastname = (r.emp_lastname || '').toLowerCase();
+                const nickname = (r.emp_nickname || '').toLowerCase();
 
-    const fullName = `${firstname} ${lastname}`.trim();
+                const fullName = `${firstname} ${lastname}`.trim();
 
-    return (
-      id.includes(q) ||
-      firstname.includes(q) ||
-      lastname.includes(q) ||
-      fullName.includes(q) ||
-      nickname.includes(q)
-    );
-  });
-},
+                return (
+                    id.includes(q) ||
+                    firstname.includes(q) ||
+                    lastname.includes(q) ||
+                    fullName.includes(q) ||
+                    nickname.includes(q)
+                );
+            });
+        },
 
         sorted() {
             const { key, order } = this.sortBy;
@@ -235,8 +217,8 @@ export default {
                 const data = Array.isArray(res.data)
                     ? res.data
                     : Array.isArray(res.data?.data)
-                    ? res.data.data
-                    : [];
+                        ? res.data.data
+                        : [];
 
                 this.rows = data.map((x) => ({
                     id: x.id,
@@ -262,7 +244,6 @@ export default {
 
         getFullName(row) {
             const parts = [
-                row.emp_prefix,
                 row.emp_firstname,
                 row.emp_lastname
             ].filter(Boolean);

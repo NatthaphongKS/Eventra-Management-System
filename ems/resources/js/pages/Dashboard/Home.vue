@@ -57,7 +57,7 @@
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
                     @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)"
                     :title="value && value.length > 30 ? value : ''">
-                    {{ value && value.length > 30 ? value.substring(0, 30) + '...' : value }}
+                    {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
                 </span>
             </template>
 
@@ -66,7 +66,7 @@
                 <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
                     @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)"
                     :title="value && value.length > 30 ? value : ''">
-                    {{ value && value.length > 30 ? value.substring(0, 30) + '...' : value }}
+                    {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
                 </span>
             </template>
 
@@ -1009,9 +1009,9 @@ handleCheckAllEvents({ pageKeys, action }) {
                     }
         }
       } catch (err) {
-        console.error('❌ Error fetching event statistics:', err);
-        console.error('❌ Error response:', err.response?.data);
-        console.error('❌ Error status:', err.response?.status);
+        console.error('Error fetching event statistics:', err);
+        console.error('Error response:', err.response?.data);
+        console.error('Error status:', err.response?.status);
         // เกิดข้อผิดพลาด - รีเซ็ตเป็นค่าว่าง
         this.chartData = {
           total_participation: 0,

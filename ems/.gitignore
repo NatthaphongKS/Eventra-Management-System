@@ -19,7 +19,7 @@
 /storage/*.key
 /storage/pail
 /vendor
-/scripts
+/script
 /docs
 Homestead.json
 Homestead.yaml
@@ -28,3 +28,4 @@ web.txt
 .env .railway
 .env .local
 .env .dekdee2
+/public/storage

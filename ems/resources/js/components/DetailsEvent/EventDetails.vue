@@ -328,9 +328,56 @@ export default {
          * ชื่อผู้เขียน/แก้ไข: Mr.Suphanut Pangot
          * วันที่จัดทำ/แก้ไข: 2025-12-28
          */
-        openFile(url) {
+        async openFile(url) {
             if (!url) return;
-            window.open(url, "_blank");
+
+            const secureUrl = url.replace("http://", "https://");
+
+            try {
+                const response = await fetch(secureUrl);
+                if (!response.ok) throw new Error('Download failed');
+
+                // --- 1. พยายามดึงชื่อไฟล์จาก Header (วิธีที่แม่นยำที่สุด) ---
+                // Server มักส่งชื่อไฟล์มาใน Content-Disposition
+                let fileName = "";
+                const disposition = response.headers.get('content-disposition');
+
+                if (disposition && disposition.includes('filename')) {
+                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    const matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        fileName = matches[1].replace(/['"]/g, '');
+                    }
+                }
+
+                // --- 2. ถ้า Header ไม่มี ให้ดึงจาก URL (เป็นแผนสำรอง) ---
+                if (!fileName) {
+                    // ใช้ decodeURIComponent เพื่อให้รองรับชื่อไฟล์ภาษาไทย (%E0%B8...)
+                    const urlPath = secureUrl.split('/').pop().split('#')[0].split('?')[0];
+                    fileName = decodeURIComponent(urlPath) || 'download';
+                }
+
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = fileName; // ใช้ชื่อที่เราดึงมาได้
+
+                document.body.appendChild(link);
+                link.click();
+
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+            } catch (error) {
+                console.error("Error:", error);
+                // แผนสำรองสุดท้ายถ้า Fetch พัง
+                const link = document.createElement('a');
+                link.href = secureUrl;
+                link.target = "_blank";
+                link.click();
+            }
         },
 
         /**

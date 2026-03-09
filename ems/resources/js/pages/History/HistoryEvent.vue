@@ -51,21 +51,22 @@
         <router-link
           :to="{ name: 'history-event-detail', params: { id: row.id } }"
           class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate cursor-pointer transition-colors"
-          title="Click to view details"
+          :title="value"
+
         >
-          {{ value }}
+          {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </router-link>
       </template>
 
       <template #cell-created_by="{ value }">
-        <span class="block py-2 text-slate-600 text-sm">
-          {{ value || "-" }}
+        <span class="text-center block py-2 text-slate-600 text-sm" :title="value">
+          {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </span>
       </template>
 
       <template #cell-deleted_by="{ value }">
-        <span class="block py-2 text-slate-600 text-sm">
-          {{ value || "-" }}
+        <span class="text-center block py-2 text-slate-600 text-sm" :title="value">
+          {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
         </span>
       </template>
 
@@ -180,12 +181,12 @@ export default {
         {
           key: "created_by",
           label: "Created by",
-          class: "text-left",
+          class: "text-center",
           sortable: true,
         },
         {
           key: "created_at",
-          label: "Created Date",
+          label: "Created Date (D/M/Y)",
           class: "text-center whitespace-nowrap",
           format: this.formatDate,
           sortable: true,
@@ -193,12 +194,12 @@ export default {
         {
           key: "deleted_by",
           label: "Deleted by",
-          class: "text-left",
+          class: "text-center",
           sortable: true,
         },
         {
           key: "deleted_at",
-          label: "Deleted Date",
+          label: "Deleted Date (D/M/Y)",
           class: "text-center whitespace-nowrap",
           format: this.formatDate,
           sortable: true,

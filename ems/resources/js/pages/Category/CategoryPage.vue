@@ -3,21 +3,10 @@
     <section class="p-0">
         <!-- Toolbar -->
         <div class="flex items-center gap-3">
-            <SearchBar
-                v-model="searchInput"
-                placeholder="Search Category / Created by"
-                @search="onSearch"
-                class=""
-            />
+            <SearchBar v-model="searchInput" placeholder="Search Category / Created by" @search="onSearch" class="" />
             <div class="mt-6" ref="sortWrap">
-                <SortMenu
-                    :is-open="sortMenuOpen"
-                    :options="sortOptions"
-                    :sort-by="sortBy.key"
-                    :sort-order="sortBy.order"
-                    @toggle="sortMenuOpen = !sortMenuOpen"
-                    @choose="onSortChoose"
-                />
+                <SortMenu :is-open="sortMenuOpen" :options="sortOptions" :sort-by="sortBy.key"
+                    :sort-order="sortBy.order" @toggle="sortMenuOpen = !sortMenuOpen" @choose="onSortChoose" />
             </div>
 
             <div class="mt-6">
@@ -26,48 +15,20 @@
         </div>
 
         <!-- DataTable -->
-        <DataTable
-            :rows="paged"
-            :columns="CategoryTableColumns"
-            :page="page"
-            :pageSize="pageSize"
-            :total-items="sorted.length"
-            :page-size-options="[10, 20, 50, 100]"
-            @update:page="page = $event"
-            @update:pageSize="onChangePageSize"
-            class="mt-4"
-        >
+        <DataTable :rows="paged" :columns="CategoryTableColumns" :page="page" :pageSize="pageSize"
+            :total-items="sorted.length" :page-size-options="[10, 20, 50, 100]" @update:page="page = $event"
+            @update:pageSize="onChangePageSize" class="mt-4">
             <template #actions="{ row }">
-                <button
-                    class="grid h-8 w-8 place-items-center rounded-full text-neutral-700"
-                    :class="
-                        row.is_used_in_event
-                            ? 'opacity-40 cursor-not-allowed'
-                            : 'hover:text-emerald-600'
-                    "
-                    :disabled="row.is_used_in_event"
-                    @click="openEdit(row)"
-                    title="Edit"
-                    aria-label="edit"
-                >
-                    <Icon
-                        icon="material-symbols:edit-rounded"
-                        width="20"
-                        height="20"
-                    />
+                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-700" :class="row.is_used_in_event
+                    ? 'opacity-40 cursor-not-allowed'
+                    : 'hover:text-emerald-600'
+                    " :disabled="row.is_used_in_event" @click="openEdit(row)" title="Edit" aria-label="edit">
+                    <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
                 </button>
 
-                <button
-                    class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-red-600"
-                    @click="requestDelete(row)"
-                    title="Delete"
-                    aria-label="delete"
-                >
-                    <Icon
-                        icon="fluent:delete-12-filled"
-                        width="20"
-                        height="20"
-                    />
+                <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-700 hover:text-red-600"
+                    @click="requestDelete(row)" title="Delete" aria-label="delete">
+                    <Icon icon="fluent:delete-12-filled" width="20" height="20" />
                 </button>
             </template>
 
@@ -81,31 +42,13 @@
         </DataTable>
 
         <!-- Modals -->
-        <ModalAlert
-            v-model:open="alert.open"
-            :type="alert.type"
-            :title="alert.title"
-            :message="alert.message"
-            :show-cancel="alert.showCancel"
-            :ok-text="alert.okText"
-            :cancel-text="alert.cancelText"
-            @confirm="alert.onConfirm && alert.onConfirm()"
-            @cancel="alert.onCancel && alert.onCancel()"
-        />
+        <ModalAlert v-model:open="alert.open" :type="alert.type" :title="alert.title" :message="alert.message"
+            :show-cancel="alert.showCancel" :ok-text="alert.okText" :cancel-text="alert.cancelText"
+            @confirm="alert.onConfirm && alert.onConfirm()" @cancel="alert.onCancel && alert.onCancel()" />
 
-        <CategoryCreate
-            v-model:open="addOpen"
-            :userName="userName"
-            :duplicate="isDuplicate"
-            @submit="createCategory"
-        />
-        <CategoryEdit
-            v-model:open="editOpen"
-            :category="editing"
-            :is-duplicate="isDupForEdit"
-            :formatDate="formatDate"
-            @submit="updateCategory"
-        />
+        <CategoryCreate v-model:open="addOpen" :userName="userName" :duplicate="isDuplicate" @submit="createCategory" />
+        <CategoryEdit v-model:open="editOpen" :category="editing" :is-duplicate="isDupForEdit" :formatDate="formatDate"
+            @submit="updateCategory" />
     </section>
 </template>
 
@@ -202,7 +145,7 @@ export default {
                 },
                 {
                     key: "cat_created_at",
-                    label: "Created date (D/M/Y)",
+                    label: "Created Date (D/M/Y)",
                     class: "text-center w-[202px]",
                     format: (v) => new Date(v).toLocaleDateString(),
                 },
@@ -285,8 +228,8 @@ export default {
                 const cats = Array.isArray(catRes.data)
                     ? catRes.data
                     : Array.isArray(catRes.data?.data)
-                    ? catRes.data.data
-                    : [];
+                        ? catRes.data.data
+                        : [];
 
                 const events = Array.isArray(evRes.data)
                     ? evRes.data
@@ -319,7 +262,7 @@ export default {
                         // จุดสำคัญ: ให้ FE ใช้ disable ไอคอนแก้ไข
                         is_used_in_event: usedCatIds.has(id),
                         cat_name_display: this.wrapEveryChars(
-                            c.cat_name ?? c.name ?? "-",100
+                            c.cat_name ?? c.name ?? "-", 100
                         ),
                     };
                 });
@@ -393,7 +336,7 @@ export default {
                     cat_created_at:
                         created.cat_created_at || new Date().toISOString(),
                     cat_name_display: this.wrapEveryChars(
-                        created.cat_name || n,100
+                        created.cat_name || n, 100
                     ),
                 });
                 this.addOpen = false;
@@ -458,10 +401,10 @@ export default {
                 this.rows = this.rows.map((r) =>
                     r.id === id
                         ? {
-                              ...r,
-                              cat_name: n,
-                              cat_name_display: this.wrapEveryChars(n, 100),
-                          }
+                            ...r,
+                            cat_name: n,
+                            cat_name_display: this.wrapEveryChars(n, 100),
+                        }
                         : r
                 );
                 this.editOpen = false;

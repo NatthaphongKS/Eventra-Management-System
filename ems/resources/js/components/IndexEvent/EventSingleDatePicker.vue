@@ -4,14 +4,14 @@
     Input: modelValue (String), min (String), hasError (Boolean)
     Output: update:modelValue (String YYYY-MM-DD)
     ชื่อผู้เขียน/แก้ไข: Yothin S.
-    วันที่จัดทำ/แก้ไข: 28/02/2026
+    วันที่จัดทำ/แก้ไข: 09/03/2026
 -->
 <template>
     <div class="relative" ref="root">
         <!-- Display trigger -->
         <div class="relative group" @click="showDropdown = !showDropdown">
             <div :class="[
-                'flex items-center justify-between px-[20px] font-medium rounded-2xl cursor-pointer z-10 bg-white border transition h-[52px]',
+                'flex items-center justify-between px-3 py-2.5 text-md font-medium rounded-2xl cursor-pointer z-10 bg-white border transition',
                 modelValue ? 'text-neutral-800' : 'text-red-300',
                 hasError
                     ? 'border-red-500 bg-red-50'
@@ -105,7 +105,8 @@
                 <table class="w-full text-center text-xs border-collapse">
                     <thead>
                         <tr class="text-neutral-500 font-medium">
-                            <th v-for="d in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="d" class="font-medium pb-2">{{ d
+                            <th v-for="d in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="d"
+                                class="font-medium pb-2">{{ d
                                 }}</th>
                         </tr>
                     </thead>

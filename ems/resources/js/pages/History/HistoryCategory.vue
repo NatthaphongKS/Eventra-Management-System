@@ -9,7 +9,7 @@
                 @search="onSearch"
             />
 
-            <div class="relative z-[60] mt-8" ref="sortWrap">
+            <div class="relative z-[60] mt-6" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
                     :options="sortOptions"
@@ -116,7 +116,7 @@ export default {
                 },
                 {
                     key: "cat_created_at",
-                    label: "Created date (D/M/Y)",
+                    label: "Created Date (D/M/Y)",
                     class: "text-center w-[170px]",
                     format: (v) => (v ? new Date(v).toLocaleDateString() : "-"),
                 },
@@ -127,7 +127,7 @@ export default {
                 },
                 {
                     key: "cat_deleted_at",
-                    label: "Deleted date (D/M/Y)",
+                    label: "Deleted Date (D/M/Y)",
                     class: "text-center w-[170px]",
                     format: (v) => (v ? new Date(v).toLocaleDateString() : "-"),
                 },
