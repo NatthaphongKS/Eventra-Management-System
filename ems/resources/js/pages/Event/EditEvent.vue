@@ -477,19 +477,17 @@ export default {
             // พยายามเปิดใน Tab ใหม่
             const newWindow = window.open(url, "_blank");
 
-            // ถ้าเปิดไม่ได้ (โดนบล็อก Popup) ให้ทำการดาวน์โหลดแทน
-            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                const link = document.createElement('a');
-                link.href = url;
+            const link = document.createElement('a');
+            link.href = url;
 
-                // พยายามดึงชื่อไฟล์จาก URL
-                const fileName = url.split('/').pop().split('#')[0].split('?')[0];
-                link.download = fileName || 'download';
+            // พยายามดึงชื่อไฟล์จาก URL
+            const fileName = url.split('/').pop().split('#')[0].split('?')[0];
+            link.download = fileName || 'download';
 
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
         },
         /**
          * ชื่อฟังก์ชัน: fetchData
