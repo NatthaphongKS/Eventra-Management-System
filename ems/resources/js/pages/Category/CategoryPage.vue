@@ -20,8 +20,8 @@
             @update:pageSize="onChangePageSize" class="mt-4">
             <template #actions="{ row }">
                 <button class="grid h-8 w-8 place-items-center rounded-full text-neutral-700" :class="row.is_used_in_event
-                        ? 'opacity-40 cursor-not-allowed'
-                        : 'hover:text-emerald-600'
+                    ? 'opacity-40 cursor-not-allowed'
+                    : 'hover:text-emerald-600'
                     " :disabled="row.is_used_in_event" @click="openEdit(row)" title="Edit" aria-label="edit">
                     <Icon icon="material-symbols:edit-rounded" width="20" height="20" />
                 </button>
