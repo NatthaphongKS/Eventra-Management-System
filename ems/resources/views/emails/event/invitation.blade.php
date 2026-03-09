@@ -1,4 +1,12 @@
 @php
+/**
+ * ชื่อไฟล์: invitation.blade.php
+ * คำอธิบาย: หน้าอีเมลเชิญ
+ * Input: $employee, $event, $files = [], $formURL
+ * Output: หน้าต่างอีเมลใน gmail, outlook
+ * ชื่อผู้เขียน/แก้ไข: Chitdanai R.
+ * วันที่จัดทำ/แก้ไข: 2026-03-09
+ */
     use Carbon\Carbon;
 
     // --- DATA ---
