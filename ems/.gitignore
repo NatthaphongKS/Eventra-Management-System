@@ -28,3 +28,4 @@ web.txt
 .env .railway
 .env .local
 .env .dekdee2
+/public/storage
