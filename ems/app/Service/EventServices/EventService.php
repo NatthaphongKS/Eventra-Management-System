@@ -308,7 +308,7 @@ class EventService
                     $filesForMail = $event->files()->get();
                     foreach ($newEmployees as $emp) {
                         if ($emp->emp_email) {
-                            $url = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
+                            $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
                             Mail::to($emp->emp_email)
                                 ->send(new EventInvitationMail($emp, $event, $filesForMail, $url));
                         }

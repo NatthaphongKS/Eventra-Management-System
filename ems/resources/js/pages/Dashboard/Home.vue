@@ -1009,9 +1009,9 @@ handleCheckAllEvents({ pageKeys, action }) {
                     }
         }
       } catch (err) {
-        console.error('❌ Error fetching event statistics:', err);
-        console.error('❌ Error response:', err.response?.data);
-        console.error('❌ Error status:', err.response?.status);
+        console.error('Error fetching event statistics:', err);
+        console.error('Error response:', err.response?.data);
+        console.error('Error status:', err.response?.status);
         // เกิดข้อผิดพลาด - รีเซ็ตเป็นค่าว่าง
         this.chartData = {
           total_participation: 0,
