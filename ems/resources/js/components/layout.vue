@@ -54,7 +54,7 @@
                                     : 'text-neutral-700 hover:bg-neutral-200'
                                     ">
                                 <div v-if="isParentActive(item)"
-                                    class="absolute left-0 top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700">
+                                    class="absolute left-[-16px] top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700">
                                 </div>
                                 <span class="px-2 inline-flex items-center gap-4">
                                     <span class="grid h-[40px] w-[30px] place-items-center rounded-lg"
@@ -87,7 +87,7 @@
                                 : 'text-neutral-700 hover:bg-neutral-200'
                                 ">
                             <div v-if="isActive(item.to)"
-                                class="absolute left-0 top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700">
+                                class="absolute left-[-16px] top-1/2 h-16 w-1 -translate-y-1/2 rounded-r-full bg-red-700">
                             </div>
                             <span class="grid h-[40px] w-[40px] place-items-center rounded-lg"
                                 :class="isActive(item.to) ? 'text-red-700' : 'text-neutral-700'" v-html="item.icon" />
