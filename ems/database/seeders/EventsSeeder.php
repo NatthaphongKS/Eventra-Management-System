@@ -150,7 +150,7 @@ class EventsSeeder extends Seeder
                 'evn_category_id' => 3,
                 'evn_description' => 'ตรวจสอบโค้ดและทำการทดสอบ',
                 'evn_date' => date('Y-m-d', strtotime('+0 day')),
-                'evn_timestart' => date('H:i:s', strtotime($now . ' +2 hours')),
+                'evn_timestart' => date('H:i:s', strtotime($now . ' +0 hours')),
                 'evn_timeend' => date('H:i:s', strtotime($now . ' +4 hours')),
                 'evn_duration' => 120,
                 'evn_location' => 'สำนักงาน',
