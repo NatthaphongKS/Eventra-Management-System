@@ -76,7 +76,7 @@
         </div>
         <div>
           <CreateButton @click="submit" >
-            Update
+            Save
           </CreateButton>
         </div>
       </div>
