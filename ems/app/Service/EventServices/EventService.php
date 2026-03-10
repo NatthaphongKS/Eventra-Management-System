@@ -310,7 +310,7 @@ class EventService
                         if ($emp->emp_email) {
                             $url = url('/response?event_id=' . $event->id . '&employee_id=' . $emp->id);
                             Mail::to($emp->emp_email)
-                                ->send(new EventInvitationMail($emp, $event, $filesForMail, $url));
+                            ->send(new EventUpdateMail($emp, $event, $filesForMail, $url, $old));
                         }
                     }
                 }
