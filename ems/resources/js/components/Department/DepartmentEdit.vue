@@ -56,7 +56,7 @@
         </div>
         <div>
           <CreateButton @click="submit" class="inline-flex items-center gap-2">
-            Update
+            Save
           </CreateButton>
         </div>
       </div>
