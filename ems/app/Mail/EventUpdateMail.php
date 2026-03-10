@@ -13,26 +13,46 @@ class EventUpdateMail extends Mailable
     public $employee;
     public $event;
     public $files;
-
-    // 1. เพิ่มตัวแปรนี้
     public $formURL;
 
-    // 2. รับ $formURL เข้ามาใน Constructor (ตัวที่ 4)
-    public function __construct($employee, $event, $files = [], $formURL)
+    /**
+     * $changes = [
+     *   'evn_title'     => ['old' => 'Surviving the AI Era',  'new' => 'การฝึกอบรมความปลอดภัย'],
+     *   'evn_date'      => ['old' => '2025-08-21',            'new' => '2025-08-22'],
+     *   'evn_timestart' => ['old' => '09:00',                 'new' => '10:00'],
+     *   'evn_timeend'   => ['old' => '12:00',                 'new' => '13:00'],
+     *   'evn_location'  => ['old' => 'ลานกว้างหน้าบริษัท',    'new' => 'ห้องประชุม A'],
+     *   'evn_description'=> ['old' => '...',                  'new' => '...'],
+     * ]
+     */
+    public $changes;
+
+    public function __construct($employee, $event, $files = [], $formURL, array $changes = [])
     {
         $this->employee = $employee;
-        $this->event = $event;
-        $this->files = $files;
-        $this->formURL = $formURL; // เก็บค่า
+        $this->event    = $event;
+        $this->files    = $files;
+        $this->formURL  = $formURL;
+        $this->changes  = $changes;
     }
 
     public function build()
     {
-        $mail = $this->subject('แจ้งการเปลี่ยนแปลงรายละเอียด: ' . $this->event->evn_title)
-                    ->view('emails.event.invitation'); // ใช้ View เดียวกับ Invitation (ที่มีปุ่มกด)
+        // ---- Build subject ----
+        // ถ้ามีการเปลี่ยนชื่อ event ให้โชว์ชื่อเดิมด้วย
+        $currentTitle = $this->event->evn_title ?? '';
 
-        // 3. เพิ่ม Loop เพื่อแนบไฟล์ (เหมือน InvitationMail)
-        // ถ้าไม่ใส่User จะไม่ได้รับไฟล์แนบ แม้จะส่งเข้ามา
+        if (!empty($this->changes['evn_title'])) {
+            $oldTitle = $this->changes['evn_title']['old'] ?? '';
+            $subject  = "[Clicknext] แจ้งเปลี่ยนแปลงรายละเอียดกิจกรรม {$currentTitle} (จากเดิม {$oldTitle})";
+        } else {
+            $subject  = "[Clicknext] แจ้งเปลี่ยนแปลงรายละเอียดกิจกรรม {$currentTitle}";
+        }
+
+        $mail = $this->subject($subject)
+                     ->view('emails.event.Edit');
+
+        // แนบไฟล์
         foreach ($this->files as $f) {
             $path = is_array($f) ? ($f['file_path'] ?? null) : ($f->file_path ?? null);
             $name = is_array($f) ? ($f['file_name'] ?? null) : ($f->file_name ?? null);
