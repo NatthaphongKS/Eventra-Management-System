@@ -65,27 +65,31 @@
 <body>
     <div class="container">
 
-        <h1 class="title">ยกเลิกกิจกรรม : {{ $title }}</h1>
+        <div class=""><strong>เรียน คุณ {{$fname}},</strong></div><br>
 
-        <div class="date-line">
-            วัน{{ $dateStr }} · {{ $tstart }} - {{ $tend }}
+        <div class="date-detail">
+
+            <div>กล่าวถึงการเชิญเข้าร่วมสัมมนาหัวข้อ <strong>{{$title}}</strong> ที่มีกำหนดจัดขึ้นในวัน{{$dateStr}}</div><br>
+            <div>เนื่องจากเกิดเหตุขัดข้องบางประการทางทีมงานจึงขออภัยที่จะต้องขอ <strong>ยกเลิกการจัดกิจกรรมดังกล่าว</strong></div><br>
+            <div>ทั้งนี้ หากมีการกำหนดวันจัดกิจกรรมใหม่อีกครั้ง ทางทีมงานจะรีบแจ้งให้ท่านทราบโดยเร็วที่สุด</div><br>
+            <div>จึงเรียนมาเพื่อโปรดทราบ และขออภัยในความไม่สะดวกมา ณ ที่นี้</div><br>
+
         </div>
 
-        <div class="message-box">
-            <p style="margin: 0 0 10px 0;"><strong>เรียน คุณ {{ $fname }} {{ $lname }}</strong></p>
-            <p style="margin: 0;">
-                ขอแจ้งให้ทราบว่ากิจกรรมดังกล่าวได้ถูก <strong>"ยกเลิก"</strong> แล้ว <br>
-                ทางผู้จัดต้องขออภัยในความไม่สะดวกมา ณ ที่นี้
-            </p>
-        </div>
+        <div>
+            <div>------------------</div>
+            <div><strong>Best regards,</strong></div><br>
 
-        <div class="location-section">
-            <div class="location-label">สถานที่ (เดิม)</div>
-            <div>{{ $loc }}</div>
-        </div>
+            <div>{{ $creatorName ?? 'ไม่ระบุชื่อผู้สร้าง' }}</div>
+            <div>Tel: {{ $creatorPhone ?? '-' }}</div>
 
-        <div style="font-size: 12px; color: #888;">
-            *อีเมลนี้เป็นการแจ้งเตือนอัตโนมัติ ไม่จำเป็นต้องตอบกลับ*
+            <div><strong>Clicknext Company Limited.</strong></div>
+            <div>
+                <img src="{{ $message->embed(public_path('images/email/clicknext_logo.png')) }}" alt="Clicknext Logo" style="max-width: 150px; height: auto;">
+            </div>
+            <div>128/323-333 30th FL. Phayathai Plaza Bldg.</div>
+            <div>Phayathai Road., Rajtaewee, Bangkok 10400 Thailand.</div>
+            <a href="https://www.clicknext.com" >www.clicknext.com</a>
         </div>
 
     </div>
