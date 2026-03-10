@@ -192,7 +192,7 @@ class EventService
                     if ($emp->emp_email) {
                         $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
                         Mail::to($emp->emp_email)
-                            ->send(new EventInvitationMail($emp, $event, $saved, $url));
+                            ->queue(new EventInvitationMail($emp, $event, $saved, $url));
                     }
                 }
             }
@@ -204,11 +204,14 @@ class EventService
         });
     }
 
+        /* ============================================================
+   5) แก้ไข Event 
+============================================================ */
         public function update(Request $request)
 {
     return DB::transaction(function () use ($request) {
 
-        // ✅ รับ flag จาก Frontend (ค่า default = true เผื่อ call จากที่อื่น)
+        // รับ flag จาก Frontend (ค่า default = true เผื่อ call จากที่อื่น)
         $sendMail = $request->input('send_mail', '1') === '1';
 
         $event = Event::lockForUpdate()->findOrFail($request->id);
@@ -310,7 +313,7 @@ class EventService
                     if ($emp->emp_email) {
                         $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
                         Mail::to($emp->emp_email)
-                            ->send(new EventInvitationMail($emp, $event, $filesForMail, $url));
+                            ->queue(new EventInvitationMail($emp, $event, $filesForMail, $url));
                     }
                 }
             }
@@ -326,7 +329,7 @@ class EventService
                     foreach ($removed as $emp) {
                         if ($emp->emp_email) {
                             Mail::to($emp->emp_email)
-                                ->send(new EventCancellationMail($emp, $event));
+                                ->queue(new EventCancellationMail($emp, $event));
                         }
                     }
                 }
@@ -384,7 +387,7 @@ class EventService
                 if ($emp->emp_email) {
                     $url = '/reply/' . Crypt::encryptString($event->id . '/' . $emp->id);
                     Mail::to($emp->emp_email)
-                        ->send(new EventUpdateMail($emp, $event, $filesForMail, $url, $changes));
+                        ->queue(new EventUpdateMail($emp, $event, $filesForMail, $url, $changes));
                     //                                                              ^^^^^^^
                     //                                         ส่ง $changes ไปให้ Mail ด้วย
                 }
@@ -550,7 +553,7 @@ class EventService
         // เปลี่ยน $emp เป็น $employee เป็นคำเต็ม
         foreach ($employees as $employee) {
             if ($employee->emp_email) {
-                Mail::to($employee->emp_email)->send(new EventCancellationMail($employee, $event));
+                Mail::to($employee->emp_email)->queue(new EventCancellationMail($employee, $event));
             }
         }
 
