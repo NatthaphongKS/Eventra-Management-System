@@ -40,39 +40,56 @@
             " @sort="handleClientSort" row-key="id" :show-row-number="true" class="mt-4">
             <!-- คลิกได้ทั้งแถว -->
             <template #cell-evn_title="{ row, value }">
-                <span role="button" tabindex="0" @click="goDetails(row.id)" :title="value">
-                    {{ value && value.length > 35? value.slice(0, 35) + '...' : value }}
-                </span>
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate   transition-colors"
+                    :title="value">
+                    {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
+                </router-link>
             </template>
 
             <template #cell-cat_name="{ row, value }">
-                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)" :title="value">
-                    {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
-                </span>
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full pl-2 py-2 text-slate-600 truncate   transition-colors"
+                    :title="value">
+                    {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
+                </router-link>
+            </template>
+
+            <template #cell-evn_date="{ row, value }">
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
+                    {{ formatDate(value) }}
+                </router-link>
+            </template>
+
+            <template #cell-evn_timestart="{ row, value }">
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
+                    {{ timeText(value, row.evn_timeend) }}
+                </router-link>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
-                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
-                    {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
-                </span>
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
+                    {{ value }}
+                </router-link>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
-                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
-                    {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
-                </span>
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
+                    {{ value }}
+                </router-link>
             </template>
 
             <template #cell-evn_status="{ row, value }">
-                <span role="button" tabindex="0" class="" @click="goDetails(row.id)"
-                    @keydown.enter.prevent="goDetails(row.id)" @keydown.space.prevent="goDetails(row.id)">
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="flex items-center justify-center w-full h-full py-2 transition-transform active:scale-95">
                     <span :class="badgeClass(value)">
-                        {{ value && value.length > 35 ? value.slice(0, 35) + '...' : value }}
+                        {{ value || "N/A" }}
                     </span>
-                </span>
+                </router-link>
             </template>
 
             <template #actions="{ row }">
