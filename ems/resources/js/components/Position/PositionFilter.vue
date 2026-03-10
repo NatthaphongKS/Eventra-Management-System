@@ -9,20 +9,11 @@
 
 <template>
     <div class="relative z-50" ref="filterBox">
-        <button
-            type="button"
-            @click="toggle"
+        <button type="button" @click="toggle"
             class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xl text-neutral-800 hover:bg-gray-50"
-            :class="{ 'bg-gray-100': isOpen }"
-        >
-            <svg
-                class="w-6 h-6"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-            >
+            :class="{ 'bg-gray-100': isOpen }">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
                 <line x1="4" y1="7" x2="20" y2="7" />
                 <line x1="6" y1="12" x2="16" y2="12" />
                 <line x1="8" y1="17" x2="12" y2="17" />
@@ -30,19 +21,13 @@
             <span>Filter</span>
         </button>
 
-        <Transition
-            enter-active-class="transition ease-out duration-150"
-            enter-from-class="opacity-0 translate-y-1 scale-95"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 translate-y-1 scale-95"
-        >
-            <div
-                v-if="isOpen"
+        <Transition enter-active-class="transition ease-out duration-150"
+            enter-from-class="opacity-0 translate-y-1 scale-95" enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-1 scale-95">
+            <div v-if="isOpen"
                 class="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 p-4 space-y-4"
-                @click.stop
-            >
+                @click.stop>
                 <h3 class="font-semibold text-neutral-800 mb-3">Filter</h3>
 
                 <!-- Department Filter -->
@@ -52,49 +37,30 @@
                     </label>
 
                     <div class="relative">
-                        <div
-                            @click="toggleDropdown('department')"
-                            class="w-full rounded-xl border border-red-700 px-3 py-2 text-neutral-800 text-sm flex items-center justify-between cursor-pointer overflow-hidden"
-                        >
+                        <div @click="toggleDropdown('department')"
+                            class="w-full rounded-xl border border-red-700 px-3 py-2 text-neutral-800 text-sm flex items-center justify-between cursor-pointer overflow-hidden">
                             <span class="truncate pr-2 font-medium">
                                 {{ getSelectedLabel('department') }}
                             </span>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="w-4 h-4 text-red-700 shrink-0"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-700 shrink-0" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
                             </svg>
                         </div>
 
-                        <div
-                            v-if="openKey === 'department'"
-                            class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-md border border-gray-200 max-h-56 overflow-y-auto overflow-x-hidden py-2"
-                        >
-                            <div
-                                class="flex items-center pl-5 py-2 text-[15px] font-bold cursor-pointer hover:bg-gray-50 transition-colors"
-                                @click="toggleSelectAll('department')"
-                            >
+                        <div v-if="openKey === 'department'"
+                            class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-md border border-gray-200 max-h-56 overflow-y-auto overflow-x-hidden py-2">
+                            <div class="flex items-center pl-5 py-2 text-[15px] font-bold cursor-pointer hover:bg-gray-50 transition-colors"
+                                @click="toggleSelectAll('department')">
                                 <span style="color: #20b5ff">Select All</span>
                             </div>
 
-                            <div
-                                v-for="dept in departments"
-                                :key="dept.id"
+                            <div v-for="dept in departments" :key="dept.id"
                                 class="flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-gray-50"
-                                @click="toggleOption('department', String(dept.id))"
-                            >
+                                @click="toggleOption('department', String(dept.id))">
                                 <div class="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        :checked="modelValue.department?.includes(String(dept.id))"
-                                        readonly
-                                        class="custom-checkbox"
-                                    />
+                                    <input type="checkbox" :checked="modelValue.department?.includes(String(dept.id))"
+                                        readonly class="custom-checkbox" />
                                 </div>
                                 <span class="text-neutral-700 font-medium">{{ dept.dpm_name }}</span>
                             </div>
@@ -109,49 +75,30 @@
                     </label>
 
                     <div class="relative">
-                        <div
-                            @click="toggleDropdown('team')"
-                            class="w-full rounded-xl border border-red-700 px-3 py-2 text-neutral-800 text-sm flex items-center justify-between cursor-pointer overflow-hidden"
-                        >
+                        <div @click="toggleDropdown('team')"
+                            class="w-full rounded-xl border border-red-700 px-3 py-2 text-neutral-800 text-sm flex items-center justify-between cursor-pointer overflow-hidden">
                             <span class="truncate pr-2 font-medium">
                                 {{ getSelectedLabel('team') }}
                             </span>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="w-4 h-4 text-red-700 shrink-0"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-700 shrink-0" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
                             </svg>
                         </div>
 
-                        <div
-                            v-if="openKey === 'team'"
-                            class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-md border border-gray-200 max-h-56 overflow-y-auto overflow-x-hidden py-2"
-                        >
-                            <div
-                                class="flex items-center pl-5 py-2 text-[15px] font-bold cursor-pointer hover:bg-gray-50 transition-colors"
-                                @click="toggleSelectAll('team')"
-                            >
+                        <div v-if="openKey === 'team'"
+                            class="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-md border border-gray-200 max-h-56 overflow-y-auto overflow-x-hidden py-2">
+                            <div class="flex items-center pl-5 py-2 text-[15px] font-bold cursor-pointer hover:bg-gray-50 transition-colors"
+                                @click="toggleSelectAll('team')">
                                 <span style="color: #20b5ff">Select All</span>
                             </div>
 
-                            <div
-                                v-for="team in teams"
-                                :key="team.id"
+                            <div v-for="team in teams" :key="team.id"
                                 class="flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-gray-50"
-                                @click="toggleOption('team', String(team.id))"
-                            >
+                                @click="toggleOption('team', String(team.id))">
                                 <div class="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        :checked="modelValue.team?.includes(String(team.id))"
-                                        readonly
-                                        class="custom-checkbox"
-                                    />
+                                    <input type="checkbox" :checked="modelValue.team?.includes(String(team.id))"
+                                        readonly class="custom-checkbox" />
                                 </div>
                                 <span class="text-neutral-700 font-medium">{{ team.tm_name }}</span>
                             </div>
@@ -178,17 +125,23 @@ export default {
             type: Array,
             default: () => [],
         },
+        // 1. เพิ่ม isOpen เข้ามาใน Props เพื่อรับค่าจากตัวแม่
+        isOpen: {
+            type: Boolean,
+            default: false,
+        },
     },
-    emits: ["update:modelValue"],
+    emits: ["update:modelValue", "toggle"],
     data() {
         return {
-            isOpen: false,
+            // 3. ลบ isOpen ออกจาก data (เพราะเราใช้จาก props แล้ว)
             openKey: null,
         };
     },
     methods: {
         toggle() {
-            this.isOpen = !this.isOpen;
+            // 4. ส่งสัญญาณไปบอกตัวแม่ให้สลับสถานะ
+            this.$emit("toggle");
             this.openKey = null;
         },
         toggleDropdown(key) {
@@ -259,7 +212,7 @@ export default {
             return options && options.length > 0 && selected.length === options.length;
         },
         close() {
-            this.isOpen = false;
+            // ฟังก์ชันนี้อาจไม่ต้องใช้แล้วเพราะตัวแม่เป็นคนสั่งปิดผ่าน props
             this.openKey = null;
         },
     },
