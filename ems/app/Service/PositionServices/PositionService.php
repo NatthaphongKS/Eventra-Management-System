@@ -19,15 +19,43 @@ class PositionService
 {
     /**
      * ชื่อฟังก์ชัน: index
-     * คำอธิบาย: ดึงข้อมูล Position ทั้งหมด พร้อม Search และ Sort
-     * Input: $request (search, sortBy, sortOrder)
+     * คำอธิบาย: ดึงข้อมูล Position ทั้งหมด พร้อม Search, Sort, และ Filter
+     * Input: $request (search, sortBy, sortOrder, department, team, status)
      * Output: JSON รายการ Position
      */
     public function index(Request $request)
     {
         try {
-            $query = Position::with(['team:id,tm_name,tm_department_id', 'team.department:id,dpm_name'])
-            ->where('pst_delete_status', 'active');
+            $query = Position::with(['team:id,tm_name,tm_department_id', 'team.department:id,dpm_name']);
+
+            // Filter by department
+            if ($request->has('department') && !empty($request->get('department'))) {
+                $departments = $request->get('department');
+                if (is_array($departments)) {
+                    $query->whereHas('team', function ($q) use ($departments) {
+                        $q->whereIn('tm_department_id', $departments);
+                    });
+                }
+            }
+
+            // Filter by team
+            if ($request->has('team') && !empty($request->get('team'))) {
+                $teams = $request->get('team');
+                if (is_array($teams)) {
+                    $query->whereIn('pst_team_id', $teams);
+                }
+            }
+
+            // Filter by status
+            if ($request->has('status') && !empty($request->get('status'))) {
+                $statuses = $request->get('status');
+                if (is_array($statuses)) {
+                    $query->whereIn('pst_delete_status', $statuses);
+                }
+            } else {
+                // Default to active if no status filter is specified
+                $query->where('pst_delete_status', 'active');
+            }
 
             // Search by name
             if ($request->has('search') && !empty($request->get('search'))) {
@@ -50,6 +78,7 @@ class PositionService
                     'id' => $position->id,
                     'pst_name' => $position->pst_name,
                     'pst_team_id' => $position->pst_team_id,
+                    'tm_department_id' => optional($position->team)->tm_department_id,
                     'team_name' => optional($position->team)->tm_name,
                     'department_name' => optional(optional($position->team)->department)->dpm_name,
                     'pst_delete_status' => $position->pst_delete_status,
@@ -85,6 +114,7 @@ class PositionService
                 'id' => $position->id,
                 'pst_name' => $position->pst_name,
                 'pst_team_id' => $position->pst_team_id,
+                'tm_department_id' => optional($position->team)->tm_department_id,
                 'team_name' => optional($position->team)->tm_name,
                 'department_name' => optional(optional($position->team)->department)->dpm_name,
                 'pst_delete_status' => $position->pst_delete_status,

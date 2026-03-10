@@ -19,14 +19,25 @@ class DepartmentService
 {
     /**
      * ชื่อฟังก์ชัน: index
-     * คำอธิบาย: ดึงข้อมูล Department ทั้งหมด พร้อม Search และ Sort
-     * Input: $request (search, sortBy, sortOrder)
+     * คำอธิบาย: ดึงข้อมูล Department ทั้งหมด พร้อม Search, Sort, และ Filter
+     * Input: $request (search, sortBy, sortOrder, status)
      * Output: JSON รายการ Department
      */
     public function index(Request $request)
     {
         try {
-            $query = Department::query()->where('dpm_delete_status', 'active');
+            $query = Department::query();
+
+            // Filter by status
+            if ($request->has('status') && !empty($request->get('status'))) {
+                $statuses = $request->get('status');
+                if (is_array($statuses)) {
+                    $query->whereIn('dpm_delete_status', $statuses);
+                }
+            } else {
+                // Default to active if no status filter is specified
+                $query->where('dpm_delete_status', 'active');
+            }
 
             // Search by name
             if ($request->has('search') && !empty($request->get('search'))) {

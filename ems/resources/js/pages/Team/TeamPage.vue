@@ -9,6 +9,12 @@
                 @search="onSearch"
                 class=""
             />
+            <TeamFilter
+                v-model="filters"
+                :departments="departments"
+                @update:modelValue="applyFilter"
+                class="mt-6"
+            />
             <div class="mt-6" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
@@ -109,6 +115,7 @@ import DataTable from "@/components/DataTable.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import TeamCreate from "@/components/Team/TeamCreate.vue";
 import TeamEdit from "@/components/Team/TeamEdit.vue";
+import TeamFilter from "@/components/Team/TeamFilter.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
 import SortMenu from "@/components/SortMenu.vue";
 import AddButton from "@/components/AddButton.vue";
@@ -124,6 +131,7 @@ export default {
         TeamEdit,
         ModalAlert,
         AddButton,
+        TeamFilter,
         Icon,
     },
 
@@ -165,6 +173,8 @@ export default {
                 },
             ],
 
+            filters: { department: [] },
+
             alert: {
                 open: false,
                 type: "",
@@ -191,7 +201,7 @@ export default {
                     label: "Department",
                     class: "text-left w-[300px]",
                 },
-                
+
             ],
         };
     },
@@ -203,7 +213,12 @@ export default {
             return this.rows.filter((r) => {
                 // Search filter
                 const matchesSearch = !q || (r.tm_name && r.tm_name.toLowerCase().includes(q));
-                return matchesSearch;
+
+                // Department filter
+                const matchesDept = this.filters.department.length === 0 ||
+                    this.filters.department.includes(String(r.tm_department_id));
+
+                return matchesSearch && matchesDept;
             });
         },
 
@@ -291,6 +306,11 @@ export default {
             this.sortBy = { key: option.key, order: option.order };
             this.page = 1;
             this.sortMenuOpen = false;
+        },
+
+        applyFilter(filters) {
+            this.filters = filters;
+            this.page = 1;
         },
 
         onDocClick(e) {
@@ -405,7 +425,7 @@ export default {
                 await axios.put(`/teams/${id}`, {
                     tm_name: n,
                     tm_department_id: departmentId,
-     
+
                 });
                 const dept = this.departments.find(d => d.id === departmentId);
                 this.rows = this.rows.map((r) =>

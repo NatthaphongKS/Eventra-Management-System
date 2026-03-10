@@ -162,6 +162,8 @@ export default {
                 },
             ],
 
+            filters: {},
+
             alert: {
                 open: false,
                 type: "",
@@ -183,7 +185,7 @@ export default {
                     class: "text-left w-[400px]",
                     sortable: true,
                 },
-                
+
             ],
         };
     },
@@ -191,11 +193,13 @@ export default {
     computed: {
         filtered() {
             const q = this.search.trim().toLowerCase();
-            if (!q) return this.rows;
-            return this.rows.filter(
-                (r) =>
-                    (r.dpm_name && r.dpm_name.toLowerCase().includes(q))
-            );
+
+            return this.rows.filter((r) => {
+                // Search filter
+                const matchesSearch = !q || (r.dpm_name && r.dpm_name.toLowerCase().includes(q));
+
+                return matchesSearch;
+            });
         },
 
         sorted() {
@@ -268,6 +272,11 @@ export default {
             this.sortBy = { key: option.key, order: option.order };
             this.page = 1;
             this.sortMenuOpen = false;
+        },
+
+        applyFilter(filters) {
+            this.filters = filters;
+            this.page = 1;
         },
 
         onDocClick(e) {

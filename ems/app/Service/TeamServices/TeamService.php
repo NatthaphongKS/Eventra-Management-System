@@ -19,8 +19,8 @@ class TeamService
 {
     /**
      * ชื่อฟังก์ชัน: index
-     * คำอธิบาย: ดึงข้อมูล Team ทั้งหมด พร้อม Search และ Sort
-     * Input: $request (search, sortBy, sortOrder)
+     * คำอธิบาย: ดึงข้อมูล Team ทั้งหมด พร้อม Search, Sort, และ Filter
+     * Input: $request (search, sortBy, sortOrder, department, status)
      * Output: JSON รายการ Team
      */
     public function index(Request $request)
@@ -32,6 +32,22 @@ class TeamService
             if ($request->has('search') && !empty($request->get('search'))) {
                 $search = $request->get('search');
                 $query->where('tm_name', 'like', "%{$search}%");
+            }
+
+            // Filter by department
+            if ($request->has('department') && !empty($request->get('department'))) {
+                $departments = $request->get('department');
+                if (is_array($departments)) {
+                    $query->whereIn('tm_department_id', $departments);
+                }
+            }
+
+            // Filter by status
+            if ($request->has('status') && !empty($request->get('status'))) {
+                $statuses = $request->get('status');
+                if (is_array($statuses)) {
+                    $query->whereIn('tm_delete_status', $statuses);
+                }
             }
 
             // Sort

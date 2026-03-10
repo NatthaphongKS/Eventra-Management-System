@@ -9,6 +9,13 @@
                 @search="onSearch"
                 class=""
             />
+            <PositionFilter
+                v-model="filters"
+                :departments="departments"
+                :teams="teams"
+                @update:modelValue="applyFilter"
+                class="mt-6"
+            />
             <div class="mt-6" ref="sortWrap">
                 <SortMenu
                     :is-open="sortMenuOpen"
@@ -114,6 +121,7 @@ import PositionEdit from "@/components/Position/PositionEdit.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
 import SortMenu from "@/components/SortMenu.vue";
 import AddButton from "@/components/AddButton.vue";
+import PositionFilter from "@/components/Position/PositionFilter.vue";
 import { Icon } from "@iconify/vue";
 
 export default {
@@ -126,6 +134,7 @@ export default {
         PositionEdit,
         ModalAlert,
         AddButton,
+        PositionFilter,
         Icon,
     },
 
@@ -168,6 +177,8 @@ export default {
                 },
             ],
 
+            filters: { department: [], team: [] },
+
             alert: {
                 open: false,
                 type: "",
@@ -199,7 +210,7 @@ export default {
                     label: "Team",
                     class: "text-left w-[250px]",
                 },
-                
+
             ],
         };
     },
@@ -212,7 +223,16 @@ export default {
                 // Search filter
                 const matchesSearch =
                     !q || (r.pst_name && r.pst_name.toLowerCase().includes(q));
-                return matchesSearch;
+
+                // Department filter
+                const matchesDept = this.filters.department.length === 0 ||
+                    this.filters.department.includes(String(r.tm_department_id));
+
+                // Team filter
+                const matchesTeam = this.filters.team.length === 0 ||
+                    this.filters.team.includes(String(r.pst_team_id));
+
+                return matchesSearch && matchesDept && matchesTeam;
             });
         },
 
@@ -318,6 +338,11 @@ export default {
             this.sortBy = { key: option.key, order: option.order };
             this.page = 1;
             this.sortMenuOpen = false;
+        },
+
+        applyFilter(filters) {
+            this.filters = filters;
+            this.page = 1;
         },
 
         onDocClick(e) {
@@ -448,7 +473,7 @@ export default {
                               pst_team_id: teamId,
                               team_name: team?.tm_name || "",
                               department_name: team?.department_name || "",
-                             
+
                           }
                         : r,
                 );

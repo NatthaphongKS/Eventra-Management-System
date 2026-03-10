@@ -1,10 +1,10 @@
 <!-- /**
- * ชื่อไฟล์: EventCheckIn.vue
- * คำอธิบาย: หน้าสำหรับเช็คชื่อผู้เข้าร่วมกิจกรรม
- * Input: ข้อมูลพนักงานและการเช็คชื่อจาก API /getEmployeeForCheckin/eveId/{eveId}
- * Output: หน้าจอสำหรับการเช็คชื่อ และพร้อมสำหรับการเช็คชื่อผู้เข้าร่วม
- * คนแก้ไข: Natthaphong Kongsinl
- * วันที่แก้ไข: 2026-02-27
+ * ชื่อไฟล์: DepartmentEdit.vue
+ * คำอธิบาย: Pop up สำหรับแก้ไขแผนก
+ * Input: Department
+ * Output: Update department
+ * ชื่อผู้เขียน/แก้ไข: Natthaphong Kongsinl
+ * วันที่จัดทำ/แก้ไข: 2026-03-10
  */ -->
 <!-- resources/js/components/Department/DepartmentEdit.vue -->
 <template>
@@ -47,7 +47,7 @@
           </div>
         </div>
 
-        
+
       </div>
 
       <div class="mt-6 flex justify-between">
