@@ -93,7 +93,7 @@ class EventCancellationMail extends Mailable implements ShouldQueue
      *
      * สร้างหัวข้ออีเมลล์พร้อมชื่อกิจกรรมและวันที่ แล้วเลือก View สำหรับอีเมลล์template
      *
-     * @return void
+     * @return $this
      */
     public function build()
     {
