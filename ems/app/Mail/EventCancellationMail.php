@@ -92,7 +92,7 @@ class EventCancellationMail extends Mailable
      *
      * สร้างหัวข้ออีเมลล์พร้อมชื่อกิจกรรมและวันที่ แล้วเลือก View สำหรับอีเมลล์template
      *
-     * @return void
+     * @return $this
      */
     public function build()
     {
