@@ -66,7 +66,8 @@ class ReplyController extends Controller
                 'evn_date',
                 'evn_timestart',
                 'evn_timeend',
-                'evn_location'
+                'evn_location',
+                'evn_status'
             )
             ->where('id', $eveId)
             ->first();
@@ -75,14 +76,22 @@ class ReplyController extends Controller
             ->where('con_employee_id', $empId)
             ->first();
 
-        return response()->json(
-            [
+        if (in_array($event->evn_status, ['done', 'deleted'])) {
+            return response()->json([
                 'success' => true,
-                'employee' => $employee,
+                'eventEnded' => true,
                 'event' => $event,
+                'employee' => $employee,
                 'connect' => $connect,
-            ]
-        );
+            ]);
+        }
+        return response()->json([
+            'success' => true,
+            'eventEnded' => false,
+            'employee' => $employee,
+            'event' => $event,
+            'connect' => $connect,
+        ]);
     }
 
     public function store(Request $req)
