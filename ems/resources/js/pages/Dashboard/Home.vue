@@ -51,7 +51,7 @@
             v-model:sortOrder="sortOrder" class="mt-4" @sort="handleClientSort" @checkbox-checkin="handleEventCheck"
             @check-all-page="handleCheckAllEvents">
             <template #cell-evn_title="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                <router-link :to="{ name: 'event.details', params: { id: row.id } }"
                     class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate   transition-colors"
                     :title="value && value.length > 35 ? value : ''">
                     {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
@@ -59,7 +59,7 @@
             </template>
 
             <template #cell-cat_name="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                <router-link :to="{ name: 'event.details', params: { id: row.id } }"
                     class="block w-full h-full pl-2 py-2 text-slate-600 truncate   transition-colors"
                     :title="value && value.length > 30 ? value : ''">
                     {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
@@ -67,28 +67,28 @@
             </template>
 
             <template #cell-evn_date="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                <router-link :to="{ name: 'event.details', params: { id: row.id } }"
                     class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
                     {{ formatDate(value) }}
                 </router-link>
             </template>
 
             <template #cell-evn_timestart="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                <router-link :to="{ name: 'event.details', params: { id: row.id } }"
                     class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
                     {{ timeText(value, row.evn_timeend) }}
                 </router-link>
             </template>
 
             <template #cell-evn_num_guest="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                <router-link :to="{ name: 'event.details', params: { id: row.id } }"
                     class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
                     {{ value }}
                 </router-link>
             </template>
 
             <template #cell-evn_sum_accept="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                <router-link :to="{ name: 'event.details', params: { id: row.id } }"
                     class="block w-full h-full py-2 text-center text-slate-600   transition-colors">
                     {{ value }}
                 </router-link>
