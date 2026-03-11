@@ -26,7 +26,7 @@
             @sort="handleHeaderSort" row-key="id" :show-row-number="true" class="mt-4">
             <template #cell-evn_title="{ row, value }">
                 <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
-                    class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate hover:text-blue-600 transition-colors"
+                    class="block w-full h-full pl-3 py-2 text-slate-700 font-medium truncate  transition-colors"
                     :title="value && value.length > 35 ? value : ''">
                     {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
                 </router-link>
@@ -34,48 +34,40 @@
 
             <template #cell-cat_name="{ row, value }">
                 <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
-                    class="block w-full h-full pl-2 py-2 text-slate-600 hover:text-blue-600 transition-colors"
+                    class="block w-full h-full pl-2 py-2 text-slate-600  transition-colors"
                     :title="value">
                     {{ value && value.length > 35 ? value.substring(0, 35) + '...' : value }}
                 </router-link>
             </template>
 
-            <template #cell-evn_date="{ row, value }">
+            <template #cell-created_by="{ row, value }">
                 <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
-                    class="block w-full h-full py-2 text-center text-slate-600 hover:text-blue-600 transition-colors">
+                    class="block w-full h-full py-2 text-center text-slate-600  transition-colors">
+                    {{ value }}
+                </router-link>
+            </template>
+
+            <template #cell-created_at="{ row, value }">
+                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
+                    class="block w-full h-full py-2 text-center text-slate-600  transition-colors">
                     {{ formatDate(value) }}
                 </router-link>
             </template>
 
-            <template #cell-evn_timestart="{ row, value }">
+            <template #cell-deleted_by="{ row, value }">
                 <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
-                    class="block w-full h-full py-2 text-center text-slate-600 hover:text-blue-600 transition-colors">
-                    {{ timeText(value, row.evn_timeend) }}
-                </router-link>
-            </template>
-
-            <template #cell-evn_num_guest="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
-                    class="block w-full h-full py-2 text-center text-slate-600 font-semibold hover:text-blue-600 transition-colors">
+                    class="block w-full h-full py-2 text-center text-slate-600 font-semibold  transition-colors">
                     {{ value }}
                 </router-link>
             </template>
 
-            <template #cell-evn_sum_accept="{ row, value }">
+            <template #cell-deleted_at="{ row, value }">
                 <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
-                    class="block w-full h-full py-2 text-center text-slate-600 font-semibold hover:text-blue-600 transition-colors">
-                    {{ value }}
+                    class="block w-full h-full py-2 text-center text-slate-600 font-semibold  transition-colors">
+                    {{ formatDate(value) }}
                 </router-link>
             </template>
 
-            <template #cell-evn_status="{ row, value }">
-                <router-link :to="{ name: 'history-event-detail', params: { id: row.id } }"
-                    class="flex items-center justify-center w-full h-full py-2 transition-transform active:scale-95">
-                    <span :class="badgeClass(value)">
-                        {{ value || "N/A" }}
-                    </span>
-                </router-link>
-            </template>
 
             <template #empty>
                 <div class="py-10 text-center text-gray-500">ไม่พบข้อมูลประวัติ</div>
