@@ -9,7 +9,7 @@ services:
             - /var/www/html/vendor
             - /var/www/html/public/build
             - /var/www/html/node_modules
-        environment:
+        environment: &env
             DB_CONNECTION: ${DB_CONNECTION}
             DB_HOST: ${DB_HOST}
             DB_PORT: ${DB_PORT}
@@ -18,9 +18,24 @@ services:
             DB_PASSWORD: ${DB_PASSWORD}
         networks:
             - appnet
-        command: php artisan queue:work
         depends_on:
             - db
+
+    worker:
+        build: .
+        container_name: ems_worker
+        working_dir: /var/www/html
+        volumes:
+          - .:/var/www/html
+          - /var/www/html/vendor
+        environment:
+          <<: *env
+        networks:
+          - appnet
+        command: php artisan queue:work --verbose --tries=3
+        depends_on:
+          - db
+          - app
 
     db:
         image: mariadb:10.11
