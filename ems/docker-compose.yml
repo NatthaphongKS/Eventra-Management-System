@@ -18,6 +18,7 @@ services:
             DB_PASSWORD: ${DB_PASSWORD}
         networks:
             - appnet
+        command: php artisan queue:work
         depends_on:
             - db
 
