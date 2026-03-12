@@ -14,14 +14,14 @@ return new class extends Migration {
         // สร้างตาราง ems_department โดยนำ foreign key ที่มีปัญหาออกไปก่อน
         Schema::create('ems_department', function (Blueprint $table) {
             $table->id();
-            $table->string('dpm_name')->unique();
+            $table->string('dpm_name');
             $table->enum('dpm_delete_status', ['active', 'inactive'])->default('active');
         });
 
         Schema::create('ems_team', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tm_department_id')->references('id')->on('ems_department')->onDelete('cascade');
-            $table->string('tm_name')->unique();
+            $table->string('tm_name');
             $table->enum('tm_delete_status', ['active', 'inactive'])->default('active');
         });
 
@@ -31,7 +31,6 @@ return new class extends Migration {
                 ->constrained('ems_team')
                 ->onDelete('cascade');
             $table->string('pst_name');
-            $table->unique(['pst_name', 'pst_team_id'], 'ems_position_name_team_unique');
             $table->enum('pst_delete_status', ['active', 'inactive'])
                 ->default('active');
         });

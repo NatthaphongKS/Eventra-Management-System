@@ -117,7 +117,7 @@ class TeamService
         try {
             // Validation
             $validated = $request->validate([
-                'tm_name' => 'required|string|unique:ems_team,tm_name|max:255',
+                'tm_name' => 'required|string|max:255',
                 'tm_department_id' => 'required|exists:ems_department,id',
                 'tm_delete_status' => 'required|in:active,inactive',
             ]);

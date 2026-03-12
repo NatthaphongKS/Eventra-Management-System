@@ -73,17 +73,18 @@ class PositionService
                 'pst_name',
                 'pst_team_id',
                 'pst_delete_status',
-            ])->map(function ($position) {
-                return [
-                    'id' => $position->id,
-                    'pst_name' => $position->pst_name,
-                    'pst_team_id' => $position->pst_team_id,
-                    'tm_department_id' => optional($position->team)->tm_department_id,
-                    'team_name' => optional($position->team)->tm_name,
-                    'department_name' => optional(optional($position->team)->department)->dpm_name,
-                    'pst_delete_status' => $position->pst_delete_status,
-                ];
-            });
+            ])->where('pst_delete_status', 'active')
+                ->map(function ($position) {
+                    return [
+                        'id' => $position->id,
+                        'pst_name' => $position->pst_name,
+                        'pst_team_id' => $position->pst_team_id,
+                        'tm_department_id' => optional($position->team)->tm_department_id,
+                        'team_name' => optional($position->team)->tm_name,
+                        'department_name' => optional(optional($position->team)->department)->dpm_name,
+                        'pst_delete_status' => $position->pst_delete_status,
+                    ];
+                });
 
             return response()->json($positions);
         } catch (\Exception $e) {
@@ -142,17 +143,17 @@ class PositionService
                 'pst_delete_status' => 'required|in:active,inactive',
             ]);
 
-            // Check uniqueness of pst_name within the same team
-            $exists = Position::where('pst_name', $validated['pst_name'])
-                ->where('pst_team_id', $validated['pst_team_id'])
-                ->exists();
+            //check same team name
+            $sameName = Position::where('pst_name', $validated['pst_name'])->where('pst_delete_status', 'active')->get()->first();
 
-            if ($exists) {
+            if ($sameName) {
                 return response()->json([
-                    'message' => 'Validation error',
-                    'errors' => ['pst_name' => ['Position name already exists in this team']]
-                ], 422);
+                    'message' => 'Position already created ',
+                    'data' => $sameName->name,
+                ], status: 500);
             }
+
+
 
             $position = Position::create($validated);
 

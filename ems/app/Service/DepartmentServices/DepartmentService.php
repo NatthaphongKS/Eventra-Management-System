@@ -96,7 +96,7 @@ class DepartmentService
         try {
             // Validation
             $validated = $request->validate([
-                'dpm_name' => 'required|string|unique:ems_department,dpm_name|max:255',
+                'dpm_name' => 'required|string|max:255',
                 'dpm_delete_status' => 'required|in:active,inactive',
             ]);
 
