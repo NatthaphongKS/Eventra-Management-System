@@ -61,7 +61,7 @@ services:
 
     cloudflared:
         image: cloudflare/cloudflared:latest
-        container_name: eventra_tunnel
+        container_name: ems_tunnel
         restart: always
         environment:
             - TUNNEL_TOKEN=${TUNNEL_TOKEN}
