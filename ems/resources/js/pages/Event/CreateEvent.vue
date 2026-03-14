@@ -9,40 +9,40 @@
 <template>
     <div class="font-[Poppins] pb-20" @pointerdown.capture="onRootPointer">
         <div class="mb-8 flex items-center gap-3">
-            <h2 class="text-2xl font-semibold text-neutral-800">
+            <h2 class="text-3xl font-semibold text-neutral-800">
                 Add New Event
             </h2>
         </div>
 
         <div class="grid grid-cols-12 gap-8 border-neutral-100 mb-6">
             <div class="col-span-12 lg:col-span-8">
-                <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start mb-8">
+                <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start mb-4">
                     <div>
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">
                             Event Title <span class="text-red-600">*</span>
                         </label>
                         <div class="relative">
                             <InputPill v-model="eventTitle" placeholder="Name this event" :class="[
-                                'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
+                                'w-full font-medium text-md text-neutral-800 border rounded-2xl px-3 py-2.5 focus:outline-none transition',
                                 'placeholder:text-red-300',
                                 errors.eventTitle
                                     ? 'border-red-500 bg-red-50'
                                     : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
                             ]" @input="errors.eventTitle = false" />
                             <p v-if="errors.eventTitle"
-                                class="absolute top-[56px] left-1 text-red-500 text-xs font-medium">
+                                class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
                                 Required Field
                             </p>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">
                             Category <span class="text-red-600">*</span>
                         </label>
                         <div class="relative">
                             <select v-model="eventCategoryId" :class="[
-                                'appearance-none border rounded-[20px] px-[20px] w-full h-[52px] font-medium focus:outline-none transition bg-white cursor-pointer',
+                                'appearance-none border rounded-2xl px-3 py-2.5 w-full font-medium text-md focus:outline-none transition bg-white cursor-pointer',
                                 eventCategoryId
                                     ? 'text-neutral-800'
                                     : 'text-red-300',
@@ -62,35 +62,35 @@
                                 <Icon icon="mdi:chevron-down" class="h-6 w-6 text-red-300" />
                             </div>
                             <p v-if="errors.eventCategoryId"
-                                class="absolute top-[56px] left-1 text-red-500 text-xs font-medium">
+                                class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
                                 Required Select
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="mt-6 mb-6">
-                    <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
-                        Event Description <span class="text-red-600">*</span>
+                <div class="mb-6">
+                    <label class="mb-1 block text-xl font-medium text-neutral-800">
+                        Event Details <span class="text-red-600">*</span>
                     </label>
                     <div class="relative">
                         <textarea v-model.trim="eventDescription" placeholder="Write some description... (255 words)"
                             :class="[
-                                'w-full h-[160px] rounded-2xl p-5 font-medium text-neutral-800 focus:outline-none transition resize-none border',
+                                'w-full h-[160px] rounded-2xl px-3 py-2.5 font-medium text-md text-neutral-800 focus:outline-none transition resize-none border',
                                 'placeholder:text-red-300',
                                 errors.eventDescription
                                     ? 'border-red-500 '
                                     : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
                             ]" @input="errors.eventDescription = false"></textarea>
                         <p v-if="errors.eventDescription"
-                            class="absolute top-[164px] left-1 text-red-500 text-xs font-medium">
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
                             Required Field
                         </p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pb-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 pb-2">
                     <div class="relative">
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Date <span
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">Date <span
                                 class="text-red-600">*</span></label>
                         <EventSingleDatePicker v-model="eventDate" :min="minDate" :has-error="errors.eventDate"
                             @update:modelValue="errors.eventDate = false" />
@@ -100,10 +100,10 @@
                     </div>
 
                     <div class="relative">
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Time <span
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">Time <span
                                 class="text-red-600">*</span></label>
                         <div :class="[
-                            'flex h-[52px] w-full items-center rounded-2xl border px-3 shadow-sm bg-white transition',
+                            'flex w-full items-center rounded-2xl border px-3 py-2.5 shadow-sm bg-white transition text-md font-medium',
                             errors.eventTime
                                 ? 'border-red-500 bg-red-50'
                                 : 'border-neutral-200 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400',
@@ -135,7 +135,7 @@
                                 </div>
                             </div>
 
-                            <span class="flex-none text-[16px] font-bold text-red-300 px-1">-</span>
+                            <span class="flex-none text-md font-bold text-red-300 px-1">-</span>
 
                             <!-- End trigger -->
                             <div class="relative flex-1 flex items-center justify-center">
@@ -173,32 +173,32 @@
                     </div>
 
                     <div>
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Duration</label>
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">Duration</label>
                         <div
-                            class="flex h-[52px] w-full items-center gap-3 rounded-2xl border border-neutral-200 px-4 shadow-sm bg-[#F9FAFB]">
+                            class="flex w-full items-center gap-3 rounded-2xl border border-neutral-200 px-3 py-2.5 shadow-sm bg-[#F9FAFB] text-md font-medium">
                             <input
-                                class="w-full h-full bg-transparent font-medium text-neutral-600 outline-none border-0 placeholder:text-neutral-400"
+                                class="w-full bg-transparent font-medium text-neutral-600 outline-none border-0 placeholder:text-neutral-400 text-md"
                                 disabled v-model="eventDurationDisplay" placeholder="Auto fill   Hour" />
                             <Icon icon="lucide:clock-fading" class="w-6 h-6 text-neutral-400" />
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-6">
-                    <label class="block text-neutral-800 font-semibold text-[15px] mb-2">
+                <div class="mb-6">
+                    <label class="mb-1 block text-xl font-medium text-neutral-800">
                         Location <span class="text-red-600">*</span>
                     </label>
 
                     <div class="relative">
                         <InputPill v-model="eventLocation" placeholder="Location/Building/Room Name" :class="[
-                            'w-full h-[52px] font-medium text-[16px] text-neutral-800 border rounded-[20px] px-5 focus:outline-none transition',
+                            'w-full font-medium text-md text-neutral-800 border rounded-2xl px-3 py-2.5 focus:outline-none transition',
                             'placeholder:text-red-300',
                             errors.eventLocation
                                 ? 'border-red-500 bg-red-50'
                                 : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300',
                         ]" @input="errors.eventLocation = false" />
                         <p v-if="errors.eventLocation"
-                            class="absolute top-[56px] left-1 text-red-500 text-xs font-medium">
+                            class="absolute -bottom-5 left-1 text-red-500 text-xs font-medium">
                             Required Field
                         </p>
                     </div>
@@ -269,26 +269,19 @@
                 Add Guest
             </h3>
 
-            <h4 class="text-xl font-medium text-neutral-800 mb-3">Search</h4>
-            <div class="flex flex-wrap items-center gap-4 w-full">
-                <div class="flex items-center gap-2 flex-1 min-w-[320px]">
-                    <div class="relative w-full">
-                        <input v-model="searchRaw" type="text" placeholder="Search ID / Name / Nickname"
-                            class="w-full h-[48px] rounded-[30px] border border-neutral-200 px-6 text-[15px] text-neutral-800 placeholder:text-rose-300 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-200 transition bg-white"
-                            @keyup.enter="performSearch" />
-                    </div>
-                    <button type="button"
-                        class="flex-none grid place-items-center w-[48px] h-[48px] rounded-full bg-[#B91C1C] text-white hover:bg-red-800 transition shadow-sm"
-                        @click="performSearch">
-                        <Icon icon="ic:baseline-search" class="w-6 h-6" />
-                    </button>
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-1 items-center gap-2 min-w-[200px]">
+                    <SearchBar v-model="searchRaw" placeholder="Search ID / Name / Nickname" @search="performSearch" />
                 </div>
 
-                <div class="flex flex-row flex-wrap items-center gap-2">
-                    <EmployeeDropdown label="Company ID" v-model="selectedCompanyIds" :options="companyIdOptions" />
-                    <EmployeeDropdown label="Department" v-model="selectedDepartmentIds" :options="departmentOptions" />
-                    <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" />
-                    <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions" />
+                <div class="mt-8 gap-2 flex flex-row flex-wrap items-center">
+                    <EmployeeDropdown label="Company" v-model="selectedCompanyIds" :options="companyIdOptions"
+                        class="px-2" />
+                    <EmployeeDropdown label="Department" v-model="selectedDepartmentIds" :options="departmentOptions"
+                        class="px-2" />
+                    <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" class="px-2" />
+                    <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions"
+                        class="px-2" />
                 </div>
             </div>
 
@@ -374,6 +367,7 @@ import EmployeeDropdown from "@/components/EmployeeDropdown.vue";
 import CancelButton from "@/components/Button/CancelButton.vue";
 import ModalAlert from "@/components/Alert/ModalAlert.vue";
 import EventSingleDatePicker from "@/components/IndexEvent/EventSingleDatePicker.vue";
+import SearchBar from "@/components/SearchBar.vue";
 
 export default {
     components: {
@@ -384,6 +378,7 @@ export default {
         CancelButton,
         ModalAlert,
         EventSingleDatePicker,
+        SearchBar,
     },
     data() {
         // ตัวแปรเก็บข้อมูลพื้นฐานของกิจกรรม
@@ -858,7 +853,8 @@ export default {
 /* Time trigger button */
 .tp-trigger {
     width: 100%;
-    height: 44px;
+    /* removed height: 44px to align with other input fields */
+    padding: 0;
     font-size: 15px;
     font-weight: 600;
     background: transparent;

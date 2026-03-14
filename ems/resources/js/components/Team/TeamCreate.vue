@@ -1,3 +1,11 @@
+<!-- /**
+ * ชื่อไฟล์: TeamCreate.vue
+ * คำอธิบาย: Pop up สำหรับสร้างทีม
+ * Input: Team Department
+ * Output: Create team
+ * ชื่อผู้เขียน/แก้ไข: Natthaphong Kongsinl
+ * วันที่จัดทำ/แก้ไข: 2026-03-10
+ */ -->
 <!-- resources/js/components/Team/TeamCreate.vue -->
 <template>
   <div v-if="open" class="fixed inset-0 z-[70] flex items-center justify-center">
@@ -59,7 +67,7 @@
           </div>
         </div>
 
-        
+
       </div>
 
       <div class="mt-6 flex justify-between">

@@ -51,14 +51,14 @@
                         :class="{ 'bg-rose-50 text-rose-700 font-medium': isActive(option) }"
                     >
                         <span class="w-4 h-4 flex items-center justify-center flex-shrink-0">
-                            <svg 
+                            <svg
                                 v-if="isActive(option)"
-                                xmlns="http://www.w3.org/2000/svg" 
-                                viewBox="0 0 24 24" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                stroke-width="3" 
-                                stroke-linecap="round" 
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="3"
+                                stroke-linecap="round"
                                 stroke-linejoin="round"
                                 class="w-3.5 h-3.5 text-rose-600"
                             >

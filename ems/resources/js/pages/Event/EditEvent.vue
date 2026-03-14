@@ -17,49 +17,49 @@
             <div class="col-span-8">
 
                 <!-- ช่องกรอกชื่ออีเวนต์ -->
-                <div class="grid ">
-                    <div class="mt-6 md:grid md:grid-cols-[3fr_200px] md:gap-8 items-stretch">
-                        <!-- v-model.trim="evn_title" = ผูกค่ากับตัวแปร evn_title ใน data() อันนึงเปลี่ยนค่าอีกอันก็จะเปลี่ยนตาม
-                     trim = ตัดช่องว่างหน้า/หลังอัตโนมัติ -->
-                        <div>
-                            <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px] mb-4 ml-1">
-                                Event Title <span class="text-red-500">*</span>
-                            </label><br />
-                            <InputPill v-model="eventTitle"
-                                class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800 border border-neutral-200 rounded-[20px] px-5"
-                                :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventTitle }" />
-
-                            <p v-if="submitted && formErrors.eventTitle" class="mt-1 text-xs text-red-600 font-medium">
+                <div class="grid md:grid-cols-[1fr_240px] gap-6 items-start mb-6 mt-6">
+                    <div>
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">
+                            Event Title <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <InputPill v-model="eventTitle" :class="[
+                                'w-full font-medium text-md text-neutral-800 border rounded-2xl px-3 py-2.5 focus:outline-none transition',
+                                'placeholder:text-red-300',
+                                submitted && formErrors.eventTitle ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300'
+                            ]" />
+                            <p v-if="submitted && formErrors.eventTitle"
+                                class="absolute -bottom-5 left-1 text-xs text-red-600 font-medium">
                                 Required field
                             </p>
                         </div>
+                    </div>
 
-                        <!-- ช่องเลือกประเภท event-->
-                        <div>
-                            <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
-                                Event Category <span class="text-red-500">*</span>
-                            </label><br />
-                            <div class="relative w-full">
-                                <select
-                                    class="appearance-none border border-neutral-200 rounded-[20px] px-[20px] w-full h-[52px] focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition bg-white"
-                                    v-model="eventCategoryId"
-                                    :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventCategoryId }">
-                                    <!-- ใส่ option แรกเป็นค่าเดิมที่โหลดมา เพื่อให้แสดงชื่อหมวดหมู่เดิม และมี value เป็น id ของหมวดหมู่เดิม (แต่ซ่อนใน dropdown ไม่ให้เลือกซ้ำ) -->
-                                    <option :value="initialForm.eventCategoryId" hidden>
-                                        {{ eventCategoryName }}
-                                    </option>
+                    <!-- ช่องเลือกประเภท event-->
+                    <div>
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">
+                            Category <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select :class="[
+                                'appearance-none border rounded-2xl px-3 py-2.5 w-full font-medium text-md focus:outline-none transition bg-white cursor-pointer',
+                                eventCategoryId ? 'text-neutral-800' : 'text-red-300',
+                                submitted && formErrors.eventCategoryId ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300'
+                            ]" v-model="eventCategoryId">
+                                <option :value="initialForm.eventCategoryId" hidden>
+                                    {{ eventCategoryName }}
+                                </option>
 
-                                    <option v-for="cat in selectCategory" :value="cat.id">
-                                        {{ cat.cat_name }}
-                                    </option>
-                                </select>
+                                <option v-for="cat in selectCategory" :value="cat.id" class="text-neutral-800">
+                                    {{ cat.cat_name }}
+                                </option>
+                            </select>
 
-                                <Icon icon="iconamoon:arrow-down-2-light"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 text-red-600 pointer-events-none" />
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
+                                <Icon icon="mdi:chevron-down" class="h-6 w-6 text-red-300" />
                             </div>
-
                             <p v-if="submitted && formErrors.eventCategoryId"
-                                class="mt-1 text-xs text-red-600 font-medium">
+                                class="absolute -bottom-5 left-1 text-xs text-red-600 font-medium">
                                 Required Select
                             </p>
                         </div>
@@ -67,25 +67,29 @@
                 </div>
 
                 <!-- ช่องกรอกคำอธิบายอีเวนต์ -->
-                <div class="mt-4">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
-                        Event Description <span class="text-red-500">*</span>
-                    </label><br />
-                    <textarea
-                        class="border border-neutral-200 w-full h-[165px] rounded-2xl focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-300 transition px-5 py-4"
-                        v-model.trim="eventDescription" placeholder="Write some description... (255 words)"
-                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventDescription }"></textarea>
-
-                    <p v-if="submitted && formErrors.eventDescription" class="mt-1 text-xs text-red-600 font-medium">
-                        Required field
-                    </p>
+                <div class="mb-6">
+                    <label class="mb-1 block text-xl font-medium text-neutral-800">
+                        Event Details <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <textarea :class="[
+                            'w-full h-[160px] rounded-2xl px-3 py-2.5 font-medium text-md text-neutral-800 focus:outline-none transition resize-none border',
+                            'placeholder:text-red-300',
+                            submitted && formErrors.eventDescription ? 'border-red-500 ' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300'
+                        ]" v-model.trim="eventDescription" placeholder="Write some description... (255 words)">
+                        </textarea>
+                        <p v-if="submitted && formErrors.eventDescription"
+                            class="absolute -bottom-5 left-1 text-xs text-red-600 font-medium">
+                            Required field
+                        </p>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pb-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 pb-2">
 
                     <!-- ช่องกรอกวันที่ -->
                     <div class="relative">
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Date <span
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">Date <span
                                 class="text-red-600">*</span></label>
                         <EventSingleDatePicker v-model="eventDate" :min="minDate"
                             :has-error="submitted && formErrors.eventDate"
@@ -96,10 +100,10 @@
 
                     <!-- ช่องกรอกเวลา -->
                     <div class="relative">
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Time <span
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">Time <span
                                 class="text-red-600">*</span></label>
                         <div :class="[
-                            'flex h-[52px] w-full items-center rounded-2xl border px-3 shadow-sm bg-white transition',
+                            'flex w-full items-center rounded-2xl border px-3 py-2.5 shadow-sm bg-white transition',
                             submitted && formErrors.eventTime
                                 ? 'border-red-500 bg-red-50'
                                 : 'border-neutral-200 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-rose-400',
@@ -167,27 +171,33 @@
 
                     <!-- ช่องแสดงผลระยะเวลาที่คำนวณได้ -->
                     <div>
-                        <label class="block text-neutral-800 font-semibold text-[15px] mb-2">Duration</label>
-                        <div class="flex h-[52px] w-full items-center gap-3 rounded-xl px-4 shadow-sm bg-[#F5F5F5]">
-                            <input class="w-full h-[52px] bg-transparent outline-none text-neutral-500" disabled
-                                v-model="eventDuration" placeholder="Auto fill Hour" />
-                            <Icon icon="mingcute:time-duration-line" class="w-7 h-7 text-neutral-400" />
+                        <label class="mb-1 block text-xl font-medium text-neutral-800">Duration</label>
+                        <div
+                            class="flex w-full items-center gap-3 rounded-2xl border border-neutral-200 px-3 py-2.5 shadow-sm bg-[#F5F5F5]">
+                            <input class="w-full bg-transparent outline-none text-neutral-500 font-medium text-md"
+                                disabled v-model="eventDuration" placeholder="Auto fill Hour" />
+                            <Icon icon="mingcute:time-duration-line" class="w-6 h-6 text-neutral-400" />
                         </div>
                     </div>
                 </div>
 
                 <!-- ช่องกรอกสถานที่-->
-                <div class="mt-4">
-                    <label class="text-neutral-800 font-semibold font-[Poppins] text-[16px]  mb-4 ml-1">
+                <div class="mb-6">
+                    <label class="mb-1 block text-xl font-medium text-neutral-800">
                         Location <span class="text-red-500">*</span>
-                    </label><br>
-                    <InputPill v-model="eventLocation" class="w-full h-[52px] font-medium font-[Poppins] text-[20px] text-neutral-800
-             border border-neutral-200 rounded-[20px] px-5"
-                        :class="{ '!border-red-500 !ring-1 !ring-red-500': submitted && formErrors.eventLocation }" />
+                    </label>
+                    <div class="relative">
+                        <InputPill v-model="eventLocation" :class="[
+                            'w-full font-medium text-md text-neutral-800 border rounded-2xl px-3 py-2.5 focus:outline-none transition',
+                            'placeholder:text-red-300',
+                            submitted && formErrors.eventLocation ? 'border-red-500 bg-red-50' : 'border-neutral-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-300'
+                        ]" />
 
-                    <p v-if="submitted && formErrors.eventLocation" class="mt-1 text-xs text-red-600 font-medium">
-                        Required field
-                    </p>
+                        <p v-if="submitted && formErrors.eventLocation"
+                            class="absolute -bottom-5 left-1 text-xs text-red-600 font-medium">
+                            Required field
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -211,12 +221,10 @@
 
                                 <!-- ไฟล์เดิมเป็นลิงก์, ไฟล์ใหม่เป็นข้อความ -->
                                 <template v-if="item.kind === 'existing'">
-                                    <a :href="item.url" target="_blank" rel="noopener"
-                                        class="truncate text-[16px]  text-red-700 hover:underline">
+                                    <a href="javascript:void(0)" @click.prevent="openFile(item.url)"
+                                        class="truncate text-[16px] text-red-700 hover:underline cursor-pointer">
                                         {{ item.name }}
                                     </a>
-                                    <!-- <span class="ml-2 shrink-0 text-xs text-neutral-500">({{ prettySize(item.size)
-                                }})</span> -->
                                 </template>
                                 <template v-else>
                                     <span class="truncate text-[16px]  text-neutral-800">{{ item.name }}</span>
@@ -262,21 +270,20 @@
         </div>
 
         <div class="mt-6">
-            <h3 class="text-3xl font-semibold">Add Guest</h3>
-            <div class="mt-4 flex flex-col gap-3">
-                <div class="flex flex-wrap items-center gap-3 w-full">
-                    <div class="flex-1 min-w-[260px]">
-                        <SearchBar v-model="search" placeholder="Search ID / Name / Nickname" @search="() => (page = 1)"
-                            class="" />
-                    </div>
+            <h3 class="text-3xl font-semibold text-neutral-800 mb-4">Add Guest</h3>
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-1 items-center gap-2 min-w-[200px]">
+                    <SearchBar v-model="search" placeholder="Search ID / Name / Nickname" @search="() => (page = 1)" />
+                </div>
 
-                    <div class="flex flex-row flex-wrap items-center gap-2 mt-8">
-                        <EmployeeDropdown label="Company ID" v-model="selectedCompanyIds" :options="companyIdOptions" />
-                        <EmployeeDropdown label="Department" v-model="selectedDepartmentIds"
-                            :options="departmentOptions" />
-                        <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" />
-                        <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions" />
-                    </div>
+                <div class="mt-8 gap-2 flex flex-row flex-wrap items-center">
+                    <EmployeeDropdown label="Company" v-model="selectedCompanyIds" :options="companyIdOptions"
+                        class="px-2" />
+                    <EmployeeDropdown label="Department" v-model="selectedDepartmentIds" :options="departmentOptions"
+                        class="px-2" />
+                    <EmployeeDropdown label="Team" v-model="selectedTeamIds" :options="teamOptions" class="px-2" />
+                    <EmployeeDropdown label="Position" v-model="selectedPositionIds" :options="positionOptions"
+                        class="px-2" />
                 </div>
             </div>
         </div>
@@ -458,6 +465,63 @@ export default {
 
     },
     methods: {
+        /**
+        * ชื่อฟังก์ชัน: openFile
+        * คำอธิบาย: เปิดหรือโหลดไฟล์
+        * ชื่อผู้เขียน/แก้ไข: Natthaphong Kongsinl
+        * วันที่จัดทำ/แก้ไข: 2026-03-9
+        */
+        async openFile(url) {
+            if (!url) return;
+
+            const secureUrl = url.replace("http://", "https://");
+
+            try {
+                const response = await fetch(secureUrl);
+                if (!response.ok) throw new Error('Download failed');
+
+                // --- 1. พยายามดึงชื่อไฟล์จาก Header (วิธีที่แม่นยำที่สุด) ---
+                // Server มักส่งชื่อไฟล์มาใน Content-Disposition
+                let fileName = "";
+                const disposition = response.headers.get('content-disposition');
+
+                if (disposition && disposition.includes('filename')) {
+                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    const matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        fileName = matches[1].replace(/['"]/g, '');
+                    }
+                }
+
+                // --- 2. ถ้า Header ไม่มี ให้ดึงจาก URL (เป็นแผนสำรอง) ---
+                if (!fileName) {
+                    // ใช้ decodeURIComponent เพื่อให้รองรับชื่อไฟล์ภาษาไทย (%E0%B8...)
+                    const urlPath = secureUrl.split('/').pop().split('#')[0].split('?')[0];
+                    fileName = decodeURIComponent(urlPath) || 'download';
+                }
+
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = fileName; // ใช้ชื่อที่เราดึงมาได้
+
+                document.body.appendChild(link);
+                link.click();
+
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+            } catch (error) {
+                console.error("Error:", error);
+                // แผนสำรองสุดท้ายถ้า Fetch พัง
+                const link = document.createElement('a');
+                link.href = secureUrl;
+                link.target = "_blank";
+                link.click();
+            }
+        }, 
         /**
          * ชื่อฟังก์ชัน: fetchData
          * คำอธิบาย: ดึงข้อมูลกิจกรรมจาก API มาแสดงในฟอร์ม รวมถึงข้อมูลพนักงานและ Guest เดิม
@@ -1317,7 +1381,8 @@ export default {
 /* Time trigger button */
 .tp-trigger {
     width: 100%;
-    height: 44px;
+    /* removed height: 44px to align with other input fields */
+    padding: 0;
     font-size: 15px;
     font-weight: 600;
     background: transparent;

@@ -10,15 +10,9 @@
 <template>
     <div class="">
         <div v-if="urlStatus">
-            <div
-                class="min-h-screen bg-red-50 py-10 px-4 flex flex-col items-center gap-5"
-            >
-                <section
-                    class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10"
-                >
-                    <h1
-                        class="mb-4 text-red-700 text-[34px] font-semibold leading-tight"
-                    >
+            <div class="min-h-screen bg-red-50 py-10 px-4 flex flex-col items-center gap-5">
+                <section class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10">
+                    <h1 class="mb-4 text-red-700 text-[34px] font-semibold leading-tight">
                         ตอบรับคำเชิญเข้าร่วมกิจกรรม
                     </h1>
                     <p class="my-1.5 text-gray-800 text-[15px] font-semibold">
@@ -38,107 +32,64 @@
                     </p>
                 </section>
 
-                <section
-                    v-if="show"
-                    class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10"
-                >
+                <section v-if="show" class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10">
                     <form @submit.prevent="onSubmit">
                         <div class="mb-6">
-                            <label
-                                class="block font-semibold text-gray-900 mb-3 text-[15px]"
-                                >เข้าร่วมหรือไม่</label
-                            >
+                            <label class="block font-semibold text-gray-900 mb-3 text-[15px]">เข้าร่วมหรือไม่</label>
                             <div class="flex gap-10">
                                 <label
-                                    class="inline-flex items-center gap-2 font-semibold text-gray-800 cursor-pointer"
-                                >
-                                    <input
-                                        type="radio"
-                                        value="accepted"
-                                        v-model="form.attend"
-                                        class="w-[18px] h-[18px] cursor-pointer"
-                                    />
+                                    class="inline-flex items-center gap-2 font-semibold text-gray-800 cursor-pointer">
+                                    <input type="radio" value="accepted" v-model="form.attend"
+                                        class="w-[18px] h-[18px] cursor-pointer" />
                                     เข้าร่วม
                                 </label>
                                 <label
-                                    class="inline-flex items-center gap-2 font-semibold text-gray-800 cursor-pointer"
-                                >
-                                    <input
-                                        type="radio"
-                                        value="denied"
-                                        v-model="form.attend"
-                                        class="w-[18px] h-[18px] cursor-pointer"
-                                    />
+                                    class="inline-flex items-center gap-2 font-semibold text-gray-800 cursor-pointer">
+                                    <input type="radio" value="denied" v-model="form.attend"
+                                        class="w-[18px] h-[18px] cursor-pointer" />
                                     ไม่เข้าร่วม
                                 </label>
                             </div>
-                            <small
-                                v-if="errors.attend"
-                                class="text-red-600 text-[13px] mt-1.5 block"
-                            >
+                            <small v-if="errors.attend" class="text-red-600 text-[13px] mt-1.5 block">
                                 {{ errors.attend }}
                             </small>
                         </div>
 
-                        <div
-                            class="mb-6 transition-opacity duration-200"
-                            :class="{ 'opacity-60': form.attend !== 'denied' }"
-                        >
-                            <label
-                                class="block font-semibold text-gray-900 mb-3 text-[15px]"
-                                >หมายเหตุ (กรณีไม่เข้าร่วม)</label
-                            >
-                            <input
-                                type="text"
-                                v-model.trim="form.reason"
-                                :disabled="form.attend !== 'denied'"
-                                class="w-full border-0 border-b border-gray-400 py-2 outline-none text-[15px] bg-transparent transition-colors duration-200 focus:border-gray-800 focus:ring-0 disabled:cursor-not-allowed disabled:bg-transparent"
-                            />
-                            <small
-                                v-if="errors.reason"
-                                class="text-red-600 text-[13px] mt-1.5 block"
-                            >
+                        <div class="mb-6 transition-opacity duration-200"
+                            :class="{ 'opacity-60': form.attend !== 'denied' }">
+                            <label class="block font-semibold text-gray-900 mb-3 text-[15px]">หมายเหตุ
+                                (กรณีไม่เข้าร่วม)</label>
+                            <input type="text" v-model.trim="form.reason" :disabled="form.attend !== 'denied'"
+                                class="w-full border-0 border-b border-gray-400 py-2 outline-none text-[15px] bg-transparent transition-colors duration-200 focus:border-gray-800 focus:ring-0 disabled:cursor-not-allowed disabled:bg-transparent" />
+                            <small v-if="errors.reason" class="text-red-600 text-[13px] mt-1.5 block">
                                 {{ errors.reason }}
                             </small>
                         </div>
 
                         <div class="flex justify-end mt-8">
-                            <button
-                                type="submit"
+                            <button type="submit"
                                 class="bg-green-500 text-white font-semibold text-[15px] rounded-full py-2.5 px-8 cursor-pointer transition-colors duration-200 hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed"
-                                :disabled="submitting"
-                            >
+                                :disabled="submitting">
                                 {{ submitting ? "กำลังส่ง…" : "ส่งคำตอบ" }}
                             </button>
                         </div>
                     </form>
                 </section>
 
-                <section
-                    v-else
-                    class="w-full max-w-[640px] md:px-10 text-gray-800 font-medium"
-                >
-                    คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว
+                <section v-else class="w-full max-w-[640px] md:px-10 text-gray-800 font-medium">
+                    {{ endedMessage }}
                 </section>
             </div>
         </div>
 
         <div v-else>
-            <div
-                class="min-h-screen bg-red-50 py-10 px-4 flex flex-col items-center gap-5"
-            >
-                <section
-                    class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10"
-                >
-                    <h1
-                        class="mb-4 text-red-700 text-[28px] font-semibold leading-tight"
-                    >
+            <div class="min-h-screen bg-red-50 py-10 px-4 flex flex-col items-center gap-5">
+                <section class="w-full max-w-[640px] bg-white rounded-xl px-8 py-8 md:px-10">
+                    <h1 class="mb-4 text-red-700 text-[28px] font-semibold leading-tight">
                         ตอบรับเข้าร่วมการประชุม
                     </h1>
                     <p class="my-1.5 text-gray-800 text-[15px]">
-                        <strong
-                            >ลิงก์แบบฟอร์มเชิญเข้าร่วมกิจกรรมไม่ถูกต้อง</strong
-                        >
+                        <strong>ลิงก์แบบฟอร์มเชิญเข้าร่วมกิจกรรมไม่ถูกต้อง</strong>
                     </p>
                 </section>
             </div>
@@ -166,6 +117,7 @@ export default {
             empName: "",
             empEmail: "",
             empPhone: "",
+            eventEnded: false,
 
             // สถานะของ URL และสถานะการตอบรับปัจจุบัน
             urlStatus: true,
@@ -197,8 +149,14 @@ export default {
          * จะแสดงฟอร์มเมื่อผู้ใช้ยังไม่ได้ตอบรับ หรือตอบปฏิเสธ
          */
         show() {
+            if (this.eventEnded) return false;
             const status = this.replyStatus;
             return status !== "accepted" && status !== "denied";
+        },
+
+        endedMessage() {
+            if (this.eventEnded) return "กิจกรรมนี้สิ้นสุดหรือถูกลบไปแล้ว";
+            return "คุณได้ตอบคำถามแบบฟอร์มนี้แล้ว";
         },
 
         /**
@@ -306,6 +264,8 @@ export default {
 
                 this.empEmail = responseData.employee?.emp_email || "";
                 this.empPhone = responseData.employee?.emp_phone || "";
+
+                this.eventEnded = responseData.eventEnded || false;
             } catch (error) {
                 // เก็บข้อความ Error กรณีดึงข้อมูลไม่สำเร็จ
                 this.errorMessage =
