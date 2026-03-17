@@ -395,12 +395,20 @@ export default {
               <div class="stat-value">${participants.length}</div>
             </div>
             <div class="stat-box">
+              <div class="stat-label">ผู้ได้รับเชิญ</div>
+              <div class="stat-value">${participants.filter(p => p.__isInvited).length}</div>
+            </div>
+            <div class="stat-box">
               <div class="stat-label">ตอบรับเข้าร่วม</div>
               <div class="stat-value">${participants.filter(p => p.status === 'accepted').length}</div>
             </div>
             <div class="stat-box">
               <div class="stat-label">เข้าร่วมจริง</div>
               <div class="stat-value">${participants.filter(p => p.__isCheckedIn).length}</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">ปฏิเสธ</div>
+              <div class="stat-value">${participants.filter(p => p.status === 'denied').length}</div>
             </div>
           </div>
         </div>
@@ -604,8 +612,10 @@ export default {
 
                 const stats = [
                     ['พนักงานทั้งหมด', participants.length],
+                    ['ผู้ได้รับเชิญ', participants.filter(p => p.__isInvited).length],
                     ['ตอบรับเข้าร่วม', participants.filter(p => p.status === 'accepted').length],
-                    ['เข้าร่วมจริง', participants.filter(p => p.__isCheckedIn).length]
+                    ['เข้าร่วมจริง', participants.filter(p => p.__isCheckedIn).length],
+                    ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length]
                 ];
 
                 stats.forEach(([label, value]) => {
