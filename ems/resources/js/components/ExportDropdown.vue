@@ -395,12 +395,20 @@ export default {
               <div class="stat-value">${participants.length}</div>
             </div>
             <div class="stat-box">
+              <div class="stat-label">ผู้ได้รับเชิญ</div>
+              <div class="stat-value">${participants.filter(p => p.__isInvited).length}</div>
+            </div>
+            <div class="stat-box">
               <div class="stat-label">ตอบรับเข้าร่วม</div>
               <div class="stat-value">${participants.filter(p => p.status === 'accepted').length}</div>
             </div>
             <div class="stat-box">
               <div class="stat-label">เข้าร่วมจริง</div>
               <div class="stat-value">${participants.filter(p => p.__isCheckedIn).length}</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">ปฏิเสธ</div>
+              <div class="stat-value">${participants.filter(p => p.status === 'denied').length}</div>
             </div>
           </div>
         </div>
@@ -411,10 +419,11 @@ export default {
             <thead>
               <tr>
                 <th style="width: 5%;">#</th>
-                <th style="width: 15%;">รหัส</th>
-                <th style="width: 30%;">ชื่อ-นามสกุล</th>
-                <th style="width: 20%;">แผนก</th>
-                <th style="width: 15%;">สถานะ</th>
+                                <th style="width: 12%;">รหัส</th>
+                                <th style="width: 26%;">ชื่อ-นามสกุล</th>
+                                <th style="width: 16%;">แผนก</th>
+                                <th style="width: 14%;">สถานะการตอบรับ</th>
+                                <th style="width: 12%;">เข้าร่วมจริง</th>
                 <th style="width: 15%;">เหตุผล</th>
               </tr>
             </thead>
@@ -430,6 +439,7 @@ export default {
                       ${guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
                     </span>
                   </td>
+                                    <td>${guest.__isCheckedIn ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม'}</td>
                   <td class="left">${guest.con_reason || '-'}</td>
                 </tr>
               `).join('')}
@@ -604,7 +614,7 @@ export default {
                     ['พนักงานทั้งหมด', participants.length],
                     ['ผู้ได้รับเชิญ', participants.filter(p => p.__isInvited).length],
                     ['ตอบรับเข้าร่วม', participants.filter(p => p.status === 'accepted').length],
-                    ['เข้าร่วมจริง (เช็คอิน)', participants.filter(p => p.__isCheckedIn).length],
+                    ['เข้าร่วมจริง', participants.filter(p => p.__isCheckedIn).length],
                     ['ปฏิเสธ', participants.filter(p => p.status === 'denied').length]
                 ];
 
@@ -637,7 +647,7 @@ export default {
                     'แผนก (Department)',
                     'ทีม (Team)',
                     'ตำแหน่ง (Position)',
-                    'สถานะ (Status)',
+                    'สถานะการตอบรับ',
                     'เข้าร่วมจริง',
                     'ความคิดเห็น/เหตุผล (Reason)'
                 ];
@@ -728,20 +738,35 @@ export default {
 
         async fetchAllEmployees() {
             try {
-                console.log('📥 Fetching all employees in company');
-                const response = await axios.get('/employees');
+                console.log('Fetching employees for export');
+
+                // ใช้ /event-info เป็นแหล่งข้อมูลหลัก เพราะรองรับโครงสร้างฐานข้อมูลปัจจุบันได้ปลอดภัยกว่า
+                const eventInfoResponse = await axios.get('/event-info');
 
                 let employees = [];
 
-                if (Array.isArray(response.data)) {
-                    employees = response.data;
-                } else if (response.data && Array.isArray(response.data.data)) {
-                    employees = response.data.data;
-                } else if (response.data && Array.isArray(response.data.employees)) {
-                    employees = response.data.employees;
+                if (eventInfoResponse.data && Array.isArray(eventInfoResponse.data.employees)) {
+                    employees = eventInfoResponse.data.employees;
+                } else if (Array.isArray(eventInfoResponse.data)) {
+                    employees = eventInfoResponse.data;
+                } else if (eventInfoResponse.data && Array.isArray(eventInfoResponse.data.data)) {
+                    employees = eventInfoResponse.data.data;
                 }
 
-                // Normalize department, team, position data จาก employee table
+                // ถ้าไม่ได้ข้อมูลจาก /event-info ให้ fallback ไปใช้ /employees เพื่อรองรับรูปแบบ API เดิม
+                if (!employees.length) {
+                    const legacyResponse = await axios.get('/employees');
+
+                    if (Array.isArray(legacyResponse.data)) {
+                        employees = legacyResponse.data;
+                    } else if (legacyResponse.data && Array.isArray(legacyResponse.data.data)) {
+                        employees = legacyResponse.data.data;
+                    } else if (legacyResponse.data && Array.isArray(legacyResponse.data.employees)) {
+                        employees = legacyResponse.data.employees;
+                    }
+                }
+
+                // ปรับรูปแบบข้อมูลแผนก ทีม และตำแหน่ง ให้มีโครงสร้างเดียวกันก่อนนำไปใช้งาน
                 const normalized = employees.map(emp => {
                     // จัดการ department (รองรับทั้ง object และ string)
                     let department = '';
@@ -785,8 +810,7 @@ export default {
                     };
                 });
 
-                console.log(`Loaded ${normalized.length} employees from company`);
-                console.log(`Sample employee data:`, normalized[0]); // Debug: แสดงตัวอย่างข้อมูล
+                console.log(`Loaded ${normalized.length} employees for export`);
                 return normalized;
             } catch (error) {
                 console.error('Error fetching all employees:', error);
