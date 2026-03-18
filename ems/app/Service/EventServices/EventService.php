@@ -48,7 +48,7 @@ class EventService
         $connections = Connect::with(['employee.department', 'employee.team', 'employee.position'])
             ->where('con_event_id', $id)
             ->where('con_delete_status', 'active')
-            ->where('con_answer', '!=', 'not_invite')
+            // ->where('con_answer', '!=', 'not_invite')
             ->get();
 
         // 2. จัดรูปแบบข้อมูล + เรียงลำดับ
@@ -205,7 +205,7 @@ class EventService
     }
 
         /* ============================================================
-   5) แก้ไข Event 
+   5) แก้ไข Event
 ============================================================ */
         public function update(Request $request)
 {
