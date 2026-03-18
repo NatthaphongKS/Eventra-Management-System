@@ -1,4 +1,11 @@
 <?php
+/**
+ * ชื่อไฟล์: app.php
+ * ที่อยู่: bootstrap/app.php
+ * คำอธิบาย: bootstrap ตัวแอปพลิเคชัน Laravel — กำหนดการตั้งค่า
+ * ผู้เขียน/แก้ไข: Yothin S.
+ * วันที่แก้ไขล่าสุด: 18 มีนาคม 2026
+ */
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Global middleware
         $middleware->use([
+            \Illuminate\Http\Middleware\HandleCors::class,
             \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
             \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,

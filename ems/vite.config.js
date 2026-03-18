@@ -18,4 +18,11 @@ export default defineConfig({
     strictPort: true,
     hmr: { host: 'localhost', port: 5173 }, // ให้เบราว์เซอร์ยิงกลับ localhost
   },
+  build: {
+    outDir: 'public/build',
+    manifest: true,
+    rollupOptions: {
+      input: 'resources/js/app.js',
+    },
+  },
 })

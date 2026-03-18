@@ -4,7 +4,7 @@
  * ชื่อไฟล์: Employee.php
  * คำอธิบาย: Model สำหรับจัดการข้อมูลพนักงาน (ems_employees)
  * ชื่อผู้เขียน/แก้ไข: Thanusin leenarat
- * วันที่จัดทำ/แก้ไข: 23 กุมภาพันธ์ 2569
+ * วันที่จัดทำ/แก้ไข: 18 มีนาคม 2569
  */
 
 namespace App\Models;
@@ -14,11 +14,12 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Laravel\Sanctum\HasApiTokens;
 
 
 class Employee extends Authenticatable
 {
-    use Notifiable, HasFactory;
+    use HasApiTokens, Notifiable, HasFactory;
 
     protected $table = 'ems_employees';
 
