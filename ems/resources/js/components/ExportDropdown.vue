@@ -422,8 +422,8 @@ export default {
                                 <th style="width: 12%;">รหัส</th>
                                 <th style="width: 26%;">ชื่อ-นามสกุล</th>
                                 <th style="width: 16%;">แผนก</th>
-                                <th style="width: 14%;">สถานะการตอบรับ</th>
-                                <th style="width: 12%;">เข้าร่วมจริง</th>
+                                <th style="width: 15%;">สถานะการตอบรับ</th>
+                                <th style="width: 11%;">เข้าร่วมจริง</th>
                 <th style="width: 15%;">เหตุผล</th>
               </tr>
             </thead>
@@ -432,11 +432,11 @@ export default {
                 <tr>
                   <td>${index + 1}</td>
                   <td>${guest.emp_id || '-'}</td>
-                  <td class="left">${guest.emp_prefix || ''}${guest.emp_firstname || ''} ${guest.emp_lastname || ''}</td>
+                  <td class="left">${guest.emp_prefix || ''}${guest.emp_firstname || ''} ${guest.emp_lastname || ''} (${guest.emp_nickname || ''})</td>
                   <td class="left">${guest.department || '-'}</td>
                   <td>
                     <span class="status-badge status-${guest.status === 'accepted' ? 'accepted' : (guest.status === 'denied' ? 'rejected' : 'pending')}">
-                      ${guest.status === 'accepted' ? 'เข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
+                      ${guest.status === 'accepted' ? 'ตอบรับเข้าร่วม' : (guest.status === 'denied' ? 'ปฏิเสธ' : 'รอตอบรับ')}
                     </span>
                   </td>
                                     <td>${guest.__isCheckedIn ? 'เข้าร่วมจริง' : 'ไม่เข้าร่วม'}</td>
@@ -675,7 +675,7 @@ export default {
                 // Guest rows
                 participants.forEach((guest, index) => {
                     const statusLabel =
-                        guest.status === 'accepted' ? 'เข้าร่วม' :
+                        guest.status === 'accepted' ? 'ตอบรับเข้าร่วม' :
                             (guest.status === 'denied' ? 'ปฏิเสธ' :
                                 (guest.status === 'not_invited' ? 'ไม่ได้รับเชิญ' : 'รอตอบรับ'));
                     const row = worksheet.getRow(currentRow);
