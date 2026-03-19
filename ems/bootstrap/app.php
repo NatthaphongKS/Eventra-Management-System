@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
 
+
+
+
         $middleware->validateCsrfTokens(except: [
             'api/*',      //  ให้ /api ทั้งหมดไม่ต้องใช้ CSRF (Postman)
             'login',    //  เผื่อ login route เป็น web form
@@ -25,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Global middleware
         $middleware->use([
+            \Illuminate\Http\Middleware\HandleCors::class,
             \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
             \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
